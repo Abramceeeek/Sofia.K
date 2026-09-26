@@ -8,6 +8,12 @@ It never writes text: the LLM explanation comes later, from the structured `why`
 
 Peak-end (D8, D15) is a toggle, off by default: when on, the planner solves once per candidate
 final stop and adds an end bonus for how good the last stop is, then keeps the best plan.
+
+Two rules for the seed moments (D72):
+- variants of one moment (the same boat ride by day and by night) share a `group`, and a plan
+  holds at most one of them;
+- "area vibe" entries (a Soho wander, outdoor dining streets) are capped at `max_areas` per day
+  (default 1) and are never reported as the day's peak, because they fill a day rather than make it.
 """
 
 from __future__ import annotations
@@ -18,7 +24,7 @@ from dataclasses import dataclass, field
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 from .features import leg_features
-from .moments import Point
+from .moments import Moment, Point
 from .travel import TravelTimes
 
 SCALE = 1000  # utility units → integer solver cost; travel adds 1 per minute as a tie-breaker
@@ -33,6 +39,14 @@ class Candidate:
     windows: tuple[tuple[int, int], ...]   # the visit must fit inside one window (minutes from midnight)
     utility: float                          # moment-level score for this person and these conditions
     cost_gbp: float = 0.0                   # per person, for the budget constraint
+    group: str | None = None                # variants of one moment: at most one per plan
+    kind: str = "moment"                    # "moment" or "area" (area vibe)
+
+
+def candidate_for(m: Moment, utility: float) -> Candidate:
+    """The planner's view of a plannable moment."""
+    return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows()),
+                     float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind)
 
 
 @dataclass(frozen=True)
@@ -89,7 +103,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            travel: TravelTimes, legs: LegWeights, floor: float, max_stops: int,
            forced_last: int | None, time_limit_s: float, max_wait_min: int,
            min_stops: int | None = None, budget_gbp: float | None = None,
-           must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0) -> DayPlan | None:
+           must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
+           max_areas: int = 1) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -152,6 +167,18 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus
         routing.AddDisjunction([idx], int(round(SCALE * max(0.0, prize))))
 
+    solver = routing.solver()
+    groups: dict[str, list[int]] = {}
+    for j, c in enumerate(cands, start=1):
+        if c.group:
+            groups.setdefault(c.group, []).append(manager.NodeToIndex(j))
+    for members in groups.values():
+        if len(members) > 1:
+            solver.Add(solver.Sum([routing.ActiveVar(i) for i in members]) <= 1)
+    areas = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.kind == "area"]
+    if len(areas) > max_areas:
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in areas]) <= max_areas)
+
     params = pywrapcp.DefaultRoutingSearchParameters()
     params.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PARALLEL_CHEAPEST_INSERTION
     params.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
@@ -174,7 +201,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
             prev = node
     visited = {s.moment_id for s in stops}
     value = sum(s.utility - floor + pace_bonus - s.leg_penalty for s in stops)
-    peak = max(stops, key=lambda s: s.utility).moment_id if stops else None
+    kind = {c.moment_id: c.kind for c in cands}
+    peaks = [s for s in stops if kind[s.moment_id] != "area"] or stops
+    peak = max(peaks, key=lambda s: s.utility).moment_id if peaks else None
     return DayPlan(stops, round(value, 3), peak, False,
                    dropped=[c.moment_id for c in cands if c.moment_id not in visited])
 
@@ -184,7 +213,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              min_stops: int | None = None, budget_gbp: float | None = None,
              must_include: set[str] | frozenset[str] = frozenset(),
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
-             time_limit_s: float = 1.0, max_wait_min: int = 60) -> DayPlan:
+             time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -203,7 +232,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
     args = dict(start_point=start_point, day_start=day_start, day_end=day_end, travel=travel,
                 legs=legs, floor=floor, max_stops=max_stops, time_limit_s=time_limit_s,
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
-                min_stops=min_stops)
+                min_stops=min_stops, max_areas=max_areas)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:

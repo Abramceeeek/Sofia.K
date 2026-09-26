@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 
 import yaml
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 PLACE_TAGS = [
@@ -80,6 +82,12 @@ class Moment(BaseModel):
     title: str
     status: str = "draft"          # draft | ready
     swipe: bool = False            # part of the onboarding swipe set
+    # D72: "moment" is one specific experience; "area" is an area vibe (a wander, a street scene)
+    # with a centre point instead of an approach path. The planner allows one area a day.
+    kind: Literal["moment", "area"] = "moment"
+    variant_of: str | None = None  # shared by variants of one moment (day / night): one per plan
+    variant: str | None = None     # e.g. "day", "night"
+    direction: str | None = None   # for routes where order matters, e.g. "Greenwich → Battersea"
     place: Place
     approach: Approach = Field(default_factory=Approach)
     experience: Experience = Field(default_factory=Experience)

@@ -2,15 +2,20 @@
 
 **Status (2026-09-26):** pipeline placeholder only. `project.yml` (XcodeGen) and one "Pipeline check" screen let GitHub Actions prove it can build, sign and upload with no Mac. **The real app code waits until Test B reports (D65).** The screens it will build are in `design/v0-screens.md`.
 
-Nothing here has run yet. The first run of `.github/workflows/ios.yml` is the first real check.
+**The simulator build passed on its first run** (2026-09-26, run 36262736945; the build step took 18 s). Signing and upload haven't run yet.
 - **Before the secrets exist:** any push that changes `app/` builds for the simulator only (no signing). That checks the runner, XcodeGen and the Swift.
 - **After the secrets exist:** a push to `main`, or **Actions → ios → Run workflow** with "upload" ticked, archives, signs and uploads to TestFlight. The build number is the run number.
 
 ## What you add (about 0.5 h)
 
-**First, in App Store Connect:** create the app record (**Apps → + → New App**) with the bundle ID you'll use. The upload fails without it. It needs an **App Store distribution** provisioning profile for that bundle ID.
+**First, check the Apple Developer membership (D74):** developer.apple.com/account → Membership details.
+- **Renew only if Test B passes**, and keep **auto-renew off** until then. With auto-renew on, Apple charges the card on the expiry date.
+- While the membership is lapsed, you can't open Certificates, Identifiers & Profiles, so the signing secrets can't be made. Existing installs of your earlier app keep working, but it can't be downloaded (Apple help, 2026-09-26).
+- The simulator build needs no membership.
 
-**Then in GitHub: Settings → Secrets and variables → Actions → New repository secret.** There are six:
+**Then, in App Store Connect:** create the app record (**Apps → + → New App**) with the bundle ID you'll use. The upload fails without it. It needs an **App Store distribution** provisioning profile for that bundle ID.
+
+**Finally, in GitHub: Settings → Secrets and variables → Actions → New repository secret.** There are six:
 
 | Secret | What it is |
 |---|---|

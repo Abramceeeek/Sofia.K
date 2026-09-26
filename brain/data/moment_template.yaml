@@ -5,6 +5,10 @@ id: m_short_name                      # NEEDED: unique, lower case, e.g. m_south
 title: "Out of the tunnel, into the Natural History Museum"
 status: draft                         # draft | ready
 swipe: false                          # true only for the onboarding swipe set
+kind: moment                          # moment | area ("area vibe": a wander or street scene; one a day, never the peak)
+variant_of: null                      # shared id for variants (day / night): a plan holds at most one
+variant: null                         # e.g. day, night
+direction: null                       # for routes where the order matters, e.g. "Greenwich -> Battersea"
 place:
   name: "Natural History Museum"
   overture_id: null

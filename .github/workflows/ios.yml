@@ -12,10 +12,12 @@ on:
   push:
     paths:
       - "app/**"
+      - "!app/**/*.md"             # README edits don't need a paid macOS build
       - ".github/workflows/ios.yml"
   pull_request:
     paths:
       - "app/**"
+      - "!app/**/*.md"
       - ".github/workflows/ios.yml"
   workflow_dispatch:
     inputs:

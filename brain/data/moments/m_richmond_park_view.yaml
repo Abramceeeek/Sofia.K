@@ -1,0 +1,41 @@
+# Seed moment, batch 1, #11 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
+# GAP: which viewpoint. Proposed: King Henry's Mound in Pembroke Lodge Gardens, with a protected view to
+# St Paul's to the east and the Thames Valley to the west (Royal Parks, 2026-09-26). Replace it if you meant
+# another spot.
+# Safety note for the card: stay at least 50 m from the deer (Royal Parks, via search). The rut is in autumn.
+# For later (after 9 Nov, D75): scale; a "safari" feeling (wildlife) could become its own tag.
+id: m_richmond_park_view
+title: "Deer, forest and the long view in Richmond Park"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Richmond Park: King Henry's Mound (proposed viewpoint)"
+  lat: 51.44492          # CHECKED: King Henry VIII's Mound viewpoint, OpenStreetMap
+  lon: -0.29477
+approach:
+  from: "Richmond Gate"
+  start_point: {lat: 51.44982, lon: -0.29497}   # CHECKED (approx.): OSM "Richmond Gate" stop
+  path: "In through Richmond Gate, then south along the edge of the park to Pembroke Lodge Gardens and the Mound"   # GUESS: confirm on a walk
+  duration_min: 10       # GUESS: about 550 m
+  step_free: null
+experience:
+  what_happens: "A walk past deer, water and forest to a high point with a long view over the Thames Valley, and to St Paul's far off to the east."   # FOUNDER + CHECKED
+  why_it_works: "Nature meeting people: deer, water, forest and small buildings inside the park. A safari feeling."   # FOUNDER
+  duration_min: [45, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["08:00-19:00"]   # GUESS; pedestrian gates are open 24/7, vehicle gates 7am-7pm (Royal Parks)
+  light: null
+  weather: ["dry"]
+  company: null
+  crowd_window: null
+  opening_hours: "Park open 24/7 to pedestrians; Pembroke Lodge Gardens hours UNVERIFIED. Checked 2026-09-26"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 0, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 2}
+cost_gbp: 0
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

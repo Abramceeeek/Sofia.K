@@ -22,7 +22,7 @@ from .config import Settings, get_settings
 from .features import Conditions, conjoint_plan_features, moment_features
 from .moments import Moment, load_moments
 from .personal import DeltaPosterior, prior_only
-from .planner import Candidate, LegWeights, hhmm, parse_hhmm, plan_day
+from .planner import LegWeights, candidate_for, hhmm, parse_hhmm, plan_day
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
                       PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, SwipesIn)
@@ -207,11 +207,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                   p: PopulationModel = Depends(pop)):
         b = p.b_person(posterior(user, p).mean)
         cond = Conditions(body.conditions.temp_c, body.conditions.rain_prob) if body.conditions else Conditions()
-        ms = {k: m for k, m in moments_by_id(s).items() if m.plannable()}
+        ms = {k: m for k, m in moments_by_id(s).items() if m.plannable() and m.status == "ready"}  # checked cards only (D72)
         if cond.rain_prob is not None and cond.rain_prob >= 0.5:
             ms = {k: m for k, m in ms.items() if m.best_time.weather != ["dry"]}
-        cands = [Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows()),
-                           float(p.vector(moment_features(m, cond)) @ b)) for m in ms.values()]
+        cands = [candidate_for(m, float(p.vector(moment_features(m, cond)) @ b)) for m in ms.values()]
         idx = {n: i for i, n in enumerate(p.names)}
         legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
         result = plan_day(cands, body.start, parse_hhmm(body.start_time), parse_hhmm(body.end_time),

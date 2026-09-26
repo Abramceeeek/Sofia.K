@@ -162,3 +162,20 @@ def test_weights_command_prints_readback(tmp_path, data_dir, capsys):
     assert testb.main(["--data", str(data_dir), "weights", "--results", str(results), "--ids", "P01"]) == 0
     out = capsys.readouterr().out
     assert out.startswith("P01 (stranger, 14 informative answers)")
+
+
+def test_draft_moments_stay_out_of_real_plans(tmp_path, data_dir, capsys):
+    # Drafts can hold Claude's GUESS values, so real Test B plans use only checked (ready) moments.
+    for f in (data_dir / "moments").glob("*.yaml"):
+        doc = yaml.safe_load(f.read_text())
+        doc["status"] = "draft"
+        f.write_text(yaml.safe_dump(doc))
+    results = tmp_path / "results.xlsx"
+    fill_results(results)
+    args = ["--data", str(data_dir), "plans", "--results", str(results),
+            "--brief", str(DATA / "testb" / "brief.example.yaml"),
+            "--generic", str(DATA / "testb" / "generic.example.yaml"), "--out", str(tmp_path / "o"), "--no-pdf"]
+    assert testb.main(args) == 2
+    assert "Skipping" in capsys.readouterr().err
+    assert testb.main(args + ["--include-drafts"]) == 0
+    assert "DRY RUN" in capsys.readouterr().err

@@ -1,0 +1,42 @@
+# Seed moment, batch 1, #5 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
+# GAP: which restaurant. You mentioned "Meat Bros" and a Liverpool Street steakhouse.
+# - A search finds Meet Bros, a steakhouse at 29-31 Craven Road, Paddington W2 3BX (meetbros.co.uk, via search
+#   2026-09-26). Whether it has an open kitchen is UNVERIFIED.
+# - The Liverpool Street steakhouse: name to confirm.
+# The planner skips this card until the place, start point and cost are filled.
+# For later (after 9 Nov, D75): process watching 2; crowd energy (buzzing).
+id: m_open_kitchen_steakhouse
+title: "Dinner by the open kitchen"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Open-kitchen steakhouse (GAP: which restaurant)"
+  lat: null
+  lon: null
+approach:
+  from: null
+  start_point: null      # GAP: filled from the restaurant's address
+  path: null
+  duration_min: 0
+  step_free: null
+experience:
+  what_happens: "A steak dinner at a table where you can watch the chefs at work in the open kitchen, with the buzz of a full room around you."   # FOUNDER
+  why_it_works: "Watching the chefs, and the buzz of people."   # FOUNDER
+  duration_min: [75, 105]   # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["18:00-22:30"]   # GUESS: dinner; replace with the restaurant's hours
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Busy is the point here: a full room"   # FOUNDER (the buzz)
+  opening_hours: null    # GAP: from the restaurant
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: null           # GAP: your usual spend per person there
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

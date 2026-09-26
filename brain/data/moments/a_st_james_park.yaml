@@ -1,0 +1,40 @@
+# Seed, batch 1, #10 (Abram's voice note, 2026-09-26): "any London park, spring/summer", an AREA VIBE.
+# DRAFT card by Claude. GAP: which park(s). St James's Park is proposed as the first one because its animals
+# are documented: pelicans have lived on the lake since 1664 and are fed fish daily, usually at about 14:30
+# (Royal Parks, 2026-09-26). Add other parks as separate cards if you want them.
+# For later (after 9 Nov, D75): a season rule (spring/summer); the planner doesn't know seasons yet.
+id: a_st_james_park
+title: "Birds and water in St James's Park"
+status: draft
+swipe: false
+kind: area
+place:
+  name: "St James's Park, around the lake"
+  lat: 51.50246          # CHECKED: St James's Park Lake, OpenStreetMap
+  lon: -0.13382
+approach:
+  from: "the path around the lake"
+  start_point: {lat: 51.50246, lon: -0.13382}
+  path: null
+  duration_min: 0
+  step_free: null
+experience:
+  what_happens: "A slow walk around the lake with the birds and water, and the pelicans on their rocks or at their afternoon feed."   # FOUNDER + CHECKED
+  why_it_works: "Birds, water, green, and animals you don't see in most cities."   # FOUNDER
+  duration_min: [30, 60] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-18:00"]   # GUESS
+  light: "Spring and summer"     # FOUNDER
+  weather: ["dry"]
+  company: null
+  crowd_window: "About 14:30 for the pelican feed"   # CHECKED (Royal Parks: "usually at around 2.30pm")
+  opening_hours: null
+features:
+  place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

@@ -16,8 +16,10 @@ This file is the standing context for this project. Read it fully before any tas
     3. IP/invention clauses checked in **both** employment contracts.
   - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
   - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company. This includes the designer and the safety backup helper (D55).
+    - *Split by D73:* **Part A** (IP assignment, confidentiality, personal data) is signed as a deed before anyone's work is used, and before the helper sees any user message. **Part B** (equity) gets a solicitor review before incorporation. Contributions are voluntary and flexible, with no set hours.
   - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. **Abram is doing this check, and the IP/invention-clause check, this week, before any external TestFlight build (D60).**
   - **Developer account (D61):** individual for TestFlight. Switch to a company account (incorporation plus a D-U-N-S number) before the public App Store launch. Start about 3 weeks ahead.
+    - **Renew the membership only if Test B passes (D74).** Keep auto-renew off until then.
   - Revenue from trips or subscriptions can start once the money gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
@@ -45,7 +47,10 @@ Founder's example: you come out of South Kensington tube and walk out to the Nat
   - social pull ("I need to bring people here");
   - cost in £.
 - **Feeling per pound is computed, not tagged.** The model derives it as predicted S ÷ cost. Tagging it directly would double-count cost.
-- **Seed moments come from Abram's own experience.** Five to start.
+- **Seed moments come from Abram's own experience.** Five to start. Batch 1 (11 cards, D72) is in `brain/data/moments/`.
+- **Entry types (D72):** a **moment** (one specific experience) or an **area vibe** (a wander or street scene: a centre point, flexible time, at most one a day, never the day's peak).
+  - **Variants** (the same trip by day and by night) share a group, and a plan holds at most one.
+  - **Draft cards never go into real plans**; only `status: ready`.
 
 ## The model: satisfaction as an equation
 
@@ -158,3 +163,4 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 6. Keep notes short: one page per research area, decision first.
 7. UK context by default (London first, GBP, UK law).
 8. **Standing rule (D69):** make minor decisions yourself (wording, file layout, scheduling moves under 1 h, tooling within the agreed stack) and log them in `decisions/decision-log.md`. Stop only for decisions that change scope, cost money, affect privacy or safety, or move a checkpoint. Batch everything else into one list at each checkpoint.
+9. **After-9-Nov rule (D75):** any new idea that doesn't help Test B goes on `decisions/after-9-nov.md`, not into the current plan. The list is reviewed at Checkpoint 3.

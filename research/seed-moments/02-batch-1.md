@@ -1,0 +1,42 @@
+# Seed moments, batch 1: 11 cards and the gaps for you to fill
+
+**Received** 2026-09-26 (voice-transcribed). **Drafted** the same day as `brain/data/moments/*.yaml`.
+
+**Where they stand**
+- Nine can already be planned, using GUESS values where a gap is open.
+- **All 11 are `status: draft`.** Real Test B plans use only checked cards (`status: ready`). `python -m brain.testb plans` skips drafts, unless `--include-drafts` is set for a dry run (D72).
+- **Time:** checking them fits inside "check Claude's drafted cards" (2.5 h, Phase 3). About 8 minutes a card, so about 1.5 h for these 11.
+
+**How to read a card**
+- Your words are marked **FOUNDER**.
+- Facts from a source (in `research/sources.csv`) are **CHECKED**.
+- **GUESS** marks Claude's placeholders.
+- The 15 tags are my first draft, per the Area 2 process: I draft, you correct.
+- Notes for the new features wait in each file's header, "for later (after 9 Nov)" (D75).
+
+## Gaps, card by card
+
+| # | Card (file) | What to fill or decide | How long |
+|---|---|---|---|
+| 1 | Into the whale hall (`m_nhm_whale_hall`) | **Which galleries you pass through, in order.** The hall with the blue whale model is the Mammals hall, on the ground floor of the North Wing (NHM, checked). On the museum map, "Human Evolution" is in the East Wing and "Images of Nature" is in the central building. Are those your "evolution and picture galleries"? | 5 min, or on your next visit |
+| 2 | Great Court (`m_bm_great_court`) | **The Reading Room has been closed to the public since 2013** (British Museum site, via search). A search result mentions volunteer-led tours on Tuesdays (UNVERIFIED). Choose one: (a) the Great Court alone, which is what the card has now; (b) a Tuesday-tour variant, if you confirm the tours; (c) another dark-to-bright pairing inside the museum. Also: which Egypt room you walk out of | 5 min |
+| 3 | River by day (`m_uber_boat_west_day`) | Nothing required. The trip runs 58–65 min, and weekday through boats run 10:00–17:05 (weekends 07:55–22:32), from the timetable. **Cost £19.30 assumes the trip is "All Zones"** (the zone map was UNVERIFIED): check the charge the next time you tap in. Fares change after 31 Oct | 2 min |
+| 4 | River at night (`m_uber_boat_west_night`) | **I ended it at Westminster, not Battersea.** It's the only pier the evening boats reach every day. Weekday evening boats stop at London Eye; weekend boats skip London Eye and run on to Battersea until the 22:32 departure. OK, or do you want a weekend-only Battersea version? The "after dark" window (18:30 on) is set for the Test B weeks, and a sunset rule comes later | 2 min |
+| 5 | Open-kitchen dinner (`m_open_kitchen_steakhouse`) | **Which restaurant.** "Meat Bros" is probably **Meet Bros**, 29–31 Craven Road, Paddington (via search); whether it has an open kitchen is UNVERIFIED. Or the Liverpool Street steakhouse: which one? Also your usual spend per person. Not plannable until filled | 5 min |
+| 6 | Canary Wharf towers (`m_canary_wharf_towers`) | Your route among the towers. An optional end point is the Crossrail Place Roof Garden (it's on OpenStreetMap; the idea is mine) | 5 min |
+| 7 | City towers (`m_city_towers_walk`) | Your streets from Bank to Liverpool Street. **Cards 6 and 7 share a variant group**, so a plan holds at most one, because they give the same feeling. OK? | 5 min |
+| 8 | Covent Garden and Soho (`a_covent_garden_soho`) | Nothing required: it's an **area vibe** (centre, flexible 45–90 min, no set route). Favourite streets are optional | — |
+| 9 | Outdoor dining near TCR (`a_tcr_outdoor_dining`) | **Which street(s)**, and your usual spend. Not plannable until the cost is filled | 3 min |
+| 10 | A London park (`a_st_james_park`) | **"Any London park" needs specific parks.** I proposed **St James's Park**: the pelicans have lived on the lake since 1664 and are fed about 14:30 daily (Royal Parks). Want others (Regent's, Hyde, Greenwich)? The spring/summer rule waits until after 9 Nov | 3 min |
+| 11 | Richmond Park (`m_richmond_park_view`) | **Which viewpoint.** I proposed **King Henry's Mound** in Pembroke Lodge Gardens, with a protected view to St Paul's (Royal Parks). Also the walk in from Richmond Gate (GUESS). The card warns people to keep 50 m from the deer | 3 min |
+
+**For every card:** check my draft tags and the GUESS durations and windows, then set `status: ready`. Seed 1 (tube to museum, `m_southken_nhm_reveal`) still waits for your walk.
+
+## What changed in the Brain to hold these (D72)
+
+- **Entry types:** `kind: moment | area`.
+  - An area vibe has a centre point and a flexible duration.
+  - The planner allows **one area a day**, and never reports it as the day's peak.
+- **Variants:** `variant_of` and `variant`. The day and night river trips, and the two tower walks, are each **at most one per plan**.
+- **Direction:** a `direction` note, plus different start and end points (Greenwich → Battersea ends in Battersea's relaxed crowd).
+- **Drafts stay out of real plans** (Test B generator and API). 52 tests pass.

@@ -1,0 +1,40 @@
+# Seed moment, batch 1, #1 (Abram's voice note, 2026-09-26). DRAFT card by Claude.
+# Values: FOUNDER = Abram's words; CHECKED = from a source (research/sources.csv, 2026-09-26);
+# GUESS = Claude's placeholder, replace it. Tags are Claude's first draft (Area 2: the LLM drafts,
+# Abram corrects). GAP = Abram to fill; see research/seed-moments/02-batch-1.md.
+# For later (after 9 Nov, D75): scale 2 ("you feel tiny").
+id: m_nhm_whale_hall
+title: "Into the whale hall"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Natural History Museum: Mammals hall (blue whale model)"
+  lat: 51.49651          # CHECKED: museum building, OpenStreetMap
+  lon: -0.176
+approach:
+  from: "the evolution and picture galleries (GAP: exact galleries and route)"
+  start_point: {lat: 51.49651, lon: -0.176}   # the museum; the walk inside is the approach
+  path: null             # GAP: which galleries you pass through, in order, to enter the hall
+  duration_min: 15       # GUESS: walk through two galleries to the hall
+  step_free: null
+experience:
+  what_happens: "After the smaller galleries you walk into the huge Mammals hall, where a life-size blue whale model hangs with whale skeletons and other sea mammals."   # FOUNDER, place CHECKED
+  why_it_works: "You feel tiny. Loved it many times."   # FOUNDER
+  duration_min: [20, 40] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:50"]   # CHECKED: open daily 10:00-17:50, last entry 17:30
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null     # GAP (optional): when it's quietest, from your visits
+  opening_hours: "Daily 10:00-17:50, last entry 17:30; closed 24-26 Dec. Free (general admission can be booked free in advance). Checked 2026-09-26 (nhm.ac.uk)"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 2}
+cost_gbp: 0              # CHECKED: free entry
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

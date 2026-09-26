@@ -2,6 +2,28 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (night) — seed moments batch 1, agreement split, Apple renewal, after-9-Nov rule
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D72 | **Seed moments batch 1 (11) are drafted as cards**, with gaps flagged (`research/seed-moments/02-batch-1.md`). Three new ideas go in now because the cards need them for Test B: **entry types** (moment vs area vibe; one area a day, never the peak), **variants** (day/night; at most one per plan) and **route direction**. **Draft cards never go into real plans**: Test B and the API use only `status: ready` | — | Founder request. The rest of the new features wait (D75); `decisions/new-moment-features.md` |
+| D73 | **The contributors agreement is split.** (a) **Part A**, IP assignment, confidentiality and the personal-data clause, is **signed now, as a deed**. (b) **Part B**, the equity terms, gets a solicitor review before incorporation. **No fixed hours:** contributions are voluntary and flexible (`legal/contributor-deed-part-a.md`, `legal/contributor-equity-terms-part-b-draft.md`) | D70d's single agreement | Founder decision. It's a deed because Part A gives nothing in return (see its notes) |
+| D74 | **Apple Developer membership:** Abram checks its status. **Renew only if Test B passes.** The GitHub secrets (0.75 h) need an active membership, so if it has lapsed they move after Test B. **Auto-renew must be off**: Apple charges the card on the expiry date when it's on (Apple help, 2026-09-26) | D70e's timing for the secrets | Founder decision (money) |
+| D75 | **New rule:** any new idea that doesn't help Test B goes on `decisions/after-9-nov.md` instead of into the current plan. Added to `CLAUDE.md` as working rule 9 | — | Founder decision |
+| D76 | **The swipe page's privacy note is approved.** Abram deploys on Render with **no payment method** and shares the link | For Abram item 1 (D69–D71) | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m9 | The night river card ends at **Westminster**, the only pier reached every evening (checked on the timetables). The day card runs to Battersea | `m_uber_boat_west_night.yaml` |
+| m10 | The two tower walks (Canary Wharf, City) share a variant group: at most one per plan | the two cards |
+| m11 | "Any London park" is drafted as **St James's Park** (pelicans, checked); Richmond's viewpoint as **King Henry's Mound** (checked). Both are for Abram to confirm | the two cards |
+| m12 | Coordinates come from OpenStreetMap (Nominatim), one request a second. Two are approximate points near the stations (Canary Wharf, Bank) | cards; `research/sources.csv` |
+| m13 | `--include-drafts` gives a dry run with draft cards; the output says "DRY RUN" | `brain/src/brain/testb.py` |
+
+**For Abram (scope):** **aspiration match** is the one new weight that could help Test B. It needs one optional Test A question (≈ 0.5 h of your time). Yes, or on the after-9-Nov list? (`decisions/new-moment-features.md`)
+
 ## 2026-09-26 (evening) — standing rule, Test E kit, swipe page, agreement, iOS pipeline
 
 | # | Decision | Replaces | Why |

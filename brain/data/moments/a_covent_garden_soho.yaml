@@ -1,0 +1,38 @@
+# Seed, batch 1, #8 (Abram's voice note, 2026-09-26): an AREA VIBE, not a single moment (kind: area).
+# DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml. Areas have a centre instead of an approach path,
+# and the planner allows one area a day (D72).
+id: a_covent_garden_soho
+title: "A wander through Covent Garden and Soho"
+status: draft
+swipe: false
+kind: area
+place:
+  name: "Covent Garden and Soho"
+  lat: 51.51201          # CHECKED: Covent Garden Piazza, OpenStreetMap
+  lon: -0.12181
+approach:
+  from: "Covent Garden Piazza"
+  start_point: {lat: 51.51201, lon: -0.12181}
+  path: "No set route: wander from the Piazza towards Soho"
+  duration_min: 0
+  step_free: null
+experience:
+  what_happens: "An unplanned wander through Covent Garden's streets into Soho."   # FOUNDER
+  why_it_works: "Not one moment: the feeling of being in London."   # FOUNDER
+  duration_min: [45, 90] # GUESS
+  end_point: {lat: 51.51497, lon: -0.1326}      # CHECKED: Soho Square, OSM (a GUESS as the end)
+best_time:
+  time_of_day: ["11:00-22:00"]   # GUESS
+  light: null
+  weather: ["dry"]       # GUESS: a wander is worse in the rain
+  company: null
+  crowd_window: null
+  opening_hours: "Public streets"
+features:
+  place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: 0              # spending is optional
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

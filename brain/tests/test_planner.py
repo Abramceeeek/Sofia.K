@@ -86,3 +86,25 @@ def test_heat_changes_the_plan_inputs(pop, test_moments):
     u_mild = {c.moment_id: c.utility for c in mild}
     assert u_hot["t_park"] < u_mild["t_park"]
     assert u_hot["t_museum"] == u_mild["t_museum"]
+
+
+def test_variants_of_one_moment_are_never_planned_together(pop, test_moments):
+    from dataclasses import replace
+    cands = candidates(pop, test_moments, util={m.id: 1.0 for m in test_moments})
+    free = plan_day(cands, START, 9 * 60, 21 * 60, WalkingEstimate(), LEGS, max_stops=6, time_limit_s=0.5)
+    both = [s.moment_id for s in free.stops][:2]
+    assert len(both) == 2, "control: without a group, both stops fit"
+    grouped = [replace(c, group="boat") if c.moment_id in both else c for c in cands]
+    plan = plan_day(grouped, START, 9 * 60, 21 * 60, WalkingEstimate(), LEGS, max_stops=6, time_limit_s=0.5)
+    assert len(set(both) & {s.moment_id for s in plan.stops}) <= 1
+
+
+def test_one_area_vibe_a_day_and_never_the_peak(pop, test_moments):
+    from dataclasses import replace
+    cands = candidates(pop, test_moments, util={m.id: 0.5 for m in test_moments})
+    areas = {cands[0].moment_id, cands[1].moment_id}
+    cands = [replace(c, kind="area", utility=2.0) if c.moment_id in areas else c for c in cands]
+    plan = plan_day(cands, START, 9 * 60, 21 * 60, WalkingEstimate(), LEGS, max_stops=6, time_limit_s=0.5)
+    planned = {s.moment_id for s in plan.stops}
+    assert len(planned & areas) == 1
+    assert plan.peak_moment_id not in areas

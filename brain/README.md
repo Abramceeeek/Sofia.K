@@ -2,14 +2,14 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
-**Status:** first draft, written 2026-09-26. The 49 tests pass on Python 3.12. Nothing is deployed. **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
+**Status:** first draft, written 2026-09-26. The 52 tests pass on Python 3.12. Nothing is deployed. **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
 
 ## Run it
 
 ```bash
 cd brain
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev]"
-.venv/bin/python -m pytest -q                       # 49 tests
+.venv/bin/python -m pytest -q                       # 52 tests
 BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --reload
 # API docs: http://127.0.0.1:8000/docs
 ```
@@ -27,7 +27,7 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 
 | File | What it does |
 |---|---|
-| `data/moments/*.yaml` | **The moment database source.** One file per moment, in the Area 2 schema. Seed moment 1 is here as a **draft**: its gaps are `null`, and the planner skips it until they're filled |
+| `data/moments/*.yaml` | **The moment database source.** One file per moment, in the Area 2 schema. Seed moment 1 and **seed batch 1 (11 cards, D72)** are here as **drafts**. **Only `status: ready` cards go into real plans**; `testb plans --include-drafts` is a dry run. `kind: area` marks an area vibe (one a day, never the peak), and `variant_of` groups variants (at most one per plan) |
 | `data/priors.yaml` | **b_population and the prior on δ_person**, with named features and labels. All GUESS except the conjoint priors (`validation/conjoint/README.md`). Replace them with the pooled refit from Phase 3 data |
 | `data/onboarding.yaml` | Onboarding copy served to the app (from the Test A script) |
 | `data/swipe_items.yaml` | **The 16 Test A swipe items with DRAFT tags** (Claude's first draft; you confirm the places and the tags). Keyed by the Swipes tab's "Item #" |

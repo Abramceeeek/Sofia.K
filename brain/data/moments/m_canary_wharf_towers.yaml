@@ -1,0 +1,40 @@
+# Seed moment, batch 1, #6 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
+# Shares variant_of with m_city_towers_walk: both give the same "towers" feeling, so a plan holds at most one.
+# For later (after 9 Nov, D75): aspiration match (finance, tech) 2; crowd energy (driven, work).
+id: m_canary_wharf_towers
+title: "Among the Canary Wharf towers"
+status: draft
+swipe: false
+kind: moment
+variant_of: towers_aspiration
+variant: canary_wharf
+place:
+  name: "Canary Wharf: around Canada Square"
+  lat: 51.50477          # CHECKED: Canada Square Park, OpenStreetMap
+  lon: -0.01794
+approach:
+  from: "Canary Wharf station"
+  start_point: {lat: 51.50282, lon: -0.01988}   # CHECKED (approx.): OSM "Canary Wharf Station" stop on Bank Street; confirm the exit
+  path: null             # GAP: your route among the towers (optional ending: Crossrail Place Roof Garden, 51.5061, -0.0176, OSM)
+  duration_min: 3        # GUESS
+  step_free: null
+experience:
+  what_happens: "A walk between the glass towers around Canada Square, with the weekday crowd heading in and out of work."   # FOUNDER
+  why_it_works: "A New York feeling. Inspiring if you're into finance or tech: something important is happening here."   # FOUNDER
+  duration_min: [20, 40] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["08:00-19:00"]   # GUESS; weekdays for the work energy (the planner can't pick weekdays yet)
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekdays, when the offices are full"   # GUESS from FOUNDER's "work energy"
+  opening_hours: "Public streets; always open"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

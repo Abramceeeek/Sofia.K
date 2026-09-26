@@ -34,7 +34,7 @@ from .config import DATA_DIR
 from .features import Conditions, conjoint_plan_features, moment_features
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior
-from .planner import Candidate, DayPlan, LegWeights, hhmm, parse_hhmm, plan_day
+from .planner import DayPlan, LegWeights, candidate_for, hhmm, parse_hhmm, plan_day
 from .population import PopulationModel, load_population
 from .scoring import conjoint_observation, contributions, named_weights, swipe_observation, update_person
 from .travel import LondonEstimate
@@ -163,9 +163,7 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     if brief.rain_prob is not None and brief.rain_prob >= 0.5:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
     by_id = {m.id: m for m in usable}
-    cands = [Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows()),
-                       float(pop.vector(moment_features(m, cond)) @ b), float(m.cost_gbp or 0.0))
-             for m in usable]
+    cands = [candidate_for(m, float(pop.vector(moment_features(m, cond)) @ b)) for m in usable]
     idx = {n: i for i, n in enumerate(pop.names)}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
     plan = plan_day(cands, brief.start, parse_hhmm(brief.start_time), parse_hhmm(brief.end_time), travel, legs,
@@ -320,6 +318,16 @@ def cmd_weights(args) -> int:
 
 def cmd_plans(args) -> int:
     pop, items, tasks, moments = _load_common(Path(args.data))
+    # Test B plans go to real people, so only cards Abram has checked (status: ready) are used, unless
+    # --include-drafts is given for a dry run. Drafts can hold Claude's GUESS values (D72).
+    drafts_skipped = [m.id for m in moments if m.status != "ready" and m.plannable()]
+    if not args.include_drafts:
+        moments = [m for m in moments if m.status == "ready"]
+        if drafts_skipped:
+            print(f"Skipping {len(drafts_skipped)} draft moments (set status: ready once checked, "
+                  f"or use --include-drafts for a dry run): {', '.join(drafts_skipped)}", file=sys.stderr)
+    elif drafts_skipped:
+        print(f"DRY RUN: using {len(drafts_skipped)} unchecked draft moments. Don't send these plans.", file=sys.stderr)
     plannable = [m for m in moments if m.plannable()]
     brief = load_brief(Path(args.brief))
     if len(plannable) < brief.stops:
@@ -380,6 +388,8 @@ def main(argv: list[str] | None = None) -> int:
     pl.add_argument("--out", required=True)
     pl.add_argument("--ids", type=lambda s: set(s.split(",")))
     pl.add_argument("--no-pdf", action="store_true")
+    pl.add_argument("--include-drafts", action="store_true",
+                    help="dry run: also plan with draft moments (unchecked GUESS values); never send these")
     args = ap.parse_args(argv)
     return {"weights": cmd_weights, "plans": cmd_plans}[args.cmd](args)
 

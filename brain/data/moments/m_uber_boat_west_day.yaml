@@ -1,0 +1,47 @@
+# Seed moment, batch 1, #3 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
+# Day variant of the Greenwich river trip; the night variant is m_uber_boat_west_night (same variant_of,
+# so a plan holds at most one of them).
+# For later (after 9 Nov, D75): crowd energy at the end (relaxed, leisure) vs Canary Wharf (driven, work).
+id: m_uber_boat_west_day
+title: "Up the river from Greenwich to Battersea, by day"
+status: draft
+swipe: false
+kind: moment
+variant_of: uber_boat_greenwich_west
+variant: day
+direction: "Greenwich -> Battersea Power Station (westbound). The order matters: it ends in Battersea's relaxed crowd."
+place:
+  name: "Uber Boat by Thames Clippers, Greenwich Pier to Battersea Power Station Pier"
+  lat: 51.48406          # CHECKED: Greenwich Pier, OpenStreetMap
+  lon: -0.00941
+approach:
+  from: "Greenwich town centre / Cutty Sark DLR"
+  start_point: {lat: 51.48406, lon: -0.00941}
+  path: "To Greenwich Pier; tap in with contactless at the reader by the boarding ramp"   # CHECKED: contactless touch-in at piers
+  duration_min: 5        # GUESS: time at the pier before boarding
+  step_free: null
+experience:
+  what_happens: "You pull away from Greenwich with the Old Royal Naval College behind you, then pass Canary Wharf, Tower Bridge, the City, Parliament and the London Eye in about an hour, and get off at Battersea Power Station."   # FOUNDER, route CHECKED
+  why_it_works: "Green, colour and buildings, and the major landmarks in a short time. At Battersea: relaxed, well-dressed people enjoying life, a contrast with Canary Wharf's work energy."   # FOUNDER
+  duration_min: 62       # CHECKED: through boats take 58-65 min (weekday westbound timetable)
+  end_point: {lat: 51.48392, lon: -0.14595}   # CHECKED: Battersea Power Station Pier, OpenStreetMap
+best_time:
+  # CHECKED (thamesclippers.com timetables, 2026-09-26): through boats Greenwich -> Battersea Power Station
+  # run on weekdays from 10:00 to 17:05 (25 a day; earlier ones at 06:08-07:08); at weekends from 07:55
+  # to 22:32 (44 a day). Later weekday boats end at London Eye.
+  time_of_day: ["10:00-18:10"]
+  light: "Daylight"
+  weather: ["any"]       # GUESS: the cabin is covered; clear days are better for the view
+  company: null
+  crowd_window: null
+  opening_hours: "RB1/RB6 river bus, daily; see best_time. Checked 2026-09-26"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 1, iconic: 2, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 2}
+# CHECKED: contactless adult single, "All Zones", fares from March 2026 (valid to 31 Oct 2026; new fares after).
+# UNVERIFIED: that Greenwich (East) to Battersea (West) is charged as All Zones; the zone map wasn't on the pages read.
+cost_gbp: 19.30
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

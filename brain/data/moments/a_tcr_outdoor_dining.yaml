@@ -1,0 +1,38 @@
+# Seed, batch 1, #9 (Abram's voice note, 2026-09-26): an AREA VIBE (kind: area). DRAFT card by Claude.
+# GAP: which street(s) near Tottenham Court Road, and your usual spend. The planner skips it until the cost
+# is filled. The start point is the station for now.
+id: a_tcr_outdoor_dining
+title: "Eating outside near Tottenham Court Road"
+status: draft
+swipe: false
+kind: area
+place:
+  name: "Outdoor dining near Tottenham Court Road (GAP: which street)"
+  lat: 51.51553          # CHECKED: Tottenham Court Road Station, OSM (placeholder until the street is named)
+  lon: -0.12833
+approach:
+  from: "Tottenham Court Road station"
+  start_point: {lat: 51.51553, lon: -0.12833}
+  path: null             # GAP
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "A meal at an outside table near Tottenham Court Road, watching the street go by."   # FOUNDER
+  why_it_works: "Sitting outside and watching the street."   # FOUNDER
+  duration_min: [60, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["12:00-22:00"]   # GUESS
+  light: null
+  weather: ["dry"]
+  company: null
+  crowd_window: null
+  opening_hours: null
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 2}
+cost_gbp: null           # GAP: your usual spend per person
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

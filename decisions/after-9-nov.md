@@ -1,0 +1,15 @@
+# After 9 Nov: ideas parked until Checkpoint 3 (D75)
+
+**Rule (D75):** any new idea that doesn't help Test B goes on this list instead of into the current plan. The list is reviewed at Checkpoint 3 (week of 9 Nov). Hours are GUESSES and cover both founder and Claude work, as marked.
+
+| # | Idea | Added | From | Rough cost | Note |
+|---|---|---|---|---|---|
+| 1 | **Scale** tag ("feeling small"), separate from awe | 2026-09-26 | Seed batch 1 | ~0.25 h founder (tag checks) | Tag some moments where scale and awe differ, or the two weights can't be told apart (`new-moment-features.md`) |
+| 2 | **Colour/light contrast**: `contrast_kind` inside a moment; a between-stops light-change bonus | 2026-09-26 | Seed batch 1 | ~0.5 h founder | The between-stops bonus is a planner arc term |
+| 3 | **Crowd energy** (relaxed ↔ driven), scored on the place's pace, never on people | 2026-09-26 | Seed batch 1 | ~0.25 h founder | Possibly a conjoint attribute in a later design |
+| 4 | **Process watching** tag | 2026-09-26 | Seed batch 1 | ~0.25 h founder | |
+| 5 | **Aspiration match** (only if you don't approve it for Test B) | 2026-09-26 | Seed batch 1 | ~0.5 h founder | See `new-moment-features.md` |
+| 6 | **Season and sunset rules** for time variants (night = after dark, whatever the month; parks in spring and summer) | 2026-09-26 | Cards 4 and 10 | Claude; ~0.25 h founder | The night boat's window is set for the Test B weeks only |
+| 7 | **Weekday and weekend windows** (weekday-only through boats; weekday work energy in the towers) | 2026-09-26 | Cards 3, 6 and 7 | Claude | The planner has no day of the week yet |
+| 8 | **Chained moments**: tube → museum front (seed 1) → whale hall (card 1) as one sequence | 2026-09-26 | Cards 1 and seed 1 | Claude | Today they are two separate cards |
+| 9 | **A wildlife or "safari" tag** (Richmond deer, the St James's pelicans) | 2026-09-26 | Cards 10 and 11 | ~0.25 h founder | Could fold into `green_nature` instead |

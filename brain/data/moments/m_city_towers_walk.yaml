@@ -1,0 +1,41 @@
+# Seed moment, batch 1, #7 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
+# Same variant_of as m_canary_wharf_towers (the same feeling in the City): at most one per plan.
+# For later (after 9 Nov, D75): aspiration match (finance) 2; crowd energy (driven).
+id: m_city_towers_walk
+title: "Through the City towers, Bank to Liverpool Street"
+status: draft
+swipe: false
+kind: moment
+variant_of: towers_aspiration
+variant: city
+direction: "Bank -> Liverpool Street"
+place:
+  name: "City of London towers between Bank and Liverpool Street"
+  lat: 51.51381          # CHECKED: The Leadenhall Building, OpenStreetMap
+  lon: -0.08229
+approach:
+  from: "Bank station"
+  start_point: {lat: 51.5133, lon: -0.08975}   # CHECKED (approx.): a point on Walbrook by Bank station, OSM; confirm the exit
+  path: null             # GAP: your streets between the towers (e.g. past the Leadenhall Building; to confirm)
+  duration_min: 2        # GUESS
+  step_free: null
+experience:
+  what_happens: "A walk from Bank through the towers of the City to Liverpool Street, among people heading to work."   # FOUNDER
+  why_it_works: "The same aspiration feeling as Canary Wharf, in the City."   # FOUNDER
+  duration_min: [20, 35] # GUESS
+  end_point: {lat: 51.51802, lon: -0.0828}      # CHECKED: Liverpool Street Station, OSM
+best_time:
+  time_of_day: ["08:00-19:00"]   # GUESS; weekdays for the energy
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekdays, when the offices are full"   # GUESS
+  opening_hours: "Public streets; always open"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: founder
+last_checked: "2026-09-26"

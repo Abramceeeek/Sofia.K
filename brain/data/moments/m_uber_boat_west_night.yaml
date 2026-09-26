@@ -1,0 +1,50 @@
+# Seed moment, batch 1, #4 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
+# Night variant of the same trip (same variant_of as m_uber_boat_west_day: at most one per plan).
+# FLAG: it ends at Westminster, not Battersea. Westminster is the only pier the evening boats reach every day:
+# weekday evening boats end at London Eye, and weekend boats don't call there but continue to Battersea
+# until the 22:32 departure. Confirm, or ask for a weekend-only Battersea version.
+# For later (after 9 Nov, D75): time variants by season (sunset); light and colour.
+id: m_uber_boat_west_night
+title: "The river at night, from Greenwich to Westminster"
+status: draft
+swipe: false
+kind: moment
+variant_of: uber_boat_greenwich_west
+variant: night
+direction: "Greenwich -> Westminster (westbound)"
+place:
+  name: "Uber Boat by Thames Clippers, Greenwich Pier to Westminster Pier"
+  lat: 51.48406
+  lon: -0.00941
+approach:
+  from: "Greenwich town centre / Cutty Sark DLR"
+  start_point: {lat: 51.48406, lon: -0.00941}
+  path: "To Greenwich Pier; tap in with contactless at the reader by the boarding ramp"
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "The same river trip after dark: the buildings along the Thames are lit up, from Canary Wharf and Tower Bridge to Parliament."   # FOUNDER
+  why_it_works: "A different moment from the day trip: the building lighting."   # FOUNDER
+  duration_min: 48       # CHECKED: evening boats Greenwich -> Westminster take 46-51 min
+  end_point: {lat: 51.50225, lon: -0.12317}   # CHECKED: Westminster Pier, OpenStreetMap
+best_time:
+  # CHECKED (timetables, 2026-09-26): evening boats reach Westminster every day; last departures from
+  # Greenwich 21:55 on weekdays (arrive 22:41) and 22:32 at weekends (arrive 23:19).
+  # GUESS: "after dark" starts about 18:30 in late October (clocks go back 25 Oct). The planner has no
+  # sunset rule yet, so this window is set for the Test B weeks (Oct-Nov) only.
+  time_of_day: ["18:30-23:20"]
+  light: "After dark"
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "RB1 river bus, daily; see best_time. Checked 2026-09-26"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+# CHECKED: contactless adult single, "Central & East", fares from March 2026 (valid to 31 Oct 2026).
+# UNVERIFIED: that Greenwich -> Westminster is Central & East.
+cost_gbp: 11.40
+shot_card: null
+source: founder
+last_checked: "2026-09-26"
