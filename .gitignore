@@ -1,0 +1,24 @@
+# Participant data and raw recordings never go in git (see validation consent form)
+validation/raw/
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.oga
+*.opus
+*.webm
+*.mp4
+*.mov
+
+# Secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Office lock files
+~$*
