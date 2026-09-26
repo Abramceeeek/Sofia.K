@@ -6,7 +6,7 @@
   - DfT walk/wait/transfer weights (prior for transfer penalties);
   - one trip-framed question on recovery need.
 - **Moment tags:** contrast/reveal, awe, absorption, green/nature.
-- **Planner objective:** the **sum of predicted moment satisfaction**. The end-bonus toggle (D8) stays **off by default** until our own ratings show an end effect. The evidence for peak–end in complex, multi-part experiences is weak.
+- **Planner objective:** the **sum of predicted moment satisfaction**. The end-bonus toggle (D8) stays **off by default** (decided, D15) until our own ratings show an end effect. The evidence for peak–end in complex, multi-part experiences is weak.
 - **Cost: about 0.5 extra hours.** The UTCI calculation already sits inside Area 4's weather step.
 
 ## Candidate variables

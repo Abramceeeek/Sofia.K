@@ -2,6 +2,15 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (third round) — Hours, peak–end, photos
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D14 | **Shot cards only for the ~20 swipe and peak moments.** Keep LLM-written explanations. **Accept a Phase 4 estimate of about 36 hours** | Shot cards for all 50 moments; 35-hour budget | Option (a) from LOG.md |
+| D15 | **Peak–end end-of-day bonus is off by default.** The planner maximises the sum of predicted moment satisfaction, and our ratings will test whether the bonus should be switched on | D8 left the default open | Area 6: peak–end is weak for multi-part experiences (Kemp et al. 2008; Strijbosch et al. 2019) |
+| D16 | **Photo pairs dropped from the model and from Test A.** Instead, Test A adds two 1–5 questions: "How much do photos and sharing matter on your trips?" and "Would a shot card make you more likely to visit this moment?" | Onboarding layer (a), camera taste | Area 5: 10 examples add only +0.006 ρ over a generic model |
+| D17 | **Review schedule.** Abram reviews the 15 moment features in the week of 28 Sep. The Areas 5–7 review moves to the week of 5 Oct | LOG.md weekly plan | Keeps weekly hours near 7.5 |
+
 ## 2026-09-26 (second round) — Moments, Python, place database
 
 | # | Decision | Replaces | Why |
@@ -36,3 +45,5 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | Asked for a second plan within 2 weeks | ≥ 30% |
 | Landing page visit → sign-up | ≥ 10% |
 | Sign-ups choosing the priced option | ≥ 20% (confirmed, D2) |
+
+Descriptive Test A measures with no pass threshold (D16): "How much do photos and sharing matter on your trips?" (1–5), and "Would a shot card make you more likely to visit this moment?" (1–5).

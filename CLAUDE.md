@@ -46,12 +46,12 @@ Satisfaction (per stop and per trip) is the dependent variable:
 - **Person-specific βs.** Hierarchical model: each new user starts at the mean of similar users and shrinks toward their own weights as data arrives. This is why short onboarding can work.
 - **Nonlinear effects.** Thresholds, not lines (15-min transfer ≈ fine, 50-min ruins the afternoon; heat fine until a threshold, then steep penalty).
 - **Interactions matter most.** Rain × outdoor, heat × walking, fatigue × time of day.
-- **Peak–end.** Trips are remembered by their best moment and their ending, not the average. The planner guarantees one strong peak and a good finish.
+- **Peak–end.** Trips are remembered by their best moment and their ending, not the average. The planner guarantees one strong peak and a good finish. *Amended (D15): the evidence is weak for multi-part experiences, so the end bonus is a toggle that is **off by default**, and per-moment ratings will test it.*
 - **Explainability.** Named weights let the app explain choices ("We swapped the walk for the boat because heat and long transfers affect you most").
 
 ## Onboarding: layers of understanding
 
-**a) Camera taste** — user picks ~10 own photos, then 8–10 pairwise "which do you prefer?" choices. Image embeddings (CLIP/SigLIP/DINOv2) + simple centroid or linear probe. Kept **separate** from experience taste (people photograph landmarks they don't enjoy).
+**a) Camera taste** — user picks ~10 own photos, then 8–10 pairwise "which do you prefer?" choices. Image embeddings (CLIP/SigLIP/DINOv2) + simple centroid or linear probe. Kept **separate** from experience taste (people photograph landmarks they don't enjoy). *Amended (D16): dropped from the v0 model and from Test A, because 10 examples barely beat a generic model (Area 5). Test A asks instead how much photos and sharing matter (1–5) and whether a shot card would make a moment more appealing (1–5).*
 
 **b) Places already visited (revealed preference)** — for a city they know, swipe 15–20 places: Loved it / It was fine / Didn't enjoy it / Haven't been. Visiting alone means little (everyone visits Big Ben); the reaction is the data. Each place tagged with attributes (e.g. Big Ben: history, iconic, crowded, passive; Uber Boat: movement, views, relaxed; Borough Market: food, busy, local). Use places that **split** people (British Museum vs cable car; Hyde Park vs Camden). Friendly persona label on the result screen, continuous scores underneath.
 

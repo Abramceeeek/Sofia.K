@@ -1,7 +1,7 @@
 # Area 5 — Photo taste
 
 **Decision:**
-- **Not in v0** (D6).
+- **Not in v0** (D6). **Photo pairs are also dropped from Test A** (D16). Test A instead asks how much photos and sharing matter (1–5) and whether a shot card would make a moment more appealing (1–5).
 - **For v1, a centroid or linear probe fitted on ~10 of a user's photos is *not* enough.** On benchmark data, a model fitted directly on 10 of a user's images did worse than a generic aesthetic model. Use a **generic aesthetic score plus a small personal offset shrunk towards zero**: a residual model, the same hierarchical logic as Area 3.
 - **In v0, image models are only useful for tagging `photo_potential` on moments**, not for personal taste.
 - **v1 cost: about 4 hours** (embeddings, generic score, pairwise personal offset). Optional v0 photo_potential check: about 1 hour.
@@ -35,6 +35,6 @@
 
 ## Risks / unknowns
 
-- **User effort vs payoff.** Picking 10 photos plus 8–10 pairwise choices is real work for about +0.006 ρ at k=10. Consider dropping the optional photo pairs from Test A (Abram's call).
+- **User effort vs payoff.** Picking 10 photos plus 8–10 pairwise choices is real work for about +0.006 ρ at k=10. Photo pairs have now been dropped from Test A (D16).
 - **Privacy.** Personal photos can contain faces. Embed and discard: store no images, and never run face recognition. This is also relevant to Area 12.
 - **The LAION predictor is stale (2023)** and trained on AVA/SAC. Its sense of "beautiful" may not fit London street moments.

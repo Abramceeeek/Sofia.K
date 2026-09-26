@@ -1,12 +1,12 @@
 # Area 2 — Place and experience preferences (moments)
 
 **Decision:**
-- **The unit is a moment (decision D9).** A moment is a place + how you approach it + when to be there + features + a shot card. Abram **hand-picks 50 moments** (D11), starting from 5 seed moments of his own. An LLM drafts the rest of each card and Abram corrects it.
+- **The unit is a moment (decision D9).** A moment is a place + how you approach it + when to be there + features, plus a shot card for the ~20 swipe and peak moments only (D14). Abram **hand-picks 50 moments** (D11), starting from 5 seed moments of his own. An LLM drafts the rest of each card and Abram corrects it.
 - **Place coordinates and IDs** come from **Overture Places**, looked up per moment. There is no bulk pull.
 - **Features:** 11 place attributes plus **4 moment features** (contrast/reveal, absorption, awe, social pull), each scored 0–2, plus cost in £. Feeling-per-pound is computed by the model, not tagged.
 - **Swipe layer:** an ordinal regression on those features with a hierarchical prior (Area 3). The 15–20 swipe moments must be familiar, polarising and spread across features.
 - **Google Places:** spot-checks only, because it can't be stored. RecBole and check-in datasets are skipped.
-- **Cost: about 6.5 founder hours.** Schema 1, seed-moment session 1, LLM-drafted cards and review for 45 more 3.5, swipe-set selection 1.
+- **Cost: about 5 founder hours.** Schema 1, seed-moment session 1, LLM-drafted cards and review for 45 more 2 (shot cards for ~20 only, D14), swipe-set selection 1.
 
 ## The moment schema (v0)
 

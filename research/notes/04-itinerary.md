@@ -4,7 +4,7 @@
 - **Solver:** use **OR-Tools** routing as an orienteering problem with time windows. Each candidate place is an optional stop worth its predicted satisfaction (Areas 2 and 3), and opening hours are time windows.
 - **Travel times:** precompute them for the 50 London places in v0 (cut from 100 on 2026-09-26). Walking comes from OSRM or openrouteservice, transit from the TfL Journey Planner, and the results are cached.
 - **Weather:** Met Office DataHub free tier.
-- **Peak and finish:** get "one peak and a good finish" by solving once for each candidate final stop (5–10 small solves) and keeping the best plan. It is a toggle (decided 2026-09-26), so it can be switched off if our ratings don't support it.
+- **Peak and finish:** get "one peak and a good finish" by solving once for each candidate final stop (5–10 small solves) and keeping the best plan. It is a toggle (D8), and it is **off by default** (D15): the default objective is the sum of predicted moment satisfaction.
 - **LLM:** it only writes the explanation from the solver's output. It never chooses stops.
 - **Cost: about 11 founder hours for v0.** That breaks down as matrices 2, solver model 4, peak/finish toggle and weather rules 2, tests 2, explanation prompt 1.
 
