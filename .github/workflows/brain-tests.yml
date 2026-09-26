@@ -1,0 +1,32 @@
+# Backend (Brain) tests on Linux (D64). Runs only when the Brain, or the validation files its
+# tests read, change. The iOS build workflow comes later, once Test B reports (D65).
+name: brain-tests
+
+on:
+  push:
+    paths:
+      - "brain/**"
+      - "validation/results-sheet.xlsx"
+      - "validation/conjoint/design.csv"
+      - ".github/workflows/brain-tests.yml"
+  pull_request:
+    paths:
+      - "brain/**"
+      - "validation/results-sheet.xlsx"
+      - "validation/conjoint/design.csv"
+      - ".github/workflows/brain-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: brain
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - run: python -m pytest -q
