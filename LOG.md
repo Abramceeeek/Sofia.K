@@ -1,6 +1,6 @@
 # LOG
 
-These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude fills in the estimates. The founder fills in actuals.
+These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude fills in the estimates. **Actuals (D82): Claude fills the Actual column when Abram reports hours spent. None reported yet (26 Sep).**
 
 ## Phase status
 
@@ -10,9 +10,9 @@ These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude
 | 2 Unit economics | 1 wk | 5 | 5 | | **Approved** at Checkpoint 2 (2026-09-26). K-factor and payment-channel tabs added (D23, D24). **Economics paused (D52):** the 3 h of workbook review are deferred |
 | 1b Light scans, Areas 13–20 | — | — | 3.75 | | Areas 13–17 (D22), Area 18 trip payments (D34), Area 19 automation (D44), Area 20 Uzbek B2B payments (D49). Design now, build after Phase 3 |
 | 3 Validation | 2–3 wks | 15 | ≈ 28.5 | | **Test E runs first** (D36), with a call guide and a message version (D70b), then the decision note (D40). **The 16 swipe places come from an anonymous swipe page (D70c, +0.75 h).** **Aspiration match: one optional Test A question (D77, +0.5 h).** **Tests A–C run by hand (D63)**: Test A on WhatsApp Business (D66). **Test B runs first and fast (D68):** the Brain writes each person's plans 1–3 days after their chat (D65), and Test B reports about the week of 2 Nov. ~25 moments are pulled forward from Phase 4 for this (+3.5 h). Thresholds on strangers only (D43). **Checkpoint 3 in the week of 9 Nov** |
-| 4 Prototype v0 | 4–5 wks | 35 | ≈ 53 | | **Native iOS app (D50), cuts accepted (D59): the Face ≈ 34, and what's left of the Brain ≈ 19** (3.5 h of moments moved to Phase 3). **The Brain is being built now (D65); the iOS app code waits until Test B reports** (about 2 Nov). The GitHub Actions pipeline and a placeholder app exist now (D70e). First external TestFlight build about the week of 30 Nov if Test B passes |
+| 4 Prototype v0 | 4–5 wks | 35 | ≈ 57 | | **Native iOS app (D50), cuts accepted (D59): the Face ≈ 38 (Abram's own design 7 h replaces the designer's 3 h, D81), and what's left of the Brain ≈ 19** (3.5 h of moments moved to Phase 3). **The Brain is being built now (D65); the iOS app code waits until Test B reports** (about 2 Nov). The GitHub Actions pipeline and a placeholder app exist now (D70e). First external TestFlight build about the week of 30 Nov if Test B passes |
 | 5 Test v0 and decide | 2 wks | 10 | 10 | — | Not started |
-| **Total** | **11–14 wks** | **80** | **≈ 119.0** | | ≈ 116.0 h in the window with the 3 h of workbook review paused (D52). **Of that, 5 h (Areas 1–3 review) is parked after 9 Nov (D80), so 111 h is scheduled: 14.8 weeks, about 0.8 weeks past the 14-week window** (1.3 accepted, D67). Scheduling the parked 5 h puts it back to 15.5 weeks. App Store submission (≈ 3 h) comes after Phase 5, the D53 gate and the company account (D61) |
+| **Total** | **11–14 wks** | **80** | **≈ 123.0** | | ≈ 120.0 h in the window with the 3 h of workbook review paused (D52). **Of that, 5 h (Areas 1–3 review) is parked after 9 Nov (D80), so 115 h is scheduled: 15.3 weeks, about 1.3 weeks past the 14-week window** (1.3 accepted, D67; +4 h for Abram's own design, D81). Scheduling the parked 5 h adds about 0.7 weeks. App Store submission (≈ 3 h) comes after Phase 5, the D53 gate and the company account (D61) |
 
 ## Phase 1 areas
 
@@ -70,12 +70,12 @@ Plan in `validation/README.md`. **Test E runs first** (D36). **Tests A–C run b
 
 | Item | Est. (hrs) | Week |
 |---|---|---|
-| Confirm the 6 conjoint attributes; check the 30 swipe candidates and their draft tags (D30, D48, D70c) | 0.5 | 28 Sep |
-| **Swipe page:** deploy it (Render Blueprint, £0), try it once, share the link (D70c) | 0.75 | 28 Sep |
+| Confirm the 6 conjoint attributes; check the 30 swipe candidates and their draft tags (D30, D48, D70c) | 0.5 | 26 Sep – 1 Oct (D82) |
+| **Swipe page:** deploy it (Render Blueprint, £0), try it once, share the link (D70c) | 0.75 | 26 Sep – 1 Oct (D82) |
 | **Swipe page:** pick the 16 from `/results`, download the answers (D70c) | 0.5 | 12 Oct |
 | **Aspiration question** (Test A 5.7): check the wording and field map; add 2 art & design cards or drop the option (D77) | 0.5 | 12 Oct |
 | Seed moment 1 walk: fill the gaps, photo, finish the example shot card (D35) | 0.5 | 28 Sep |
-| **Test E:** recruit 5 B2B contacts (3 London, 2 Uzbek outbound agencies, D49; log minutes) | 1.25 | 28 Sep (D80) |
+| **Test E:** recruit 5 B2B contacts (3 London, 2 Uzbek outbound agencies, D49; log minutes) | 1.25 | 26 Sep – 1 Oct (D82) |
 | **Test E:** 5 discovery interviews with prep and notes | 3.75 | 5 Oct (2), 12 Oct (3) (D80) |
 | **Test E:** check the translated script for Uzbek interviews, if needed | 0.25 | 12 Oct |
 | **Decision note:** B2B-first vs consumer-first (D40) | 1.0 | 12 Oct |
@@ -98,7 +98,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 
 | Component | Est. (hrs, left) | Status 2026-09-26 |
 |---|---|---|
-| **Face:** the SwiftUI app (22 screens, `design/v0-screens.md`), Apple set-up and the GitHub Actions workflow, designer, TestFlight, +3 h for the CI build-and-check loop (D64) | 34 | **Code held until Test B reports (D65).** The designer starts now. **Pipeline drafted (D70e):** `app/` placeholder (XcodeGen) and `.github/workflows/ios.yml` on `macos-26`; simulator-only until the secrets exist |
+| **Face:** the SwiftUI app (22 screens, `design/v0-screens.md`), Apple set-up and the GitHub Actions workflow, **Abram's own design in Claude Design (7 h: welcome, moment card, shot card, day plan; the rest native, D81)**, TestFlight, +3 h for the CI build-and-check loop (D64) | 38 | **Code held until Test B reports (D65).** Design after Test B (D81). **Pipeline drafted (D70e):** `app/` placeholder (XcodeGen) and `.github/workflows/ios.yml` on `macos-26`; simulator-only until the secrets exist |
 | Onboarding back end: extraction (only with AI permission), read-back lines, gold-set check | 3 | Read-back from named weights is built; LLM extraction is not |
 | Safety alert to a person (D46) | 0.5 | Built; set up the webhook |
 | Moment DB: the other ~25 moments, ~20 shot cards (the first ~25 are in Phase 3 for Test B, D65) | 1.5 | Schema, loader, API and a template (`brain/data/moment_template.yaml`) built; the content is yours |
@@ -108,7 +108,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | Privacy: deletion, notice, AI permission | 1.5 | Deletion and the consent flag built; the notice needs rewriting |
 | Design hooks: separate δ, trip intent per plan (D27) | 0.5 | Built |
 | Hosting: Render + Postgres, secrets, migrations | 2 | Not started |
-| **Total** | **≈ 53** | Cuts accepted (D59). Before Checkpoint 3: designer brief 1.5, brain review 2, secrets and App Store Connect record 0.75 (D70e), and the rest of CI and Apple set-up 4.25 (only if Test B passes); ≈ 44.5 after |
+| **Total** | **≈ 57** | Cuts accepted (D59). Before Checkpoint 3: brain review 2, secrets and App Store Connect record 0.75 (D70e), and the rest of CI and Apple set-up 4.25 (only if Test B passes); ≈ 50 after, including the 7 h of design |
 | *After v0:* AI support agent (cut, D59), content automation (D45), full HB refit, on-device δ (Area 17), tagging benchmark (D32) | *6 + 5 + ~1 + 8–12* | |
 | *Before the App Store launch:* company account: incorporation (~1 day), D-U-N-S (up to 5 business days + 2 for Apple), company enrolment (D61) | *≈ 1 h of forms; start ~3 weeks ahead* | |
 | *After Phase 5 and the D53 gate:* App Store submission | *≈ 3* | |
@@ -134,19 +134,19 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-26 | 3 | Seed moments batch 1 (voice note, 11 moments) and decisions D72–D76 | 0.5 | | |
 | 2026-09-26 | 3 | Decisions D77–D79 (aspiration match, British Museum card) | 0.25 | | |
 | 2026-09-26 | 3 | Status report; decision D80 | 0.25 | | |
-| wk 21 Sep | gate | Apple outside-activities policy check and IP/invention clauses in both contracts (D60) | 1.0 | | Pending, this week. The time is a GUESS |
-| wk 28 Sep | 3 | Confirm conjoint attributes; check the 30 swipe candidates and draft tags (`brain/data/calibration/places.yaml`, D70c) | 0.5 | | Pending |
-| wk 28 Sep | 3 | **Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, and set `status: ready` (D79) | 1.5 | | Pending. Moved from the card checks in the weeks of 5 Oct (1.0) and 12 Oct (0.5) |
-| wk 28 Sep | gate | **Check the Apple Developer membership:** expiry date and **auto-renew off** (developer.apple.com/account → Membership details). Renew only if Test B passes (D74) | 0.25 | | Pending |
-| wk 28 Sep | 3 | Deploy the swipe page (`brain/README.md`) on Render with **no payment method**, try it once, share the link (D70c, D76) | 0.75 | | Pending. Privacy note approved (D76) |
-| wk 28 Sep | 3 | **Test E: recruit 5 B2B contacts** (moved from the week of 5 Oct, D80) | 1.25 | | Pending. Kit: `validation/test-e-kit.md` |
+| 2026-09-26 | 4 | Decisions D81–D82 (own design; extra hours on the blockers) | 0.25 | | |
+| **26 Sep – 1 Oct** | — | **Extra hours, outside the weekly budget (D82), in your priority order:** | **6.25** | | Report the actual hours as you go |
+| 26 Sep – 1 Oct | 3 | **1. Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, set `status: ready` | 1.5 | | Pending. Moved from the week of 28 Sep |
+| 26 Sep – 1 Oct | 3 | **2. Send the remaining ~14 moment names** (~25 in total for Test B) | 1.0 | | Pending. Moved from the week of 5 Oct |
+| 26 Sep – 1 Oct | 3 | **3. Swipe page:** confirm the conjoint attributes, check the 30 candidates, deploy on Render with **no payment method**, try it once, share the link (D70c, D76) | 1.25 | | Pending. Moved from the week of 28 Sep |
+| 26 Sep – 1 Oct | 3 | **4. Test E: recruit 5 B2B contacts** (`validation/test-e-kit.md`) | 1.25 | | Pending. Moved from the week of 28 Sep |
+| 26 Sep – 1 Oct | gate | **5. Apple outside-activities policy and the IP/invention clauses in both contracts (D60)**, plus the membership status with **auto-renew off** (D74) | 1.25 | | Pending. Moved from the weeks of 21 and 28 Sep |
 | wk 28 Sep | 1 | Seed moments 2–5 in the Area 2 schema (D13); walk for seed 1 (D35) | 1.0 | | Pending. Seed 1 received 2026-09-26 |
-| wk 28 Sep | 4 | Designer brief and contributors agreement (D38); the designer starts now (D65) | 1.5 | | Pending. **Agreement split (D73):** the designer signs **Part A** as a deed, with a witness (`legal/contributor-deed-part-a.md`), before their work is used; Part B (equity) goes to the solicitor before incorporation. The designer's own hours are theirs |
+| — | 4 | ~~Designer brief and Part A with the designer~~ | — | | **Dropped (D81):** Abram designs v0 himself. Part A is only for the backup helper (before the first external build) and any future contributor |
 | wk 5 Oct | 1 | Review Areas 5–7 (D17) | 3.0 | | Pending |
 | wk 5 Oct | 3 | Review the Area 18 and Area 20 notes (Test E recruiting moved to 28 Sep) | 0.75 | | Pending |
 | wk 5 Oct | 3 | **Test E: first 2 interviews**, with prep and notes (moved from the week of 12 Oct, D80) | 1.5 | | Pending |
-| wk 5 Oct | 3 | Pick ~25 moments for Test B (Claude drafts the cards); WhatsApp Business set-up (D66) | 1.5 | | **11 received and drafted (D72)**; fill their gaps (`research/seed-moments/02-batch-1.md`), then set `status: ready` |
-| wk 5 Oct | 3 | Check the first drafted moment cards | — | | Moved to the week of 28 Sep (D79) |
+| wk 5 Oct | 3 | WhatsApp Business set-up (D66) | 0.5 | | Pending. The number is ready (D70a). Moment names moved to 26 Sep – 1 Oct (D82) |
 | wk 12 Oct | 3 | Test E: last 3 interviews, Uzbek script check, decision note, validation materials (WhatsApp version) | 4.5 | | Pending |
 | wk 12 Oct | 3 | Check the rest of the drafted moment cards | 1.0 | | Pending (0.5 moved to the week of 28 Sep) |
 | wk 12 Oct | 3 | **Aspiration question:** check its wording and the field map; add 2 art & design cards or drop the option (D77) | 0.5 | | Pending |
@@ -161,24 +161,24 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | wk 2 Nov | 1b | Review Areas 13–17 and 19 light scans, including the God's Eye View and Jev addenda (Areas 18 and 20 are in the week of 5 Oct) | 3.0 | | Pending |
 | wk 2 Nov | 2 | Review workbook (second half: Path50k, Automation, Expansion) | (1.5) | | **Paused (D52)** |
 | wk 9 Nov | 4 | The rest of the CI and Apple set-up: the first signed build, and individual enrolment if not done yet (D61, D64) | 4.25 | | Only if Test B passed. The workflow is drafted (D70e) |
-| wk 16 Nov – ~28 Dec | 4 | The v0 build (≈ 44.5) and the deferred Areas 8–12 review (2.5) | 47.0 | | Only if Checkpoint 3 says build |
+| wk 16 Nov – ~3 Jan | 4 | The v0 build (≈ 50, including 7 h of your design: welcome first, then the moment card, shot card and day plan, D81) and the deferred Areas 8–12 review (2.5) | 52.5 | | Only if Checkpoint 3 says build |
 | Jan | 5 | Phase 5 through TestFlight, then the decision | 10.0 | | |
 
 ## Weekly totals
 
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
-| 2026-09-21 | 7.5 | 13.75 (kick-off, checkpoints, decision rounds D1–D80 and seed batch 1, already spent 12.75; Apple and IP checks 1.0): **6.25 over** | |
-| 2026-09-28 | 7.5 | 6.75 (seed moments 1, conjoint and swipe candidates 0.5, **swipe page 0.75**, **designer brief and Part A 1.5**, Apple membership check 0.25, **11 seed cards 1.5**, **Test E recruiting 1.25**). Areas 1–3 review deferred (D80) | |
-| 2026-10-05 | 7.5 | 6.75 (Areas 5–7 review 3.0, Areas 18 and 20 0.75, **moments for Test B 1.0, WhatsApp set-up 0.5**, **first 2 Test E interviews 1.5**). Areas 8–12 review (2.5) deferred to after Checkpoint 3 | |
+| 2026-09-21 | 7.5 | 13.0 (kick-off, checkpoints, decision rounds D1–D82 and seed batch 1; all spent): **5.5 over** | |
+| **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, Test E recruiting 1.25, Apple and IP checks 1.25) | |
+| 2026-09-28 | 7.5 | 1.0 (seed moments 2–5 and the seed 1 walk). The blockers moved into the extra hours, and the designer brief was dropped (D81). **6.5 h of room this week** | |
+| 2026-10-05 | 7.5 | 5.75 (Areas 5–7 review 3.0, Areas 18 and 20 0.75, WhatsApp set-up 0.5, **first 2 Test E interviews 1.5**). Areas 8–12 review (2.5) deferred to after Checkpoint 3 | |
 | 2026-10-12 | 7.5 | 6.5 (**last 3 Test E interviews and Uzbek check 2.5, decision note 1.0**, validation materials 1.0, moment cards 1.0, pick the 16 places 0.5, **aspiration question 0.5**) | |
 | 2026-10-19 | 7.5 | 7.5 (Phase 3: landing page, recruitment, Test A chats) | |
 | 2026-10-26 | 7.5 | 6.75 (Test A wrap-up 0.5, **Test B plans 3.5**, Test C follow-ups 1.0, brain review 1.0, GitHub secrets 0.75) | |
 | 2026-11-02 | 7.5 | 7.0 (Test C follow-ups 1.0, Area 4 review 2.0, Areas 13–17 and 19 review 3.0, brain review 1.0). **Test B reports** | |
 | 2026-11-09 | 7.5 | 6.75 (Test C close and analysis 2.5; **Checkpoint 3**; the rest of the CI and Apple set-up 4.25 if Test B passed) | |
-| 2026-11-16 to 2026-12-21 | 7.5 | 7.5 a week (the v0 build, 45 h over 6 weeks) | |
-| 2026-12-28 | 7.5 | 2.0 (the v0 build ends) | |
-| 2027-01 | 7.5 | Phase 5 (10 h over about 2 weeks) | |
+| 2026-11-16 to 2026-12-28 | 7.5 | 7.5 a week (the v0 build with your design, 52.5 h over 7 weeks, D81) | |
+| 2027-01-04 | 7.5 | Phase 5 (10 h over about 2 weeks) | |
 
 ## Decisions
 
@@ -194,6 +194,7 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 - D50–D58: v0 is a native iOS app, tested through TestFlight, replacing the Telegram bot; Brain (FastAPI) and Face (SwiftUI), with the Brain started now; economics paused; a new gate before App Store release (Apple outside-activities policy); the overrun question held until the iOS re-plan; Abram names the backup helper, who signs before support goes live; the Area 4 review moved to the week of 2 Nov; the Test E bar confirmed; the Uzbek payment route accepted, with one adviser call first.
 - D59–D64: the iOS v0 accepted at 53.5 h with the cuts (+3 h for the build loop, so ≈ 56.5); the Apple policy and IP-clause checks this week; an individual developer account for TestFlight and a company before the App Store launch (D-U-N-S lead time added); keyboard dictation for voice; Tests A–C by hand with Checkpoint 3 kept in November and the app built in parallel; iOS builds on GitHub Actions.
 - D65–D68: build the Brain now and use it for the Test B plans; the designer starts; iOS app code waits until Test B reports; Test A on WhatsApp Business with a separate number; the 1.3-week overrun accepted; Test B first and fast after Test E.
+- D81–D82: Abram designs v0 himself in Claude Design after Test B (welcome, moment card, shot card, day plan; the rest native; +4 h); Part A only for the backup helper and future contributors; extra hours on the five blockers in priority order; actual hours logged as reported.
 - D80: the Areas 1–3 review is deferred to after 9 Nov (on the after-9-Nov list); Test E recruiting moves to the week of 28 Sep, and 2 interviews to 5 Oct.
 - D77–D79: aspiration match in Test B (one optional question, fields mapped to existing tags or listed moments, flagged below 2 ready moments); British Museum card redrafted as Great Court → Enlightenment Gallery; this week's review, Apple check and Part A signing.
 - D72–D76: seed moments batch 1 drafted as 11 cards, with entry types (moment/area), day/night variants and route direction, and drafts never in real plans; the agreement split into a Part A deed (sign now) and Part B equity terms (solicitor, before incorporation), with no fixed hours; renew the Apple membership only if Test B passes, with auto-renew off; new ideas that don't help Test B go on the after-9-Nov list; the swipe page's privacy note approved.
@@ -203,7 +204,8 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 
 1. **The ~25 moments for Test B.** Send the names as they come (D71). I draft each card (coordinates, approach, times, tags) for you to check.
 2. **Art & design (D77) is still open:** add the Tate Modern Turbine Hall and one more, or drop it from the question. Needed before Test A (19 Oct). (The week of 28 Sep is resolved by D80.)
-   - Still open from D69–D71: the solicitor review, now of Part B only (D73), and the designer signing Part A.
+   - Still open from D69–D71: the solicitor review, now of Part B only (D73). The designer signing Part A is no longer needed (D81).
+   - **The week of 28 Sep has 6.5 h of room** once the blockers move to the extra hours. Suggestion: the Areas 5–7 review (3 h) and the first Test E interviews, if contacts reply. Your call.
    - Resolved: the privacy note (D76) and the Apple timing (D74).
 2b. **Seed batch 1 gaps**, card by card: `research/seed-moments/02-batch-1.md`.
 3. **Helper hours** (`helper_hours_week`, default 0). Set your own number when you know it.

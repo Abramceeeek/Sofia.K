@@ -8,9 +8,14 @@
 >
 > **Updated again by D65–D68:**
 > - **The Brain is built now and writes the Test B plans** (`python -m brain.testb`).
-> - **iOS app code and its GitHub Actions workflow wait until Test B reports**, about 2 Nov. The designer starts now.
+> - **iOS app code and its GitHub Actions workflow wait until Test B reports**, about 2 Nov. The designer starts now *(superseded by D70e for the workflow and by D81 for design)*.
 > - About 25 moments move into Phase 3 for Test B (3.5 h), so **Phase 4 ≈ 53 h**. The plan total is unchanged, and the 1.3-week overrun is accepted (D67).
 > - Test A runs on WhatsApp Business (D66).
+>
+> **Updated by D81 (2026-09-26):**
+> - Abram designs v0 himself in Claude Design, after Test B, and an outside designer is optional.
+> - Four custom screens (welcome, moment card, shot card, day plan); everything else native.
+> - The Face goes from 34 to 38 h, and Phase 4 from ≈ 53 to ≈ 57 h.
 >
 > **Updated by D70 (2026-09-26 evening):**
 > - **The GitHub Actions pipeline starts now** (D70e): `app/project.yml` (XcodeGen), a one-screen placeholder, and `.github/workflows/ios.yml` on `macos-26`.
@@ -75,12 +80,12 @@
 | Hosting: Render + Postgres, secrets, migrations | not in the estimate | 2 | 2 |
 | **Total** | **47** | **62.5** | **53.5 + 3 = 56.5** |
 
-**The Face, 34 h:**
+**The Face, 38 h** (34 before D81: the designer's 3 h is replaced by Abram's own 7 h of design):
 
 | Part | Hours |
 |---|---|
 | Apple set-up: developer account, signing, App Store Connect record, first TestFlight upload | 3 |
-| Designer: brief, two review rounds, handoff (the designer's own hours are not counted) | 3 |
+| **Design by Abram in Claude Design (D81):** welcome, moment card, shot card, day plan, plus type and colour; everything else native (`design/v0-screens.md`) | 7 |
 | Onboarding screens (consent, best hour, why travel, 16 swipes, 10 "this or that", about you, photos, read-back) | 7 |
 | Moment card and shot card | 2.5 |
 | Plans: two-plan choice (Test B), day plan list and map | 4 |
@@ -153,7 +158,7 @@
 | 12 Oct | Test E interviews 4; decision note 1; validation materials 1; moment cards 1.5. **The designer brief moved to the week of 28 Sep** (D65) |
 | 19 Oct – 2 Nov | **Tests A–D by hand**, with each person's Test B plans 1–3 days after their Test A (D68). The brain code review (2 h) is in the weeks of 26 Oct and 2 Nov. The Area 4 review is in the week of 2 Nov (D56). **Test B reports about 2 Nov: go or hold on the iOS code** |
 | 9 Nov | Analysis and **Checkpoint 3** (2.5). If Test B passed, build 5: the GitHub Actions workflow, individual enrolment, the App Store Connect record |
-| 16 Nov – ~28 Dec | **The build (≈ 48 h at 7.5 h a week), using what Phase 3 taught.** The first external TestFlight build is about the week of 30 Nov, once the onboarding, plan and safety screens work (≈ 19.5 h after 9 Nov). The designer's Build 1 screens are needed by about 16 Nov |
+| 16 Nov – ~4 Jan | **The build (≈ 52.5 h at 7.5 h a week, including 7 h of Abram's own design, D81), using what Phase 3 taught.** Abram designs the welcome screen first, then the moment card, shot card and day plan (`design/v0-screens.md`). The first external TestFlight build is about the week of 30 Nov |
 | Jan | Phase 5 through TestFlight (10 h), then the decision |
 | ~3 weeks before App Store submission | Incorporate, get the D-U-N-S number and enrol as a company (D61; lead times under Gates) |
 
@@ -171,9 +176,9 @@
     - Apple's own verification of the company enrolment takes an UNVERIFIED time on top.
   - **Start about 3 weeks before the planned submission.** Incorporation is also a gate before the first paid client (D38).
   - Moving the app from the individual account to the company account is UNVERIFIED here. Check Apple's app-transfer rules before the switch.
-- **The designer and the backup helper each sign the contributors agreement first** (D38, D55).
-  - The designer signs before the brief (the week of 12 Oct).
-  - The helper signs before the first external build, because that is when the safety button goes live.
+- **Part A (the contributor deed) is needed only for the backup helper and any future contributor** (D38, D55, D73, D81).
+  - Abram designs v0 himself (D81), so there is no designer to sign unless one is brought in later.
+  - The helper signs before the first external build, because that is when the safety button goes live, and before seeing any user message.
 - **The existing money gates are unchanged.** No in-app purchase in v0.
 
 ## Apple rules that shape v0 (App Review Guidelines, last updated 8 June 2026)

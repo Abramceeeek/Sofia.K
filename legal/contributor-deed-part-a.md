@@ -3,7 +3,8 @@
 > **To sign now (D73).**
 > - Claude drafted it; it is not legal advice.
 > - It is signed **as a deed with a witness**, because the contributor gets nothing in return under this part (see the notes).
-> - Sign it **before** the designer's work is used, and **before** the backup helper sees any user message.
+> - Sign it **before** any contributor's work is used, and **before** the backup helper sees any user message.
+>   Abram designs v0 himself (D81), so today this is for the backup helper and any future contributor, such as an outside designer if one is brought in.
 > - The equity terms are separate: `contributor-equity-terms-part-b-draft.md`, for solicitor review before incorporation.
 
 **This deed is made by:**
@@ -69,4 +70,4 @@
   - An assignment of copyright must be in writing and signed by the assignor (CDPA s.90(3)).
   - An individual's deed must say on its face that it is a deed. It must be signed in the presence of a witness who attests the signature, and delivered as a deed. No seal is needed (Law of Property (Miscellaneous Provisions) Act 1989 s.1).
 - **The hours clause was removed at your request.** Contributions are voluntary and flexible. That should also lower the risk of a contributor counting as a "worker" for minimum-wage purposes. *Judgement; still one of the solicitor questions.*
-- **One copy per person:** the designer and the backup helper each sign their own.
+- **One copy per person:** each contributor signs their own. Today that means the backup helper, and an outside designer only if one is brought in (D81).

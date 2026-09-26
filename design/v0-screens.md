@@ -1,8 +1,30 @@
-# v0 screens: brief for the designer (D50)
+# v0 screens: design brief (D50, D81)
 
 **What the app does:** it plans a day out around how a specific person wants to *feel*, not around famous sights. The unit is a **moment**: a specific experience at a place and time, often including how you arrive. One example is walking out of South Kensington tube and seeing the Natural History Museum open up in front of you.
 
-**Before you start:** please sign the contributors agreement (roles, hours, pay or equity, and IP assigned to the company). Nothing can be shared or used until it is signed (D38).
+**Who designs (D81):** Abram, in Claude Design, **after Test B reports** (about 2 Nov). An outside designer is optional. If one is brought in, they sign Part A (`legal/contributor-deed-part-a.md`) before their work is used.
+
+## Design scope (D81): four custom screens, everything else native
+
+| Custom screen | The one thing it must get right | Build | Your design hours (GUESS) |
+|---|---|---|---|
+| **Welcome** (1) | A person, not a brand: your photo, the one line, and "a person runs this test" visible without scrolling | 1 | 1.5 |
+| **Moment card** (15) | **The arrival is the hero.** Show "from → path → the reveal" as one vertical line before the photo gallery, because the approach *is* the moment | 2 | 1.5 |
+| **Shot card** (16) | Read in one glance while standing on the spot: a mini map pin, a facing arrow (compass bearing), what to frame, when | 2 | 1.5 |
+| **Day plan** (14) | The map and the timeline are one object: the same line colour links the numbered pins and the stop list, and travel legs are labelled segments ("12 min walk") | 2 | 1.5 |
+| Type, colour and hand-off | One shared style for the four screens; frames at 393 × 852 pt, light and dark | 1–2 | 1.0 |
+| **Total** | | | **7.0** |
+
+**Everything else uses native SwiftUI:** onboarding (screens 2–10), plans home, trip intent, A vs B, rating, notification prompt, settings, help & safety, bring a friend and states.
+- That means `Form`, `List`, `NavigationStack`, sheets, `Toggle`, `Picker`, the system share sheet and MapKit, with SF Pro and SF Symbols.
+- No custom styling beyond the accent colour.
+
+**A starting direction for the four screens** (a brief for your Claude Design sessions, from the frontend-design skill; yours to change):
+- **Tone:** a well-thumbed field guide rather than a travel brochure. It should feel calm, warm and sure of itself.
+- **Type:** SF Pro everywhere, plus **one display face for moment titles only**. It must be open-licence and bundled with the app, so check the licence before choosing.
+- **Colour:** warm neutrals, with the photos carrying the colour. **One accent**, used only for the route line, the pins and the "now" state, in both light and dark.
+- **Motion:** one moment only. The moment card's photo opens as the approach line completes (the reveal). Honour Reduce Motion.
+- **Avoid:** gradients, glassy cards everywhere, emoji, and anything that makes a stop look like an ad.
 
 ## Ground rules
 
@@ -70,9 +92,10 @@
 
 Login or sign-up, a paywall or payments, an AI support chat, a social feed or profiles, widgets, Live Activities, Watch, iPad, landscape, in-app turn-by-turn routing, or a custom voice recorder (the keyboard mic covers voice in v0).
 
-## Timing
+## Timing (D81)
 
-- **Brief:** the week of 12 Oct, once the agreement is signed.
-- **Build 1 screens (1–10, 16 example, 19, 20, 22):** first round by about 26 Oct, final by about 16 Nov, after Checkpoint 3 (9 Nov) so its lessons can go in.
-- **Build 2 screens (11–18, 21):** by about 30 Nov.
+- **After Test B reports** (about 2 Nov), and after Checkpoint 3 (9 Nov) so its lessons go in.
+- **Welcome, plus type and colour** (2.5 h): the week of 16 Nov, before Build 1 (about 30 Nov).
+- **Moment card, shot card, day plan** (4.5 h): the weeks of 23–30 Nov, before Claude builds them for Build 2 (mid-December).
+- Native screens need no design pass. Claude builds them from this list.
 - **Plan behind this:** `decisions/v0-ios-plan.md`.

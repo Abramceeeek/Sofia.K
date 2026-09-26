@@ -35,5 +35,5 @@
    - Is an EMI option scheme possible for non-employees? (Claude's understanding is that it may not be; UNVERIFIED.)
 2. **Vesting:** is time-based vesting right for voluntary, flexible contributors, or should it be milestone-based? How should "active contributor" be defined?
 3. **Worker status:** could an unpaid contributor count as a "worker" for minimum-wage purposes, even with no set hours?
-4. **Bad-leaver terms**, and whether ~10% suits both the designer and the backup helper.
+4. **Bad-leaver terms**, and whether ~10% suits the backup helper, or any future contributor. Abram designs v0 himself (D81).
 5. **Part A's deed approach:** is it sound, or is a nominal £1 payment better?

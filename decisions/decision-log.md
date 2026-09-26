@@ -2,6 +2,26 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (evening, later) — Abram designs v0; extra hours on the blockers
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D81 | **Abram designs v0 himself in Claude Design, after Test B.** The external designer is optional.<br>Design covers **4 custom screens**: welcome, moment card, shot card, day plan. **Everything else uses native SwiftUI components.**<br>That is 7 h of Abram's design in place of the designer's 3 h, so the Face goes from 34 to 38 h and Phase 4 from 53 to 57 h (`design/v0-screens.md`).<br>**Part A no longer gates design work.** It applies only to the backup helper and any future contributor | D65 (the designer starts now), the designer brief in the week of 28 Sep | Founder decision |
+| D82 | **Extra hours over the next few days (26 Sep – 1 Oct) go on the blockers, in this order:** card review, moment names, swipe page, Test E recruiting, Apple/IP checks (6.25 h, outside the weekly budget).<br>**Actual hours are logged in `LOG.md` as Abram reports them**; this is working rule 10 in `CLAUDE.md` | — | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m19 | Design hours are split as a GUESS of 1.5 h per custom screen plus 1 h for type, colour and hand-off. The welcome screen comes first (Build 1, week of 16 Nov), then the other three (weeks of 23–30 Nov) | `design/v0-screens.md`, `LOG.md` |
+| m20 | Added a starting design direction for the four screens (field guide tone, one display face for titles, one route accent, one reveal animation), from the frontend-design skill. It's for Abram to change in Claude Design | `design/v0-screens.md` |
+| m21 | The Apple membership check (0.25 h) goes in the same block as the Apple/IP checks | `LOG.md` |
+
+**For Abram:**
+1. **The build now fills the week of 28 Dec**, so Phase 5 starts about 4 Jan instead of late December. It's still January, and no checkpoint date moves.
+2. **The week of 28 Sep has 6.5 h of room**, because the blockers moved into the extra hours. Suggestion: the Areas 5–7 review (3 h), and the first Test E interviews if contacts reply.
+3. **Art & design (D77) is still open.**
+
 ## 2026-09-26 (status report) — Areas 1–3 review deferred
 
 | # | Decision | Replaces | Why |
