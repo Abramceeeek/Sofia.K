@@ -14,6 +14,11 @@
 - **CAC** (`CAC`) = (channel cost per sign-up + onboarding and free-plan cost per sign-up) ÷ sign-up-to-paying conversion. Every sign-up costs money whether or not they pay.
 - **Revenue targets** (`BreakEven`): steady state, so revenue per year = new payers per year × lifetime revenue per payer. Targets are **net receipts** (after the app store, Telegram, Stripe and VAT).
 - **Sensitivity**: each row changes one input and restates the formulas. A two-way grid shows price × conversion.
+- **Virality** (D23): with S0 seed sign-ups a year from posting and viral coefficient K, steady-state sign-ups are S0 ÷ (1 − K), so the K needed is 1 − S0 ÷ S. The tab then checks founder hours at that volume.
+  - At 7.5 h a week, half of the spare hours spent posting, and 5 sign-ups per post, you get ~1,750 seed sign-ups a year.
+  - £50k needs **K ≈ 0.98** (base) or **K ≈ 0.69** (upside: paywall, £9.99/£59.99, web checkout).
+  - Even the upside needs onboarding and support time to fall to **~19%** of the current guesses. Automation is not optional.
+- **PaymentChannels** (D24): net per sale at the Test D prices for Stars, Stripe, Apple and Google.
 
 ## The three stacks
 
@@ -53,10 +58,23 @@ Opus 5.5 ($4/$20) is cheaper than Opus 5 and can be picked from the dropdown. Pr
 | Group size, spend per person, moderation minutes | 5, £40, 30 min | Group-trip model | Weekend test |
 | Support minutes per user | 3/month, 5 per sign-up | Founder capacity | Tests A and C (log time) |
 
+## Payment channels (D24, checked 2026-09-26; decision deferred)
+
+- **Telegram: a bot must not link out to a web checkout for digital goods.** The Bot Platform Developer Terms (s.6.2, [fetched](https://telegram.org/tos/bot-developers)) say:
+  - all digital goods and services must be sold "exclusively through the exchange of Telegram Stars";
+  - Telegram follows Apple's and Google's definitions of digital goods;
+  - a bot "found to be using alternative payment systems for digital goods and services" gets a notice, then can be made "inaccessible from store versions of Telegram" or terminated.
+  - Physical goods and services, such as a group trip's real-world costs, may use any payment provider.
+  - → A web subscription is only safe if it is sold on the web with **no link or prompt from the bot**. That caps its reach, so treat Stars as the price of being in Telegram.
+- **Future native app** (fetched):
+  - **Apple:** subscriptions pay 70% in year one and 85% after a year of paid service, or 85% throughout under the Small Business Program (up to $1M proceeds). In the UK, apps may not link to other payment methods; the US storefront may.
+  - **Google Play** (UK, EEA and US, from 30 June 2026): auto-renewing subscriptions pay a 10% service fee plus a 5% billing fee.
+  - **UK:** the CMA consulted (30 June 2026, fetched) on requiring Apple and Google to allow steering to external payment, with lower fees. The decision is due later in 2026 (search).
+- The `PaymentChannels` tab compares what each channel keeps at the Test D prices.
+
 ## Unverified or open
 
-- The Stars user price is a third-party estimate. The VAT treatment of Stars income is **UNVERIFIED** (the model deducts no VAT from Stars sales).
-- Whether a bot may point users to a **web checkout** without breaching Telegram's rule is **UNVERIFIED**. The rule says Stars apply "regardless of any other web portals".
+- The Stars user price is a third-party estimate. The VAT treatment of Stars income is **UNVERIFIED** (the model deducts no VAT from Stars sales). App-store proceeds are modelled net of VAT ("minus applicable taxes", Apple).
 - Taking money for group trips needs the legal gates cleared and a licensed marketplace payment provider. The Package Travel Regulations would need checking if accommodation is ever bundled (**UNVERIFIED**).
 - The LTV:CAC target of 3 is a rule of thumb (**UNVERIFIED**).
 - Not readable here: the Booking.com affiliate terms (25–40% of its own commission, search), the GetYourGuide rate (8%, search), and the Open-Meteo paid price.

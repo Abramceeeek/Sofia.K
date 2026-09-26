@@ -33,3 +33,36 @@
 - **Tube exits.** The dark-to-open transition starts underground. Model station entrances (`railway=subway_entrance` in OSM) as A ≈ 0, then the street isovist.
 - **The threshold for a "jump" is a guess.** For example, 3× visible area within 20 m. Fit it on the seed moments and the ratings.
 - Scenic-Or-Not data stops at 2015, and ODbL share-alike applies if we publish a derived database.
+
+## Addendum (D28): God's Eye View for moment previews (post-v0 only)
+
+**Decision:**
+- **Reuse the pattern, not the app.** Build a minimal CesiumJS page (Apache-2.0) that streams **Google Photorealistic 3D Tiles directly with a Google Maps key**. Google's docs say to give the root tileset URL to a renderer "like CesiumJS", so no Cesium ion is needed.
+- Add a camera path along the OSRM approach and a camera pose for each shot card.
+- **Take none of God's Eye View's tracking or surveillance layers** (flights, ships, satellites, ~3,600 CCTV cameras, licence-plate-reader locations, "sensor modes").
+- **Analysis (isovists) stays on OSM/Overture in Python:** Google's terms forbid it on its tiles (below).
+- **Cost: ~8–10 h post-v0.** About 6–8 h for the preview page, and ~2 h for Abram to set camera poses for the ~20 shot cards.
+
+| | God's Eye View (bilawalsidhu/gods-eye-view) |
+|---|---|
+| Stars / licence / last commit | 43.3k stars, 8.8k forks, **MIT**; last commit 2026-09-25, active. JavaScript (Vite, CesiumJS), so Python 3.11+ is n/a |
+| Useful parts | Google 3D Tiles in CesiumJS, walk-route planning, a "scene director" for cinematic camera sequences, shareable view-state URLs |
+| Excluded | Every tracking and CCTV layer, military installations, OpenAI voice control |
+| Keys it expects | Cesium ion (the free Community plan is personal and non-commercial only), Google Maps (metered), OpenAI and others. We would need only Google |
+
+**What Google's terms allow** (Map Tiles API policies, fetched 2026-09-26):
+
+- **(a) Pre-trip moment preview (anticipation, Area 6): yes, as a live render only.**
+  - Display with the Google Maps logo and the per-tile data attributions is allowed.
+  - Tiles may not be pre-fetched, cached, stored or used offline.
+  - Videos made from tiles are allowed only as *promotional* clips up to 30 seconds, not sold or given out as part of the product.
+  - → The preview must be an online, in-browser flythrough (web link or Telegram Mini App), **not a video file** sent to the user.
+- **(b) Shot-card view preview: yes, as a live camera at the shot pose.** No stored screenshots or rendered images. That is our reading of the no-storage rule, not an explicit clause.
+- **Analysis: no.** The Map Tiles API may not be used for "image analysis", "machine interpretation", "object detection" or "geodata extraction". Our own 3D objects may be overlaid only if they aren't traced or derived from the tiles.
+
+**Cost:** Photorealistic 3D Tiles give 1,000 root-tileset requests a month free, then $6.00 per 1,000. One root request covers at least 3 hours of tile requests, so one preview costs about $0.006 after the free tier. Cesium ion Commercial ($149/month individual) is avoided by going direct to Google.
+
+**Risks:**
+- **Spoiling the reveal.** A flythrough of a contrast/reveal moment gives away the thing we sell. Preview the approach and the shot card, and stop short of the reveal.
+- **Street-level quality.** Photogrammetry is weakest at pedestrian eye level: **UNVERIFIED**. Test on 3 seed moments before building.
+- **Mobile data and WebGL in Telegram's in-app browser: UNVERIFIED.**

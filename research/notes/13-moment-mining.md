@@ -34,3 +34,10 @@
 - **Share-alike reach.** Facts are not copyrightable, but CC BY-SA 4.0 also licenses database rights. Whether a moment database built from substantial extraction must be shared alike is **UNVERIFIED**, so a legal check is needed before scale. Meanwhile, keep a source link and attribution on every mined moment.
 - **Old text.** Guides and photo captions go stale: closed entrances, changed routes. The founder's walk-through check stays the gate.
 - **Selection bias.** Text over-represents famous places, which is the opposite of the product's aim. Weight the mining toward the approach and transition cues, not landmark names.
+
+## Addendum (D29): calibrated tagging of mined candidates
+
+- **The same benchmark** ([`research/benchmarks/moment-tagging-jev-vs-claude.md`](../benchmarks/moment-tagging-jev-vs-claude.md)) decides whether mined candidates can be pre-tagged automatically.
+- **The route:** a calibrated tagger auto-accepts confident feature tags; low-confidence ones go to Abram. The quote-span check above still applies to every extracted field.
+- **Jev fits the "gut-check" tag questions** its docs describe, such as "is this approach a reveal?". But it is text-only and "struggles with numeric precision" and "indirection" (its own jaggedness notes for jev-1.13). So distances, times and counts stay in code.
+- **Data terms:** mined public text is fine under early access. **User transcripts must not go to Jev** until data retention and "telemetry" use are agreed in writing: US hosting, no fixed retention, and zero data retention for enterprise customers only.

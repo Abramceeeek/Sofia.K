@@ -2,6 +2,18 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## Checkpoint 2 approval — Phase 3 go, virality, pricing test, tools
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D23 | **Measure referral and virality in Phase 3:** invites sent per user, invitees who sign up, shares of shot-card photos, and a computed K-factor. Test C plans get a **"bring a friend"** option, and there is a **share prompt after shot-card moments**. The workbook gets a K-factor input and a scenario showing the K needed for £50k at the founder's hours | — | Checkpoint 2: acquisition, not cost, decides viability |
+| D24 | **Payment method deferred.** Check Telegram's rules on linking out to an external checkout, and note the app-store fees for a future native app | Open question | Telegram's link-out rule was UNVERIFIED |
+| D25 | **Test D prices:** £4.99 vs £9.99 a month (random arm), plus £59.99 a year in both arms. Payment is asked for after one free plan. **Waitlist only, no money taken** (D1 still holds) | "Two price points if traffic allows" | Checkpoint 2 upside scenario |
+| D26 | **Meta ad test deferred** until the Test A and B results are in | Open question | Don't spend before the product is shown to work |
+| D27 | **Accept +2 h in Phase 4** for the design hooks: keep δ_person separate from b_population, and store trip-intent answers with each plan (≈1 h each). Phase 4 ≈38 h | Phase 4 ≈36 h (D14) | Areas 15 and 17: design now, build later |
+| D28 | **Evaluate God's Eye View** (Area 14) for pre-trip moment previews and shot-card view previews. Analysis (isovists) stays on OSM/Overture in Python. **No tracking or CCTV layers.** Post-v0 only | — | Founder request |
+| D29 | **Benchmark Jev (TypeSafe AI) against Claude** on moment feature tagging (Areas 2 and 13): 50 moments hand-labelled by the founder; accuracy and calibration. If calibrated, auto-accept high-confidence tags and route low-confidence ones to the founder | — | Founder request |
+
 ## Checkpoint 1 approval — Phase 2 go, thresholds, food, sources, recruitment
 
 | # | Decision | Replaces | Why |
@@ -44,7 +56,7 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | D7 | **Phase 4 scope cut:** feedback is log-only. Weight updates run offline, not live | "Simple Bayesian update of the person's weights" | Same |
 | D8 | **Peak–end** stays as a planner toggle, not a hard guarantee | "guaranteeing one peak and a good finish" | Area 4: the tourism evidence is mixed. Test it on our own ratings |
 
-## Proposed Phase 3 thresholds after D2 (other rows still await confirmation)
+## Phase 3 thresholds (confirmed: D2, D18)
 
 | Metric | Pass |
 |---|---|
@@ -57,3 +69,5 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | Sign-ups choosing the priced option | ≥ 20% (confirmed, D2) |
 
 Descriptive Test A measures with no pass threshold (D16): "How much do photos and sharing matter on your trips?" (1–5), and "Would a shot card make you more likely to visit this moment?" (1–5).
+
+Descriptive virality measures with no pass threshold (D23): invites sent per participant, invitee sign-ups, shot-card shares, and K. They are compared with the K the workbook says £50k would need (`Virality` tab).

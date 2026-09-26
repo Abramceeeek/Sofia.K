@@ -82,3 +82,10 @@ All values above are placeholders. Feature scores are illustrative until Abram t
 - **Moments go stale.** Light, construction and crowding change, so `last_checked` needs a refresh cadence.
 - **ODbL** if OSM approach paths get mixed into the moment table.
 - **Overture schema churn:** pin a release.
+
+## Addendum (D29): benchmark the feature tagger before trusting it
+
+- **The 50 v0 moments double as a gold set.** Abram tags them **blind** (before seeing any model draft). Jev (TypeSafe AI) and Claude then tag the same card text, and are scored on accuracy **and calibration**: does a tag's confidence predict whether it is right?
+- **If one is calibrated,** auto-accept its high-confidence tags and route the rest to Abram. This matters again when the moment count grows past what one person can tag.
+- **Cost:** +1.5 founder hours in the Phase 4 moment-DB step; cash under £10.
+- **Full design:** [`research/benchmarks/moment-tagging-jev-vs-claude.md`](../benchmarks/moment-tagging-jev-vs-claude.md).

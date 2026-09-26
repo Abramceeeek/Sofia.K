@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A day out that fits you</title>
+<meta name="description" content="A planner that learns what actually makes you happy on a day out, then plans around it. Research stage, waitlist only.">
+<style>
+  :root {
+    --bg: #fbfaf7; --ink: #1d1d1b; --muted: #5f5e59; --line: #e2dfd6;
+    --card: #ffffff; --accent: #1f6f5c; --accent-ink: #ffffff; --note: #f3efe3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151514; --ink: #efede7; --muted: #a9a69d; --line: #34332f;
+            --card: #1e1e1c; --accent: #5cc3a6; --accent-ink: #0d1a16; --note: #26241f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.2rem; margin: 40px 0 12px; }
+  p.lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 24px; }
+  ol.steps { padding-left: 1.2em; margin: 0; }
+  ol.steps li { margin: 0 0 10px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  .price { font-size: 1.05rem; margin: 0 0 16px; }
+  .price strong { font-size: 1.4rem; }
+  .buttons { display: grid; gap: 10px; }
+  button { font: inherit; border-radius: 10px; padding: 13px 16px; cursor: pointer; text-align: left;
+           border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .note { background: var(--note); border-radius: 12px; padding: 18px; margin-top: 16px; }
+  .note[hidden] { display: none; }
+  .small { font-size: 0.9rem; color: var(--muted); }
+  a { color: var(--accent); }
+  footer { margin-top: 48px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>A day out that fits you, not a list of sights</h1>
+  <p class="lead">Big Ben leaves some people flat. A boat on the Thames, street food and a walk through the park make their day. For someone else it's the opposite. This planner learns which one you are, then plans around it: weather, crowds and travel time included.</p>
+
+  <h2>How it would work</h2>
+  <ol class="steps">
+    <li><strong>A short chat</strong> about days you loved and ones you didn't, by voice or typing.</li>
+    <li><strong>A plan for your day</strong>, built around what makes <em>you</em> feel good, and explained ("we swapped the long walk for the boat because heat and long transfers wear you out").</li>
+    <li><strong>One tap after each stop</strong> so the next plan fits better.</li>
+  </ol>
+
+  <h2>Price</h2>
+  <div class="card">
+    <p class="price">Your first plan is free. After that: <strong id="monthly-price">£—</strong> a month, or <strong>£59.99</strong> a year.</p>
+    <div class="buttons">
+      <button type="button" class="primary" id="btn-monthly">Reserve the founding price: <span id="btn-monthly-price">£—</span>/month</button>
+      <button type="button" class="primary" id="btn-annual">Reserve the founding price: £59.99/year</button>
+      <button type="button" id="btn-free">Just join the free waitlist</button>
+    </div>
+    <div class="note" id="note" hidden role="region" aria-live="polite">
+      <p><strong>No payment is being taken.</strong> This is an early test of the idea and its price. You'll join the waitlist with your chosen founding price noted. We'll email you before anything is ever charged, and you can leave at any time.</p>
+      <button type="button" class="primary" id="btn-continue">Continue to the waitlist</button>
+    </div>
+  </div>
+
+  <footer>
+    <p class="small">A one-person project in London, at the research stage. No card details are collected. Visits are counted without cookies. <a href="privacy.html">Privacy</a> · Contact: CONTACT_EMAIL</p>
+  </footer>
+</main>
+
+<script>
+  (function () {
+    // Settings to fill in before deploying (see README.md).
+    var FORM_URL = 'TALLY_FORM_URL'; // e.g. https://tally.so/r/abc123 with hidden fields arm, choice, ref, src
+
+    var params = new URLSearchParams(window.location.search);
+    var src = (params.get('src') || 'direct').slice(0, 60);
+    var ref = (params.get('ref') || '').slice(0, 20);
+
+    // Random arm on first visit, kept for repeat visits (D25). Storage can fail: fall back to a fresh draw.
+    var arm = null;
+    try { arm = window.localStorage.getItem('td_arm'); } catch (e) {}
+    if (arm !== 'A' && arm !== 'B') {
+      arm = Math.random() < 0.5 ? 'A' : 'B';
+      try { window.localStorage.setItem('td_arm', arm); } catch (e) {}
+    }
+    var monthly = arm === 'A' ? '4.99' : '9.99';
+    document.getElementById('monthly-price').textContent = '£' + monthly;
+    document.getElementById('btn-monthly-price').textContent = '£' + monthly;
+
+    // GoatCounter: one page view per arm; study participants counted separately so they can be excluded.
+    var tag = (src === 'participant' ? 'participant-' : '') + 'arm-' + arm;
+    window.goatcounter = { path: '/' + tag };
+
+    function count(event) {
+      try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: event + '-' + tag, event: true }); } catch (e) {}
+    }
+    function go(choice) {
+      var url = FORM_URL + '?arm=' + arm + '&choice=' + choice + '&price=' + encodeURIComponent(choice === 'annual' ? '59.99' : (choice === 'monthly' ? monthly : '0')) +
+                '&src=' + encodeURIComponent(src) + '&ref=' + encodeURIComponent(ref);
+      window.location.href = url;
+    }
+
+    var pending = null;
+    function priced(choice) {
+      pending = choice;
+      count('click-' + choice);
+      var note = document.getElementById('note');
+      note.hidden = false;
+      document.getElementById('btn-continue').focus();
+    }
+    document.getElementById('btn-monthly').addEventListener('click', function () { priced('monthly'); });
+    document.getElementById('btn-annual').addEventListener('click', function () { priced('annual'); });
+    document.getElementById('btn-free').addEventListener('click', function () { count('click-free'); go('free'); });
+    document.getElementById('btn-continue').addEventListener('click', function () { go(pending || 'free'); });
+  })();
+</script>
+<script data-goatcounter="https://GOATCOUNTER_CODE.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
