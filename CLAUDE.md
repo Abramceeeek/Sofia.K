@@ -16,7 +16,8 @@ This file is the standing context for this project. Read it fully before any tas
     3. IP/invention clauses checked in **both** employment contracts.
   - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
   - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company. This includes the designer and the safety backup helper (D55).
-  - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. *Proposed, not yet decided: do this check before the first external TestFlight build too, because that is already a public distribution under his account.*
+  - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. **Abram is doing this check, and the IP/invention-clause check, this week, before any external TestFlight build (D60).**
+  - **Developer account (D61):** individual for TestFlight. Switch to a company account (incorporation plus a D-U-N-S number) before the public App Store launch. Start about 3 weeks ahead.
   - Revenue from trips or subscriptions can start once the money gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
@@ -122,8 +123,9 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 
 - **v0 is a native iOS app (SwiftUI)**, tested through TestFlight, then released on the App Store once it passes (after the D53 gate). It replaces the Telegram bot.
 - **Brain** (`brain/`): FastAPI on Python 3.12. It holds the moment database, scoring as `S = x·(b_population + δ_person)` with δ kept separate and portable, and the OR-Tools planner. Claude Code builds and tests it in this repo.
-- **Face:** the SwiftUI app, built on Abram's personal Mac in Xcode, where Claude Code must run locally.
-- **Plan, hours and proposed cuts:** `decisions/v0-ios-plan.md`. **Designer screens:** `design/v0-screens.md`.
+- **Face:** the SwiftUI app. It is built, signed and uploaded to TestFlight by **GitHub Actions on a macOS runner**, with no personal Mac (D64). iOS builds run only when files under the app folder change, and backend tests run on Linux. Abram holds the signing secrets in GitHub Secrets. Claude writes the Swift here, but can't run it here, so every check goes through CI.
+- **Phase 3 (D63):** Tests A–C run by hand (a chat, and plans as messages or PDFs). Checkpoint 3 is in the week of 9 Nov, and the app is built in parallel.
+- **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Designer screens:** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`.
 - **Economics work is paused** unless a decision needs it (D52).
 
 ## Non-negotiable guardrails

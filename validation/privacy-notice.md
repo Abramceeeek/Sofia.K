@@ -1,6 +1,6 @@
 # Privacy notice — research study and waitlist
 
-> **Status (D50):** this is the Telegram version. **Rewrite it with `test-d-landing/privacy.html` for the TestFlight app** before the first external build. It needs: the server host and its region, the AI service (only with permission), no Telegram, no audio, and in-app deletion.
+> **Status (D63):** this version is **for the hand-run tests and the Test D waitlist**. **An app version is needed before the first external TestFlight build**, together with `test-d-landing/privacy.html`. It must name the server host and its region and the AI service (only with permission), and cover in-app deletion.
 
 *Last updated: [date]. This covers the Phase 3 study (Tests A–C) and the Test D waitlist page. It is not legal advice. Check it against ICO guidance before first use.*
 

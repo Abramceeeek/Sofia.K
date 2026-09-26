@@ -1,6 +1,6 @@
 # Host script — Tests A, B and C (Telegram, Wizard of Oz)
 
-> **Status (D50):** Test A no longer runs as a Telegram chat. The app asks these questions itself (`brain/data/onboarding.yaml`, with the same wording). Keep this script as the source of the copy, and for any hand-run fallback.
+> **Status (D63):** **in use.** Tests A–C run by hand in a chat, with Checkpoint 3 in the week of 9 Nov. The app reuses this wording later (`brain/data/onboarding.yaml`).
 
 **Rules for the host (Abram):**
 - **One question per message.** Wait for the answer. Never interrupt a voice note.

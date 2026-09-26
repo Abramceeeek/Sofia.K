@@ -2,6 +2,17 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (Phase 3 round 6) — iOS plan accepted, hand-run tests, build in the cloud
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D59 | **Accept the iOS v0 at 53.5 h with the proposed cuts** (`decisions/v0-ios-plan.md`): no AI support agent in v0 (a safety button instead), keyboard dictation, local notifications, no login, and "Directions" opens Apple Maps | Proposed (D54) | Founder decision |
+| D60 | **Abram does the Apple outside-activities policy check and the IP/invention-clause check in both contracts this week**, before the first external TestFlight build | Proposed timing (D53) | Founder decision |
+| D61 | **An individual developer account for TestFlight. Switch to a company account before the public App Store launch.** That means incorporation (online, "usually within 24 hours", £100), then a D-U-N-S number ("allow up to 5 business days"; email D&B after two weeks), then "up to 2 business days" for Apple to receive it (sources: gov.uk, Apple D-U-N-S page, 2026-09-26). **Start about 3 weeks before the planned App Store submission.** How to move the app to the company account is UNVERIFIED | Open question | Founder decision |
+| D62 | **Voice in the app is keyboard dictation plus "Did you type or speak?"** No custom recorder | Open question | Founder decision |
+| D63 | **Checkpoint 3 stays in the week of 9 Nov. Tests A–C run by hand**: Test A as a chat conversation, and the Test B/C plans sent as messages or PDFs. **The iOS app is built in parallel**, so the first external TestFlight build carries the lessons | Tests A–C through TestFlight (D50) | Keeps the evidence gate before most build hours |
+| D64 | **iOS builds run on GitHub Actions** (Abram has shipped an iOS app this way; no personal Mac). A macOS runner builds, signs and uploads to TestFlight. Backend tests run on Linux. iOS builds trigger only on changes under the app folder. **Abram adds the signing certificate, provisioning profile and App Store Connect API key to GitHub Secrets.** No 30% buffer, but **+3 h for the slower build-and-check loop** without Xcode previews, so Phase 4 ≈ 56.5 h | "Built on a personal Mac" (D50, D51) | Founder decision |
+
 ## 2026-09-26 (Phase 3 round 5) — v0 becomes a native iOS app
 
 | # | Decision | Replaces | Why |

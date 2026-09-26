@@ -1,4 +1,10 @@
-# v0 as a native iOS app: plan, hours, cuts and Phase 3 through TestFlight (D50–D54)
+# v0 as a native iOS app: plan, hours, cuts and TestFlight (D50–D54, D59–D64)
+
+> **Updated by D59–D64 (2026-09-26):**
+> - **The cuts are accepted** (D59).
+> - **Tests A–C run by hand** and Checkpoint 3 stays in the week of 9 Nov (D63). The app is built in parallel, so the first external TestFlight build carries the Phase 3 lessons.
+> - **iOS builds run on GitHub Actions**, with no Mac (D64), which adds 3 h, so **Phase 4 ≈ 56.5 h**.
+> - **Individual developer account for TestFlight**; a company account before the App Store launch (D61).
 
 *Written 2026-09-26. All founder-hour figures are estimates (GUESS) that assume Claude Code writes most of the code. Apple facts come from Apple's own pages, fetched on 2026-09-26 (sources at the end).*
 
@@ -15,16 +21,18 @@
   |---|---|
   | Telegram v0 | 47 |
   | iOS v0, like-for-like | ≈ 62.5 |
-  | **iOS v0, left now** (after the brain draft and the cuts below) | **≈ 53.5** |
+  | iOS v0, left now (after the brain draft and the cuts below) | ≈ 53.5 (accepted, D59) |
+  | **Plus the build-and-check loop through GitHub Actions** (D64) | **≈ 56.5** |
 
-  The app itself is the big new cost: about 31 h, against 10 h for the bot.
-- **Phase 3 through TestFlight:**
-  - Tests A–C run inside the app.
-  - About 40.5 h of the v0 build therefore happens **before** Checkpoint 3.
-  - Test running gets cheaper: Phase 3 falls from 23.75 to ≈ 18.75 h.
-  - **Checkpoint 3 moves from the week of 9 Nov to about the week of 4 Jan.**
-  - v0 then needs only ≈ 13 h after the checkpoint, so the whole plan ends about 3 weeks later than the Telegram plan.
-- **Plan total:** ≈ 109.5 h, or ≈ 106.5 h with the workbook reviews paused (D52). That is 14.2 weeks at 7.5 h, **about 1.5 h past the 14-week window.**
+  The app itself is the big new cost: about 34 h, against 10 h for the bot.
+- **Phase 3 (D63):**
+  - Tests A–C run by hand, as originally planned: Test A is a chat, and the Test B/C plans go as messages or PDFs.
+  - Phase 3 stays ≈ 23.75 h, and **Checkpoint 3 stays in the week of 9 Nov.**
+  - The app is built in parallel. Only about 8.5 h of your build time falls before the checkpoint, because Phase 3 fills those weeks; the rest comes after it.
+- **Plan total:** ≈ 117.5 h, or ≈ 114.5 h with the workbook reviews paused (D52). That is 15.3 weeks at 7.5 h, **about 9.5 h (1.3 weeks) past the 14-week window.**
+- **Where the extra hours come from:**
+  - hand-run tests cost 5 h more than the TestFlight version;
+  - the build loop adds 3 h.
 
 ## The split
 
@@ -32,7 +40,7 @@
 |---|---|---|
 | Owns | Moment database, population weights, each person's δ, the planner, ratings, the safety alert, data deletion | Screens, local notifications, map, share sheet, keyboard dictation |
 | Where the maths runs | Server in v0. `brain/src/brain/personal.py` is numpy-only and stateless, so the same update can run on the phone later (Area 17, 8–12 h, after v0) | Nothing in v0 |
-| Where it's built | Here, by Claude Code in the cloud (tests run here) | **On your personal Mac with Xcode.** Claude Code needs to run locally there, because SwiftUI can't be compiled in this Linux container |
+| Where it's built | Here, by Claude Code in the cloud (tests run here, and on Linux in GitHub Actions) | **GitHub Actions on a macOS runner (D64)**: build, sign and upload to TestFlight, triggered only by changes under the app folder. Claude writes the Swift here, but can't run it here, so every check goes through CI |
 | Built so far | Schema and loader, seed moment 1 (draft), priors file, scoring with thresholds and interactions, δ update (Laplace), planner (time windows, transfer thresholds, peak–end toggle off), 22 API endpoints, 28 tests | Nothing |
 
 **iOS 17+** because the SwiftUI `Map`/`Marker` API starts at iOS 17.0 (Apple docs).
@@ -41,7 +49,7 @@
 
 | Block | Telegram v0 (D44, D45) | iOS v0, like-for-like | iOS v0, left now |
 |---|---|---|---|
-| **Face:** Telegram bot flow and transcription, or the SwiftUI app (below) | 10 | 31 | 31 |
+| **Face:** Telegram bot flow and transcription, or the SwiftUI app (below) | 10 | 31 | 31 + 3 for the CI loop (D64) |
 | Onboarding back end: extraction of the open answer, read-back lines, gold-set check | 3 | 3 | 3 |
 | AI support agent | 6 | 0 (cut: Help & safety screen) | 0 |
 | Safety alert to a person (D46) | in support | 1 | 0.5 (built; set up the webhook) |
@@ -52,9 +60,9 @@
 | Privacy: deletion, notice, AI permission (no audio to delete) | 2 | 1.5 | 1.5 |
 | Design hooks: separate δ, trip intent stored per plan (D27) | 2 | 2 | 0.5 (built) |
 | Hosting: Render + Postgres, secrets, migrations | not in the estimate | 2 | 2 |
-| **Total** | **47** | **62.5** | **53.5** |
+| **Total** | **47** | **62.5** | **53.5 + 3 = 56.5** |
 
-**The Face, 31 h:**
+**The Face, 34 h:**
 
 | Part | Hours |
 |---|---|
@@ -69,11 +77,13 @@
 | "Bring a friend" share | 0.5 |
 | TestFlight external group, tester notes, App Privacy details | 1.5 |
 | Device testing and fixes | 3 |
+| Slower build-and-check loop through GitHub Actions, with no Xcode previews (D64) | 3 |
 
-- **Risk:** if you haven't shipped an iOS app before, add about 30% to the Face (≈ 9 h, GUESS). Signing and provisioning are the usual time sinks.
-- **Also needed:** a personal Mac with Xcode (CLAUDE.md: personal devices only), and the Apple Developer Program at **US$99 a year**, charged in local currency at enrolment.
+- **No 30% buffer** (D64): you have shipped an iOS app through GitHub Actions before.
+- **The Apple set-up hours now cover the workflow:** a macOS runner builds, signs and uploads; Linux runs the brain's tests; you add the certificate, profile and App Store Connect API key to GitHub Secrets.
+- **Cost:** the Apple Developer Program is **US$99 a year**, in local currency at enrolment. GitHub's macOS runners use up free Actions minutes faster than Linux; the rate on your plan is **UNVERIFIED**, so check it before relying on many builds a day.
 
-## What to cut to keep v0 small
+## Cuts to keep v0 small (accepted, D59)
 
 | Cut from v0 | Instead | Saves (h) |
 |---|---|---|
@@ -90,9 +100,11 @@
 | Payments or in-app purchase | None in v0 (money gates). Test D stays a web page | — |
 | On-device δ | Later (Area 17), once the app exists | 8–12 later |
 
-- **Custom voice button:** add it back if you want Test A's voice-vs-text split (D4, D18) *measured* rather than self-reported: +2.5 h. It would use on-device recognition, so audio never leaves the phone (`requiresOnDeviceRecognition`, iOS 13+; `SpeechAnalyzer` on iOS 26).
+- **Voice (D62):** keyboard dictation plus "Did you type or speak?". No custom voice button. If it's ever wanted: +2.5 h, with on-device recognition (`requiresOnDeviceRecognition`, iOS 13+; `SpeechAnalyzer` on iOS 26).
 
-## Phase 3 through TestFlight
+## Testing through TestFlight: the first external build and Phase 5
+
+*Superseded for Phase 3 by D63, where Tests A–C run by hand. This section now describes how the app is tested once the first external build goes out after Checkpoint 3, and in Phase 5.*
 
 **How TestFlight works (Apple):**
 - Up to **10,000 external testers**, invited by email or a **public link** with tester criteria (device, OS).
@@ -103,7 +115,7 @@
 
 **Test by test:**
 
-| Test | Telegram plan | Through TestFlight |
+| Test | Hand-run (Phase 3, D63) | Through TestFlight (after Checkpoint 3) |
 |---|---|---|
 | **A** onboarding | Abram chats by hand (≈ 4 h) | **Self-serve in the app.** The events give completion, time and drop-off screen. The read-back shows the brain's confident weights ("You avoid long transfers") and asks "Right? / Not quite" for each line. The survey is in the app |
 | **B** plan quality | LLM-drafted text plans | **Two plans, A and B, in the app.** The planner drafts the personal plan and Abram edits it. Both plans are pushed with `POST /v1/admin/users/{id}/plans` (Wizard of Oz), and labels come from the pre-randomised list. The tester picks one, gives each a "This plan fits me" 1–5, and says why |
@@ -118,54 +130,34 @@
 - **Materials to rewrite before the first external build** (Claude drafts, ≈ 1 h of your review): the consent form and privacy notice (server storage, **separate AI permission**, no audio), Post 1, a one-page tester guide, and the Test D privacy page. The host script becomes app copy (`brain/data/onboarding.yaml`).
 - **Thresholds are unchanged** (D2, D18). Test A now tests the real onboarding rather than a concierge chat, which is a harder and more honest test.
 
-**Phase 3 founder hours: ≈ 18.75 (was 23.75):**
-
-| Item | Hours |
-|---|---|
-| Unchanged items: conjoint and places 1, seed walk 0.5, Test E 5.25, decision note 1, landing page 1, recruitment 2, analysis 1.5 | 12.25 |
-| Materials rewrite for TestFlight | 1 |
-| Test A tester support (was 4 h of chats) | 1 |
-| Read-back checks (was 1 h of transcripts) | 0.5 |
-| Test B plans (planner drafts, Abram edits) | 3 |
-| Test C follow-ups (ratings arrive in the app) | 1 |
-
-**What moves before Checkpoint 3 (≈ 40.5 h of the 53.5):**
-- **For Test A (≈ 28 h):**
-  - Apple set-up, designer, the onboarding screens, settings and safety, networking, TestFlight;
-  - hosting, privacy and AI permission, safety alert, events, weights review;
-  - **the 16 swipe moments with photos.** Photos are yours or Wikimedia Commons with credit (Area 19 rule).
-- **For Tests B and C (≈ 12.5 h):** plan and map screens, rating and notifications, moment and shot cards, share, and the remaining moment records.
-- **After Checkpoint 3 (≈ 13 h):** planner matrices, weather and explanation (7); LLM extraction for consented users (3); pooled refit (1); shot-card polish and device testing (2).
-
-**Risk:** if Phase 3 fails, most of those ~40.5 h are spent before the gate. The brain was your call regardless. The onboarding screens are the part a failed Test A would change most.
-
-## Schedule (7.5 h a week)
+## Schedule (7.5 h a week, D63)
 
 | Week of | Plan |
 |---|---|
-| 28 Sep | Areas 1–3 review 5; seed moments and walk 1; conjoint and places 1 (D48); **Apple outside-activities check 0.5** (see Gates) |
+| 21 Sep (this week) | **Apple outside-activities check and the IP/invention-clause check in both contracts (D60)** |
+| 28 Sep | Areas 1–3 review 5; seed moments and walk 1; conjoint and places 1 (D48) |
 | 5 Oct | Areas 5–12 reviews 5.5; Test E recruiting 1.25; Areas 18 and 20 0.75 |
-| 12 Oct | Test E interviews 4; decision note 1. **The Test A build starts:** brain code review 1, designer brief and contributors agreement 1.5 |
-| 19 Oct – 16 Nov | The rest of the Test A build (≈ 25.5 h of its 28). In the week of 2 Nov: the Area 4 review 2 (D56) and the Areas 13–17 and 19 review 3 |
-| 16 Nov | First external build to App Review; materials rewrite 1; recruitment 2; landing page 1; the build for B and C starts |
-| 23 Nov | **Test A runs.** Build for B and C (≈ 12.5 h in all, done by the week of 30 Nov) |
-| 7 Dec | **Test B.** Then **Test C** for 2 weeks (over Christmas: expect slower replies) |
-| ~4 Jan | Analysis and **Checkpoint 3** |
-| Jan | The rest of v0 (≈ 13 h), then Phase 5 (10 h) |
+| 12 Oct | Test E interviews 4; decision note 1; validation materials 1; **designer brief and contributors agreement 1.5** (build starts) |
+| 19 Oct – 2 Nov | **Tests A–D by hand** (as planned before D50). Small build items: the brain code review in the slack of the weeks of 26 Oct and 2 Nov (2 h). The Area 4 review is in the week of 2 Nov (D56) |
+| 9 Nov | Analysis and **Checkpoint 3** (2.5). Build 5: the GitHub Actions workflow, individual enrolment, the App Store Connect record |
+| 16 Nov – ~28 Dec | **The build (≈ 48 h at 7.5 h a week), using what Phase 3 taught.** The first external TestFlight build is about the week of 30 Nov, once the onboarding, plan and safety screens work (≈ 19.5 h after 9 Nov). The designer's Build 1 screens are needed by about 16 Nov |
+| Jan | Phase 5 through TestFlight (10 h), then the decision |
+| ~3 weeks before App Store submission | Incorporate, get the D-U-N-S number and enrol as a company (D61; lead times under Gates) |
 
-**Fallback if the slip matters more than testing the real app:** run Tests A–C by hand as before, over iMessage or WhatsApp with no build, and keep TestFlight for Phase 5. Checkpoint 3 then stays in November.
+**If Phase 3 fails at Checkpoint 3**, only about 8.5 h of your build time has been spent, plus the brain draft (Claude's time).
 
 ## Gates
 
-- **New (D53): before public App Store release,** check Apple's outside-activities policy for publishing under your own developer account.
-- **Recommended: do that check before the first external TestFlight build too** (the week of 28 Sep, ≈ 0.5 h).
-  - External TestFlight is already a public distribution under your developer account: it has a public link and goes through App Review. Apple's own words are "Share your beta with just your team, or the public."
-  - **Whether the policy treats it that way is for you to check.**
-- **Individual or organisation enrolment:**
-  - As an individual, "your name will be displayed as the seller name of your apps on the App Store".
-  - An organisation shows the company name, but needs the company to exist and a **D-U-N-S number**.
-  - Incorporation is already a gate before the first paid client (D38), so decide which before enrolling.
-  - Moving an app between accounts later is possible but UNVERIFIED here.
+- **D53 and D60:** you check Apple's outside-activities policy **and** the IP/invention clauses in both contracts **this week**, before any external TestFlight build. The D53 gate before public release stays.
+- **Developer account (D61): individual for TestFlight, a company before the App Store launch.**
+  - As an individual, "your name will be displayed as the seller name of your apps on the App Store". TestFlight shows it to testers too (UNVERIFIED how prominently).
+  - **Company lead time: about 1.5–3 weeks.**
+    - Incorporation: online, "usually registered within 24 hours", £100 (gov.uk).
+    - D-U-N-S number: "allow up to 5 business days" from D&B, and email them after two weeks.
+    - Apple: "allow up to 2 business days" to receive it before you can enrol as a company (Apple D-U-N-S page).
+    - Apple's own verification of the company enrolment takes an UNVERIFIED time on top.
+  - **Start about 3 weeks before the planned submission.** Incorporation is also a gate before the first paid client (D38).
+  - Moving the app from the individual account to the company account is UNVERIFIED here. Check Apple's app-transfer rules before the switch.
 - **The designer and the backup helper each sign the contributors agreement first** (D38, D55).
   - The designer signs before the brief (the week of 12 Oct).
   - The helper signs before the first external build, because that is when the safety button goes live.
@@ -183,12 +175,9 @@
 
 ## Open questions
 
-1. Accept ≈ 53.5 h for the iOS v0 (plan ≈ 106.5 h in the window, about 1.5 h over)? This is the overrun question you held (D54).
-2. Run the Apple outside-activities check now, before external TestFlight, rather than only before App Store release?
-3. Individual or organisation developer account?
-4. Voice for Test A: keyboard dictation plus a self-report question (0 h), or a measured on-device voice button (+2.5 h)?
-5. Checkpoint 3 in about January (TestFlight), or keep November with hand-run tests (the fallback)?
-6. Have you shipped an iOS app before? If not, the Face estimate probably needs +30%.
+Resolved by D59–D64: hours and cuts, the timing of the Apple check, the account type, voice, the Checkpoint 3 date, and CI instead of a Mac. Still open:
+1. **Which chat app for the hand-run Test A?** The materials are written for Telegram and work as they are.
+2. **The app folder's name and layout in this repo** (for example `app/`), so the iOS workflow triggers only on it. This is decided when the workflow is written.
 
 ## Sources (accessed 2026-09-26)
 
@@ -197,6 +186,8 @@
 - **Enrolment:** https://developer.apple.com/programs/enroll/ — the individual's legal name is shown as seller; organisations need a D-U-N-S number; US$99 a year, in local currency where available.
 - **App Review Guidelines:** https://developer.apple.com/app-store/review/guidelines/ — 2.2, 4.2, 4.8, 5.1.1(v), 5.1.2(i); last updated 8 June 2026.
 - **StatCounter, UK mobile OS share:** https://gs.statcounter.com/os-market-share/mobile/united-kingdom — August 2026: iOS 51.47%, Android 48.51%.
+- **Apple D-U-N-S page:** https://developer.apple.com/support/D-U-N-S/ — "allow up to 5 business days to receive your number from D&B"; "allow up to 2 business days for Apple to receive your information".
+- **Companies House (gov.uk):** https://www.gov.uk/limited-company-formation/register-your-company — online, £100, "usually registered within 24 hours"; by post, 8–10 days and £124.
 - **Apple docs:**
   - `MapKit/Marker` (iOS 17.0);
   - `Speech/requiresOnDeviceRecognition` (iOS 13.0: "prevent … sending audio over the network");

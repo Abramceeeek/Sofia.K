@@ -16,7 +16,7 @@
 - **Honesty is visible.** Say that a real person runs this test and that AI helps draft summaries and plans. Never imply a person replied when it was the app.
 - **Time limits:** no visible timers and no time limits anywhere in onboarding. A section progress indicator is fine.
 
-**Build 1** = the first TestFlight build (Test A: onboarding). **Build 2** = the second (Tests B and C: plans and real use).
+**Build 1** = the first external TestFlight build, about the week of 30 Nov: onboarding, safety and settings. **Build 2** = plans and real use, about mid-December. The Phase 3 tests run by hand before either (D63), so the screens should reflect what those tests teach.
 
 ## A. First run
 
@@ -25,7 +25,7 @@
 | 1 | **Welcome** | 1 | Abram's photo and one line: "We wanted to bring some of the best experiences we've had to you, so you can have them too." What this is: a research test run by a person. An optional **tester code** field (from the sign-up form, e.g. `S-fbucl-07`). "Get started" |
 | 2 | **Consent** | 1 | A plain-English summary: what is stored, why, for how long, and how to delete it. An 18+ checkbox. The required "I agree to take part". **A separate, optional toggle, off by default:** "Let an AI service read my typed answers to help write my summary and plans" (App Review 5.1.2(i)). A link to the full privacy notice |
 
-## B. Onboarding (Test A)
+## B. Onboarding
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
@@ -38,7 +38,7 @@
 | 9 | **Here's what we heard** (read-back) | 1 | 3–6 plain lines from the model, such as "Long transfers put you off" or "You love a reveal". Each has **Right / Not quite**. Where the model is unsure, it says "Not sure yet about crowds". A friendly persona label on top, then "Anything to fix or add?" |
 | 10 | **Quick survey, then done** | 1 | "I felt understood" 1–5; "It felt like talking to a person, not filling in a form" 1–5; "Did you type or speak your answers?" (typed / spoke / both); "Was anything intrusive or tedious?" Finish: "Your two plans arrive within a day or two." |
 
-## C. Plans and the day out (Tests B and C)
+## C. Plans and the day out
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
@@ -73,6 +73,6 @@ Login or sign-up, a paywall or payments, an AI support chat, a social feed or pr
 ## Timing
 
 - **Brief:** the week of 12 Oct, once the agreement is signed.
-- **Build 1 screens (1–10, 16 example, 19, 20, 22):** first round by about 26 Oct, final by about 9 Nov.
-- **Build 2 screens (11–18, 21):** by about 16 Nov.
+- **Build 1 screens (1–10, 16 example, 19, 20, 22):** first round by about 26 Oct, final by about 16 Nov, after Checkpoint 3 (9 Nov) so its lessons can go in.
+- **Build 2 screens (11–18, 21):** by about 30 Nov.
 - **Plan behind this:** `decisions/v0-ios-plan.md`.

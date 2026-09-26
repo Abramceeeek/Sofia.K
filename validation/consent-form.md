@@ -1,6 +1,6 @@
 # Consent form — "Days out that fit you" research study
 
-> **Status (D50):** this is the Telegram version. **Rewrite it for the TestFlight app before the first external build.** It needs: answers stored on our server rather than transcribed on a laptop; no audio; a **separate, optional AI permission** (App Review 5.1.2(i)); the in-app Delete my data; and the Help & safety button. Claude drafts it; about 0.5 h for you to review.
+> **Status (D63):** this version is **for the hand-run Tests A–C** (a chat; it names Telegram, so change that if you use another chat app). **A separate app version is needed before the first external TestFlight build.** That version covers: answers stored on our server; no audio; a separate, optional AI permission (App Review 5.1.2(i)); in-app Delete my data; and the Help & safety button. Claude drafts it; ≈ 0.5 h for you to review.
 
 *Plain English. Send before the first question. The participant replies "I agree" in the chat or ticks the box on the sign-up form. Keep a copy of their reply.*
 
