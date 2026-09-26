@@ -1,5 +1,5 @@
-# Backend (Brain) tests on Linux (D64). Runs only when the Brain, or the validation files its
-# tests read, change. The iOS build workflow comes later, once Test B reports (D65).
+# Backend (Brain) tests on Linux (D64). Runs only when the Brain, or the files its tests read
+# (validation files, the Render blueprint), change. The iOS build runs separately in ios.yml (D70).
 name: brain-tests
 
 on:
@@ -8,12 +8,14 @@ on:
       - "brain/**"
       - "validation/results-sheet.xlsx"
       - "validation/conjoint/design.csv"
+      - "render.yaml"
       - ".github/workflows/brain-tests.yml"
   pull_request:
     paths:
       - "brain/**"
       - "validation/results-sheet.xlsx"
       - "validation/conjoint/design.csv"
+      - "render.yaml"
       - ".github/workflows/brain-tests.yml"
 
 jobs:

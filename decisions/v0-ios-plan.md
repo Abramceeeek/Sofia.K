@@ -11,6 +11,13 @@
 > - **iOS app code and its GitHub Actions workflow wait until Test B reports**, about 2 Nov. The designer starts now.
 > - About 25 moments move into Phase 3 for Test B (3.5 h), so **Phase 4 ≈ 53 h**. The plan total is unchanged, and the 1.3-week overrun is accepted (D67).
 > - Test A runs on WhatsApp Business (D66).
+>
+> **Updated by D70 (2026-09-26 evening):**
+> - **The GitHub Actions pipeline starts now** (D70e): `app/project.yml` (XcodeGen), a one-screen placeholder, and `.github/workflows/ios.yml` on `macos-26`.
+>   - It builds for the simulator until the secrets exist.
+>   - With the secrets, it signs and uploads from `main` or a manual run (`app/README.md`).
+> - **The app's feature code still waits until Test B reports.**
+> - 0.75 h (secrets and the App Store Connect record) moves from the week of 9 Nov to the week of 26 Oct.
 
 *Written 2026-09-26. All founder-hour figures are estimates (GUESS) that assume Claude Code writes most of the code. Apple facts come from Apple's own pages, fetched on 2026-09-26 (sources at the end).*
 

@@ -34,6 +34,11 @@ Employers (staff wellbeing, team offsites) are the third B2B segment. They are n
 
 > Hi [name], I'm researching how hotels [or visitor services] help guests find things to do in London, as part of a small independent project. Could I ask you about how you handle it today, 25–30 minutes, no sales pitch? Happy to share what I learn across the conversations. — Abram
 
+*For hotel staff contacts, add (D70):*
+> If you're not the person who decides on guest services or the budget for them, could you introduce me to the manager or budget holder? A two-line email or WhatsApp intro is perfect.
+
+**Shareable versions (D70):** `test-e-kit.md` has this script as a one-page call guide, a short message version that agencies can answer in writing (English, Russian, Uzbek), and the intro line. A published copy with copy buttons: https://claude.ai/artifact/LZQEYVFmjWUXXpVMLx7qu8.
+
 Log each contact in `results-sheet.xlsx` → `Posts` (For = "B2B"), with minutes spent.
 
 ## Interview script (past behaviour only; no pitching until the close)

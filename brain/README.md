@@ -2,14 +2,14 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
-**Status:** first draft, written 2026-09-26. The 38 tests pass on Python 3.12. Nothing is deployed. **It now also writes the Test B plans (D65).** The app itself waits until Test B reports.
+**Status:** first draft, written 2026-09-26. The 49 tests pass on Python 3.12. Nothing is deployed. **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
 
 ## Run it
 
 ```bash
 cd brain
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev]"
-.venv/bin/python -m pytest -q                       # 38 tests
+.venv/bin/python -m pytest -q                       # 49 tests
 BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --reload
 # API docs: http://127.0.0.1:8000/docs
 ```
@@ -41,6 +41,7 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 | `src/brain/travel.py` | A straight-line walking estimate; `LondonEstimate` (walk up to 20 min, otherwise a rough Tube/bus time; every parameter is a GUESS); a hook for precomputed OSRM/TfL matrices |
 | `src/brain/testb.py` | **Test B:** reads the results sheet, fits each person's weights from their swipes and choices, plans their day, and writes both blind plans (WhatsApp text and PDF) plus a review sheet for you |
 | `src/brain/api.py` | 22 endpoints (below) |
+| `src/brain/calibration.py`, `data/calibration/` | **The anonymous swipe page** (D70): a separate small app with its ~30 candidate places, the page, the results page and the ranking. Deployed by `../render.yaml` |
 
 ## Test B plans (D65, D68)
 
@@ -68,6 +69,32 @@ cd brain
 - **The sent plans never give reasons**, which keeps the test blind.
 - **The planner fills exactly the brief's number of stops** within the budget, and includes the must-do stop if it fits.
 - It refuses to run until there are enough complete moments in `data/moments/`.
+
+## Swipe calibration page (D70)
+
+An anonymous, mobile-first page where strangers swipe ~30 candidate London places (Loved it / It was fine / Didn't enjoy it / Haven't been). The results pick the 16 most familiar-and-divisive places for the Test A swipe step and v0 onboarding.
+
+**Privacy.** No login and no questions about the person. The browser makes a random ID (`crypto.randomUUID`) and keeps it in local storage. The server stores that ID, the answer and the **day only**. It never reads the client address, and uvicorn runs with `--no-access-log`. There are no cookies, analytics or third-party fonts. Each person can delete their answers from the end screen, and the page states the retention (by 31 March 2027, the same as the study data). Render's own edge logs are outside our code, and the page says so.
+
+**How the 16 are picked.** Only people who answered at least 10 places count.
+- **Familiarity** is the share who have been.
+- **Divisiveness** is the variance of the reaction among those who have been (loved +1, fine 0, didn't enjoy −1). It runs from 0 to 1.
+- **Score** is familiarity × divisiveness.
+- A place with fewer than 5 visitors is ranked last.
+- The results page also warns when a taste tag appears in fewer than 2 of the 16, and names the best place outside the set that has it. Whether to swap it in is your call.
+
+**Deploy (about 0.5 h, £0).** The Artifact database can't take answers from anonymous public visitors (it is limited to signed-in members of your organisation), so the page runs on Render's free tier.
+1. On render.com, sign in with GitHub, then choose **New → Blueprint** and pick this repo. Render reads `render.yaml`, which sets up a free web service and a free Postgres database in Frankfurt.
+2. When asked for `CALIBRATION_CONTACT`, enter the email for questions. It shows in the privacy note.
+3. Open the service URL (`https://london-places-swipe….onrender.com`), do the swipe yourself once, then share the link.
+4. For results, open `<URL>/results` and paste `CALIBRATION_ADMIN_TOKEN` (the service's Environment tab). Download **all answers (CSV)** into `validation/raw/` (never committed) **before day 30**. The free database expires 30 days after it is created.
+5. After picking the 16, suspend or delete the service and database in Render.
+
+The free service sleeps after 15 minutes without visits. The first visitor after that waits about a minute.
+
+**Keep it at £0:** don't add a payment method to Render. Without one, going over the free monthly bandwidth or build minutes suspends the service or its builds instead of billing you (render.com/docs/free, fetched 2026-09-26).
+
+Run it locally: `CALIBRATION_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.calibration:app --app-dir src --reload`, then open http://127.0.0.1:8000.
 
 ## The API
 

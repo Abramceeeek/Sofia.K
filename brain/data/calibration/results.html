@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Swipe results</title>
+<style>
+:root { --bg:#f7f4ee; --ink:#1d1b18; --muted:#6a635a; --card:#fff; --line:#e4ddd2; --accent:#2c4a78; --ok:#1d7a4c; --warn:#a4481b; }
+@media (prefers-color-scheme: dark) { :root { --bg:#141311; --ink:#f1ede6; --muted:#a9a196; --card:#1f1d1a; --line:#34312c; --accent:#8fb0e6; --ok:#5cc38d; --warn:#ef9a63; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); padding: 16px;
+       font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 900px; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: .4rem 0 .8rem; }
+form, .box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; width: 100%; max-width: 360px;
+        background: var(--bg); color: var(--ink); }
+button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; margin: 6px 6px 0 0; }
+button.go { background: var(--accent); color: var(--bg); border: 0; font-weight: 600; }
+.muted { color: var(--muted); }
+.wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; background: var(--card); font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:nth-child(2), td:nth-child(2) { text-align: left; white-space: normal; min-width: 180px; }
+tr.pick td { font-weight: 600; }
+tr.pick td:first-child { color: var(--ok); }
+.low { color: var(--muted); }
+.warn { color: var(--warn); }
+</style>
+</head>
+<body>
+<main>
+<h1>Swipe results: familiarity × divisiveness</h1>
+<form id="f">
+  <label for="t">Admin token (from Render → the service → Environment → CALIBRATION_ADMIN_TOKEN)</label><br>
+  <input id="t" type="password" autocomplete="off" required>
+  <div>
+    <button class="go">Show results</button>
+    <button type="button" id="rank">Download ranking (CSV)</button>
+    <button type="button" id="raw">Download all answers (CSV)</button>
+  </div>
+</form>
+<div id="out"></div>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  try { $("t").value = sessionStorage.getItem("calToken") || ""; } catch (e) {}
+  const token = () => { const v = $("t").value.trim(); try { sessionStorage.setItem("calToken", v); } catch (e) {} return v; };
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const pct = (x) => x == null ? "–" : Math.round(100 * x) + "%";
+  async function get(path) {
+    const r = await fetch(path, { headers: { "X-Admin-Token": token() } });
+    if (!r.ok) throw new Error(r.status === 401 ? "Wrong token." : r.status === 404 ? "Results are switched off (no admin token set)." : "Error " + r.status);
+    return r;
+  }
+  async function download(path, name) {
+    try { const b = await (await get(path)).blob(); const a = document.createElement("a");
+          a.href = URL.createObjectURL(b); a.download = name; a.click(); URL.revokeObjectURL(a.href); }
+    catch (e) { $("out").innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
+  }
+  $("rank").onclick = () => download("api/results.csv", "swipe-ranking.csv");
+  $("raw").onclick = () => download("api/export.csv", "swipe-answers.csv");
+  $("f").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const d = await (await get("api/results")).json();
+      const rows = d.places.map((p) => `<tr class="${p.recommended ? "pick" : ""} ${p.low_n ? "low" : ""}">
+        <td>${p.recommended ? "✓ " : ""}${p.rank}</td><td>${esc(p.name)}${p.low_n ? " <small>(few visitors)</small>" : ""}</td>
+        <td>${p.answers}</td><td>${pct(p.familiarity)}</td><td>${p.loved}</td><td>${p.fine}</td><td>${p.didnt}</td>
+        <td>${p.not_been}</td><td>${p.divisiveness ?? "–"}</td><td>${p.score}</td></tr>`).join("");
+      const cov = !d.n_recommended
+        ? `<p class="muted">No place has enough visitors yet (each needs ${d.rules.min_visitors_per_place} people who've been).</p>`
+        : d.coverage.length
+        ? `<ul>${d.coverage.map((c) => `<li class="warn">Only ${c.in_set} of the picks carry <b>${esc(c.tag)}</b>${c.best_outside ? `; best place outside the set with it: ${esc(c.best_outside)}` : ""}.</li>`).join("")}</ul>`
+        : `<p>Every taste tag appears in at least 2 of the picks.</p>`;
+      $("out").innerHTML = `
+        <div class="box">People counted: <b>${d.browsers_included}</b> (answered ≥ ${d.rules.min_answers_per_browser} places)
+          of ${d.browsers_total} who started; ${d.straight_liners} gave the same answer to everything (kept, but check).
+          <br><span class="muted">Places with fewer than ${d.rules.min_visitors_per_place} people who've been are ranked last.
+          Score = familiarity × divisiveness (variance of loved +1 / fine 0 / didn't enjoy −1 among people who've been).</span></div>
+        <div class="box"><b>Recommended: ${d.n_recommended} of ${d.rules.n_pick}.</b> Tag coverage:${cov}</div>
+        <div class="wrap"><table>
+          <thead><tr><th>#</th><th>Place</th><th>n</th><th>Been</th><th>Loved</th><th>Fine</th><th>Didn't</th><th>Not been</th><th>Divisive</th><th>Score</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+    } catch (err) { $("out").innerHTML = `<p class="warn">${esc(err.message)}</p>`; }
+  };
+})();
+</script>
+</body>
+</html>

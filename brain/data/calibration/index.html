@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="contact" content="{{CONTACT}}">
+<meta name="description" content="30 London places, about 2 minutes. Loved it, it was fine, didn't enjoy it, or haven't been. No login, nothing about you.">
+<title>London places: quick swipe</title>
+<style>
+:root {
+  --bg: #f7f4ee; --ink: #1d1b18; --muted: #6a635a; --card: #ffffff; --line: #e4ddd2;
+  --accent: #2c4a78; --accent-ink: #ffffff;
+  --loved: #1d7a4c; --fine: #8a6a16; --didnt: #b0392c; --notbeen: #56606d;
+  --shadow: 0 10px 30px rgba(40, 30, 10, .12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141311; --ink: #f1ede6; --muted: #a9a196; --card: #1f1d1a; --line: #34312c;
+    --accent: #8fb0e6; --accent-ink: #10131a;
+    --loved: #5cc38d; --fine: #d8b44f; --didnt: #ec7d70; --notbeen: #a3adb9;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body {
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100dvh; overscroll-behavior: contain;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+}
+main { max-width: 440px; margin: 0 auto; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: .6rem 0 .6rem; letter-spacing: -.01em; }
+p { margin: .5rem 0; }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.primary {
+  display: block; width: 100%; border: 0; border-radius: 14px; padding: 15px 18px; margin-top: 14px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 650; font-size: 1.05rem;
+}
+.link { background: none; border: 0; padding: 8px 0; color: var(--accent); text-decoration: underline; }
+.facts { list-style: none; padding: 0; margin: 14px 0; display: grid; gap: 6px; }
+.facts li { padding-left: 1.6em; position: relative; }
+.facts li::before { content: "✓"; position: absolute; left: 0; color: var(--loved); font-weight: 700; }
+details { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 14px; background: var(--card); }
+summary { cursor: pointer; font-weight: 600; }
+details p { font-size: .92rem; }
+[hidden] { display: none !important; }
+
+.top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.top .count { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); font-size: .92rem; }
+.back { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; font-size: .92rem; }
+.back:disabled { opacity: .4; cursor: default; }
+.bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+
+.stage { position: relative; height: min(56dvh, 440px); min-height: 300px; }
+.card {
+  position: absolute; inset: 0; background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: var(--shadow); padding: 24px 22px; display: flex; flex-direction: column; justify-content: center;
+  text-align: center; touch-action: none; user-select: none; -webkit-user-select: none; will-change: transform;
+}
+.card .icon { font-size: 64px; line-height: 1; margin-bottom: 14px; }
+.card h2 { margin: 0 0 6px; font-size: 1.45rem; line-height: 1.2; }
+.card .area { color: var(--muted); font-size: .95rem; margin-bottom: 12px; }
+.card .line { font-size: 1rem; }
+.card .was { margin-top: 14px; font-size: .88rem; color: var(--muted); }
+.stamp {
+  position: absolute; top: 18px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 10px;
+  border: 3px solid currentColor; font-weight: 800; font-size: 1.1rem; letter-spacing: .02em; opacity: 0;
+  background: var(--card); white-space: nowrap; pointer-events: none;
+}
+.hint { text-align: center; font-size: .85rem; color: var(--muted); margin: 12px 0 8px; }
+
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.answers button {
+  border: 2px solid var(--line); background: var(--card); border-radius: 14px; padding: 13px 8px;
+  font-weight: 650; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 52px;
+}
+.answers button .k { font-size: .8rem; color: var(--muted); font-weight: 500; }
+.answers button.sel { border-color: currentColor; }
+.a-loved { color: var(--loved); } .a-fine { color: var(--fine); }
+.a-didnt { color: var(--didnt); } .a-not_been { color: var(--notbeen); }
+.answers button:focus-visible, .primary:focus-visible, .back:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.status { min-height: 1.4em; text-align: center; font-size: .82rem; color: var(--muted); margin-top: 10px; }
+.done-icon { font-size: 56px; margin-top: 12px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row .primary { flex: 1 1 180px; }
+.secondary {
+  display: block; width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 13px 18px;
+  margin-top: 10px; background: var(--card); font-weight: 600;
+}
+.danger { color: var(--didnt); }
+@media (prefers-reduced-motion: reduce) { .card, .bar > i { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+
+<section id="intro">
+  <p class="muted small">A small independent London project</p>
+  <h1>Which London places did you actually enjoy?</h1>
+  <p>30 places, about 2 minutes. For each one, say how it felt: <strong>loved it</strong>, <strong>it was fine</strong>, <strong>didn't enjoy it</strong>, or <strong>haven't been</strong>.</p>
+  <p class="muted">Why: I'm building a day planner that learns what makes a day out feel good for each person. Your answers help pick the places it asks new people about.</p>
+  <ul class="facts">
+    <li>No login, no sign-up</li>
+    <li>No questions about you</li>
+    <li>We don't store your IP address</li>
+  </ul>
+  <button class="primary" id="start">Start</button>
+  <p id="resumeNote" class="muted small" hidden></p>
+  <details>
+    <summary>What we store, and for how long</summary>
+    <p>Your browser makes a random ID and keeps it on this device, so your answers stay together and you can delete them. It isn't linked to your name, device or account.</p>
+    <p>We store that ID, your answer for each place, and the date (not the time). We don't store your IP address, and we don't use cookies, analytics or trackers.</p>
+    <p>The site runs on Render, whose servers handle each visit and may keep their own technical logs. We don't use them.</p>
+    <p>The answers are used only to choose places for the app. We delete them by 31 March 2027 at the latest; counts per place may be kept.</p>
+    <p>Delete your answers any time with the button at the end. Questions: <span id="contact">the person who shared this link with you</span>.</p>
+  </details>
+</section>
+
+<section id="swipe" hidden>
+  <div class="top">
+    <button class="back" id="back" aria-label="Go back one place">← Back</button>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+  <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+  <div class="stage">
+    <div class="card" id="card" role="group" aria-roledescription="place card" aria-live="polite">
+      <div class="stamp" id="stamp"></div>
+      <div class="icon" id="icon" aria-hidden="true"></div>
+      <h2 id="name"></h2>
+      <div class="area" id="area"></div>
+      <div class="line" id="line"></div>
+      <div class="was" id="was" hidden></div>
+    </div>
+  </div>
+  <p class="hint">Swipe right = loved · left = didn't enjoy · up = fine · down = haven't been. Or tap:</p>
+  <div class="answers" id="answers">
+    <button class="a-didnt" data-a="didnt">Didn't enjoy it <span class="k" aria-hidden="true">←</span></button>
+    <button class="a-loved" data-a="loved">Loved it <span class="k" aria-hidden="true">→</span></button>
+    <button class="a-fine" data-a="fine">It was fine <span class="k" aria-hidden="true">↑</span></button>
+    <button class="a-not_been" data-a="not_been">Haven't been <span class="k" aria-hidden="true">↓</span></button>
+  </div>
+  <div class="status" id="status" role="status"></div>
+</section>
+
+<section id="done" hidden>
+  <div class="done-icon" aria-hidden="true">🙏</div>
+  <h1>Thank you, that's all of them</h1>
+  <p class="muted">Your answers are saved. If you know someone in London who'd do this too, the link is all they need.</p>
+  <div class="row">
+    <button class="primary" id="share">Share the link</button>
+  </div>
+  <button class="secondary" id="review">Change an answer</button>
+  <button class="secondary danger" id="delete">Delete my answers</button>
+  <div class="status" id="doneStatus" role="status"></div>
+</section>
+
+</main>
+<script>
+(() => {
+  "use strict";
+  const KEY = "londonPlacesSwipe.v1";
+  const LABEL = { loved: "Loved it", fine: "It was fine", didnt: "Didn't enjoy it", not_been: "Haven't been" };
+  const $ = (id) => document.getElementById(id);
+  let places = [], order = [], pos = 0, inflight = false, retryMs = 4000, retryTimer = null, full = false;
+
+  // ---- local state (random ID + answers), all in a try/catch: private windows can refuse storage
+  function uuid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+  function fresh() { return { id: uuid(), answers: {}, pending: [] }; }
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.id && s.answers) return s; } catch (e) {}
+    return fresh();
+  }
+  let state = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  save();
+
+  // ---- the same shuffled order every time for this ID, so a returning visitor carries on
+  function seeded(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+    return () => { h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909);
+                   return ((h ^= h >>> 16) >>> 0) / 4294967296; };
+  }
+  function shuffle(list, rand) {
+    const a = list.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  const answeredCount = () => order.filter((p) => state.answers[p.id]).length;
+  const firstUnanswered = () => { const i = order.findIndex((p) => !state.answers[p.id]); return i < 0 ? order.length : i; };
+
+  // ---- screens
+  function show(id) { for (const s of ["intro", "swipe", "done"]) $(s).hidden = s !== id; window.scrollTo(0, 0); }
+
+  function render() {
+    if (pos >= order.length) {
+      pos = firstUnanswered();
+      if (pos >= order.length) { show("done"); return; }
+    }
+    const p = order[pos];
+    $("icon").textContent = p.icon || "📍";
+    $("name").textContent = p.name;
+    $("area").textContent = p.area || "";
+    $("line").textContent = p.line || "";
+    const was = state.answers[p.id];
+    $("was").hidden = !was;
+    $("was").textContent = was ? `Your answer: ${LABEL[was]}` : "";
+    for (const b of $("answers").querySelectorAll("button")) b.classList.toggle("sel", b.dataset.a === was);
+    $("count").textContent = `${pos + 1} of ${order.length}`;
+    $("barFill").style.width = `${(100 * answeredCount()) / order.length}%`;
+    $("back").disabled = pos === 0;
+    resetCard();
+  }
+
+  function answer(a) {
+    const p = order[pos];
+    if (!p) return;
+    state.answers[p.id] = a;
+    state.pending = state.pending.filter((x) => x.place_id !== p.id).concat([{ place_id: p.id, answer: a }]);
+    save();
+    flush();
+    fly(a, () => { pos += 1; render(); });
+  }
+
+  // ---- saving: one batch at a time, retried with backoff while offline
+  function setStatus(t) { $("status").textContent = t; $("doneStatus").textContent = t; }
+  async function flush() {
+    if (inflight || full || !state.pending.length) { if (!state.pending.length) setStatus(""); return; }
+    inflight = true;
+    const batch = state.pending.slice(0, 60);
+    let ok = false;
+    try {
+      const r = await fetch("api/answers", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ browser_id: state.id, answers: batch }) });
+      if (r.status === 503) { full = true; setStatus("The survey is full now. Thank you!"); return; }
+      if (!r.ok) throw new Error(String(r.status));
+      const sent = new Set(batch.map((x) => `${x.place_id}:${x.answer}`));
+      state.pending = state.pending.filter((x) => !sent.has(`${x.place_id}:${x.answer}`));
+      save(); retryMs = 4000; setStatus(""); ok = true;
+    } catch (e) {
+      setStatus("Not saved yet. We'll keep trying while this page is open.");
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(() => { retryTimer = null; flush(); }, retryMs);
+      retryMs = Math.min(retryMs * 2, 60000);
+    } finally {
+      inflight = false;
+      if (ok && state.pending.length) flush();   // answers given while this batch was in flight
+    }
+  }
+  window.addEventListener("online", flush);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) flush(); });
+
+  // ---- swiping
+  const card = $("card"), stamp = $("stamp");
+  const COLOURS = { loved: "var(--loved)", fine: "var(--fine)", didnt: "var(--didnt)", not_been: "var(--notbeen)" };
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let start = null;
+  function direction(dx, dy) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return null;
+    return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "loved" : "didnt") : (dy < 0 ? "fine" : "not_been");
+  }
+  function showStamp(a, strength) {
+    if (!a) { stamp.style.opacity = 0; return; }
+    stamp.textContent = LABEL[a]; stamp.style.color = COLOURS[a]; stamp.style.opacity = Math.min(1, strength);
+  }
+  function resetCard() {
+    card.style.transition = reduce ? "none" : "transform .2s ease";
+    card.style.transform = ""; card.style.opacity = 1; showStamp(null);
+  }
+  function fly(a, done) {
+    if (reduce) { done(); return; }
+    const v = { loved: [1, 0], didnt: [-1, 0], fine: [0, -1], not_been: [0, 1] }[a];
+    showStamp(a, 1);
+    card.style.transition = "transform .22s ease-in, opacity .22s ease-in";
+    card.style.transform = `translate(${v[0] * 120}%, ${v[1] * 90}%) rotate(${v[0] * 14}deg)`;
+    card.style.opacity = 0;
+    setTimeout(() => { card.style.transition = "none"; done(); }, 220);
+  }
+  card.addEventListener("pointerdown", (e) => {
+    start = { x: e.clientX, y: e.clientY }; card.setPointerCapture(e.pointerId); card.style.transition = "none";
+  });
+  card.addEventListener("pointermove", (e) => {
+    if (!start) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y;
+    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx / 18}deg)`;
+    showStamp(direction(dx, dy), Math.max(Math.abs(dx), Math.abs(dy)) / 90);
+  });
+  function end(e) {
+    if (!start) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y; start = null;
+    const a = direction(dx, dy);
+    if (a && Math.max(Math.abs(dx), Math.abs(dy)) > 90) answer(a); else resetCard();
+  }
+  card.addEventListener("pointerup", end);
+  card.addEventListener("pointercancel", () => { start = null; resetCard(); });
+
+  $("answers").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) answer(b.dataset.a); });
+  document.addEventListener("keydown", (e) => {
+    if ($("swipe").hidden) return;
+    const a = { ArrowRight: "loved", ArrowLeft: "didnt", ArrowUp: "fine", ArrowDown: "not_been" }[e.key];
+    if (a) { e.preventDefault(); answer(a); }
+    else if (e.key === "Backspace" && pos > 0) { e.preventDefault(); pos -= 1; render(); }
+  });
+  $("back").addEventListener("click", () => { if (pos > 0) { pos -= 1; render(); } });
+
+  // ---- start, done, share, delete
+  $("start").addEventListener("click", () => { pos = firstUnanswered(); show("swipe"); render(); });
+  $("review").addEventListener("click", () => { pos = 0; show("swipe"); render(); });
+  $("share").addEventListener("click", async () => {
+    const url = location.origin + location.pathname;
+    try {
+      if (navigator.share) { await navigator.share({ title: "London places: quick swipe", text: "30 London places, 2 minutes. Which did you actually enjoy?", url }); return; }
+      await navigator.clipboard.writeText(url); $("doneStatus").textContent = "Link copied.";
+    } catch (e) { if (e && e.name !== "AbortError") $("doneStatus").textContent = url; }
+  });
+  $("delete").addEventListener("click", async () => {
+    if (!confirm("Delete all your answers from our database? This can't be undone.")) return;
+    try {
+      const r = await fetch(`api/answers/${encodeURIComponent(state.id)}`, { method: "DELETE" });
+      if (!r.ok) throw new Error(String(r.status));
+    } catch (e) { $("doneStatus").textContent = "Couldn't reach the server. Please try again in a minute."; return; }
+    state = fresh(); save(); order = shuffle(places, seeded(state.id)); pos = 0;
+    show("intro"); $("resumeNote").hidden = false; $("resumeNote").textContent = "Your answers are deleted.";
+    $("start").textContent = "Start again";
+  });
+
+  fetch("api/places").then((r) => r.json()).then((d) => {
+    places = d.places; order = shuffle(places, seeded(state.id));
+    const n = answeredCount();
+    if (n >= order.length) { show("done"); }
+    else if (n > 0) { $("start").textContent = "Carry on"; $("resumeNote").hidden = false;
+                      $("resumeNote").textContent = `You've answered ${n} of ${order.length}.`; }
+    flush();
+  }).catch(() => { $("start").disabled = true; $("start").textContent = "Couldn't load. Please refresh."; });
+  const contact = document.querySelector('meta[name="contact"]');
+  if (contact && contact.content) $("contact").textContent = contact.content;
+})();
+</script>
+</body>
+</html>

@@ -20,6 +20,7 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 | `conjoint/` | The 10 "this or that" tasks (`design.csv`) and the script that makes them |
 | `test-d-landing/` | Test D landing page (static HTML): random arm A £4.99/£49.99 or arm B £9.99/£99.99, waitlist only (D25, D31) |
 | `discovery-interviews.md` | Test E (runs first): 5 B2B discovery interviews (3 London, 2 Uzbek) and 3 optional venue conversations (D34, D36) |
+| `test-e-kit.md` | Test E in shareable form (D70): a 30-min call guide, a two-message version agencies answer in writing (English, Russian, Uzbek), and the hotel budget-holder intro line. Published with copy buttons: https://claude.ai/artifact/LZQEYVFmjWUXXpVMLx7qu8 |
 | `shot-card-example.md` | The Test A example shot card, built from seed moment 1 (gaps to fill on one walk) |
 | `results-sheet.xlsx` | Where every result goes; the Summary tab scores against the thresholds, split by voice and text (D18) |
 | `results.md` | *Checkpoint 3, written after the tests* |
@@ -47,11 +48,12 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 - [ ] Abram confirms the conjoint attributes (`conjoint/README.md`) and the 16 swipe items (`interview-script.md` §3).
 - [ ] Seed moment 1 is in (`research/seed-moments/01-tube-to-museum.md`). **Fill its gaps on one walk** (exit, route, best time, shot position), take a photo from the spot, and complete `shot-card-example.md` (≈ 0.5 h).
 - [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data.
-- [ ] **WhatsApp Business on a separate number (D66)**, on a personal phone, never the work one (CLAUDE.md).
+- [ ] **WhatsApp Business on a separate number (D66)**, on a personal phone, never the work one (CLAUDE.md). **The number is ready (2026-09-26); you'll share it when it's needed.** Still to do:
   - Set a greeting message and an away message: "I reply within a few hours; in an emergency call 999".
   - Save the script's prompts as quick replies, and use labels for each person's stage (A done, plans sent, day done). WhatsApp lists all four as Business app features.
   - Check the chat-backup setting, so voice notes you delete after transcribing aren't kept in a backup.
 - [ ] Set up the Tally form (asking for the WhatsApp number) and GoatCounter (`test-d-landing/README.md`).
+- [ ] **Swipe calibration page (D70):** deploy it with the Render Blueprint (`brain/README.md`, about 0.5 h, £0). Share the link in the week of 28 Sep, pick the 16 in the week of 5 Oct, and download the answers before the free database's 30 days run out.
 - [ ] Safety during Test C: participants message you directly (consent form); you reply within a few hours (D46).
 - [ ] Put a contact email in the consent form, privacy notice and landing page.
 - [ ] Copy `results-sheet.xlsx` to `validation/raw/results.xlsx` and fill in the copy. `validation/raw/` is git-ignored, and the template in the repo stays empty. **Never commit participant data.** Participant IDs P01–P20 and the Test B A/B labels are pre-filled.

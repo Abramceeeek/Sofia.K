@@ -1,0 +1,9 @@
+# Only what the swipe calibration page needs (render.yaml installs this, not the whole Brain,
+# so the free 512 MB instance doesn't carry OR-Tools and NumPy). Pinned to the versions the tests
+# ran with on 2026-09-26.
+fastapi==0.141.1
+uvicorn==0.54.0
+sqlalchemy==2.1.1
+pydantic==2.13.5
+pyyaml==6.0.3
+psycopg[binary]==3.3.6

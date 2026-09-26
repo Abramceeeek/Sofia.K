@@ -2,6 +2,40 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (evening) — standing rule, Test E kit, swipe page, agreement, iOS pipeline
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D69 | **Standing rule:** Claude makes minor decisions itself and logs them: wording, file layout, scheduling moves under 1 h, and tooling within the agreed stack. It stops only for decisions that **change scope, cost money, affect privacy or safety, or move a checkpoint**. Everything else is batched into one list at each checkpoint (below) | Asking about each minor choice | Founder decision; added to `CLAUDE.md` as working rule 8 |
+| D70a | **WhatsApp Business second number is ready.** Abram shares it when needed | Set-up pending | Founder update |
+| D70b | **Test E comes in two shareable forms:** a 30-min call guide, and a two-message version agencies answer in writing (English, Russian, Uzbek). **Hotel staff contacts are asked to introduce Abram to a manager or budget holder** (`validation/test-e-kit.md`, published with copy buttons) | The script only | Founder request. The description stays in message 2, so nothing is pitched before the questions |
+| D70c | **An anonymous swipe page calibrates the 16 places:** ~30 candidates; Loved it / It was fine / Didn't enjoy it / Haven't been. There is no login and no personal questions, and no IP address is stored, only a random browser ID. **The 16 are picked by familiarity × divisiveness** (`brain/src/brain/calibration.py`) | Abram choosing the 16 by judgement (D30, D48) | Founder request. Onboarding needs places that split people (CLAUDE.md) |
+| D70d | **Contributors agreement drafted:** role, IP assigned to the company (via Abram until it's incorporated), a **~10% equity placeholder with 4-year vesting and a 1-year cliff, granted once the company is incorporated** (`legal/contributors-agreement-draft.md`) | Agreement pending (D38) | Founder request. It must be signed before anyone else contributes work |
+| D70e | **The GitHub Actions iOS pipeline starts now** (`.github/workflows/ios.yml`, a placeholder `app/`). Abram adds the secrets. **The app's feature code still waits until Test B reports** | D65's hold on the workflow | Founder request |
+| D71 | **The Areas 8–12 review stays deferred to after Checkpoint 3** (approved). **Moment names arrive as they come**, not only in the week of 5 Oct; Claude drafts each card on arrival | Open questions 1 and 2 | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m1 | The swipe page runs as a small separate app on **Render's free tier** (a free web service plus free Postgres in Frankfurt, £0), deployed from `render.yaml`. The Artifact database can't take answers from anonymous public visitors (it is organisation-internal only) | `render.yaml`, `brain/README.md` |
+| m2 | **30 candidates:** the draft 16, plus London Eye, Tower of London, Covent Garden, Buckingham Palace, Oxford Street, Piccadilly/Leicester Square, Kew, Richmond Park, Portobello Road, St Paul's, South Bank walk, Platform 9¾, Madame Tussauds and Westfield. All tags are DRAFT | `brain/data/calibration/places.yaml` |
+| m3 | **Ranking rule:** only people with ≥ 10 answers count; places with < 5 visitors rank last; the results page warns when a taste tag appears in fewer than 2 of the 16 | `calibration.py` |
+| m4 | **Page details:** the day is stored, not the time; one-tap deletion; no cookies, analytics or third-party fonts; `noindex`; the contact email is set at deploy | `data/calibration/index.html` |
+| m5 | Test E message version: two messages. Claude's Russian and Uzbek translations, to be checked (0.25 h, already budgeted) | `validation/test-e-kit.md` |
+| m6 | Agreement: IP goes to Abram, who holds it for the company until incorporation; one week's notice; the bad-leaver terms are left to the solicitor | `legal/contributors-agreement-draft.md` |
+| m7 | **iOS pipeline:** XcodeGen (no committed project file); target "Face", display name "Planner" (placeholder); iOS 17+, iPhone only; the `macos-26` runner; team, bundle ID and profile read from the profile; a throwaway keychain password; simulator-only builds until the secrets exist; uploads only from `main` or a manual run | `app/`, `.github/workflows/ios.yml` |
+| m8 | **Schedule moves:** swipe page deploy and share in the week of 28 Sep (0.75 h); pick the 16 in the week of 12 Oct (0.5 h, after two weeks of answers); "confirm the 16 places" shrinks to checking the candidates (1.0 → 0.5 h); secrets and the App Store Connect record move from the week of 9 Nov to the week of 26 Oct (0.75 h). **Net +0.75 h on the phase totals** (≈ 115.25 h in the window, 15.4 weeks), plus 0.25 h for this decision round | `LOG.md` |
+
+**For Abram (money or privacy; not decided by Claude):**
+1. **Privacy: read the swipe page's privacy note before sharing the link.** It is live only once you deploy it.
+   - It keeps a random ID in the browser's local storage. Claude judges this to be "strictly necessary" under PECR (ICO guidance, 29 Apr 2026), because it only records the answers the visitor chose to give. This is Claude's judgement, not legal advice.
+   - It deletes answers by 31 March 2027, the same date as the study data.
+   - It says Render's own servers may keep technical logs, which our code can't switch off.
+2. **Money: solicitor review of the agreement** before signing. The cost is UNVERIFIED.
+3. **Money: the secrets need an active Apple Developer Program membership.** If you aren't enrolled yet, enrolling now pays the annual fee before Test B reports (it was planned for 9 Nov, and only if Test B passed). The simulator build runs without it.
+4. **Legal gate:** the designer works now (D65), so the agreement must be signed before their work is used. If they've already started, sign now: clause 3 covers work already done.
+
 ## 2026-09-26 (after the founder briefing) — Test B first, WhatsApp, brain now
 
 | # | Decision | Replaces | Why |

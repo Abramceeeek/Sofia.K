@@ -1,7 +1,8 @@
 # The 16 Test A swipe items (validation/interview-script.md §3), keyed by the "Item #" column
 # of the results sheet's Swipes tab.
 #
-# STATUS: DRAFT. Abram confirms the 16 places this week (D30, D48), and then these tags.
+# STATUS: DRAFT. The final 16 come from the anonymous swipe page (D70c: data/calibration/places.yaml,
+# ranked by familiarity x divisiveness), then Abram confirms them and their tags.
 # The tags are Claude's first draft from each name (Area 2 process: the LLM drafts, Abram corrects).
 # They are judgements, not facts. Cost is left out (null) until prices are checked, so swipes do
 # not inform the cost weight.

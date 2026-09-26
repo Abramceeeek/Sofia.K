@@ -128,7 +128,8 @@ The same profile matches **people**, not just places. Compatible trip-mates make
   - Tests A–C run by hand. Test A is a chat on **WhatsApp Business with a separate number**; the plans go as messages or PDFs.
   - **The Brain generates the Test B plans** from the results sheet, and Abram checks them.
   - Test B runs first and fast after Test E, and reports about the week of 2 Nov. Checkpoint 3 is in the week of 9 Nov.
-  - The designer works now. **iOS app code waits until Test B reports.**
+  - The designer works now. **iOS app code waits until Test B reports.** The GitHub Actions pipeline and a placeholder `app/` exist now (D70e), and it builds for the simulator until Abram adds the signing secrets.
+  - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.
 - **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Designer screens:** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`.
 - **Economics work is paused** unless a decision needs it (D52).
 
@@ -156,3 +157,4 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 5. Stop at each phase checkpoint in `KICKOFF_PROMPT.md` and summarise for Abram before continuing.
 6. Keep notes short: one page per research area, decision first.
 7. UK context by default (London first, GBP, UK law).
+8. **Standing rule (D69):** make minor decisions yourself (wording, file layout, scheduling moves under 1 h, tooling within the agreed stack) and log them in `decisions/decision-log.md`. Stop only for decisions that change scope, cost money, affect privacy or safety, or move a checkpoint. Batch everything else into one list at each checkpoint.

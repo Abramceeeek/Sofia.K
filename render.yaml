@@ -1,0 +1,36 @@
+# Render Blueprint for the anonymous swipe calibration page (D70). Free tier only: £0.
+# How to deploy (about 0.5 h): brain/README.md → "Swipe calibration page".
+#
+# Free-tier facts (render.com/docs/free, fetched 2026-09-26):
+# - the web service sleeps after 15 min without visits; the next visit waits about a minute;
+# - the free Postgres database expires 30 days after it is created (14 days' grace to upgrade),
+#   so download the answers from /results before then.
+# `plan: free` is set on both on purpose: if it is left out, Render picks paid plans.
+services:
+  - type: web
+    name: london-places-swipe
+    runtime: python
+    plan: free
+    region: frankfurt          # nearest Render region to London (no UK region); EU data location
+    rootDir: brain
+    buildCommand: pip install -r requirements-calibration.txt
+    # --no-access-log: no request lines (and so no client addresses) in our logs
+    startCommand: uvicorn brain.calibration:app --app-dir src --host 0.0.0.0 --port $PORT --no-access-log
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.14"       # must be fully qualified
+      - key: CALIBRATION_DATABASE_URL
+        fromDatabase:
+          name: london-places-swipe-db
+          property: connectionString
+      - key: CALIBRATION_ADMIN_TOKEN
+        generateValue: true    # read it in the dashboard; it unlocks /results
+      - key: CALIBRATION_CONTACT
+        sync: false            # Render asks for it: the email shown in the page's privacy note
+
+databases:
+  - name: london-places-swipe-db
+    plan: free
+    region: frankfurt
+    ipAllowList: []            # no connections from the internet; only the web service above

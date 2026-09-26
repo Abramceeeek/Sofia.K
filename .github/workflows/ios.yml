@@ -1,0 +1,168 @@
+# iOS app (the Face): build on a macOS runner, then sign and upload to TestFlight (D64, D70).
+# Runs only when files under app/ (or this workflow) change, or when started by hand.
+# - Until the signing secrets exist, it builds for the simulator only, so the pipeline can be checked now.
+# - With the secrets, a push to main (or a manual run with "upload" ticked) archives, signs and
+#   uploads a build numbered with the run number.
+# Secrets are added by Abram (Settings → Secrets and variables → Actions): see app/README.md.
+# Cost: macOS minutes are billed at $0.062/min beyond the free quota on private repos, and are free on
+# public repos (GitHub billing docs, fetched 2026-09-26).
+name: ios
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Sign and upload to TestFlight (needs the secrets)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Xcode 26: since 28 Apr 2026 App Store Connect only accepts builds made with the iOS 26 SDK.
+    runs-on: macos-26
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    env:
+      WANT_UPLOAD: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.upload) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tools
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"   # saves paid macOS minutes
+        run: |
+          xcodebuild -version
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          xcodegen --version
+          # Log the export keys this Xcode accepts (checks method/destination below on the first run)
+          xcodebuild -help 2>/dev/null | grep -E '^\s+(method|destination|manageAppVersionAndBuildNumber)\b' -A2 || true
+
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      - name: Are the signing secrets set?
+        id: secrets
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
+        run: |
+          missing=()
+          for name in BUILD_CERTIFICATE_BASE64 P12_PASSWORD BUILD_PROVISION_PROFILE_BASE64 \
+                      APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_BASE64; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ ${#missing[@]} -eq 0 ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Signing secrets not set yet (${missing[*]}). Building for the simulator only."
+          fi
+
+      - name: Build for the simulator (no signing)
+        if: steps.secrets.outputs.ready != 'true' || env.WANT_UPLOAD != 'true'
+        run: |
+          xcodebuild build -project Face.xcodeproj -scheme Face -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+
+      # The next three steps run only with the secrets, on main or a manual run.
+      - name: Install the certificate and provisioning profile
+        if: steps.secrets.outputs.ready == 'true' && env.WANT_UPLOAD == 'true'
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+        run: |
+          # As in GitHub's guide "Installing an Apple certificate on macOS runners for Xcode development"
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 24)   # a throwaway keychain, so any random string works
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles
+          # Read the team, bundle ID and profile name from the profile itself, so they need no secrets
+          security cms -D -i "$PP_PATH" > "$RUNNER_TEMP/pp.plist"
+          TEAM_ID=$(plutil -extract TeamIdentifier.0 raw "$RUNNER_TEMP/pp.plist")
+          APP_ID=$(plutil -extract Entitlements.application-identifier raw "$RUNNER_TEMP/pp.plist")
+          PROFILE_NAME=$(plutil -extract Name raw "$RUNNER_TEMP/pp.plist")
+          BUNDLE_ID=${APP_ID#"$TEAM_ID".}
+          SIGN_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | sed -n 's/.*"\(.*\)".*/\1/p' | head -1)
+          if [ -z "$SIGN_IDENTITY" ]; then echo "::error::No signing identity in the .p12. Check P12_PASSWORD and the certificate."; exit 1; fi
+          {
+            echo "TEAM_ID=$TEAM_ID"
+            echo "BUNDLE_ID=$BUNDLE_ID"
+            echo "PROFILE_NAME=$PROFILE_NAME"
+            echo "SIGN_IDENTITY=$SIGN_IDENTITY"
+          } >> "$GITHUB_ENV"
+          echo "Signing bundle $BUNDLE_ID with profile \"$PROFILE_NAME\""   # the identity (a legal name) stays out of the log
+
+      - name: Archive (signed)
+        if: steps.secrets.outputs.ready == 'true' && env.WANT_UPLOAD == 'true'
+        run: |
+          xcodebuild archive -project Face.xcodeproj -scheme Face -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Face.xcarchive" \
+            CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$TEAM_ID" PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+            CODE_SIGN_IDENTITY="$SIGN_IDENTITY" PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}"
+
+      - name: Upload to TestFlight
+        if: steps.secrets.outputs.ready == 'true' && env.WANT_UPLOAD == 'true'
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+          echo -n "$APP_STORE_CONNECT_KEY_BASE64" | base64 --decode -o "$KEY_PATH"
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingCertificate</key><string>$SIGN_IDENTITY</string>
+            <key>provisioningProfiles</key>
+            <dict><key>$BUNDLE_ID</key><string>$PROFILE_NAME</string></dict>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Face.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+          echo "::notice::Build ${{ github.run_number }} uploaded. It appears in App Store Connect → TestFlight once Apple has processed it."

@@ -1,0 +1,244 @@
+# Candidate places for the anonymous swipe calibration page (D70). The page asks strangers
+# Loved it / It was fine / Didn't enjoy it / Haven't been for each, and the results pick the 16
+# most familiar-and-divisive for the Test A swipe step and v0 onboarding.
+#
+# `swipe_item` links a candidate to the current draft list (data/swipe_items.yaml); a test checks
+# that its tags match that file. The other 14 are new candidates.
+#
+# STATUS: DRAFT. Tags are Claude's first draft from each name (the LLM drafts, Abram corrects).
+# They are judgements, not facts, and are used here only to check that the chosen 16 cover every
+# taste feature. `line` is what people see under the name: plain, neutral, no praise.
+#
+# Tags are 0-2. Place: movement_views, food, green_nature, history_culture, iconic, local_novel,
+# crowds, walking_effort, active, outdoor_exposure, photo_potential.
+# Moment: contrast_reveal, absorption, awe, social_pull.
+
+version: "0.1-draft"
+places:
+  - id: big_ben
+    swipe_item: 1
+    name: "Big Ben and Parliament Square"
+    area: "Westminster"
+    icon: "🕰️"
+    line: "The clock tower, Parliament and the square in front of them"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+  - id: uber_boat
+    swipe_item: 2
+    name: "Uber Boat on the Thames"
+    area: "River Thames"
+    icon: "⛴️"
+    line: "The river bus between the piers, sitting inside or out on the back deck"
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+  - id: borough_market
+    swipe_item: 3
+    name: "Borough Market"
+    area: "London Bridge"
+    icon: "🥘"
+    line: "Food market under the railway arches: stalls, street food, produce"
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: british_museum
+    swipe_item: 4
+    name: "British Museum"
+    area: "Bloomsbury"
+    icon: "🏛️"
+    line: "World history collections under the glass-roofed Great Court"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
+  - id: cable_car
+    swipe_item: 5
+    name: "IFS Cloud Cable Car"
+    area: "Greenwich to Royal Docks"
+    icon: "🚡"
+    line: "Cable car over the Thames between Greenwich Peninsula and the Royal Docks"
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+  - id: hyde_park
+    swipe_item: 6
+    name: "Hyde Park"
+    area: "Central London"
+    icon: "🌳"
+    line: "Large central park with the Serpentine lake"
+    place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+  - id: camden_market
+    swipe_item: 7
+    name: "Camden Market"
+    area: "Camden"
+    icon: "🛍️"
+    line: "Market stalls, street food and shops by the canal lock"
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: tate_turbine_hall
+    swipe_item: 8
+    name: "Tate Modern Turbine Hall"
+    area: "Bankside"
+    icon: "🏭"
+    line: "The huge former power-station hall at the entrance of the modern art gallery"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 1}
+  - id: sky_garden
+    swipe_item: 9
+    name: "Sky Garden"
+    area: "City of London"
+    icon: "🌿"
+    line: "Indoor garden and viewing deck at the top of a City skyscraper"
+    place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  - id: columbia_road
+    swipe_item: 10
+    name: "Columbia Road Flower Market (Sunday)"
+    area: "Bethnal Green"
+    icon: "💐"
+    line: "Sunday street market selling flowers and plants, with small shops along it"
+    place: {movement_views: 0, food: 1, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: greenwich_park_view
+    swipe_item: 11
+    name: "The view from the top of Greenwich Park"
+    area: "Greenwich"
+    icon: "🔭"
+    line: "The hill by the Royal Observatory, looking over the river to Canary Wharf"
+    place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  - id: southken_nhm_walk
+    swipe_item: 12
+    name: "Walking from South Kensington tube to the Natural History Museum"
+    area: "South Kensington"
+    icon: "🦕"
+    line: "Out of the tube tunnel and up to the museum's front"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 2, absorption: 0, awe: 2, social_pull: 2}
+  - id: primrose_hill
+    swipe_item: 13
+    name: "Primrose Hill at sunset"
+    area: "Regent's Park"
+    icon: "🌇"
+    line: "Grassy hill north of Regent's Park with a view of the skyline"
+    place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  - id: brick_lane
+    swipe_item: 14
+    name: "Brick Lane for food"
+    area: "Shoreditch / Spitalfields"
+    icon: "🍛"
+    line: "Curry houses, bagel shops, street food and markets along one street"
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: hampstead_ponds
+    swipe_item: 15
+    name: "Hampstead Heath ponds (swimming)"
+    area: "Hampstead"
+    icon: "🏊"
+    line: "Outdoor swimming in natural ponds on the Heath"
+    place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 1, active: 2, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 1}
+  - id: regents_canal
+    swipe_item: 16
+    name: "Regent's Canal walk from Little Venice"
+    area: "Little Venice to Camden"
+    icon: "🛶"
+    line: "Towpath walk past houseboats, from Little Venice towards Camden"
+    place: {movement_views: 1, food: 0, green_nature: 1, history_culture: 1, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 0, social_pull: 1}
+  # New candidates (not in the draft 16)
+  - id: london_eye
+    name: "London Eye"
+    area: "South Bank"
+    icon: "🎡"
+    line: "The big observation wheel: one slow turn in a glass capsule"
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+  - id: tower_of_london
+    name: "Tower of London"
+    area: "Tower Hill"
+    icon: "🏰"
+    line: "Castle by Tower Bridge, home of the Crown Jewels"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}
+  - id: covent_garden
+    name: "Covent Garden"
+    area: "West End"
+    icon: "🎭"
+    line: "Covered market hall, shops, cafés and street performers"
+    place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: buckingham_palace
+    name: "Buckingham Palace and the Changing of the Guard"
+    area: "St James's"
+    icon: "💂"
+    line: "The palace front, and the guard ceremony when it's on"
+    place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+  - id: oxford_street
+    name: "Shopping on Oxford Street"
+    area: "West End"
+    icon: "🛒"
+    line: "The long high street of big department stores and chain shops"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 0, crowds: 2, walking_effort: 2, active: 0, outdoor_exposure: 1, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+  - id: piccadilly_leicester
+    name: "Piccadilly Circus and Leicester Square"
+    area: "West End"
+    icon: "🌆"
+    line: "The big screens, the square and the busy streets around them"
+    place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 0, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+  - id: kew_gardens
+    name: "Kew Gardens"
+    area: "Kew"
+    icon: "🌺"
+    line: "Botanic gardens with large Victorian glasshouses"
+    place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
+  - id: richmond_park
+    name: "Richmond Park"
+    area: "Richmond"
+    icon: "🦌"
+    line: "Very large park with open grassland and free-roaming deer"
+    place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 1, crowds: 0, walking_effort: 2, active: 2, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 2, social_pull: 1}
+  - id: portobello_road
+    name: "Notting Hill and Portobello Road Market"
+    area: "Notting Hill"
+    icon: "🏘️"
+    line: "Coloured houses and the long street market of antiques, food and stalls"
+    place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: st_pauls
+    name: "St Paul's Cathedral"
+    area: "City of London"
+    icon: "⛪"
+    line: "The domed cathedral; you can climb up to the galleries in the dome"
+    place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 1}
+  - id: south_bank_walk
+    name: "The South Bank riverside walk"
+    area: "Westminster Bridge to Tower Bridge"
+    icon: "🚶"
+    line: "Walking along the river past the theatres, book stalls and bridges"
+    place: {movement_views: 1, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+  - id: platform_9_3_4
+    name: "Platform 9¾ at King's Cross"
+    area: "King's Cross"
+    icon: "🧳"
+    line: "The Harry Potter trolley-in-the-wall photo spot and shop"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 0, crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+  - id: madame_tussauds
+    name: "Madame Tussauds"
+    area: "Baker Street"
+    icon: "🗿"
+    line: "Wax figures of famous people you can pose next to"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  - id: westfield
+    name: "Westfield shopping centre"
+    area: "Stratford or White City"
+    icon: "🏬"
+    line: "Large indoor shopping centre with restaurants and a cinema"
+    place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
