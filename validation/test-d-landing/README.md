@@ -1,6 +1,6 @@
 # Test D landing page — set-up (≈1 founder hour)
 
-A static page with **no payments and no card details** (D1, D25). It randomly shows arm A (£4.99/month) or arm B (£9.99/month); both arms also show £59.99/year. Every button leads to the same waitlist form, and the priced buttons first show an honest note.
+A static page with **no payments and no card details** (D1, D25). It randomly shows arm A (£4.99/month or £49.99/year) or arm B (£9.99/month or £99.99/year). Both annual prices are about two months free (D31). Every button leads to the same waitlist form, and the priced buttons first show an honest note.
 
 ## Steps
 

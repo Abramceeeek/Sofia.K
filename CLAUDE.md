@@ -8,7 +8,11 @@ This file is the standing context for this project. Read it fully before any tas
 - **Time budget:** ~7.5 hours/week alongside full-time work and actuarial exams. Hours, not money, are the binding constraint. Every plan must state its hour cost.
 - **Stage:** idea + design. Nothing built. No users tested yet.
 - **Existing gate from the founder's own plan:** the core social idea (strangers join trips posted by someone they've never met, turn up and pay their share) is tested by a no-code "weekend test": post 5 real trips in existing travel/hiking/uni groups, pass = ≥3 strangers join and turn up. This project's validation work should run alongside or reuse that test, not replace it.
-- **Legal gates from the founder's existing plan** (employer permission for outside work, right to run a business, IP clauses) must be cleared before charging anyone or incorporating. Research can proceed; revenue cannot.
+- **Legal gates before taking any money** *(updated D33, confirmed by Abram 2026-09-26)*:
+  - **Cleared:** right to run a business.
+  - **Remaining 1:** Apple's outside-activities policy — check it and disclose if required. All project work stays on personal time and personal devices.
+  - **Remaining 2:** written secondary-employment approval from Abram's government agency employer.
+  - Revenue from trips or subscriptions can start once both remaining gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
 

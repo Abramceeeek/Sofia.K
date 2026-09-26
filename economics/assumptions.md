@@ -16,9 +16,22 @@
 - **Sensitivity**: each row changes one input and restates the formulas. A two-way grid shows price × conversion.
 - **Virality** (D23): with S0 seed sign-ups a year from posting and viral coefficient K, steady-state sign-ups are S0 ÷ (1 − K), so the K needed is 1 − S0 ÷ S. The tab then checks founder hours at that volume.
   - At 7.5 h a week, half of the spare hours spent posting, and 5 sign-ups per post, you get ~1,750 seed sign-ups a year.
-  - £50k needs **K ≈ 0.98** (base) or **K ≈ 0.69** (upside: paywall, £9.99/£59.99, web checkout).
-  - Even the upside needs onboarding and support time to fall to **~19%** of the current guesses. Automation is not optional.
-- **PaymentChannels** (D24): net per sale at the Test D prices for Stars, Stripe, Apple and Google.
+  - £50k needs **K ≈ 0.98** (base) or **K ≈ 0.53** (upside: Test D arm B £9.99/£99.99, hard paywall, web checkout; D31).
+  - Even the upside needs onboarding and support time to fall to **~29%** of the current guesses. Automation is not optional.
+- **PaymentChannels** (D24): net per sale at the Test D prices (£4.99/£49.99 and £9.99/£99.99, D31) for Stars, Stripe, Apple and Google.
+- **FreeFirst** (D34): a 36-month projection.
+  - Free until N cumulative sign-ups (1,000), then subscription plus a £3 group-trip fee per attendee (a Stripe Connect application fee; Area 18). Existing free users convert once at half the normal rate.
+  - Base case: charging starts in month 7; revenue is ~£0.9k in year 1 and ~£2.9k in year 3; the deepest cumulative loss is ~£0.6k. Founder hours exceed 32.5 a month in 34 of 36 months.
+  - Switch B8 to "upside" to see Test D arm B with a paywall.
+- **Venues** (D34): group discounts plus a 10% commission, mostly off-peak. At 4 bookings of 5 people a month, one venue brings ~£510 a year. Venues are a small line (99 venues for £50k) and a user benefit more than a revenue engine. Online travel agents take 20–30% (search), so 10% is a partner-friendly guess.
+- **B2B** (D34): hotels, tourism boards and employers at £200 / £350 / £500 a month per client (founder range).
+  - £50k needs 21 / 12 / 9 clients.
+  - Management plus replacing churned clients takes 466 / 266 / 200 founder hours a year, against 390 for everything.
+  - All inputs are guesses until the 5 discovery interviews.
+- **Path50k** (D34): consumer at K = 0.3 + group trips + 5 venues, with B2B filling the gap.
+  - Consumer and venue revenue: base ~£6k, upside ~£38k.
+  - B2B clients needed at £350: base 11 (88% of revenue), upside 3.
+  - **Both cases are ~420–440 h a year over the founder budget.** Posting, curation, venues and B2B alone use most of the 390 h, so support must be near-automated and one line has to be dropped or delegated.
 
 ## The three stacks
 

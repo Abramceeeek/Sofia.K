@@ -1,6 +1,6 @@
 # Phase 3 — Validation
 
-Will strangers finish a conversational onboarding, prefer a plan built from it, use it, and pay? Nothing in Phase 4 is built until this passes (`KICKOFF_PROMPT.md`). Decisions D1–D4, D16, D18, D19, D21 and D23–D26 apply.
+Will strangers finish a conversational onboarding, prefer a plan built from it, use it, and pay? Nothing in Phase 4 is built until this passes (`KICKOFF_PROMPT.md`). Decisions D1–D4, D16, D18, D19, D21, D23–D26 and D30–D35 apply.
 
 ## Files
 
@@ -12,7 +12,9 @@ Will strangers finish a conversational onboarding, prefer a plan built from it, 
 | `consent-form.md` | Plain-English consent: what's recorded, why, deletion after transcription (D3) |
 | `privacy-notice.md` | UK GDPR notice for the study and the Test D waitlist |
 | `conjoint/` | The 10 "this or that" tasks (`design.csv`) and the script that makes them |
-| `test-d-landing/` | Test D landing page (static HTML): random £4.99 / £9.99 arm, £59.99 annual, waitlist only (D25) |
+| `test-d-landing/` | Test D landing page (static HTML): random arm A £4.99/£49.99 or arm B £9.99/£99.99, waitlist only (D25, D31) |
+| `discovery-interviews.md` | Test E: 5 B2B discovery interviews (hotels, tourism) and 3 optional venue conversations (D34) |
+| `shot-card-example.md` | The Test A example shot card, built from seed moment 1 (gaps to fill on one walk) |
 | `results-sheet.xlsx` | Where every result goes; the Summary tab scores against the thresholds, split by voice and text (D18) |
 | `results.md` | *Checkpoint 3, written after the tests* |
 
@@ -24,12 +26,14 @@ Will strangers finish a conversational onboarding, prefer a plan built from it, 
 4. **Test B:** two plans, A/B blind. Pick one, rate both.
 5. **Test C:** use the plan on a real day. Rate each stop, bring a friend, get a share prompt at the shot-card moment. Follow up for 2 weeks.
 
+**Test E (B2B) runs in parallel:** 5 hotel and tourism conversations (`discovery-interviews.md`).
+
 **Test D runs separately:** its own post and its own visitors. Study participants are tagged and excluded from Test D rates.
 
 ## Before the first participant (checklist)
 
 - [ ] Abram confirms the conjoint attributes (`conjoint/README.md`) and the 16 swipe items (`interview-script.md` §3).
-- [ ] At least 1 of the 5 seed moments is written up, for the example shot card (§6).
+- [ ] Seed moment 1 is in (`research/seed-moments/01-tube-to-museum.md`). **Fill its gaps on one walk** (exit, route, best time, shot position), take a photo from the spot, and complete `shot-card-example.md` (≈ 0.5 h).
 - [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data.
 - [ ] Set up the Telegram account for the study (a separate account is cleaner); set up the Tally form and GoatCounter (`test-d-landing/README.md`).
 - [ ] Put a contact email in the consent form, privacy notice and landing page.
@@ -47,6 +51,10 @@ Will strangers finish a conversational onboarding, prefer a plan built from it, 
 | Test B: generic plan once (0.5) + 12 personalised plans (≈15 min each, LLM-assisted) | 3.5 |
 | Test C: follow-ups over 2 weeks and data entry | 2.0 |
 | Analysis and `results.md` with Claude | 1.5 |
-| **Total** | **≈ 17** |
+| **Tests A–D total** (accepted, D30) | **≈ 17** |
+| Test E: 5 B2B discovery interviews, including recruiting (D34) | 5.0 |
+| Seed moment walk and shot card | 0.5 |
+| **Phase 3 total** | **≈ 22.5** |
+| *Optional:* 3 venue conversations | *+2.0* |
 
-That is **2 h over budget at 12 participants**, and each extra participant adds ≈ 0.8 h. The biggest single saving is not building plans by hand: the personalised plan is LLM-drafted from the extracted profile, and you only check it.
+Tests A–D are 2 h over the 15 h budget at 12 participants (accepted, D30). The Test E additions bring Phase 3 to ≈ 22.5 h. The biggest single saving is not building plans by hand: the personalised plan is LLM-drafted from the extracted profile, and you only check it.

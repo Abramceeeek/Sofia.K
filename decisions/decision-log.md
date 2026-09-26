@@ -2,6 +2,17 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (Phase 3 round 2) — Legal gates, prices, new revenue lines
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D30 | **Phase 3 Tests A–D at ≈ 17 h with 12 participants** accepted. Abram confirms the 6 conjoint attributes and 16 swipe places this week | 15 h budget | Checkpoint 2 open question |
+| D31 | **Test D annual prices: about two months free in both arms.** Arm A £4.99/month or **£49.99/year**; arm B £9.99/month or **£99.99/year** | £59.99/year in both arms (D25) | £59.99 was no discount in arm A |
+| D32 | **Jev vs Claude tagging benchmark runs after v0**, not in Phase 4 | Proposed +1.5 h in Phase 4 | Hours |
+| D33 | **Legal gates:** right to run a business **cleared** (confirmed by Abram). Remaining before taking any money: (1) Apple's outside-activities policy check, with disclosure if required and work kept on personal time and devices; (2) written secondary-employment approval from the government agency employer. Revenue can start once both are done | `CLAUDE.md` gate list (employer permission, right to run a business, IP clauses) | Founder update |
+| D34 | **Phase 3 additions:** (1) trip payments research: Package Travel Regulations, payment splitting without holding money, safety duties (Area 18); (2) a free-first scenario in the workbook; (3) new revenue lines modelled and tested: **venue partnerships** (group discounts + commission, off-peak) and **B2B** (hotels, tourism boards, employers buying moment plans) at £200–500/month per client; (4) **5 B2B discovery interviews** (Test E); (5) a £50k path scenario with B2B clients and K = 0.3 | — | Founder request |
+| D35 | **Seed moment 1 received** ("From the tube to the museum"). It is the Test A example shot card; exit, route, best time and shot position are to be filled in on one walk | D13 (5 seed moments) | First seed |
+
 ## Checkpoint 2 approval — Phase 3 go, virality, pricing test, tools
 
 | # | Decision | Replaces | Why |

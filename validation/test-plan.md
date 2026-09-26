@@ -68,11 +68,24 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 ## Test D — willingness to pay (landing page, D1, D2, D25)
 
 - **Its own recruitment post** (D21) and its own visitors. Traffic from study participants carries `src=participant` and is excluded from the rates.
-- **Random arm on first visit:** A = £4.99/month, B = £9.99/month. Both arms also show £59.99/year. The copy says the first plan is free and payment would be asked for after it.
+- **Random arm on first visit:** A = £4.99/month or £49.99/year; B = £9.99/month or £99.99/year. Both annual prices are about two months free (D31). The copy says the first plan is free and payment would be asked for after it.
 - **Buttons:** "Join the free waitlist", "Reserve founding price (monthly)", "Reserve founding price (annual)". **All three lead to the same waitlist form**, with an honest note: no payment is taken now; we'll email before anything is ever charged.
 - **Measures:** visits by arm (GoatCounter); sign-ups by arm and by option (Tally hidden fields); monthly vs annual split.
 - **Two sign-up rates:** sign-ups with a `ref` code (invitees) are counted for K, and the Test D rates are reported both with and without them.
 - **Meta ads: none** (D26).
+
+## Test E — B2B discovery (5 interviews, D34)
+
+- **Who:** 5 hotel and tourism contacts: 2 hotels, 1 serviced-apartment operator, 1 tourism body, 1 budget holder.
+- **How:** past-behaviour questions only, **no pitching** until the close (`discovery-interviews.md`). Optional: 3 venue conversations about off-peak slots and group discounts.
+- **Measures:** current spend on helping guests find things to do; whether a budget owner is named; the strongest pain quote; commitment (none / introduction / unpaid pilot).
+- **Proposed read-out (Abram to confirm):** ≥ 2 of 5 already spend money or staff time on this, **and** ≥ 2 of 5 give an introduction or agree to an unpaid pilot.
+- **Workbook:** the results replace the `B2B` guesses (plans per client, sales hours, price range) and feed `Path50k`, where B2B closes the gap to £50k.
+
+## Trip payments during Phase 3 (Area 18)
+
+- **No trip money goes through us.** Any trip in the weekend test or Test C is paid as attendees arrange it themselves.
+- **Ask attendees:** "How did you split the costs? Did anything go wrong?" Record the answers in the notes columns. This informs the Stripe Connect direct-charges design (host or venue as the merchant).
 
 ## Analysis (Claude-assisted, ~1.5 founder hours)
 

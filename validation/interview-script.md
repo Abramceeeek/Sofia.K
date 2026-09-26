@@ -87,7 +87,7 @@ No "why" questions here. Speed is the point.
 
 > How much do photos and sharing matter on your trips? 1 (not at all) – 5 (a lot)
 
-Then send **one example shot card** (from a seed moment: where to stand, what to frame, when):
+Then send **the example shot card** (`shot-card-example.md`, built from seed moment 1: where to stand, what to frame, when; photo first):
 
 > If a plan came with a card like this, would it make you more likely to go? 1 (no) – 5 (definitely)
 

@@ -52,10 +52,10 @@
 
   <h2>Price</h2>
   <div class="card">
-    <p class="price">Your first plan is free. After that: <strong id="monthly-price">£—</strong> a month, or <strong>£59.99</strong> a year.</p>
+    <p class="price">Your first plan is free. After that: <strong id="monthly-price">£—</strong> a month, or <strong id="annual-price">£—</strong> a year (about two months free).</p>
     <div class="buttons">
       <button type="button" class="primary" id="btn-monthly">Reserve the founding price: <span id="btn-monthly-price">£—</span>/month</button>
-      <button type="button" class="primary" id="btn-annual">Reserve the founding price: £59.99/year</button>
+      <button type="button" class="primary" id="btn-annual">Reserve the founding price: <span id="btn-annual-price">£—</span>/year</button>
       <button type="button" id="btn-free">Just join the free waitlist</button>
     </div>
     <div class="note" id="note" hidden role="region" aria-live="polite">
@@ -86,8 +86,11 @@
       try { window.localStorage.setItem('td_arm', arm); } catch (e) {}
     }
     var monthly = arm === 'A' ? '4.99' : '9.99';
+    var annual = arm === 'A' ? '49.99' : '99.99'; // about two months free in both arms (D31)
     document.getElementById('monthly-price').textContent = '£' + monthly;
     document.getElementById('btn-monthly-price').textContent = '£' + monthly;
+    document.getElementById('annual-price').textContent = '£' + annual;
+    document.getElementById('btn-annual-price').textContent = '£' + annual;
 
     // GoatCounter: one page view per arm; study participants counted separately so they can be excluded.
     var tag = (src === 'participant' ? 'participant-' : '') + 'arm-' + arm;
@@ -97,7 +100,7 @@
       try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: event + '-' + tag, event: true }); } catch (e) {}
     }
     function go(choice) {
-      var url = FORM_URL + '?arm=' + arm + '&choice=' + choice + '&price=' + encodeURIComponent(choice === 'annual' ? '59.99' : (choice === 'monthly' ? monthly : '0')) +
+      var url = FORM_URL + '?arm=' + arm + '&choice=' + choice + '&price=' + encodeURIComponent(choice === 'annual' ? annual : (choice === 'monthly' ? monthly : '0')) +
                 '&src=' + encodeURIComponent(src) + '&ref=' + encodeURIComponent(ref);
       window.location.href = url;
     }
