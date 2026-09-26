@@ -1,49 +1,84 @@
-# Area 2 — Place and experience preferences
+# Area 2 — Place and experience preferences (moments)
 
 **Decision:**
-- **Place data:** take London candidates and IDs from **Overture Places**, which is permissively licensed and has no share-alike obligation.
-- **Tagging:** hand-tag the **50 v0 places** (decision D5) on a fixed set of 12 experiential attributes. An LLM drafts the tags and Abram corrects them.
-- **Swipe layer:** treat it as an **ordinal regression on those attributes** with a hierarchical prior (Area 3), not as collaborative filtering. Pick the 15–20 swipe places to be well known, polarising and spread across attributes.
-- **Google Places:** spot-checks only, because its terms forbid storing anything except the place ID.
-- **Skipped for v0:** RecBole and check-in datasets. They model visits, not enjoyment.
-- **Cost: about 6 founder hours.** Overture pull 1, schema 1, LLM-drafted tags plus review for 50 places 3, swipe-set selection script 1.
+- **The unit is a moment (decision D9).** A moment is a place + how you approach it + when to be there + features + a shot card. Abram **hand-picks 50 moments** (D11), starting from 5 seed moments of his own. An LLM drafts the rest of each card and Abram corrects it.
+- **Place coordinates and IDs** come from **Overture Places**, looked up per moment. There is no bulk pull.
+- **Features:** 11 place attributes plus **4 moment features** (contrast/reveal, absorption, awe, social pull), each scored 0–2, plus cost in £. Feeling-per-pound is computed by the model, not tagged.
+- **Swipe layer:** an ordinal regression on those features with a hierarchical prior (Area 3). The 15–20 swipe moments must be familiar, polarising and spread across features.
+- **Google Places:** spot-checks only, because it can't be stored. RecBole and check-in datasets are skipped.
+- **Cost: about 6.5 founder hours.** Schema 1, seed-moment session 1, LLM-drafted cards and review for 45 more 3.5, swipe-set selection 1.
+
+## The moment schema (v0)
+
+```yaml
+id: m_southken_nhm_reveal
+title: "Out of the tunnel, into the Natural History Museum"
+place:    {name: Natural History Museum, overture_id: ..., lat: ..., lon: ...}
+approach:                     # how you arrive: part of the experience
+  from: South Kensington station
+  start_point: {lat: ..., lon: ...}   # where the planner must deliver you
+  path: "<exit and walking route, as Abram describes it>"
+  duration_min: <n>
+  step_free: <true|false>
+experience: {duration_min: [<min>, <max>], end_point: {lat: ..., lon: ...}}
+best_time:
+  time_of_day: ["<hh:mm-hh:mm>"]
+  light: "<when the reveal looks best>"
+  weather: [<dry|any>]
+  crowd_window: "<when to avoid>"
+  opening_hours: "<spot-checked, with date>"
+features:                     # 0-2, founder-tagged (LLM draft)
+  place:  {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2,
+           local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 1,
+           photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 2, social_pull: 2}
+cost_gbp: <n>                 # raw input; feeling-per-£ = predicted S / cost, computed
+shot_card:
+  stand_at: {lat: ..., lon: ..., note: "<exact spot>"}
+  face: <compass bearing>
+  frame: "<what to include>"
+  when: "<time and light>"
+  avoid: "<what spoils it>"
+source: seed | founder | user
+last_checked: <date>
+```
+
+All values above are placeholders. Feature scores are illustrative until Abram tags his seed moments. The previous "price level" attribute is replaced by raw `cost_gbp`.
 
 ## What exists (ranked)
 
 | # | Name | Maturity | Licence | Why it matters |
 |---|---|---|---|---|
-| 1 | [Overture Maps Places](https://docs.overturemaps.org/guides/places/) + [`overturemaps` CLI](https://github.com/OvertureMaps/overturemaps-py) | Monthly releases; ~2,300-category taxonomy; existence `confidence` score. CLI ★270, 2026-09-22, Py ≥3.10 | Places: CDLA-Permissive-2.0 / Apache-2.0 / CC0 by source. CLI: MIT | Free, commercially usable POI base with **no ODbL share-alike** (it contains no OSM data). Download by bounding box to GeoParquet |
-| 2 | [Foursquare OS Places](https://docs.foursquare.com/data-products/docs/fsq-places-open-source) | 100M+ POIs, 1,000+ categories, monthly | Apache-2.0 | Second free source (already one of Overture's inputs); richer category tree |
-| 3 | OpenStreetMap | Live; London coverage good but uneven | **ODbL**: a derived database must also be shared under ODbL | Best for `opening_hours`, parks and footpaths. Keep OSM-derived fields out of our own place table, or accept ODbL for that layer |
-| 4 | Google Places API (New) | Production; freshest data; atmosphere fields such as `outdoorSeating`, `liveMusic`, `goodForGroups`, `reviewSummary` | Commercial; **may not store content except `place_id`** | Place Details costs $5/1k (Essentials, 10k free a month), $17/1k (Pro, 5k free), $20/1k (Enterprise, 1k free) and $25/1k (Enterprise + Atmosphere). Spot-checking 50 places costs £0. It can't be the source of our database |
-| 5 | Place Pulse 2.0 / Quercia "happy maps" | Research datasets | Research | Perceptual attributes that transfer across cities: 56 cities, 1.17M pairwise votes on safe, lively, beautiful and similar qualities. In London, "beautiful/quiet/happy" walking routes were only 12% longer (about 2.5 minutes) |
-| 6 | LLM attribute extraction from reviews (Boughanmi et al. 2025) | Research | — | Agrees closely with human coders, at about 2 seconds per review against 6 minutes. Use it to draft our tags |
-| 7 | [RecBole](https://github.com/RUCAIBox/RecBole) | ★4.6k, 94 models, last commit 2025-02-24 (**stale**), Py 3.7+ / PyTorch | MIT | Only for offline benchmarking if we ever have many users. Overkill for 50 places |
-| 8 | Test datasets: Foursquare global check-ins, Yelp Open Dataset | Old / restricted | Research / **educational use only** | Foursquare: 33.3M check-ins, 267k users, 415 cities, 2012–13. Yelp: 150k businesses in 11 US/Canada metros, **no UK**. Both record visits, not enjoyment |
+| 1 | [Overture Maps Places](https://docs.overturemaps.org/guides/places/) + [`overturemaps` CLI](https://github.com/OvertureMaps/overturemaps-py) | Monthly releases; ~2,300 categories. CLI ★270, 2026-09-22, Py ≥3.10 | CDLA-Permissive-2.0 / Apache-2.0 / CC0; CLI MIT | Free place IDs and coordinates, with **no ODbL share-alike** |
+| 2 | [Explorest](https://apps.apple.com/us/app/explorest-photo-locations/id1227446332) (product, see Area 7) | 4.4★ from 1K ratings; covers the UK | Commercial | The closest existing **shot card**: exact spot the photographer stood, directions, best time and light, field tips. We copy the format, not the content |
+| 3 | [Komoot Highlights](https://support.komoot.com/hc/en-us/articles/10194639751450-Highlights) (product) | Mature | Commercial | Community-curated **segments with a direction**: Komoot routes you to the segment start "so you experience it as intended". A working precedent for approach-aware curation |
+| 4 | OpenStreetMap | Live; London coverage good but uneven | **ODbL** (derived databases must be shared alike) | Opening hours, station exits and footpaths for approach paths. Keep it in a separate layer |
+| 5 | Google Places API (New) | Production | May store only `place_id` | Place Details $5–25 per 1k by tier, with free monthly caps. Spot-checking 50 moments costs £0 |
+| 6 | Place Pulse 2.0 / Quercia "happy maps" | Research | Research | In London, "beautiful/quiet/happy" walking routes were 26–30% better on those ratings for only 12% more length. Evidence that the *walk between* places can be scored |
+| 7 | LLM attribute extraction (Boughanmi et al. 2025) | Research | — | Agrees closely with human coders. Drafts moment cards from reviews and descriptions |
+| 8 | [RecBole](https://github.com/RUCAIBox/RecBole); Foursquare / Yelp datasets | Stale / old / educational only | MIT / research | **Skip for v0.** These datasets record visits, not enjoyment; Yelp has no UK |
 
 ## What the evidence says
 
-- **Which places you ask about matters as much as how many.** In a live test with 300+ users, choosing items people are likely to have experienced cut effort, while pure "most polarising" selection was unusable: users paged through hundreds of items before finding 10 they knew. Balancing log-popularity against entropy worked well (Rashid et al. 2002). Adaptive interviews that choose the next item from earlier answers add more (Golbandi et al. 2011; survey in Elahi et al. 2016). **So our swipe places should be well known and split people**, as `CLAUDE.md` already suggests.
-- **Hierarchical Bayes is the standard fix for users with little feedback.** It borrows strength from other users (Zhang & Koren 2007), which is exactly the "start at the mean of similar users" plan in Area 3.
-- **Most POI-recommendation research predicts check-ins, not enjoyment.** A 2025 review lists 20 pitfalls (Bellogín et al., RecSys 2025):
-  - there is no public POI dataset from after COVID;
-  - check-in data is dominated by locals;
-  - it is extremely sparse (0.003–0.005% density vs 0.5–1.5% for MovieLens/Netflix) and missing not at random;
-  - accuracy metrics don't measure satisfaction.
-- **Liking a place before a visit is not the same as enjoying it after.** Expected utility (before the visit) and experienced utility (after) produce different preference patterns (Hofschen, Massimo & Ricci 2023). **So the post-visit ratings should carry the model over time.**
-- **"How a place feels" can be measured and compared across cities.** Place Pulse did it with crowd-sourced pairwise image votes. Quercia et al. (2014) did it for London walking legs, where pleasant routes were 26–30% more beautiful, quiet or happy for only 12% more distance. That is a candidate *walking-leg* attribute for Area 4.
+- **Choose the swipe items for familiarity *and* disagreement.** Selecting only the most polarising items was unusable: people paged through hundreds before finding 10 they knew. Balancing log-popularity against entropy worked (Rashid et al. 2002). Adaptive follow-ups help further (Golbandi et al. 2011).
+- **Hierarchical Bayes borrows strength for new users** (Zhang & Koren 2007). This links to Area 3.
+- **POI research predicts check-ins, not enjoyment** (20 pitfalls, Bellogín et al. 2025). **Expected utility ≠ experienced utility** (Hofschen et al. 2023), so per-moment ratings after the experience must carry the model.
+- **The moment features have mixed but real support** (details in Area 6):
+  - *Contrast/reveal* maps onto Kaplan's **mystery** (the promise of more ahead). It was the only significant informational predictor of scene preference (Kaplan, Kaplan & Brown 1989), but a meta-analysis found its correlation with preference ranges from −0.45 to +0.95, with no stable direction (Stamps 2004).
+  - In VR, **narrowing walls raised arousal and felt unpleasant**, while spacious designs felt pleasant (Presti et al. 2022). Compression is real; whether *release after compression* adds a bonus is **untested**, and our ratings can test it.
+  - *Awe* (vastness + need for accommodation) and *absorption/flow* (challenge–skill balance) have validated scales.
+  - *Social pull* has no academic measure I found. Measure it directly with a one-tap "Would you bring someone here?" after each moment. It doubles as a distribution signal.
 
 ## Gaps we'd have to fill ourselves
 
-- **An experiential tag set.** No open dataset records how London places *feel*. Proposed 12 attributes, each scored 0–2, mirroring the S equation: movement/views, food, green/nature, history/culture, iconic, local/novel, crowds, walking effort, active vs passive, indoor/outdoor (weather exposure), price level, photo potential. Abram to confirm the list.
-- **Tag reliability (~1 h).** A second person tags 10 of the places and we compute κ against Abram's tags.
-- **Swipe-set selection.** Choose 15–20 of the 50 places that are familiar, spread across attributes with low collinearity (a D-optimal subset of the attribute matrix), and polarising in Test A reactions.
-- **Opening hours and visit durations.** Enter by hand, spot-checked against OSM or Google.
+- **Approach geometry.** Station exits, entry points and approach paths are hand-entered per moment, and nothing off the shelf models them. The planner then needs asymmetric travel times (from the previous moment's end point to this moment's approach start). OR-Tools supports that natively (Area 4).
+- **Per-moment ratings of transitions.** The rating prompt must fire at the *end of the approach* for reveal moments, not only on leaving.
+- **Swipe cards for moments.** Each needs one photo or short clip. Familiarity is lower for moments than for places, so Londoners should be asked about London moments.
 
 ## Risks / unknowns
 
-- **ODbL contamination.** Mixing OSM-derived fields into our place table would make the whole table ODbL. Keep OSM data in a separate layer.
-- **Founder bias in tags.** One person's view of "crowded" or "photogenic" is a guess. The second tagger and per-stop ratings are the correction.
-- **Familiarity differs between Londoners and visitors.** v0 only asks about London, the "city they know".
-- **Overture schema churn.** The `categories` field was removed in the September 2026 release in favour of `taxonomy`. Pin a release.
-- **Unconfirmed attribute list.** The 12-attribute list above is my proposal, not tested. Test A reactions will show which attributes actually split people.
+- **Too many features for the data.** 15 tagged features + cost against 50 moments and 10–20 swipes per person can't all be individual βs. Most stay population-level (Area 3).
+- **Founder taste is baked into the seeds.** The 50 moments reflect one person, and Test A will show whether strangers share the reactions.
+- **Moments go stale.** Light, construction and crowding change, so `last_checked` needs a refresh cadence.
+- **ODbL** if OSM approach paths get mixed into the moment table.
+- **Overture schema churn:** pin a release.

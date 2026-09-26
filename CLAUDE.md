@@ -4,7 +4,7 @@ This file is the standing context for this project. Read it fully before any tas
 
 ## Who and what
 
-- **Founder:** Abram — actuarial student (IFoA), data analyst, London-based. Stack: Python, FastAPI. Comfortable with econometrics and statistics; explain models in those terms.
+- **Founder:** Abram — actuarial student (IFoA), data analyst, London-based. Stack: Python 3.12 (pinned: PyMC and Biogeme need ≥3.12), FastAPI. Comfortable with econometrics and statistics; explain models in those terms.
 - **Time budget:** ~7.5 hours/week alongside full-time work and actuarial exams. Hours, not money, are the binding constraint. Every plan must state its hour cost.
 - **Stage:** idea + design. Nothing built. No users tested yet.
 - **Existing gate from the founder's own plan:** the core social idea (strangers join trips posted by someone they've never met, turn up and pay their share) is tested by a no-code "weekend test": post 5 real trips in existing travel/hiking/uni groups, pass = ≥3 strangers join and turn up. This project's validation work should run alongside or reuse that test, not replace it.
@@ -19,6 +19,23 @@ Founder's example: Big Ben leaves him flat ("must-do", seen once, feel nothing).
 Two outcomes the app tries to raise:
 1. **How good the trip feels** — out of work mode, away from problems, restored or entertained.
 2. **How worthwhile the money feels** — afterwards, the spend felt fully worth it.
+
+## The unit is a moment, not a place
+
+The database, the swipe layer, the planner and the per-stop ratings all work on **moments**. A moment is a specific experience at a place, at a time, often including how you arrive.
+
+Founder's example: you come out of South Kensington tube and walk out to the Natural History Museum. The dark-to-open transition and the reveal *are* the experience, not "the museum". One place can hold several moments, and a moment can span a short walk.
+
+- **A moment record:** place + route/approach (where you come from, the path, the entry point) + best time (time of day, light, season, crowd window) + features + a **shot card** (where to stand, what to frame, when). The schema is in `research/notes/02-place-preferences.md`.
+- **Moment-level features, on top of place attributes:**
+  - contrast/reveal (compression and release);
+  - absorption/flow (activities that demand action, like go-karting or swimming);
+  - awe;
+  - photo potential;
+  - social pull ("I need to bring people here");
+  - cost in £.
+- **Feeling per pound is computed, not tagged.** The model derives it as predicted S ÷ cost. Tagging it directly would double-count cost.
+- **Seed moments come from Abram's own experience.** Five to start.
 
 ## The model: satisfaction as an equation
 

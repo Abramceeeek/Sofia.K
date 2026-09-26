@@ -43,6 +43,7 @@
 - **Transfer-time thresholds** (15 min is fine, 50 min ruins the afternoon). Model these as a nonlinear penalty on each leg's travel time, with thresholds from Area 6.
 - **Mid-day re-planning** when the weather turns: a trigger plus a re-solve from the user's current location. After v0.
 - **Opening hours and visit durations** for each place: hand-tagged in the Area 2 place database.
+- **Moments, not places (D9).** Each moment has an approach start point (for example a specific tube exit) and an end point. So the travel matrix runs from each moment's end point to the next moment's approach start, and it is asymmetric, which OR-Tools handles natively. A moment's time window uses its `best_time` (light, crowd window) as well as opening hours. The extra tagging is counted in Area 2; the solver itself needs no extra hours.
 
 ## Risks / unknowns
 
