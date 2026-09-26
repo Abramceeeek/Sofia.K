@@ -6,7 +6,7 @@ This file is the standing context for this project. Read it fully before any tas
 
 - **Founder:** Abram — actuarial student (IFoA), data analyst, London-based. Stack: Python 3.12 (pinned: PyMC and Biogeme need ≥3.12), FastAPI. Comfortable with econometrics and statistics; explain models in those terms.
 - **Time budget:** ~7.5 hours/week alongside full-time work and actuarial exams. Hours, not money, are the binding constraint. Every plan must state its hour cost.
-- **Stage:** idea + design. Nothing built. No users tested yet.
+- **Stage:** idea + design. The v0 backend (the Brain) is drafted in `brain/` (D51). No users tested yet.
 - **Existing gate from the founder's own plan:** the core social idea (strangers join trips posted by someone they've never met, turn up and pay their share) is tested by a no-code "weekend test": post 5 real trips in existing travel/hiking/uni groups, pass = ≥3 strangers join and turn up. This project's validation work should run alongside or reuse that test, not replace it.
 - **Legal gates** *(updated D33 and D38, confirmed by Abram 2026-09-26)*:
   - **Cleared:** right to run a business.
@@ -15,7 +15,8 @@ This file is the standing context for this project. Read it fully before any tas
     2. Written secondary-employment approval from Abram's government agency employer.
     3. IP/invention clauses checked in **both** employment contracts.
   - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
-  - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company.
+  - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company. This includes the designer and the safety backup helper (D55).
+  - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. *Proposed, not yet decided: do this check before the first external TestFlight build too, because that is already a public distribution under his account.*
   - Revenue from trips or subscriptions can start once the money gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
@@ -116,6 +117,14 @@ Reason: nationality is a protected characteristic under UK equality law; using i
 ## Companion matching
 
 The same profile matches **people**, not just places. Compatible trip-mates make strangers more likely to commit and turn up — the hardest part of the app.
+
+## v0 build (D50–D52)
+
+- **v0 is a native iOS app (SwiftUI)**, tested through TestFlight, then released on the App Store once it passes (after the D53 gate). It replaces the Telegram bot.
+- **Brain** (`brain/`): FastAPI on Python 3.12. It holds the moment database, scoring as `S = x·(b_population + δ_person)` with δ kept separate and portable, and the OR-Tools planner. Claude Code builds and tests it in this repo.
+- **Face:** the SwiftUI app, built on Abram's personal Mac in Xcode, where Claude Code must run locally.
+- **Plan, hours and proposed cuts:** `decisions/v0-ios-plan.md`. **Designer screens:** `design/v0-screens.md`.
+- **Economics work is paused** unless a decision needs it (D52).
 
 ## Non-negotiable guardrails
 

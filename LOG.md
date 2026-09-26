@@ -7,12 +7,12 @@ These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude
 | Phase | Target | Budget (hrs) | Est. (hrs) | Actual (hrs) | Status |
 |---|---|---|---|---|---|
 | 1 Research sweep | 2–3 wks | 15 | ≈ 18.5 | | **Approved** at Checkpoint 1 (D18). Full reviews of the notes continue in the weeks of 28 Sep and 5 Oct |
-| 2 Unit economics | 1 wk | 5 | 5 | | **Approved** at Checkpoint 2 (2026-09-26). K-factor and payment-channel tabs added (D23, D24) |
+| 2 Unit economics | 1 wk | 5 | 5 | | **Approved** at Checkpoint 2 (2026-09-26). K-factor and payment-channel tabs added (D23, D24). **Economics paused (D52):** the 3 h of workbook review are deferred |
 | 1b Light scans, Areas 13–20 | — | — | 3.75 | | Areas 13–17 (D22), Area 18 trip payments (D34), Area 19 automation (D44), Area 20 Uzbek B2B payments (D49). Design now, build after Phase 3 |
-| 3 Validation | 2–3 wks | 15 | ≈ 23.75 | | **Materials ready.** **Test E runs first** (D36), then the B2B-vs-consumer decision note (D40), then Tests A–D (≈ 17 h, D30). Thresholds on strangers only (D43). Checkpoint 3 in the week of 9 Nov |
-| 4 Prototype v0 | 4–5 wks | 35 | ≈ 47 | — | Gated: only if Phase 3 passes. 36 h (D14) + 2 h design hooks (D27) + **9 h automation (D44)**. Content automation (5 h) and the tagging benchmark come after v0 (D45, D32) |
+| 3 Validation | 2–3 wks | 15 | ≈ 18.75 | | **Test E runs first** (D36), then the decision note (D40). **Tests A–C run through TestFlight in the app (D50)**: Test A from about 23 Nov. Thresholds on strangers only (D43). **Checkpoint 3 about the week of 4 Jan** (was 9 Nov) |
+| 4 Prototype v0 | 4–5 wks | 35 | ≈ 53.5 | | **Native iOS app (D50): the Face ≈ 31, and what's left of the Brain ≈ 22.5.** The Brain is started (D51, `brain/`). About 40.5 h is built before Checkpoint 3 so Tests A–C can run in the app; ≈ 13 h is left after it. Proposed cuts are in `decisions/v0-ios-plan.md` (the Telegram v0 was 47) |
 | 5 Test v0 and decide | 2 wks | 10 | 10 | — | Not started |
-| **Total** | **11–14 wks** | **80** | **≈ 108** | | 108 ÷ 7.5 ≈ 14.4 weeks: **about 3 h past the 14-week window** (105 h). Helper hours (D41) could shorten Phase 4 once a contributors agreement is signed (D38) |
+| **Total** | **11–14 wks** | **80** | **≈ 109.5** | | ≈ 106.5 h in the window with the 3 h of workbook review paused (D52): 14.2 weeks, **about 1.5 h past the 14-week window** (105 h). App Store submission (≈ 3 h) comes after Phase 5 and the D53 gate |
 
 ## Phase 1 areas
 
@@ -58,15 +58,15 @@ Claude re-verified the pricing and cost sources before building the model (D20).
 | 16 | `16-home-contrast-novelty.md` | 0.5 | 4–6 | Drafted: 3 sources (plus Areas 12 and 14) |
 | 17 | `17-on-device-personalisation.md` | 0.5 | ~1 in Phase 4 (separate δ) + 8–12 on device + 20–30 federated/DP, needs a native app | Drafted: 7 sources |
 | 18 | `18-trip-payments.md` (D34) | 0.5 | Payments ~8–10, safety kit ~4, after v0 and the legal gates | Drafted: 13 sources. Day trips are outside the Package Travel Regs; never hold trip money |
-| 19 | `19-automation.md` (D44) | 0.5 | 9 in Phase 4: self-serve onboarding 3, AI support 6. Content 5, after v0 (D45) | Drafted: escalation rules. Safety alerts go to Abram within a few hours, and to a named backup helper during his work hours (D46) |
+| 19 | `19-automation.md` (D44) | 0.5 | iOS plan (D50): the app is self-serve by design; the AI support agent (6) is proposed for after v0, with a safety button instead (0.5, built). Content 5, after v0 (D45) | Drafted: escalation rules. Safety alerts go to Abram within a few hours, and to a named backup helper during his work hours (D46) |
 | 20 | `20-uzbek-b2b-payments.md` (D49) | 0.25 | ~2.5 one-off at the first Uzbek client: Stripe Invoicing, Wise Business, HMRC certificate, adviser call | Drafted: 16 sources. GBP invoice paid by international card or SWIFT; no Stripe in Uzbekistan needed |
-| | **Total** | **3.75** | **~11 in Phase 4 (D27, D44, D45); ~65–90 later** | |
+| | **Total** | **3.75** | **In the iOS Phase 4 plan (D50); ~70–95 later** | |
 
-Sources now total 288 in `research/sources.csv`: 173 read on the page, 112 through search only, 3 UNVERIFIED.
+Sources now total 309 in `research/sources.csv`: 194 read on the page, 112 through search only, 3 UNVERIFIED. The 21 `v0` rows cover Apple (TestFlight, enrolment, App Review, iOS APIs), StatCounter and the brain's packages.
 
 ## Phase 3 (validation): founder hours
 
-Plan in `validation/README.md`. **Test E runs first** (D36). There are 12 stranger participants (D30, D43), and each extra one adds ≈ 0.8 h.
+Plan in `validation/README.md`. **Test E runs first** (D36). **Tests A–C run in the app through TestFlight (D50).** There are 12 stranger participants (D30, D43). The app build these tests need is counted in Phase 4.
 
 | Item | Est. (hrs) | Week |
 |---|---|---|
@@ -76,37 +76,36 @@ Plan in `validation/README.md`. **Test E runs first** (D36). There are 12 strang
 | **Test E:** 5 discovery interviews with prep and notes | 3.75 | 12 Oct |
 | **Test E:** check the translated script for Uzbek interviews, if needed | 0.25 | 12 Oct |
 | **Decision note:** B2B-first vs consumer-first (D40) | 1.0 | 12 Oct |
-| Review the rest of the validation materials | 1.0 | 12 Oct |
-| Landing page, form and analytics set-up | 1.0 | 19 Oct |
-| Recruitment posts and replies (log minutes per post) | 2.0 | 19 Oct |
-| Test A chats (≈20 min each, asynchronous) | 4.0 | 19–26 Oct |
-| Transcripts and read-back checks | 1.0 | 19–26 Oct |
-| Test B plans (generic once + 12 personalised, LLM-drafted) | 3.5 | 26 Oct |
-| Test C follow-ups over 2 weeks and data entry | 2.0 | 26 Oct – 9 Nov |
-| Analysis and `results.md` (Checkpoint 3) | 1.5 | 9 Nov |
-| **Total** | **≈ 23.75** | Tests A–D ≈ 17 (D30) + Test E, decision note and seed walk ≈ 6.75 |
+| Rewrite the consent form, privacy notice, Post 1 and a tester guide for the app (Claude drafts) | 1.0 | 16 Nov |
+| Landing page, form and analytics set-up | 1.0 | 16 Nov |
+| Recruitment posts and replies (log minutes per post) | 2.0 | 16 Nov |
+| Test A: tester support (the app runs the onboarding) | 1.0 | 23 Nov |
+| Read-back checks | 0.5 | 23 Nov |
+| Test B plans (generic once + 12 personalised: the planner drafts, you edit and push) | 3.0 | 7 Dec |
+| Test C follow-ups (ratings arrive in the app) | 1.0 | 7–21 Dec |
+| Analysis and `results.md` (Checkpoint 3) | 1.5 | ~4 Jan |
+| **Total** | **≈ 18.75** | Tests A–D ≈ 12 (D50) + Test E, decision note and seed walk ≈ 6.75 |
 | *Optional:* 3 venue conversations | *+2.0* | — |
 
-## Phase 4 build estimate (founder hours, assuming Claude Code writes most code)
+## Phase 4 build estimate: native iOS app (D50, D51; founder hours, Claude Code writes the code)
 
-Scope decisions: D5–D8, D11, D14–D16 and D19. That means 50 hand-picked moments, shot cards for ~20, no photo taste, log-only feedback, peak–end off by default, and no allergy question.
+Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisions/v0-ios-plan.md). Scope decisions D5–D8, D11, D14–D16 and D19 still hold: 50 hand-picked moments, shot cards for ~20, no photo taste, log-only feedback, peak–end off by default, and no allergy question.
 
-| Component | Est. (hrs) | Source |
+| Component | Est. (hrs, left) | Status 2026-09-26 |
 |---|---|---|
-| Onboarding: Telegram bot, transcription, read-back, extraction, gold-set check | 10 | Area 1 |
-| Planner: asymmetric matrices (50 moments), OR-Tools model, end-bonus toggle, weather and UTCI, tests, LLM explanation | 11 | Areas 4, 6 |
-| Moment DB: schema, seed session, LLM-drafted cards plus review, shot cards for ~20, swipe-set selection | 5 | Area 2 |
-| Weights and scoring: per-user Laplace posterior, scoring, offline HB refit (PyMC) | 6 | Area 3 |
-| Feedback logging (D7) | 2 | Estimate |
-| Privacy notice, audio deletion, data-deletion command | 2 | Area 12 |
-| Design hooks: δ_person kept separate; trip intent stored per plan (D27) | 2 | Areas 15, 17 |
-| Automation 1: fully self-serve onboarding (D44) | 3 | Area 19 |
-| Automation 2: AI support agent with escalation rules (D44) | 6 | Area 19 |
-| **Total** | **≈ 47** | D14, D27, D44, D45 |
-| *After v0:* Automation 3, content from moments and shot cards, auto-scheduled on own channels (D45) | *5* | Area 19 |
-| *After v0:* Jev vs Claude tagging benchmark (D32) | — | Areas 2, 13 |
-
-Phase 3 carries about 2 h for the conjoint design (Area 3) and about 2 h for the consent form and privacy notice (Area 12), inside its 15 h.
+| **Face:** the SwiftUI app (22 screens, `design/v0-screens.md`), Apple set-up, designer, TestFlight | 31 | Not started. Built on your personal Mac |
+| Onboarding back end: extraction (only with AI permission), read-back lines, gold-set check | 3 | Read-back from named weights is built; LLM extraction is not |
+| Safety alert to a person (D46) | 0.5 | Built; set up the webhook |
+| Moment DB: seed session, 45 LLM-drafted cards and review, ~20 shot cards, swipe set | 5 | Schema, loader and API built; the content is yours |
+| Planner: matrices, weather rules, LLM explanation, tuning | 7 | OR-Tools model, time windows, transfer thresholds, peak–end toggle and tests built |
+| Weights and scoring: review, pooled refit from Phase 3 data | 2.5 | Per-user Laplace posterior and scoring built |
+| Ratings and events logging | 0.5 | Built |
+| Privacy: deletion, notice, AI permission | 1.5 | Deletion and the consent flag built; the notice needs rewriting |
+| Design hooks: separate δ, trip intent per plan (D27) | 0.5 | Built |
+| Hosting: Render + Postgres, secrets, migrations | 2 | Not started |
+| **Total** | **≈ 53.5** | ≈ 40.5 before Checkpoint 3 (Test A ≈ 28, Tests B–C ≈ 12.5); ≈ 13 after |
+| *After v0:* AI support agent (proposed cut), content automation (D45), full HB refit, on-device δ (Area 17), tagging benchmark (D32) | *6 + 5 + ~1 + 8–12* | |
+| *After Phase 5 and the D53 gate:* App Store submission | *≈ 3* | |
 
 ## Hours log
 
@@ -122,30 +121,45 @@ Phase 3 carries about 2 h for the conjoint design (Area 3) and about 2 h for the
 | 2026-09-26 | 3 | Decisions D30–D35; seed moment 1 written up | 1.0 | | |
 | 2026-09-26 | 3 | Decisions D36–D44 | 1.0 | | |
 | 2026-09-26 | 3 | Decisions D45–D49; read the Uzbek payment answer | 0.5 | | |
+| 2026-09-26 | 4 | Decisions D50–D58 (iOS direction) | 0.5 | | |
 | wk 28 Sep | 3 | Confirm conjoint attributes and swipe places (D30, moved by D48) | 1.0 | | Pending |
-| wk 28 Sep | 1 | Review Areas 1–4 in full, including the 15 moment features (D17) | 7.0 | | Pending |
+| wk 28 Sep | 1 | Review Areas 1–3 in full, including the 15 moment features (D17) | 5.0 | | Pending. Area 4 moved to the week of 2 Nov (D56) |
+| wk 28 Sep | gate | Apple outside-activities check (D53; proposed before external TestFlight) | 0.5 | | Pending |
 | wk 28 Sep | 1 | Seed moments 2–5 in the Area 2 schema (D13); walk for seed 1 (D35) | 1.0 | | Pending. Seed 1 received 2026-09-26 |
 | wk 5 Oct | 1 | Review Areas 5–7 (D17) | 3.0 | | Pending |
 | wk 5 Oct | 1 | Review Areas 8–12 light scans | 2.5 | | Pending |
 | wk 5 Oct | 3 | Test E: recruit 5 B2B contacts; review the Area 18 and Area 20 notes | 2.0 | | Pending |
-| wk 12 Oct | 3 | Test E: 5 interviews, Uzbek script check, decision note, validation materials | 6.0 | | Pending |
-| wk 12 Oct | 2 | Review workbook GUESS inputs and `assumptions.md` (first half) | 1.5 | | Pending |
-| wk 19 Oct – 9 Nov | 3 | Run Tests A–D (see Phase 3 table) | 15.0 | | Pending |
+| wk 12 Oct | 3 | Test E: 5 interviews, Uzbek script check, decision note | 5.0 | | Pending |
+| wk 12 Oct | 4 | Brain code review: scoring maths and the planner (`brain/`); part of the Test A build | 1.0 | | Pending |
+| wk 12 Oct | 4 | Designer brief and contributors agreement (D38); part of the Test A build | 1.5 | | Pending |
+| wk 12 Oct | 2 | Review workbook GUESS inputs and `assumptions.md` (first half) | (1.5) | | **Paused (D52)** |
+| wk 19 Oct – 16 Nov | 4 | Test A build: Face and Brain (`decisions/v0-ios-plan.md`); 28 h in all, with 2.5 in the week of 12 Oct | 25.5 | | Pending |
+| wk 2 Nov | 1 | Review Area 4 (D56) | 2.0 | | Pending |
+| wk 16 Nov | 3 | Materials rewrite, recruitment, landing page; first external build to App Review | 4.0 | | Pending |
+| wk 23 Nov – 4 Jan | 3 | Run Tests A–D (see the Phase 3 table) | 7.0 | | Pending |
+| wk 16 Nov – 30 Nov | 4 | Build for Tests B and C | 12.5 | | Pending |
+| Jan | 4, 5 | The rest of v0 (≈ 13), then Phase 5 (10) | 23.0 | | After Checkpoint 3 |
 | wk 2 Nov | 1b | Review Areas 13–17 and 19 light scans, including the God's Eye View and Jev addenda (Areas 18 and 20 are in the week of 5 Oct) | 3.0 | | Pending |
-| wk 2 Nov | 2 | Review workbook (second half: Path50k, Automation, Expansion) | 1.5 | | Pending |
+| wk 2 Nov | 2 | Review workbook (second half: Path50k, Automation, Expansion) | (1.5) | | **Paused (D52)** |
 
 ## Weekly totals
 
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
-| 2026-09-21 | 7.5 | 9.5 (kick-off, checkpoints and decision rounds D1–D49, already spent): **2.0 over** | |
-| 2026-09-28 | 7.5 | 9.0 (Areas 1–4 review 7, seed moments 1, **conjoint and places 1**, D48): **1.5 over**, see open question 4 | |
+| 2026-09-21 | 7.5 | 10.0 (kick-off, checkpoints and decision rounds D1–D58, already spent): **2.5 over** | |
+| 2026-09-28 | 7.5 | 7.5 (Areas 1–3 review 5, seed moments 1, conjoint and places 1, Apple check 0.5) | |
 | 2026-10-05 | 7.5 | 7.5 (Areas 5–12 reviews 5.5, Test E recruiting 1.25, Areas 18 and 20 0.75) | |
-| 2026-10-12 | 7.5 | 7.5 (**Test E interviews 4.0, decision note 1.0**, validation materials 1.0, workbook 1.5) | |
-| 2026-10-19 | 7.5 | 7.5 (Phase 3: set-up, recruitment, Test A) | |
-| 2026-10-26 | 7.5 | 7.0 (Phase 3: Tests B and C) | |
-| 2026-11-02 | 7.5 | ≈ 5.5 (Test C follow-ups 1.0, Areas 13–17 and 19 review 3.0, workbook 1.5) | |
-| 2026-11-09 | 7.5 | ≈ 2.5 (Test C close, analysis). **Checkpoint 3** | |
+| 2026-10-12 | 7.5 | 7.5 (**Test E interviews 4.0, decision note 1.0**; the Test A build starts: brain review 1.0, designer brief and agreement 1.5) | |
+| 2026-10-19 | 7.5 | 7.5 (Test A build) | |
+| 2026-10-26 | 7.5 | 7.5 (Test A build) | |
+| 2026-11-02 | 7.5 | 7.5 (Area 4 review 2.0, Areas 13–17 and 19 review 3.0, Test A build 2.5) | |
+| 2026-11-09 | 7.5 | 7.5 (Test A build) | |
+| 2026-11-16 | 7.5 | 7.5 (Test A build 0.5, materials rewrite 1.0, recruitment 2.0, landing page 1.0, build for B and C 3.0). First external build to App Review | |
+| 2026-11-23 | 7.5 | 7.5 (**Test A runs**: support 1.0, read-back 0.5; build for B and C 6.0) | |
+| 2026-11-30 | 7.5 | 3.5 (build for B and C). Slack for App Review of the second build, and late testers | |
+| 2026-12-07 | 7.5 | 3.5 (**Test B** plans 3.0; Test C starts, follow-ups 0.5) | |
+| 2026-12-14 | 7.5 | 0.5 (Test C follow-ups). Spare weeks over Christmas | |
+| 2027-01-04 | 7.5 | 1.5 (analysis). **Checkpoint 3** | |
 
 ## Decisions
 
@@ -158,15 +172,17 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 - D30–D35: Tests A–D at ≈ 17 h with 12 participants; annual prices £49.99 / £99.99 (about two months free); Jev benchmark after v0; right-to-run-a-business gate cleared, two gates remain; trip payments, free-first, venue and B2B lines added, plus 5 B2B interviews (Test E); seed moment 1 received.
 - D36–D44: Test E first, with 2 Uzbek interviews; no paid group trips in year one, venues a user benefit only, B2B primary in Path50k; more gates (IP clauses, incorporation + ICO + insurance, contributors agreement); never hold trip money; decision note after Test E; helper hours as one input (default 0); city-expansion gate; friends and family a separate channel with strangers-only thresholds; automation scenario.
 - D45–D49: content automation after v0 (Phase 4 ≈ 47 h); safety alerts to Abram within a few hours, with a named backup helper in his work hours; expansion thresholds confirmed; conjoint and places review moved to the week of 28 Sep; Uzbek focus on outbound agencies at London prices, paid by international card or SWIFT to a UK account.
+- D50–D58: v0 is a native iOS app, tested through TestFlight, replacing the Telegram bot; Brain (FastAPI) and Face (SwiftUI), with the Brain started now; economics paused; a new gate before App Store release (Apple outside-activities policy); the overrun question held until the iOS re-plan; Abram names the backup helper, who signs before support goes live; the Area 4 review moved to the week of 2 Nov; the Test E bar confirmed; the Uzbek payment route accepted, with one adviser call first.
 
 ## Open questions
 
-1. **Timeline.** The plan is now ≈ 108 h, or ≈ 14.4 weeks at 7.5 h: about 3 h past the 14-week window. Accept, or let helper hours take some Phase 4 work once a contributors agreement is signed?
-2. **Helper hours** (`helper_hours_week` on Inputs, default 0). With automation, the £50k paths need ~2.6 h a week (upside pricing) to ~4.2 h a week (base pricing) of helper time. Set your own number when you know it.
-3. **Who is the named backup helper for safety alerts (D46), and from when?** They must sign the contributors agreement, including confidentiality, before the AI support agent goes live (D38).
-4. **The week of 28 Sep is now 1.5 h over** (9.0 h). Suggestion: move the Area 4 review (2 h, the planner) to the week of 2 Nov, which now has 2 h spare. Area 4 feeds Phase 4, not Phase 3. (The Area 18 review was counted twice; it is now only in the week of 5 Oct.)
-5. **Test E read-out bar** (proposed): ≥ 2 of 5 already spend money or staff time, and ≥ 2 of 5 give an introduction or agree to an unpaid pilot. Confirm or change.
-6. **Uzbek payment route** (Area 20): accept the proposed route? That is a GBP invoice, paid by card through Stripe or by SWIFT to a Wise Business account. It also means an HMRC certificate of residence and one adviser call before the first Uzbek invoice (fee UNVERIFIED).
-7. **Weekend test hours.** Your weekend test isn't in this budget.
+1. **Accept the iOS v0 at ≈ 53.5 h, with the proposed cuts?** That puts the plan at ≈ 106.5 h in the window, about 1.5 h over. This is the overrun question you held (D54). The cuts are in `decisions/v0-ios-plan.md`: the AI support agent goes after v0, keyboard dictation replaces a voice recorder, local notifications replace a push server, and so on.
+2. **Run the Apple outside-activities check now**, before the first external TestFlight build, rather than only before App Store release (D53)? External TestFlight is already public distribution under your account.
+3. **Individual or organisation developer account?** An individual account shows your legal name as the seller. An organisation needs the company and a D-U-N-S number.
+4. **How to measure voice in Test A?** Keyboard dictation plus a self-report question (0 h), or a measured on-device voice button (+2.5 h)?
+5. **Checkpoint 3 in early January (TestFlight), or November?** November means hand-run tests over iMessage or WhatsApp, with TestFlight kept for Phase 5.
+6. **Have you shipped an iOS app before, and do you have a personal Mac?** If not, add about 30% to the Face estimate. A Mac is required.
+7. **Helper hours** (`helper_hours_week`, default 0). Set your own number when you know it.
+8. **Weekend test hours.** Your weekend test isn't in this budget.
 
-Resolved 2026-09-26: network access; Test D vs legal gates (D1/D2); Test A audio (D3); voice vs text (D4); Python version (D12); place DB sourcing (D11); Phase 4 budget (D14, D27, D44, D45); peak–end default (D15); photo pairs (D16); Checkpoint 1 and thresholds (D18); food question (D19); source re-verification (D20); recruitment posts (D21); Checkpoint 2 (D23–D29); payment channel deferred (D24); Test D prices (D25, D31); Meta test deferred (D26); Phase 3 at 12 participants (D30); Jev timing (D32); legal gates (D33, D38); seed moment 1 (D35); Test E order (D36); year-one scope (D37); trip money guardrail (D39); team capacity input (D41); friends and family channel (D43); safety cover (D46); expansion thresholds (D47); week of 21 Sep (D48); Uzbek focus (D49).
+Resolved 2026-09-26: network access; Test D vs legal gates (D1/D2); Test A audio (D3); voice vs text (D4); Python version (D12); place DB sourcing (D11); Phase 4 budget (D14, D27, D44, D45); peak–end default (D15); photo pairs (D16); Checkpoint 1 and thresholds (D18); food question (D19); source re-verification (D20); recruitment posts (D21); Checkpoint 2 (D23–D29); payment channel deferred (D24); Test D prices (D25, D31); Meta test deferred (D26); Phase 3 at 12 participants (D30); Jev timing (D32); legal gates (D33, D38); seed moment 1 (D35); Test E order (D36); year-one scope (D37); trip money guardrail (D39); team capacity input (D41); friends and family channel (D43); safety cover (D46); expansion thresholds (D47); week of 21 Sep (D48); Uzbek focus (D49); v0 platform (D50–D52); backup helper (D55); Area 4 review week (D56); Test E bar (D57); Uzbek payment route (D58).

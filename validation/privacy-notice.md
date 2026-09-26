@@ -1,5 +1,7 @@
 # Privacy notice — research study and waitlist
 
+> **Status (D50):** this is the Telegram version. **Rewrite it with `test-d-landing/privacy.html` for the TestFlight app** before the first external build. It needs: the server host and its region, the AI service (only with permission), no Telegram, no audio, and in-app deletion.
+
 *Last updated: [date]. This covers the Phase 3 study (Tests A–C) and the Test D waitlist page. It is not legal advice. Check it against ICO guidance before first use.*
 
 **Who is responsible (the controller):** Abram [surname], London. Contact: [email]. Check the ICO data protection fee before collecting data (tier 1 is £52 a year, search; `README.md` checklist).

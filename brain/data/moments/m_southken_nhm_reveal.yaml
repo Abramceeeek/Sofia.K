@@ -1,0 +1,41 @@
+# Seed moment 1 (D13, D35). Abram's words are kept as written in research/seed-moments/01-tube-to-museum.md.
+# null = a gap Abram flagged (TO ADD). Nothing here is filled in by Claude.
+# The planner skips this moment until the gaps are filled (see `brain.moments.Moment.missing_for_planning`).
+id: m_southken_nhm_reveal
+title: "From the tube to the museum"
+status: draft
+swipe: true
+place:
+  name: Natural History Museum
+  overture_id: null
+  lat: null
+  lon: null
+approach:
+  from: South Kensington station
+  start_point: null
+  path: "exit the station and walk the path towards the museum"
+  duration_min: null
+  step_free: null
+experience:
+  what_happens: "you go from dark, functional underground transport straight to a huge, castle-like building opening up in front of you"
+  why_it_works: "the contrast; the sudden reveal after the tunnel. It made you want to bring friends and family to see it."
+  duration_min: null
+  end_point: null
+best_time:
+  time_of_day: []
+  light: null
+  weather: []
+  company: null
+  crowd_window: null
+  opening_hours: null
+features:
+  moment:
+    contrast_reveal: 2   # proposed, to confirm
+    social_pull: 2       # proposed, to confirm
+    awe: 2               # proposed, to confirm
+    absorption: 0        # proposed, to confirm
+  place: {}              # the 11 place tags, after the Area 2 feature review (D17)
+cost_gbp: 0
+shot_card: null
+source: seed
+last_checked: null

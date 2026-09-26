@@ -1,0 +1,51 @@
+# Population model for v0: b_population, plus the prior on each person's deviation δ_person.
+#
+# Status: GUESS unless `source` says otherwise. The offline hierarchical refit (Area 3)
+# replaces these numbers once Phase 3 data exist. Nothing here is estimated from data yet.
+#
+# Coding: place and moment tags are 0-2 in the moment record and enter the model as tag/2 (0-1).
+# `personal: true` means the feature gets its own δ for each person; the rest stay at the
+# population level (interactions cannot be identified per person from 10 choices, Area 3).
+
+version: "0.1"
+
+# Source-specific scale (Train §7.2): stated choices, swipes and ratings share the same βs
+# but differ in the variance of unobserved utility.
+scales:
+  conjoint: 1.0
+  swipe: 1.0
+  rating: 1.0
+
+# Ordered-logit thresholds on the latent utility, held fixed in the per-person update.
+cutpoints:
+  swipe: [-1.0, 1.0]                 # didn't enjoy | it was fine | loved it
+  rating: [-2.0, -0.75, 0.75, 2.0]   # 1 | 2 | 3 | 4 | 5
+
+features:
+  # Place tags (Area 2)
+  - {name: movement_views,   label: "movement and views",          group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: food,             label: "food",                        group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: green_nature,     label: "green spaces and nature",     group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: history_culture,  label: "history and culture",         group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: iconic,           label: "famous sights",               group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: local_novel,      label: "local, new-to-you places",    group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: crowds,           label: "crowds",                      group: place,  mean: -0.4,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}
+  - {name: walking_effort,   label: "walking effort",              group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: active,           label: "being active",                group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: outdoor_exposure, label: "being outdoors",              group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: photo_potential,  label: "photo spots",                 group: place,  mean: 0.0,   delta_sd: 0.75, personal: true}
+  # Moment tags (D9)
+  - {name: contrast_reveal,  label: "reveals and contrast",        group: moment, mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: absorption,       label: "absorbing activities",        group: moment, mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: awe,              label: "awe",                         group: moment, mean: 0.0,   delta_sd: 0.75, personal: true}
+  - {name: social_pull,      label: "places to bring people",      group: moment, mean: 0.0,   delta_sd: 0.75, personal: true}
+  # Cost and conditions
+  - {name: cost_per_10gbp,   label: "cost (per £10)",              group: cost,   mean: -0.25, delta_sd: 0.5,  personal: true, source: "validation/conjoint/README.md prior"}
+  - {name: hot_outdoor,      label: "heat outdoors (28°C+)",       group: weather, mean: -0.5, delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}
+  - {name: rain_outdoor,     label: "rain outdoors",               group: weather, mean: -1.0, delta_sd: 0.0,  personal: false}
+  - {name: heat_walking,     label: "walking in the heat",         group: weather, mean: -0.5, delta_sd: 0.0,  personal: false}
+  # Legs and whole-day shape (the conjoint attributes)
+  - {name: transfer_15_30,   label: "transfers of 15-30 min",      group: leg,    mean: -0.3,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior (30 vs 15 min)"}
+  - {name: transfer_30_plus, label: "transfers over 30 min",       group: leg,    mean: -0.7,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior (50 vs 15 min = -1.0 in total)"}
+  - {name: packed_pace,      label: "a packed day (5 stops, not 3)", group: day,  mean: 0.0,   delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}
+  - {name: long_walk,        label: "long walking days (8 km, not 3)", group: day, mean: 0.0,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}

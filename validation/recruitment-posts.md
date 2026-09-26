@@ -14,18 +14,20 @@
 
 ## Post 1 — Tests A–C (find 14 people)
 
+*Updated for the TestFlight app (D50). Final wording is checked when the consent form is rewritten.*
+
 > **Looking for 14 Londoners to test a new way of planning a day out (research, nothing to buy)**
 >
 > I'm building something that plans a day out around how you want it to *feel*, not a list of famous sights. Before I build anything, I want to see if the idea works for real people.
 >
 > What it involves:
-> - a 20–30 minute chat with me on Telegram, by voice notes or typing, whichever you like. You can spread it over a day;
-> - I then send you two day plans for London and you tell me which fits you better;
-> - if you like, you use one on a real day and send a quick 1–5 after each stop.
+> - install the test version of the app on your iPhone (through Apple's TestFlight, which takes a couple of minutes) and answer some questions in it, about 20 minutes. Type or use your keyboard's mic;
+> - a day or two later, the app shows you two day plans for London and you pick the one that fits you better;
+> - if you like, you use one on a real day and tap a quick 1–5 after each stop.
 >
-> You get a free personalised day plan. You need to be 18+ and in or near London. I'd rather hear from people I don't know.
+> You get a free personalised day plan. **You need an iPhone**, and to be 18+ and in or near London. I'd rather hear from people I don't know.
 >
-> Voice notes are transcribed and then deleted. Full privacy details are in the consent note before we start.
+> A real person (me) runs this test. Full privacy details are in the app before you start.
 >
 > Interested? Comment or message me and I'll send the details. — Abram
 

@@ -6,11 +6,13 @@
 
 **Friends and family are a separate launch channel (D43).** They are welcome, tagged `friends & family` in the results sheet and reported separately. **Every threshold and K are measured on strangers only.** Rule: anyone Abram knows, or who was sent by someone he knows, counts as friends and family.
 
-**Principle:** no code except the Test D page. Abram plays "the system" (Wizard of Oz). Participants are told a person runs the chat, and that AI helps draft summaries and plans (`consent-form.md`).
+**Principle (D50):** Tests A–C run **inside the v0 iPhone app through TestFlight**, not as a Telegram chat. Onboarding is self-serve, and the plans in Test B are still written by Abram with the planner's help and pushed to the app (Wizard of Oz). Test D stays a web page, and Test E stays interviews. Participants are told a person runs the test and that AI helps draft summaries and plans, and the AI step needs its own permission (App Review 5.1.2(i)). The build and its schedule are in `decisions/v0-ios-plan.md`: Test A from about the week of 23 Nov, and Checkpoint 3 about the week of 4 Jan.
+
+**iPhone only.** iOS was 51.5% of UK mobile web traffic in August 2026 (StatCounter), so expect about half the sign-ups per post for Tests A–C. Post 1 says "iPhone needed".
 
 ## Pass thresholds (D2, D18)
 
-Every Test A metric is reported **overall, and separately for voice and text** (D4, D18).
+Every Test A metric is reported **overall, and separately for voice and text** (D4, D18). In the app, voice is the keyboard's dictation, so the split comes from the in-app question "Did you type or speak your answers?". A measured voice button is an optional +2.5 h (open question).
 
 | Test | Metric | Pass |
 |---|---|---|
@@ -29,37 +31,38 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - Photos matter (1–5) and shot-card appeal (1–5) (D16).
 - Virality measures (below).
 
-## Test A — onboarding (Wizard of Oz on Telegram)
+## Test A — onboarding (self-serve in the app, D50)
 
-- **Mode:** the participant chooses voice notes or typing and can switch; record the first choice (D4). Voice notes are transcribed **locally** (open-source Whisper) and audio is deleted once transcribed. The opt-in keeps it 30 days for accuracy spot-checks (D3).
-- **Layers**, in order (`interview-script.md`):
+- **Install:** the TestFlight public link, then a **tester code** from the sign-up form on the welcome screen. The code carries the channel (stranger or friends and family, D43) and the source.
+- **Mode:** typing, or speaking through the keyboard's dictation. No audio reaches us.
+- **Layers**, in order (same wording as `interview-script.md`, now in `brain/data/onboarding.yaml`):
   1. best hour of the last trip, with an "anything else?" follow-up;
   2. why they travel (tap up to 2);
   3. 16 London swipe items;
   4. 10 "this or that" plans (`conjoint/design.csv`);
   5. personal context, including the optional food question (D19) and "where you grew up" (place type, optional);
   6. two photo questions and an example shot card (D16);
-  7. **read-back**: "Here's what I heard — did I get that right?";
-  8. short survey.
-- **Measures:** completion; minutes from first to last message; drop-off layer; the survey items; open answers.
+  7. **read-back**: "Here's what we heard". Each line comes from the model's confident weights, and the tester marks it Right or Not quite;
+  8. short survey, including "Did you type or speak your answers?".
+- **Measures** (app events and the brain's export): completion; minutes from the first to the last screen; drop-off screen; read-back lines marked right; the survey items; open answers.
 
 ## Test B — plan quality (blind)
 
 - **Same brief for both plans:** same city, same day length, same budget, same number of stops, same format and length.
-  - **Personalised:** drafted by an LLM from the read-back profile and a list of London moments Abram knows (seed moments first). Abram checks it.
+  - **Personalised:** drafted by the planner from the tester's weights and the moment database. Abram edits it and pushes it to the app (`POST /v1/admin/users/{id}/plans`).
   - **Generic:** a top-attractions plan written once and reused.
 - **Labels A/B come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed).
-- **Measures:** which they prefer and why; "This plan fits me" (1–5) for each.
+- **Measures:** in the app, which they prefer and why, and "This plan fits me" (1–5) for each.
 - **Trip intent** (Area 15) is asked just before: "recharge or explore?", "who's coming?", "one must-do?". It is stored with the plan (D27).
 
 ## Test C — actual use (plus virality, D23)
 
 - **Offer the personalised plan** for a real day or weekend. If they clearly preferred the generic one, let them choose, and record which.
-- **During the day:** after each stop they send one number, 1–5. Log the message time, the weather (look it up afterwards) and the travel time from the plan.
-- **"Bring a friend":** the plan message includes a line to forward to a friend, with a personal referral link (`?ref=P07`).
+- **During the day:** a local notification after each stop asks for 1–5 and "Would you bring someone here?". The rating is saved with the time, the travel time from the plan and the weather if known.
+- **"Bring a friend":** a share button on the plan sends a personal referral link (`?ref=P07`) to the landing page, which links on to TestFlight.
 - **Share prompt after the shot-card moment:** "Got a shot you like? Share it if you want — here's a link friends can use to try this." Same referral link. **We never ask for the photo.**
 - **After the day:** "Would you go again?"; "How did it feel?"; "Did you invite anyone? How many?"; "Did you share a photo? Where?".
-- **For 2 weeks:** log any unprompted request for a second plan.
+- **For 2 weeks:** the app's "Plan another day" button records unprompted requests for a second plan.
 
 **Virality measures:**
 - **Invites sent** per participant (self-report, plus forwarded "bring a friend" messages they mention).
@@ -83,7 +86,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Who:** 3 London contacts (a hotel, a serviced-apartment operator, a tourism body) and **2 Uzbek outbound agencies** sending clients to London, at London prices (D49). The Uzbek interviews also ask how the agency pays foreign suppliers (Area 20).
 - **How:** past-behaviour questions only, **no pitching** until the close (`discovery-interviews.md`). Optional: 3 venue conversations about off-peak slots and group discounts.
 - **Measures:** current spend on helping guests find things to do; whether a budget owner is named; the strongest pain quote; commitment (none / introduction / unpaid pilot).
-- **Proposed read-out (Abram to confirm):** ≥ 2 of 5 already spend money or staff time on this, **and** ≥ 2 of 5 give an introduction or agree to an unpaid pilot.
+- **Read-out (confirmed, D57):** ≥ 2 of 5 already spend money or staff time on this, **and** ≥ 2 of 5 give an introduction or agree to an unpaid pilot.
 - **Workbook:** the results replace the `B2B` guesses (plans per client, sales hours, price range) and feed `Path50k`, where B2B closes the gap to £50k.
 
 ## Trip payments during Phase 3 (Area 18)
@@ -108,7 +111,8 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 | Risk | Mitigation |
 |---|---|
 | Friends and family inflate scores | Separate launch channel (D43): tag on sign-up ("how do you know me?"); thresholds and K on strangers only; report friends and family side by side |
-| Wizard of Oz is smoother than software will be | Keep Abram's replies to scripted prompts; note every improvisation |
+| Curated Test B plans are better than the planner will be | Log every edit Abram makes to the planner's draft; report how many plans needed edits |
+| TestFlight friction (install, invites) loses testers | A one-page tester guide; count installs, not just sign-ups; the first build goes through App Review, so allow a few days |
 | Novelty effect in Test C | Unprompted second-plan requests over 2 weeks are the real signal |
 | Test D traffic is too low for two arms | If there are fewer than ~100 visits per arm after 2 weeks, report the pooled rate and treat the arm split as descriptive |
-| Participants volunteer health or allergy details | The script says we don't need them; don't record them; delete them from transcripts |
+| Participants volunteer health or allergy details | The app says we don't need them; delete them from the export before analysis |

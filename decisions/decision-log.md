@@ -2,6 +2,20 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (Phase 3 round 5) — v0 becomes a native iOS app
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D50 | **v0 is a native iOS app (SwiftUI).** Testers get it through **TestFlight**, then the App Store once it passes. **The Telegram bot plan is replaced.** Phase 3 Tests A–C run through TestFlight; Tests D (web page) and E are unchanged. Plan, hours, proposed cuts and designer screens: `decisions/v0-ios-plan.md`, `design/v0-screens.md` | Telegram bot v0 (Areas 1, 8, 19); the "no code before Phase 3 passes" rule for Tests A–C | Founder decision |
+| D51 | **Two parts.** The **Brain** is a FastAPI backend: moment database, scoring (hierarchical βs, with δ_person separate so it can move on-device later) and the OR-Tools planner. The **Face** is the SwiftUI app: self-serve onboarding (text first, voice optional), moment and shot cards, a day plan with map, one-tap ratings. **Building the Brain starts now, in parallel with Test E**, because it doesn't depend on test results. First draft in `brain/` (28 tests pass) | Phase 4 gated on Phase 3 for all build work | Founder decision |
+| D52 | **Economics work is paused** unless a decision needs it. The workbook reviews (3 h) are deferred. The workbook's Telegram Stars base case is now stale; its Apple rows already cover an iOS app | — | Hours go to the build |
+| D53 | **New gate before public App Store release:** check Apple's outside-activities policy for publishing under Abram's own developer account. Added to `CLAUDE.md`. *Proposed:* do the check before the first external TestFlight build too (open question) | — | Founder decision |
+| D54 | **The 3 h overrun question is held** until Phase 4 is re-planned for iOS. The re-plan is now in `decisions/v0-ios-plan.md`: ≈ 106.5 h in the window, about 1.5 h over | LOG open question 1 | Founder decision |
+| D55 | **Abram names the backup helper** for safety alerts. They sign the contributors agreement (D38) **before support goes live**. In the iOS plan that is the first external TestFlight build, when the Help & safety button goes live | Open question on who the helper is | Founder decision |
+| D56 | **The Area 4 review moves to the week of 2 Nov** | Week of 28 Sep | Balances that week |
+| D57 | **Test E pass bar confirmed:** ≥ 2 of 5 already spend money or staff time on this, **and** ≥ 2 of 5 give an introduction or agree to an unpaid pilot | Proposed read-out | Founder confirmed |
+| D58 | **Uzbek payment route accepted** (Area 20): a GBP invoice from the UK company, paid by international card through Stripe or by SWIFT to the UK business account; an HMRC certificate of residence first; **one adviser call before the first Uzbek invoice** | Proposed route (D49) | Founder decision |
+
 ## 2026-09-26 (Phase 3 round 4) — Phase 4 trim, safety cover, gate confirmed, Uzbek focus
 
 | # | Decision | Replaces | Why |

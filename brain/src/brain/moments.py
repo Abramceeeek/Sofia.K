@@ -1,0 +1,160 @@
+"""The moment record (Area 2 schema, D9) and a loader for the YAML files in data/moments."""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+import yaml
+from pydantic import BaseModel, ConfigDict, Field
+
+PLACE_TAGS = [
+    "movement_views", "food", "green_nature", "history_culture", "iconic", "local_novel",
+    "crowds", "walking_effort", "active", "outdoor_exposure", "photo_potential",
+]
+MOMENT_TAGS = ["contrast_reveal", "absorption", "awe", "social_pull"]
+
+_WINDOW = re.compile(r"^\s*(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\s*$")
+
+
+class Point(BaseModel):
+    lat: float
+    lon: float
+
+
+class Place(BaseModel):
+    name: str
+    overture_id: str | None = None
+    lat: float | None = None
+    lon: float | None = None
+
+
+class Approach(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    from_: str | None = Field(default=None, alias="from")
+    start_point: Point | None = None
+    path: str | None = None
+    duration_min: float | None = None
+    step_free: bool | None = None
+
+
+class Experience(BaseModel):
+    what_happens: str | None = None
+    why_it_works: str | None = None
+    # One number, or [min, max]; the planner uses the midpoint.
+    duration_min: float | list[float] | None = None
+    end_point: Point | None = None
+
+
+class BestTime(BaseModel):
+    time_of_day: list[str] = Field(default_factory=list)  # "hh:mm-hh:mm"
+    light: str | None = None
+    weather: list[str] = Field(default_factory=list)       # e.g. ["dry"] or ["any"]
+    company: str | None = None
+    crowd_window: str | None = None
+    opening_hours: str | None = None
+
+
+class Features(BaseModel):
+    place: dict[str, int | None] = Field(default_factory=dict)
+    moment: dict[str, int | None] = Field(default_factory=dict)
+
+
+class StandAt(BaseModel):
+    lat: float | None = None
+    lon: float | None = None
+    note: str | None = None
+
+
+class ShotCard(BaseModel):
+    stand_at: StandAt | None = None
+    face: str | None = None
+    frame: str | None = None
+    when: str | None = None
+    avoid: str | None = None
+
+
+class Moment(BaseModel):
+    id: str
+    title: str
+    status: str = "draft"          # draft | ready
+    swipe: bool = False            # part of the onboarding swipe set
+    place: Place
+    approach: Approach = Field(default_factory=Approach)
+    experience: Experience = Field(default_factory=Experience)
+    best_time: BestTime = Field(default_factory=BestTime)
+    features: Features = Field(default_factory=Features)
+    cost_gbp: float | None = None
+    shot_card: ShotCard | None = None
+    source: str = "founder"
+    last_checked: str | None = None
+
+    # ---- derived values the planner needs ---------------------------------
+    def tag(self, name: str) -> int | None:
+        if name in PLACE_TAGS:
+            return self.features.place.get(name)
+        return self.features.moment.get(name)
+
+    def duration_min(self) -> float | None:
+        """Approach walk plus the experience itself. The approach is part of the moment."""
+        exp = self.experience.duration_min
+        if isinstance(exp, list):
+            exp = sum(exp) / len(exp) if exp else None
+        if exp is None or self.approach.duration_min is None:
+            return None
+        return float(self.approach.duration_min) + float(exp)
+
+    def start(self) -> Point | None:
+        return self.approach.start_point
+
+    def end(self) -> Point | None:
+        return self.experience.end_point or self.approach.start_point
+
+    def windows(self) -> list[tuple[int, int]]:
+        """Allowed time windows in minutes from midnight, from best_time.time_of_day."""
+        out = []
+        for w in self.best_time.time_of_day:
+            m = _WINDOW.match(w)
+            if not m:
+                raise ValueError(f"{self.id}: time window {w!r} is not 'hh:mm-hh:mm'")
+            h1, m1, h2, m2 = (int(x) for x in m.groups())
+            out.append((h1 * 60 + m1, h2 * 60 + m2))
+        return sorted(out)
+
+    def missing_for_planning(self) -> list[str]:
+        """Fields the planner needs that are still empty. An empty list means plannable."""
+        missing = []
+        if self.approach.start_point is None:
+            missing.append("approach.start_point")
+        if self.approach.duration_min is None:
+            missing.append("approach.duration_min")
+        if self.experience.duration_min is None:
+            missing.append("experience.duration_min")
+        if not self.best_time.time_of_day:
+            missing.append("best_time.time_of_day")
+        if self.cost_gbp is None:
+            missing.append("cost_gbp")
+        for t in PLACE_TAGS:
+            if self.features.place.get(t) is None:
+                missing.append(f"features.place.{t}")
+        for t in MOMENT_TAGS:
+            if self.features.moment.get(t) is None:
+                missing.append(f"features.moment.{t}")
+        try:
+            self.windows()
+        except ValueError:
+            missing.append("best_time.time_of_day (format)")
+        return missing
+
+    def plannable(self) -> bool:
+        return not self.missing_for_planning()
+
+
+def load_moment_file(path: Path) -> Moment:
+    with open(path, encoding="utf-8") as f:
+        return Moment.model_validate(yaml.safe_load(f))
+
+
+def load_moments(directory: Path) -> list[Moment]:
+    return [load_moment_file(p) for p in sorted(Path(directory).glob("*.yaml"))]

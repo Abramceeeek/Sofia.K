@@ -1,5 +1,7 @@
 # Seed moment 1 — From the tube to the museum
 
+*The planner's copy of this record is `brain/data/moments/m_southken_nhm_reveal.yaml` (D51). When you fill the gaps, update that file; the planner uses it once nothing is missing.*
+
 *Received from Abram 2026-09-26 (D13). His own words are kept as written. Everything marked **TO ADD** is a gap he flagged, and nothing here is filled in by Claude. Feature scores marked "proposed" come only from his description and need his confirmation.*
 
 ```yaml

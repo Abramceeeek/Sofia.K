@@ -79,7 +79,7 @@ Log each contact in `results-sheet.xlsx` → `Posts` (For = "B2B"), with minutes
 - The strongest pain quote, verbatim.
 - **Commitment:** none / introduction to the budget owner / agreed to an unpaid pilot.
 
-**Proposed read-out (Abram to confirm):** the B2B line is worth building toward if **≥ 2 of 5** already spend money or staff time on this, **and ≥ 2 of 5** give a commitment (an introduction or a pilot). Polite interest ("sounds great!") does not count.
+**Read-out (confirmed, D57):** the B2B line is worth building toward if **≥ 2 of 5** already spend money or staff time on this, **and ≥ 2 of 5** give a commitment (an introduction or a pilot). Polite interest ("sounds great!") does not count.
 
 ## Optional: 3 venue conversations (venue partnerships)
 

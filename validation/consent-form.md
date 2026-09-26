@@ -1,5 +1,7 @@
 # Consent form — "Days out that fit you" research study
 
+> **Status (D50):** this is the Telegram version. **Rewrite it for the TestFlight app before the first external build.** It needs: answers stored on our server rather than transcribed on a laptop; no audio; a **separate, optional AI permission** (App Review 5.1.2(i)); the in-app Delete my data; and the Help & safety button. Claude drafts it; about 0.5 h for you to review.
+
 *Plain English. Send before the first question. The participant replies "I agree" in the chat or ticks the box on the sign-up form. Keep a copy of their reply.*
 
 **Who is running this?** Abram [surname], an individual in London, testing an idea for a travel planning app. This is research: nothing is being sold, and there is no payment either way. Contact: [email].

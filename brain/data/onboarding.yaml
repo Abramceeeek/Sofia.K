@@ -1,0 +1,26 @@
+# Onboarding content served to the app. Wording follows validation/interview-script.md (Test A).
+# The swipe cards are the moments with `swipe: true`; the "this or that" tasks come from
+# conjoint_design.csv (a copy of validation/conjoint/design.csv).
+version: "0.1"
+open_questions:
+  - key: best_hour
+    text: "Tell me about the best hour of your last trip or day out. Where were you, what was happening, how did it feel?"
+    follow_up: "Is there anything else you'd like to add about that?"
+why_travel:
+  prompt: "Which of these is most often why you go out or travel? Pick up to two."
+  options: [switch_off, people, discover, nature, culture, food]
+swipe:
+  prompt: "Have you been? How did it feel?"
+  reactions: [loved, fine, didnt_enjoy, havent_been]
+conjoint:
+  prompt: "Two made-up day plans. Which day would you rather have?"
+about_you:
+  - {key: budget_band, text: "Roughly what do you like to spend on a day out, per person?"}
+  - {key: company, text: "Who do you usually go with?"}
+  - {key: chronotype, text: "Morning person or night person?"}
+  - {key: activity, text: "How active do you like a day to be?"}
+  - {key: grew_up, text: "What kind of place did you grow up in?", note: "Optional. Only used to guess what will feel new to you."}
+  - {key: foods_avoided, text: "Any foods or drinks you avoid?", note: "Optional. Only used to choose food stops, and you can skip it."}
+photos:
+  - {key: photos_matter, text: "How much do photos and sharing matter on your trips?", scale: "1 (not at all) - 5 (a lot)"}
+  - {key: shot_card_appeal, text: "If a plan came with a card like this, would it make you more likely to go?", scale: "1 (no) - 5 (definitely)"}

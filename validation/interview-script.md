@@ -1,5 +1,7 @@
 # Host script — Tests A, B and C (Telegram, Wizard of Oz)
 
+> **Status (D50):** Test A no longer runs as a Telegram chat. The app asks these questions itself (`brain/data/onboarding.yaml`, with the same wording). Keep this script as the source of the copy, and for any hand-run fallback.
+
 **Rules for the host (Abram):**
 - **One question per message.** Wait for the answer. Never interrupt a voice note.
 - **After each open answer, send:** "Is there anything else you'd like to add about that?"
