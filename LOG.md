@@ -57,7 +57,7 @@ Claude re-verified the pricing and cost sources before building the model (D20).
 | 15 | `15-travel-motivation.md` | 0.5 | ~1 in Phase 4 (store intent) + 4–6 later | Drafted: 6 sources |
 | 16 | `16-home-contrast-novelty.md` | 0.5 | 4–6 | Drafted: 3 sources (plus Areas 12 and 14) |
 | 17 | `17-on-device-personalisation.md` | 0.5 | ~1 in Phase 4 (separate δ) + 8–12 on device + 20–30 federated/DP, needs a native app | Drafted: 7 sources |
-| | **Total** | **2.5** | **~2 in Phase 4; ~50–70 later** | The 2 h in Phase 4 fit if the planner's end-bonus toggle tests stay small; otherwise Phase 4 becomes ≈38 h |
+| | **Total** | **2.5** | **~2 in Phase 4; ~50–70 later** | The ~2 h design hooks raise Phase 4 from ≈36 h to **≈38 h**, unless Abram drops something else (open question 7) |
 
 Sources now total 231 in `research/sources.csv`: 121 read on the page, 107 through search only, 3 UNVERIFIED.
 
@@ -120,5 +120,6 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 4. **Paid ad test.** Spend ~£50–100 on Meta to measure cost per click and visit-to-sign-up? This spends money but takes none, so the legal gates don't block it.
 5. **Conjoint attributes (Area 3).** Confirm 5–6 attributes and levels.
 6. **Moment features (Area 2).** Abram is reviewing these in the week of 28 Sep (D17).
+7. **Design hooks for Areas 15 and 17.** Storing trip-intent answers and keeping δ_person separate add ~2 h to Phase 4 (≈38 h). Accept, or defer them?
 
 Resolved 2026-09-26: network access; Test D vs legal gates (D1/D2); Test A audio (D3); voice vs text (D4); Python version (D12); place DB sourcing (D11); Phase 4 budget (D14); peak–end default (D15); photo pairs (D16); Checkpoint 1 and thresholds (D18); food question (D19); source re-verification (D20); recruitment posts (D21).
