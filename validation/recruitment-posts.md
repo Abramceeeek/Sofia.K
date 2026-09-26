@@ -21,7 +21,7 @@
 > I'm building something that plans a day out around how you want it to *feel*, not a list of famous sights. Before I build anything, I want to see if the idea works for real people.
 >
 > What it involves:
-> - a 20–30 minute chat with me on Telegram, by voice notes or typing, whichever you like. You can spread it over a day;
+> - a 20–30 minute chat with me on WhatsApp, by voice notes or typing, whichever you like. You can spread it over a day;
 > - I then send you two day plans for London and you tell me which fits you better;
 > - if you like, you use one on a real day and send a quick 1–5 after each stop.
 >
@@ -33,7 +33,7 @@
 
 **Sign-up form fields** (Tally, 1 minute):
 - first name;
-- Telegram username or phone;
+- WhatsApp number (the study uses its own number, not a personal one);
 - which group they saw the post in (prefilled by a per-post link, e.g. `?src=fb-ucl-hiking`);
 - "How do you know me?" (don't / a friend of a friend / I know you).
 
@@ -54,17 +54,17 @@
 
 Welcome them, but **tag them**: link `?src=ff` for the landing page, and "Launch channel = friends & family" in the results sheet. Their answers are reported separately, and never count towards a threshold or K.
 
-> I'm testing a way to plan days out around how people want to feel. Would you try it? It's a 20–30 min chat on Telegram and you get a free day plan. (Honest answers help most, including "this is boring".)
+> I'm testing a way to plan days out around how people want to feel. Would you try it? It's a 20–30 min chat on WhatsApp and you get a free day plan. (Honest answers help most, including "this is boring".)
 
 ## Message to weekend-test attendees (sent after their trip, D21)
 
-> Thanks for coming on [trip] — hope you enjoyed it. I'm also testing a way to plan days around how people want to feel. Would you do a 20–30 min chat with me on Telegram (voice or typing) and get a free personalised day plan? Totally optional, and it doesn't affect anything about the trip.
+> Thanks for coming on [trip] — hope you enjoyed it. I'm also testing a way to plan days around how people want to feel. Would you do a 20–30 min chat with me on WhatsApp (voice or typing) and get a free personalised day plan? Totally optional, and it doesn't affect anything about the trip.
 
 Tag them `src=weekend-<trip>` so they're counted as a recruitment source.
 
 ## Reply templates
 
 - **"Is this a startup / what are you selling?"** "Not selling anything. I'm testing whether the idea is worth building. You'd get a free plan, that's it."
-- **"Why Telegram?"** "Voice notes and quick replies work well there, and it's free. Typing is fine too."
+- **"Why WhatsApp?"** "Most people already have it, and voice notes work well. It's a separate number just for this study. Typing is fine too."
 - **"What happens to my voice notes?"** "Transcribed on my laptop, then deleted. You can ask me to delete everything at any time."
 - **"Is it AI?"** "I run the chat myself. AI helps me draft the summary and the plan, and I check them."

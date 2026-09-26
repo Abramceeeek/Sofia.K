@@ -6,7 +6,7 @@
 
 **Friends and family are a separate launch channel (D43).** They are welcome, tagged `friends & family` in the results sheet and reported separately. **Every threshold and K are measured on strangers only.** Rule: anyone Abram knows, or who was sent by someone he knows, counts as friends and family.
 
-**Principle (D63):** Tests A–C run **by hand**. Test A is a chat conversation, and the Test B/C plans are sent as messages or PDFs. Abram plays "the system" (Wizard of Oz). Participants are told a person runs the chat, and that AI helps draft summaries and plans (`consent-form.md`). Test D is a web page, and Test E is interviews. **Checkpoint 3 is in the week of 9 Nov.** The iOS app is built in parallel; its first external TestFlight build comes after Checkpoint 3 and carries these lessons (`decisions/v0-ios-plan.md`).
+**Principle (D63, D65–D68):** Tests A–C run **by hand**. Test A is a chat on **WhatsApp Business with a separate number** (D66), and the Test B/C plans are sent as messages or PDFs. **Test B runs first and fast after Test E:** each person gets their two plans 1–3 days after their Test A chat, so Test B reports about the week of 2 Nov (D68). **The Brain writes the Test B plans** (D65). Abram plays "the system" (Wizard of Oz). Participants are told a person runs the chat, and that AI helps draft summaries and plans (`consent-form.md`). Test D is a web page, and Test E is interviews. **Checkpoint 3 is in the week of 9 Nov.** The iOS app is built in parallel; its first external TestFlight build comes after Checkpoint 3 and carries these lessons (`decisions/v0-ios-plan.md`).
 
 ## Pass thresholds (D2, D18)
 
@@ -29,7 +29,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - Photos matter (1–5) and shot-card appeal (1–5) (D16).
 - Virality measures (below).
 
-## Test A — onboarding (Wizard of Oz in a chat, D63)
+## Test A — onboarding (Wizard of Oz on WhatsApp Business, D63, D66)
 
 - **Mode:** the participant chooses voice notes or typing and can switch; record the first choice (D4). Voice notes are transcribed **locally** (open-source Whisper) and audio is deleted once transcribed. The opt-in keeps it 30 days for accuracy spot-checks (D3).
 - **Layers**, in order (`interview-script.md`; the same wording is in `brain/data/onboarding.yaml` for the app):
@@ -46,8 +46,12 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 ## Test B — plan quality (blind)
 
 - **Same brief for both plans:** same city, same day length, same budget, same number of stops, same format and length.
-  - **Personalised:** drafted by the planner (`brain/`) or an LLM from the read-back profile and a list of London moments Abram knows (seed moments first). Abram checks it and sends it as a message or PDF.
-  - **Generic:** a top-attractions plan written once and reused.
+  - **Personalised:** written by the Brain (`python -m brain.testb plans`, `brain/README.md`).
+    - It fits the person's weights from their Swipes and Choices rows, then plans the day from the moment database with the same brief: start, times, number of stops and budget.
+    - Abram checks it with the review sheet (legs over 20 min, opening hours, prices) and sends it as a WhatsApp message or PDF.
+    - **The sent plan never says why a stop was chosen**, so it stays blind.
+    - About 25 complete moments are needed in `brain/data/moments/` before the first plan.
+  - **Generic:** a top-attractions plan written once and reused (`validation/raw/testb/generic.yaml`). It uses the same fields as the personalised plan, including how to arrive, so the format gives nothing away.
 - **Labels A/B come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed).
 - **Measures:** which they prefer and why; "This plan fits me" (1–5) for each.
 - **Trip intent** (Area 15) is asked just before: "recharge or explore?", "who's coming?", "one must-do?". It is stored with the plan (D27).

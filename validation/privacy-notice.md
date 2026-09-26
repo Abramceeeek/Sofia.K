@@ -12,7 +12,7 @@
 |---|---|---|
 | Study answers, transcripts, ratings, stop time, date and weather | To test whether a personalised day plan works; to make your plan | Consent (Art. 6(1)(a)); withdraw at any time |
 | Voice notes (audio) | Transcription only; deleted once transcribed unless you opt in to 30 days | Consent |
-| Name, Telegram username or phone | To contact you during the study | Consent |
+| Name and WhatsApp number | To contact you during the study | Consent |
 | Waitlist: email, chosen option (free or founding price), price arm, referral code, source link | To tell you when the app is ready, and to measure interest at each price | Consent |
 | Page visits (GoatCounter: no cookies, no unique identifiers) | To count visits per price arm | Legitimate interests (Art. 6(1)(f)): aggregate counts only |
 
@@ -22,7 +22,7 @@
 
 | Service | Role | Where |
 |---|---|---|
-| Telegram | The chat itself; its own privacy policy applies to messages | See Telegram's policy |
+| WhatsApp (Meta) | The chat itself, on a separate WhatsApp Business number; its own privacy policy applies to messages | See WhatsApp's policy |
 | AI service (for drafting summaries and plans) | Processor; gets de-identified text only, never audio | Likely the US. Check the provider's DPA before use (UNVERIFIED) |
 | Tally | Sign-up and waitlist forms (processor) | Check Tally's DPA before use (UNVERIFIED) |
 | GoatCounter | Visit counts; no personal data collected | See GoatCounter's policy |

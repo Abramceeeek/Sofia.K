@@ -2,6 +2,15 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (after the founder briefing) — Test B first, WhatsApp, brain now
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D65 | **Build the Brain now, and use it to generate the Test B plans.** The designer starts now. **The iOS app code, including its GitHub Actions build, is held until Test B reports** | The app built in parallel (D63) | Test B is the premise; don't spend app hours before it |
+| D66 | **Test A runs on WhatsApp Business with a separate number**, not Telegram. The materials are updated | Telegram for the hand-run tests | Founder decision |
+| D67 | **The 1.3-week overrun is accepted** (≈ 114.5 h in the window) | Open question | Founder decision |
+| D68 | **Test B runs first and as fast as possible after Test E.** Each person's Test A chat is followed by their two plans within 1–3 days, so Test B reports about the week of 2 Nov | Test B as a batch in the week of 26 Oct | The briefing's advice: Test B is the most informative test |
+
 ## 2026-09-26 (Phase 3 round 6) — iOS plan accepted, hand-run tests, build in the cloud
 
 | # | Decision | Replaces | Why |

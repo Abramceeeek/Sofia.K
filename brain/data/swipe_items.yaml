@@ -1,0 +1,79 @@
+# The 16 Test A swipe items (validation/interview-script.md §3), keyed by the "Item #" column
+# of the results sheet's Swipes tab.
+#
+# STATUS: DRAFT. Abram confirms the 16 places this week (D30, D48), and then these tags.
+# The tags are Claude's first draft from each name (Area 2 process: the LLM drafts, Abram corrects).
+# They are judgements, not facts. Cost is left out (null) until prices are checked, so swipes do
+# not inform the cost weight.
+#
+# Tags are 0-2. Place: movement_views, food, green_nature, history_culture, iconic, local_novel,
+# crowds, walking_effort, active, outdoor_exposure, photo_potential.
+# Moment: contrast_reveal, absorption, awe, social_pull.
+
+version: "0.1-draft"
+items:
+  1:
+    name: "Big Ben and Parliament Square"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+  2:
+    name: "Uber Boat on the Thames"
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+  3:
+    name: "Borough Market"
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  4:
+    name: "British Museum"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
+  5:
+    name: "IFS Cloud Cable Car"
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+  6:
+    name: "Hyde Park"
+    place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+  7:
+    name: "Camden Market"
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  8:
+    name: "Tate Modern Turbine Hall"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 1}
+  9:
+    name: "Sky Garden"
+    place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  10:
+    name: "Columbia Road Flower Market (Sunday)"
+    place: {movement_views: 0, food: 1, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  11:
+    name: "The view from the top of Greenwich Park"
+    place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  12:
+    name: "Walking from South Kensington tube to the Natural History Museum"
+    moment_id: m_southken_nhm_reveal   # seed moment 1; its own place tags are still TO TAG by Abram
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 2, absorption: 0, awe: 2, social_pull: 2}   # Abram's proposed seed tags
+  13:
+    name: "Primrose Hill at sunset"
+    place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  14:
+    name: "Brick Lane for food"
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+  15:
+    name: "Hampstead Heath ponds (swimming)"
+    place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 1, active: 2, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 1}
+  16:
+    name: "Regent's Canal walk from Little Venice"
+    place: {movement_views: 1, food: 0, green_nature: 1, history_culture: 1, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 0, social_pull: 1}

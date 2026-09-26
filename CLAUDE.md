@@ -124,7 +124,11 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 - **v0 is a native iOS app (SwiftUI)**, tested through TestFlight, then released on the App Store once it passes (after the D53 gate). It replaces the Telegram bot.
 - **Brain** (`brain/`): FastAPI on Python 3.12. It holds the moment database, scoring as `S = x·(b_population + δ_person)` with δ kept separate and portable, and the OR-Tools planner. Claude Code builds and tests it in this repo.
 - **Face:** the SwiftUI app. It is built, signed and uploaded to TestFlight by **GitHub Actions on a macOS runner**, with no personal Mac (D64). iOS builds run only when files under the app folder change, and backend tests run on Linux. Abram holds the signing secrets in GitHub Secrets. Claude writes the Swift here, but can't run it here, so every check goes through CI.
-- **Phase 3 (D63):** Tests A–C run by hand (a chat, and plans as messages or PDFs). Checkpoint 3 is in the week of 9 Nov, and the app is built in parallel.
+- **Phase 3 (D63, D65–D68):**
+  - Tests A–C run by hand. Test A is a chat on **WhatsApp Business with a separate number**; the plans go as messages or PDFs.
+  - **The Brain generates the Test B plans** from the results sheet, and Abram checks them.
+  - Test B runs first and fast after Test E, and reports about the week of 2 Nov. Checkpoint 3 is in the week of 9 Nov.
+  - The designer works now. **iOS app code waits until Test B reports.**
 - **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Designer screens:** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`.
 - **Economics work is paused** unless a decision needs it (D52).
 

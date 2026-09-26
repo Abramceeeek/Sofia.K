@@ -1,4 +1,4 @@
-# Host script — Tests A, B and C (Telegram, Wizard of Oz)
+# Host script — Tests A, B and C (WhatsApp Business, Wizard of Oz)
 
 > **Status (D63):** **in use.** Tests A–C run by hand in a chat, with Checkpoint 3 in the week of 9 Nov. The app reuses this wording later (`brain/data/onboarding.yaml`).
 
@@ -7,7 +7,7 @@
 - **After each open answer, send:** "Is there anything else you'd like to add about that?"
 - **Don't pitch, lead or praise answers** ("great!"). Neutral acknowledgements only: "Thanks", "Got it".
 - **Follow-up probes:** use only the probes listed here. Note any improvisation in the results sheet.
-- **Timestamps:** Telegram records them; completion time = first message → last survey answer.
+- **Timestamps:** WhatsApp records them; completion time = first message → last survey answer.
 - **Health and allergy details:** if someone volunteers them, reply "Thanks — I don't need health details, so I'll leave that out." Don't record them.
 
 ---

@@ -1,27 +1,27 @@
 # Consent form — "Days out that fit you" research study
 
-> **Status (D63):** this version is **for the hand-run Tests A–C** (a chat; it names Telegram, so change that if you use another chat app). **A separate app version is needed before the first external TestFlight build.** That version covers: answers stored on our server; no audio; a separate, optional AI permission (App Review 5.1.2(i)); in-app Delete my data; and the Help & safety button. Claude drafts it; ≈ 0.5 h for you to review.
+> **Status (D63):** this version is **for the hand-run Tests A–C** (a chat on WhatsApp Business, D66). **A separate app version is needed before the first external TestFlight build.** That version covers: answers stored on our server; no audio; a separate, optional AI permission (App Review 5.1.2(i)); in-app Delete my data; and the Help & safety button. Claude drafts it; ≈ 0.5 h for you to review.
 
 *Plain English. Send before the first question. The participant replies "I agree" in the chat or ticks the box on the sign-up form. Keep a copy of their reply.*
 
 **Who is running this?** Abram [surname], an individual in London, testing an idea for a travel planning app. This is research: nothing is being sold, and there is no payment either way. Contact: [email].
 
 **What you'll do**
-- A 20–30 minute chat on Telegram, by voice notes or typing, your choice.
+- A 20–30 minute chat on WhatsApp, by voice notes or typing, your choice. We use a separate number just for this study.
 - Then two day plans to compare. Optionally, use one on a real day and send a 1–5 rating after each stop.
 
-**If something goes wrong on the day:** in an emergency, call 999. For anything else that feels unsafe, message Abram on Telegram. He will reply within a few hours.
+**If something goes wrong on the day:** in an emergency, call 999. For anything else that feels unsafe, message Abram on the study's WhatsApp number. He will reply within a few hours.
 
 **What is recorded, and why**
 
 | What | Why | How long we keep it |
 |---|---|---|
 | Your answers (text, and transcripts of voice notes) | To understand what makes a day out good for you, and to make your plan | Until 31 March 2027, then deleted. Anonymised results may be kept |
-| **Voice notes (audio)** | Only to turn them into text | **Deleted as soon as they are transcribed** (and deleted from the Telegram chat), unless you opt in below |
+| **Voice notes (audio)** | Only to turn them into text | **Deleted as soon as they are transcribed** (and deleted from the chat on our side; the copy on your own phone is yours to keep or delete), unless you opt in below |
 | Your ratings, and the date, time and weather of each stop | To learn what made each stop feel good | Until 31 March 2027 |
-| Name and Telegram username or phone | To contact you during the study | Deleted when the study ends |
+| Name and WhatsApp number | To contact you during the study | Deleted when the study ends |
 
-- **Transcription** happens on Abram's laptop. Audio is not sent to any other company.
+- **Transcription** happens on Abram's laptop. Your audio is not sent to any transcription or AI company. WhatsApp itself carries the messages, and its own privacy policy applies to them.
 - **Summaries and plans** are drafted with help from an AI service. Abram removes your name before sending it anything, and checks everything it writes.
 
 **Optional:** ☐ I agree to Abram keeping my voice notes for **30 days** to check the transcripts are accurate. They are then deleted. (Saying no changes nothing else.)

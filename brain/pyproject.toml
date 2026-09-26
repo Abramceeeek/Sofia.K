@@ -11,6 +11,8 @@ dependencies = [
     "ortools>=9.10",
     "numpy>=2.0",
     "pyyaml>=6",
+    "openpyxl>=3.1",   # reads the Phase 3 results sheet (Test B)
+    "reportlab>=4.0",  # Test B plans as PDFs
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,12 @@
+# EXAMPLE brief for Test B. Copy to validation/raw/testb/brief.yaml and edit.
+# Both plans use this same brief (test-plan.md): same day length, number of stops and budget.
+start_name: "Your start station"          # EXAMPLE: replace with the real start
+start: {lat: 51.5081, lon: -0.1281}       # EXAMPLE coordinates: replace with the real start point
+start_time: "10:00"
+end_time: "18:00"
+stops: 4                                  # the generic plan must have the same number
+budget_gbp: 40                            # per person; null for no limit
+day_label: "A day out in London"
+temp_c: null                              # leave null unless the day is known
+rain_prob: null
+time_limit_s: 2.0

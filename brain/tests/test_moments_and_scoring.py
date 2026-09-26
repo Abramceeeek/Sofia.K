@@ -77,3 +77,9 @@ def test_contributions_name_the_drivers(pop, test_moments):
     top = contributions(pop, pop.b_pop, x, top=2)
     assert [t["feature"] for t in top] == ["cost_per_10gbp", "crowds"]
     assert all(t["contribution"] < 0 for t in top)
+
+
+def test_moment_template_is_a_complete_valid_record():
+    from brain.moments import load_moment_file
+    m = load_moment_file(DATA / "moment_template.yaml")
+    assert m.missing_for_planning() == []

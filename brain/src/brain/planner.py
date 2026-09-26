@@ -32,6 +32,7 @@ class Candidate:
     duration_min: int
     windows: tuple[tuple[int, int], ...]   # the visit must fit inside one window (minutes from midnight)
     utility: float                          # moment-level score for this person and these conditions
+    cost_gbp: float = 0.0                   # per person, for the budget constraint
 
 
 @dataclass(frozen=True)
@@ -86,7 +87,9 @@ def _start_ranges(c: Candidate, day_start: int, day_end: int) -> list[tuple[int,
 
 def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
            travel: TravelTimes, legs: LegWeights, floor: float, max_stops: int,
-           forced_last: int | None, time_limit_s: float, max_wait_min: int) -> DayPlan | None:
+           forced_last: int | None, time_limit_s: float, max_wait_min: int,
+           min_stops: int | None = None, budget_gbp: float | None = None,
+           must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -124,6 +127,13 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     count_idx = routing.RegisterUnaryTransitCallback(
         lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n else 0)
     routing.AddDimension(count_idx, 0, max_stops, True, "Stops")
+    if min_stops:
+        routing.GetDimensionOrDie("Stops").CumulVar(routing.End(0)).SetMin(min(min_stops, max_stops))
+    if budget_gbp is not None:
+        cost_idx = routing.RegisterUnaryTransitCallback(
+            lambda fi: (math.ceil(cands[manager.IndexToNode(fi) - 1].cost_gbp)
+                        if 1 <= manager.IndexToNode(fi) <= n else 0))
+        routing.AddDimension(cost_idx, 0, int(math.floor(budget_gbp)), True, "Budget")
 
     pace_bonus = legs.packed_pace / 2.0
     for j in range(1, n + 1):
@@ -137,7 +147,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         if j == forced_last:
             routing.solver().Add(routing.NextVar(idx) == routing.End(0))
             continue  # mandatory: no disjunction
-        prize = cands[j - 1].utility - floor + pace_bonus
+        if cands[j - 1].moment_id in must_include:
+            continue  # a must-do stop (trip intent): mandatory
+        prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus
         routing.AddDisjunction([idx], int(round(SCALE * max(0.0, prize))))
 
     params = pywrapcp.DefaultRoutingSearchParameters()
@@ -169,19 +181,48 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
 
 def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
              travel: TravelTimes, legs: LegWeights, *, floor: float = -0.75, max_stops: int = 5,
+             min_stops: int | None = None, budget_gbp: float | None = None,
+             must_include: set[str] | frozenset[str] = frozenset(),
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
              time_limit_s: float = 1.0, max_wait_min: int = 60) -> DayPlan:
-    """Choose and order the stops for one day. Candidates below the floor or with no feasible
-    time window are left out before solving."""
-    usable = [c for c in cands if c.utility > floor and _start_ranges(c, day_start, day_end)]
+    """Choose and order the stops for one day.
+
+    Candidates below the floor or with no feasible time window are left out before solving,
+    except must-do stops, which stay in if they fit a window. `min_stops` asks for at least that
+    many stops (Test B: the same number as the generic plan). If it can't be met, the planner
+    solves again without it and says so in `status`.
+    """
+    must = frozenset(must_include)
+    usable = [c for c in cands if (c.utility > floor or c.moment_id in must)
+              and _start_ranges(c, day_start, day_end)]
     skipped = [c.moment_id for c in cands if c not in usable]
+    missing_must = sorted(must - {c.moment_id for c in usable})
     if not usable:
         return DayPlan([], 0.0, None, False, dropped=skipped, status="no feasible moments")
 
     args = dict(start_point=start_point, day_start=day_start, day_end=day_end, travel=travel,
                 legs=legs, floor=floor, max_stops=max_stops, time_limit_s=time_limit_s,
-                max_wait_min=max_wait_min)
+                max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
+                min_stops=min_stops)
+    status = "ok"
     best = _solve(usable, forced_last=None, **args)
+    if best is None and min_stops:
+        # The hard minimum can defeat the first-solution heuristic. Drop it and instead add a
+        # growing per-stop bonus (in utility units) until the plan has enough stops.
+        args["min_stops"] = None
+        for bonus in (0.0, 0.5, 1.0, 2.0, 4.0):
+            best = _solve(usable, forced_last=None, stop_bonus=bonus, **args)
+            if best is not None and len(best.stops) >= min_stops:
+                break
+        if best is not None and len(best.stops) >= min_stops:
+            args["stop_bonus"] = bonus
+        else:
+            status = f"could not fit {min_stops} stops"
+    if best is None and args["must_include"]:
+        args["must_include"] = frozenset()
+        best = _solve(usable, forced_last=None, **args)
+        status = "could not fit the must-do stop"
+
     if peak_end:
         def with_bonus(p: DayPlan | None) -> float:
             if p is None or not p.stops:
@@ -192,6 +233,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         best_score = with_bonus(best)
         for k in top:
             p = _solve(usable, forced_last=k + 1, **args)
+            if p is not None and min_stops and len(p.stops) < min_stops:
+                continue
             if with_bonus(p) > best_score:
                 best, best_score = p, with_bonus(p)
         if best is not None and best.stops:
@@ -200,4 +243,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
     if best is None:
         return DayPlan([], 0.0, None, peak_end, dropped=[c.moment_id for c in cands], status="no solution")
     best.dropped = sorted(set(best.dropped) | set(skipped))
+    if missing_must:
+        status = f"must-do not available that day: {', '.join(missing_must)}"
+    best.status = status
     return best

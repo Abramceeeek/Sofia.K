@@ -1,0 +1,5 @@
+# EXAMPLE trip intent, asked just before Test B (Area 15, D27). Stored with the plan.
+# must_do is a moment id from data/moments; the planner makes it a required stop.
+# mode and company are shown to Abram in the review sheet; they don't change the weights (yet).
+P01: {mode: recharge, company: partner, must_do: null}
+P02: {mode: explore, company: friends, must_do: null}

@@ -5,6 +5,12 @@
 > - **Tests A–C run by hand** and Checkpoint 3 stays in the week of 9 Nov (D63). The app is built in parallel, so the first external TestFlight build carries the Phase 3 lessons.
 > - **iOS builds run on GitHub Actions**, with no Mac (D64), which adds 3 h, so **Phase 4 ≈ 56.5 h**.
 > - **Individual developer account for TestFlight**; a company account before the App Store launch (D61).
+>
+> **Updated again by D65–D68:**
+> - **The Brain is built now and writes the Test B plans** (`python -m brain.testb`).
+> - **iOS app code and its GitHub Actions workflow wait until Test B reports**, about 2 Nov. The designer starts now.
+> - About 25 moments move into Phase 3 for Test B (3.5 h), so **Phase 4 ≈ 53 h**. The plan total is unchanged, and the 1.3-week overrun is accepted (D67).
+> - Test A runs on WhatsApp Business (D66).
 
 *Written 2026-09-26. All founder-hour figures are estimates (GUESS) that assume Claude Code writes most of the code. Apple facts come from Apple's own pages, fetched on 2026-09-26 (sources at the end).*
 
@@ -137,9 +143,9 @@
 | 21 Sep (this week) | **Apple outside-activities check and the IP/invention-clause check in both contracts (D60)** |
 | 28 Sep | Areas 1–3 review 5; seed moments and walk 1; conjoint and places 1 (D48) |
 | 5 Oct | Areas 5–12 reviews 5.5; Test E recruiting 1.25; Areas 18 and 20 0.75 |
-| 12 Oct | Test E interviews 4; decision note 1; validation materials 1; **designer brief and contributors agreement 1.5** (build starts) |
-| 19 Oct – 2 Nov | **Tests A–D by hand** (as planned before D50). Small build items: the brain code review in the slack of the weeks of 26 Oct and 2 Nov (2 h). The Area 4 review is in the week of 2 Nov (D56) |
-| 9 Nov | Analysis and **Checkpoint 3** (2.5). Build 5: the GitHub Actions workflow, individual enrolment, the App Store Connect record |
+| 12 Oct | Test E interviews 4; decision note 1; validation materials 1; moment cards 1.5. **The designer brief moved to the week of 28 Sep** (D65) |
+| 19 Oct – 2 Nov | **Tests A–D by hand**, with each person's Test B plans 1–3 days after their Test A (D68). The brain code review (2 h) is in the weeks of 26 Oct and 2 Nov. The Area 4 review is in the week of 2 Nov (D56). **Test B reports about 2 Nov: go or hold on the iOS code** |
+| 9 Nov | Analysis and **Checkpoint 3** (2.5). If Test B passed, build 5: the GitHub Actions workflow, individual enrolment, the App Store Connect record |
 | 16 Nov – ~28 Dec | **The build (≈ 48 h at 7.5 h a week), using what Phase 3 taught.** The first external TestFlight build is about the week of 30 Nov, once the onboarding, plan and safety screens work (≈ 19.5 h after 9 Nov). The designer's Build 1 screens are needed by about 16 Nov |
 | Jan | Phase 5 through TestFlight (10 h), then the decision |
 | ~3 weeks before App Store submission | Incorporate, get the D-U-N-S number and enrol as a company (D61; lead times under Gates) |

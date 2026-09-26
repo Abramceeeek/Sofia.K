@@ -1,6 +1,6 @@
 # Example shot card for Test A §6 (from seed moment 1)
 
-*Built from Abram's seed moment (`research/seed-moments/01-tube-to-museum.md`). The bracketed lines are the gaps he flagged. Fill them in on one walk before Test A starts, and attach his own photo from the spot. Send it as one Telegram message, photo first.*
+*Built from Abram's seed moment (`research/seed-moments/01-tube-to-museum.md`). The bracketed lines are the gaps he flagged. Fill them in on one walk before Test A starts, and attach his own photo from the spot. Send it as one WhatsApp message, photo first.*
 
 ---
 

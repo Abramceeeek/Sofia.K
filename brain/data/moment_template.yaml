@@ -1,0 +1,38 @@
+# Template for one moment (Area 2 schema). Copy to data/moments/<id>.yaml and fill in.
+# Fields marked NEEDED are required before the planner will use the moment
+# (`missing_for_planning()` lists anything still empty). The rest improve the card.
+id: m_short_name                      # NEEDED: unique, lower case, e.g. m_southken_nhm_reveal
+title: "Out of the tunnel, into the Natural History Museum"
+status: draft                         # draft | ready
+swipe: false                          # true only for the onboarding swipe set
+place:
+  name: "Natural History Museum"
+  overture_id: null
+  lat: null
+  lon: null
+approach:                             # how you arrive is part of the moment
+  from: "South Kensington station"
+  start_point: {lat: 0.0, lon: 0.0}   # NEEDED: where the planner must deliver you (e.g. the right exit)
+  path: "Which exit, which way to walk"
+  duration_min: 5                     # NEEDED: from start_point to the moment itself
+  step_free: null
+experience:
+  what_happens: "One or two plain sentences; this is what people read in the plan"
+  why_it_works: "Why it feels good"
+  duration_min: [30, 60]              # NEEDED: one number or [min, max]
+  end_point: null                     # where you leave from, if not the start point
+best_time:
+  time_of_day: ["10:00-17:30"]        # NEEDED: one or more "hh:mm-hh:mm" windows (opening hours, light, quiet)
+  light: "When it looks best"
+  weather: ["any"]                    # ["dry"] drops it from rainy-day plans
+  company: null
+  crowd_window: "When to avoid"
+  opening_hours: "Checked on <date>"
+features:                             # NEEDED: all 15 tags, each 0, 1 or 2
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 0,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 0}
+cost_gbp: 0                           # NEEDED: per person, in £ (0 if free)
+shot_card: null                       # for ~20 moments only: stand_at, face, frame, when, avoid
+source: founder
+last_checked: null
