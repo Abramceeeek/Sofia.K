@@ -23,4 +23,4 @@ One note per area in `notes/`, copied from `notes/_template.md` and named `NN-sl
 
 ## Access limits in this environment
 
-The network policy blocks most publisher, docs and vendor-pricing sites, including arxiv.org, dl.acm.org, huggingface.co, developers.google.com, api.tfl.gov.uk, open-meteo.com and journals.sagepub.com. GitHub pages and PyPI are reachable. Rows marked `search` should be re-checked against the primary page once those hosts are allowed. Prices are the first thing to re-check.
+Areas 1 and 4 were first researched under a network policy that blocked most publisher, docs and pricing sites, so many of their rows are `search`. Network access was widened on 2026-09-26, and arxiv.org, aclanthology.org, huggingface.co, open-meteo.com, developers.google.com and author homepages now load. Three publisher sites still return 403 to automated requests: dl.acm.org, tandfonline.com and journals.sagepub.com. For those, use arXiv or author-hosted copies. Re-check `search` rows against the primary page whenever a note is revised. Prices come first.

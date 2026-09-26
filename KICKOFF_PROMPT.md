@@ -1,5 +1,7 @@
 # Kickoff prompt — paste this into Claude Code
 
+> **Amended by [`decisions/decision-log.md`](decisions/decision-log.md).** Test D takes no money. Audio is retained for 30 days only on opt-in. The v0 scope is cut to 50 places, no photo taste and log-only feedback. Peak–end is a toggle. Where the two disagree, the decision log wins.
+
 Read `CLAUDE.md` in full first. It is the project context and its working rules apply throughout.
 
 ## Mission

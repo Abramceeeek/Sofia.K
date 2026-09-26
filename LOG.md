@@ -38,28 +38,40 @@ The founder's hours below are for reviewing each note and skimming its 1–2 key
 
 | Component | Est. (hrs) | Source |
 |---|---|---|
+Scope was cut on 2026-09-26 (decisions D5–D8): 50 places, no photo taste, log-only feedback, peak–end as a toggle.
+
+| Component | Est. (hrs) | Source |
+|---|---|---|
 | Onboarding: Telegram bot, transcription, read-back, extraction, gold-set check | 10 | Area 1 |
-| Planner: travel-time matrices, OR-Tools model, peak/finish, weather, tests, explanation | 12 | Area 4 |
-| **Running total** | **22 of 35** | Place DB, scoring, feedback loop and photo taste still to estimate. Scope may need cutting |
+| Planner: travel-time matrices (50 places), OR-Tools model, peak/finish toggle, weather, tests, explanation | 11 | Area 4 |
+| **Running total** | **21 of 35** | Place DB, scoring and feedback logging still to estimate (Areas 2 and 3) |
 
 ## Hours log
 
 | Date | Phase | Activity | Est. (hrs) | Actual (hrs) | Notes |
 |---|---|---|---|---|---|
 | 2026-09-26 | 1 | Kickoff: write brief and `CLAUDE.md`, review repo setup and plan | 1.0 | | |
-| — | 1 | Review `01-onboarding.md` and `04-itinerary.md` | 4.0 | | Pending |
+| 2026-09-26 | 1 | Skim Areas 1 and 4, make decisions D1–D8, widen network access | 1.0 | | Full review of the notes still pending |
+| — | 1 | Review `01-onboarding.md` and `04-itinerary.md` in full | 3.0 | | Pending |
 
 ## Weekly totals
 
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
-| 2026-09-21 | 7.5 | 1.0 | |
+| 2026-09-21 | 7.5 | 2.0 | |
+
+## Decisions
+
+See [`decisions/decision-log.md`](decisions/decision-log.md). D1–D8 were decided on 2026-09-26: Test D takes no money, audio retention is opt-in for 30 days, answer mode is a Test A variable, the v0 scope is cut, and peak–end is a toggle.
 
 ## Open questions
 
-1. **Network access.** The environment's network policy blocks most research hosts (arxiv.org, dl.acm.org, huggingface.co, developers.google.com, api.tfl.gov.uk, open-meteo.com, journals.sagepub.com, vendor pricing pages). Most sources are therefore verified from search results only (`verified=search`). Widening network access would allow a pass against the primary pages.
-2. **Test D vs the legal gates.** `CLAUDE.md` says no charging anyone until the legal gates clear. Test D's refundable deposit is a charge. Options: clear the gates first, run Test D as a waitlist with a stated price only, or treat a refundable deposit as allowed (the founder should confirm with the employer).
-3. **Test A audio.** Keep recordings for a short fixed period (explicit opt-in) to measure transcription accuracy, or delete immediately after transcription?
-4. **Test A voice vs text.** Let participants choose, or randomise? Evidence says voice loses more people (Area 1).
-5. **Phase 3 pass thresholds** are proposed but not yet confirmed.
-6. **Weekend test.** Should Tests A–D recruit from the same posts as the weekend test, or from separate ones (`CLAUDE.md`: run alongside, don't replace)?
+1. **Phase 3 pass thresholds.** The Test D row is confirmed (D2). The other six are proposed and not yet confirmed (see the decision log).
+2. **Weekend test.** Should Tests A–D recruit from the same posts as the weekend test, or from separate ones (`CLAUDE.md`: run alongside, don't replace)?
+3. **Search-only sources.** Many Area 1 and 4 rows are still `verified=search`. The four headline stats are now `fetched`. Should the rest be re-verified now (about 1–2 hours of Claude time, no founder hours) or only when a note is revised?
+
+Resolved 2026-09-26:
+- Network access was widened.
+- Test D vs the legal gates → D1/D2.
+- Test A audio → D3.
+- Voice vs text → D4 (participants choose, and mode is recorded).

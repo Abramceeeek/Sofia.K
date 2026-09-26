@@ -1,7 +1,7 @@
 # Area 1 — Conversational onboarding (voice/video)
 
 **Decision:**
-- **Test A (Phase 3):** run a Wizard-of-Oz test over Telegram voice notes, with typing offered as an equal choice rather than a fallback. No build is needed, only about 3 founder hours for scripts.
+- **Test A (Phase 3):** run a Wizard-of-Oz test over Telegram voice notes, with typing offered as an equal choice rather than a fallback. Answer mode (voice or text) is recorded for every participant. No build is needed, only about 3 founder hours for scripts.
 - **v0 (Phase 4):** build a Telegram bot (aiogram) that transcribes voice notes through a hosted API and reads back what it heard. An LLM then turns the transcript into *quoted evidence* in a fixed schema. The βs come from the Area 3 model and never straight from the LLM. **About 10 founder hours.**
 - **Deferred:** the real-time web video host (Pipecat + Silero VAD + Smart Turn, about 15–20 hours) waits until Test A shows that voice beats typing. A live avatar is only priced, as the premium tier in Phase 2.
 
@@ -21,7 +21,7 @@
 ## What the evidence says
 
 - **Conversations beat forms for open answers.**
-  - Chatbot vs Qualtrics (N≈600): chatbot answers were 39% more informative (F(1,576)=38.55, p<.01) and more relevant, specific and clear (Xiao et al. 2020).
+  - Chatbot vs Qualtrics (N≈600): chatbot surveys collected 39% more information, measured in bits (F(1,576)=38.55, p<.01, partial η²=0.06). Answers were also more relevant, specific and clear (Xiao et al. 2020).
   - Chatbot respondents satisficed less, and a casual tone reduced it further (Kim et al. 2019).
   - Reliability matched a standard questionnaire, and most users preferred the conversation (Celino & Re Calegari 2020).
 - **LLM interviewers work at scale.**
@@ -34,8 +34,8 @@
   - So a looping "nodding" clip is probably not enough. Nod or "mm" clips should fire on detected pauses, with spoken paraphrase on top.
 - **Voice gives richer answers but loses people.**
   - Voice answers are more than twice as long and cover more topics (Höhne et al. 2024, N=1,001).
-  - But voice requests saw about 45% dropout against about 13% for text (Gavras & Höhne, seen only as cited, so **UNVERIFIED**).
-  - Only 40% of a German panel were willing to answer by voice (Lenzner & Höhne 2022).
+  - But asking for voice answers caused about 45% break-off against about 13% for text (Gavras & Höhne 2020, N=2,402). A replication found 51% against 24% (Höhne et al. 2024). The authors advise letting respondents choose.
+  - Only about 40% of a German panel were willing to answer by voice (Lenzner & Höhne 2022, N=2,146).
   - Routing people who can't talk to a text box reduced nonresponse (Revilla et al. 2020).
 - **Disclosing that the host is AI costs no candour.** People who believed the interviewer was automated disclosed more (Lucas et al. 2014).
 - **Transcription errors are biased, not random.**
@@ -56,8 +56,8 @@
 
 ## Risks / unknowns
 
-- **Voice dropout could sink the ≥70% completion threshold.** Test A should let people choose voice or text and report completion rates for each mode separately.
+- **Voice dropout could sink the ≥70% completion threshold.** *Decided 2026-09-26:* Test A records answer mode as a variable. It reports the voice/text choice, then completion and "felt understood" for each mode separately.
 - **ASR hallucinations could create false preferences.** Read back a one-line summary before saving ("So: boats yes, queues no?"). This doubles as active listening.
-- **Keeping Test A audio vs deleting it.** Keeping audio to measure transcription accuracy conflicts with "delete after transcription". It needs an explicit opt-in with a fixed deletion date, which is **Abram's decision**.
-- **Prices are unconfirmed.** Every price here comes from a third-party page because the vendor pricing pages are blocked in this environment. Re-check them in Phase 2.
+- **Audio retention.** *Decided 2026-09-26:* delete audio after transcription by default. Participants can opt in to 30-day retention, which is used only for transcription-accuracy spot-checks.
+- **Prices are unconfirmed.** Every price here comes from a third-party page, because vendor pricing pages were blocked when this note was written. Re-check them in Phase 2.
 - **UK accent performance for our users is unmeasured.**
