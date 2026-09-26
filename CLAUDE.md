@@ -79,7 +79,7 @@ Replace forms with a conversation that feels like talking to a well-travelled fr
 ## Personal context — ask for what's needed, not the sensitive category
 
 - Budget per trip/day — **not** income or financial situation.
-- Languages spoken, home city / where they grew up, food needs (halal, vegetarian, allergies) — **not** nationality.
+- Languages spoken, home city / where they grew up, food needs (halal, vegetarian, allergies) — **not** nationality. *Amended (D19): v0 asks one optional question, "Any foods or drinks you avoid?", with a one-line consent note, and **no allergy question**. Allergies are health data and halal may reveal religion (Area 12).*
 - Travel style: solo / friends / partner; morning or night person; activity level.
 
 Reason: nationality is a protected characteristic under UK equality law; using it to match or filter strangers is a discrimination risk. Financial and health data are sensitive under UK GDPR.

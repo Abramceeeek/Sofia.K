@@ -2,6 +2,16 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## Checkpoint 1 approval — Phase 2 go, thresholds, food, sources, recruitment
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D18 | **Checkpoint 1 approved.** Keep the six proposed Phase 3 thresholds. **Report every Test A metric split by voice vs text** | Thresholds "proposed" | Area 1: voice break-off risk |
+| D19 | **Food:** one optional question, "Any foods or drinks you avoid?", with a one-line consent note. **No allergy question in v0** | `CLAUDE.md` "food needs (halal, vegetarian, allergies)" | Area 12: allergies are health data; halal may reveal religion |
+| D20 | **Re-verify pricing and cost sources now**, before the economics model. Re-verify the other search-only sources when each note is revised | Open question | Phase 2 depends on prices |
+| D21 | **Separate recruitment posts** for Tests A–D and for the weekend test. Weekend-trip attendees are invited to do Test A afterwards | Open question | Keeps the weekend test clean while reusing its attendees |
+| D22 | **After Phase 2, light-scan five new areas:** 13 moment mining from text + data rights; 14 spatial moment detection (isovists, scenicness, building data); 15 travel motivation + per-trip intent (β_trip = β_person + trip adjustment); 16 home-contrast novelty (home city only); 17 on-device personalisation (b_person = b_population + δ_person, federated learning, differential privacy). Design now, build after Phase 3 | — | Founder request |
+
 ## 2026-09-26 (third round) — Hours, peak–end, photos
 
 | # | Decision | Replaces | Why |

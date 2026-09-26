@@ -16,7 +16,7 @@
 | 5 | [Pipecat](https://github.com/pipecat-ai/pipecat) + [Smart Turn v3.2](https://github.com/pipecat-ai/smart-turn) | ★15.9k (2026-09-26, Py ≥3.11) / ★1.6k (2026-01-29) | BSD-2 | Real-time voice pipeline. Its semantic end-of-turn model (8 MB, about 12–65 ms on CPU) avoids cutting people off mid-thought, which matters for "no time limit" |
 | 6 | [LiveKit Agents](https://github.com/livekit/agents) | ★14.4k, 2026-09-25, Py 3.10–3.14 | Apache-2.0, but the turn-detector weights are under the LiveKit Model License | Alternative to Pipecat, but the model licence ties the turn detector to LiveKit |
 | 7 | [Geiecke & Jaravel interview platform](https://github.com/friedrichgeiecke/interviews) | ★71, 2026-02-09 | PolyForm **Noncommercial** | The best-evidenced LLM interviewer design. We can copy its ideas (probes, prompt structure) but not the code |
-| 8 | Live avatars: Tavus ($0.37/min overage), HeyGen LiveAvatar (~$0.20/min) | Production | Commercial | Only used to cost the premium tier |
+| 8 | Live avatars: Tavus (Starter $59/mo for 100 min, then $0.37/min), HeyGen LiveAvatar ($99/mo for 1,100 credits; credit-to-minute ratio not stated) | Production | Commercial | Only used to cost the premium tier. Re-verified 2026-09-26 |
 
 ## What the evidence says
 
