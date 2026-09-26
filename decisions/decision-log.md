@@ -2,6 +2,19 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (status report) — Areas 1–3 review deferred
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D80 | **The Areas 1–3 review (5 h) is deferred to after 9 Nov** and goes on `decisions/after-9-nov.md`. This makes room for the card review and Test E | The week of 28 Sep (D17, D48) | Founder decision. Until then, Test B relies on the card review (tags) and the Brain code review in the week of 26 Oct (scoring) |
+| — | **Art & design (D77) is still open.** The message had both options in brackets ("add Tate Modern Turbine Hall + one more / drop it") | — | Awaiting Abram's choice; needed before Test A (19 Oct) |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m18 | Using the room D80 frees for Test E:<br>- Test E recruiting (1.25 h) moves from the week of 5 Oct to 28 Sep;<br>- the first 2 interviews (1.5 h) move from the week of 12 Oct to 5 Oct.<br>Weeks now: 28 Sep 6.75 h, 5 Oct 6.75 h, 12 Oct 6.5 h | `LOG.md` |
+
 ## 2026-09-26 (late) — aspiration match for Test B, British Museum card, this week's actions
 
 | # | Decision | Replaces | Why |

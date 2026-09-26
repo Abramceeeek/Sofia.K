@@ -13,3 +13,4 @@
 | 7 | **Weekday and weekend windows** (weekday-only through boats; weekday work energy in the towers) | 2026-09-26 | Cards 3, 6 and 7 | Claude | The planner has no day of the week yet |
 | 8 | **Chained moments**: tube → museum front (seed 1) → whale hall (card 1) as one sequence | 2026-09-26 | Cards 1 and seed 1 | Claude | Today they are two separate cards |
 | 9 | **A wildlife or "safari" tag** (Richmond deer, the St James's pelicans) | 2026-09-26 | Cards 10 and 11 | ~0.25 h founder | Could fold into `green_nature` instead |
+| 10 | **Review Areas 1–3 in full** (onboarding, place preferences and the 15 moment features, personal weights) | 2026-09-26 | D80 | **5 h founder** | Moved out of the week of 28 Sep. It's a review of existing notes, not a new idea. Until it happens, the card review and the Brain code review (wk 26 Oct) are the checks on what Test B uses |
