@@ -31,8 +31,12 @@ def leg_features(travel_min: float | None) -> dict[str, float]:
 
 
 def moment_features(moment: Moment, conditions: Conditions | None = None,
-                    travel_min: float | None = None) -> dict[str, float]:
-    """Features of one stop. Missing tags count as 0 (the planner only uses complete moments)."""
+                    travel_min: float | None = None, aspiration_match: float = 0.0) -> dict[str, float]:
+    """Features of one stop. Missing tags count as 0 (the planner only uses complete moments).
+
+    `aspiration_match` (D77) is person-specific: 1 if the moment belongs to a field the person picked
+    (`brain.aspiration.AspirationMap.match`), else 0.
+    """
     x: dict[str, float] = {}
     for t in PLACE_TAGS + MOMENT_TAGS:
         v = moment.tag(t)
@@ -44,6 +48,8 @@ def moment_features(moment: Moment, conditions: Conditions | None = None,
     x["heat_walking"] = hot * x["walking_effort"]
     x["rain_outdoor"] = (c.rain_prob or 0.0) * x["outdoor_exposure"]
     x.update(leg_features(travel_min))
+    if aspiration_match:
+        x["aspiration_match"] = float(aspiration_match)
     return x
 
 

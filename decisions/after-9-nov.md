@@ -8,7 +8,7 @@
 | 2 | **Colour/light contrast**: `contrast_kind` inside a moment; a between-stops light-change bonus | 2026-09-26 | Seed batch 1 | ~0.5 h founder | The between-stops bonus is a planner arc term |
 | 3 | **Crowd energy** (relaxed ↔ driven), scored on the place's pace, never on people | 2026-09-26 | Seed batch 1 | ~0.25 h founder | Possibly a conjoint attribute in a later design |
 | 4 | **Process watching** tag | 2026-09-26 | Seed batch 1 | ~0.25 h founder | |
-| 5 | **Aspiration match** (only if you don't approve it for Test B) | 2026-09-26 | Seed batch 1 | ~0.5 h founder | See `new-moment-features.md` |
+| 5 | ~~Aspiration match~~ **Approved for Test B (D77)**; the app version stays here: ask the question in the app's onboarding, store it in the profile, and show the weight in the app only when answered | 2026-09-26 | D77 | Claude | Test B uses the results sheet (column AG) |
 | 6 | **Season and sunset rules** for time variants (night = after dark, whatever the month; parks in spring and summer) | 2026-09-26 | Cards 4 and 10 | Claude; ~0.25 h founder | The night boat's window is set for the Test B weeks only |
 | 7 | **Weekday and weekend windows** (weekday-only through boats; weekday work energy in the towers) | 2026-09-26 | Cards 3, 6 and 7 | Claude | The planner has no day of the week yet |
 | 8 | **Chained moments**: tube → museum front (seed 1) → whale hall (card 1) as one sequence | 2026-09-26 | Cards 1 and seed 1 | Claude | Today they are two separate cards |

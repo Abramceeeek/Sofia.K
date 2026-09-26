@@ -9,10 +9,10 @@ These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude
 | 1 Research sweep | 2–3 wks | 15 | ≈ 18.5 | | **Approved** at Checkpoint 1 (D18). Full reviews of the notes continue in the weeks of 28 Sep and 5 Oct |
 | 2 Unit economics | 1 wk | 5 | 5 | | **Approved** at Checkpoint 2 (2026-09-26). K-factor and payment-channel tabs added (D23, D24). **Economics paused (D52):** the 3 h of workbook review are deferred |
 | 1b Light scans, Areas 13–20 | — | — | 3.75 | | Areas 13–17 (D22), Area 18 trip payments (D34), Area 19 automation (D44), Area 20 Uzbek B2B payments (D49). Design now, build after Phase 3 |
-| 3 Validation | 2–3 wks | 15 | ≈ 28.0 | | **Test E runs first** (D36), with a call guide and a message version (D70b), then the decision note (D40). **The 16 swipe places come from an anonymous swipe page (D70c, +0.75 h).** **Tests A–C run by hand (D63)**: Test A on WhatsApp Business (D66). **Test B runs first and fast (D68):** the Brain writes each person's plans 1–3 days after their chat (D65), and Test B reports about the week of 2 Nov. ~25 moments are pulled forward from Phase 4 for this (+3.5 h). Thresholds on strangers only (D43). **Checkpoint 3 in the week of 9 Nov** |
+| 3 Validation | 2–3 wks | 15 | ≈ 28.5 | | **Test E runs first** (D36), with a call guide and a message version (D70b), then the decision note (D40). **The 16 swipe places come from an anonymous swipe page (D70c, +0.75 h).** **Aspiration match: one optional Test A question (D77, +0.5 h).** **Tests A–C run by hand (D63)**: Test A on WhatsApp Business (D66). **Test B runs first and fast (D68):** the Brain writes each person's plans 1–3 days after their chat (D65), and Test B reports about the week of 2 Nov. ~25 moments are pulled forward from Phase 4 for this (+3.5 h). Thresholds on strangers only (D43). **Checkpoint 3 in the week of 9 Nov** |
 | 4 Prototype v0 | 4–5 wks | 35 | ≈ 53 | | **Native iOS app (D50), cuts accepted (D59): the Face ≈ 34, and what's left of the Brain ≈ 19** (3.5 h of moments moved to Phase 3). **The Brain is being built now (D65); the iOS app code waits until Test B reports** (about 2 Nov). The GitHub Actions pipeline and a placeholder app exist now (D70e). First external TestFlight build about the week of 30 Nov if Test B passes |
 | 5 Test v0 and decide | 2 wks | 10 | 10 | — | Not started |
-| **Total** | **11–14 wks** | **80** | **≈ 118.5** | | ≈ 115.5 h in the window with the 3 h of workbook review paused (D52): 15.4 weeks, **about 1.4 weeks past the 14-week window** (1.3 accepted, D67; +0.75 h for the swipe page, D70c; +0.25 h Apple membership check, D74). App Store submission (≈ 3 h) comes after Phase 5, the D53 gate and the company account (D61) |
+| **Total** | **11–14 wks** | **80** | **≈ 119.0** | | ≈ 116.0 h in the window with the 3 h of workbook review paused (D52): 15.5 weeks, **about 1.5 weeks past the 14-week window** (1.3 accepted, D67; +0.75 h swipe page, D70c; +0.25 h Apple check, D74; +0.5 h aspiration question, D77). App Store submission (≈ 3 h) comes after Phase 5, the D53 gate and the company account (D61) |
 
 ## Phase 1 areas
 
@@ -73,6 +73,7 @@ Plan in `validation/README.md`. **Test E runs first** (D36). **Tests A–C run b
 | Confirm the 6 conjoint attributes; check the 30 swipe candidates and their draft tags (D30, D48, D70c) | 0.5 | 28 Sep |
 | **Swipe page:** deploy it (Render Blueprint, £0), try it once, share the link (D70c) | 0.75 | 28 Sep |
 | **Swipe page:** pick the 16 from `/results`, download the answers (D70c) | 0.5 | 12 Oct |
+| **Aspiration question** (Test A 5.7): check the wording and field map; add 2 art & design cards or drop the option (D77) | 0.5 | 12 Oct |
 | Seed moment 1 walk: fill the gaps, photo, finish the example shot card (D35) | 0.5 | 28 Sep |
 | **Test E:** recruit 5 B2B contacts (3 London, 2 Uzbek outbound agencies, D49; log minutes) | 1.25 | 5 Oct |
 | **Test E:** 5 discovery interviews with prep and notes | 3.75 | 12 Oct |
@@ -88,7 +89,7 @@ Plan in `validation/README.md`. **Test E runs first** (D36). **Tests A–C run b
 | Test B plans (generic once + 12 personalised: `brain.testb` writes them from the results sheet, you check and send) | 3.5 | 21–30 Oct, rolling |
 | Test C follow-ups over 2 weeks and data entry | 2.0 | 26 Oct – 9 Nov |
 | Analysis and `results.md` (Checkpoint 3) | 1.5 | 9 Nov |
-| **Total** | **≈ 28.0** | Tests A–D ≈ 17 (D30) + swipe page 0.75 (D70c) + moments for Test B 3.5 (D65) + Test E, decision note and seed walk ≈ 6.75 |
+| **Total** | **≈ 28.5** | Tests A–D ≈ 17 (D30) + swipe page 0.75 (D70c) + aspiration question 0.5 (D77) + moments for Test B 3.5 (D65) + Test E, decision note and seed walk ≈ 6.75 |
 | *Optional:* 3 venue conversations | *+2.0* | — |
 
 ## Phase 4 build estimate: native iOS app (D50, D51; founder hours, Claude Code writes the code)
@@ -131,8 +132,10 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-26 | 3 | Decisions D65–D68 | 0.5 | | |
 | 2026-09-26 | 3 | Decisions D69–D71 (standing rule, Test E kit, swipe page, agreement, pipeline) | 0.25 | | |
 | 2026-09-26 | 3 | Seed moments batch 1 (voice note, 11 moments) and decisions D72–D76 | 0.5 | | |
+| 2026-09-26 | 3 | Decisions D77–D79 (aspiration match, British Museum card) | 0.25 | | |
 | wk 21 Sep | gate | Apple outside-activities policy check and IP/invention clauses in both contracts (D60) | 1.0 | | Pending, this week. The time is a GUESS |
 | wk 28 Sep | 3 | Confirm conjoint attributes; check the 30 swipe candidates and draft tags (`brain/data/calibration/places.yaml`, D70c) | 0.5 | | Pending |
+| wk 28 Sep | 3 | **Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, and set `status: ready` (D79) | 1.5 | | Pending. Moved from the card checks in the weeks of 5 Oct (1.0) and 12 Oct (0.5) |
 | wk 28 Sep | gate | **Check the Apple Developer membership:** expiry date and **auto-renew off** (developer.apple.com/account → Membership details). Renew only if Test B passes (D74) | 0.25 | | Pending |
 | wk 28 Sep | 3 | Deploy the swipe page (`brain/README.md`) on Render with **no payment method**, try it once, share the link (D70c, D76) | 0.75 | | Pending. Privacy note approved (D76) |
 | wk 28 Sep | 1 | Review Areas 1–3 in full, including the 15 moment features (D17) | 5.0 | | Pending. Area 4 moved to the week of 2 Nov (D56) |
@@ -141,9 +144,10 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | wk 5 Oct | 1 | Review Areas 5–7 (D17) | 3.0 | | Pending |
 | wk 5 Oct | 3 | Test E: recruit 5 B2B contacts; review the Area 18 and Area 20 notes | 2.0 | | Pending |
 | wk 5 Oct | 3 | Pick ~25 moments for Test B (Claude drafts the cards); WhatsApp Business set-up (D66) | 1.5 | | **11 received and drafted (D72)**; fill their gaps (`research/seed-moments/02-batch-1.md`), then set `status: ready` |
-| wk 5 Oct | 3 | Check the first drafted moment cards | 1.0 | | Pending |
+| wk 5 Oct | 3 | Check the first drafted moment cards | — | | Moved to the week of 28 Sep (D79) |
 | wk 12 Oct | 3 | Test E: 5 interviews, Uzbek script check, decision note, validation materials (WhatsApp version) | 6.0 | | Pending |
-| wk 12 Oct | 3 | Check the rest of the drafted moment cards | 1.5 | | Pending |
+| wk 12 Oct | 3 | Check the rest of the drafted moment cards | 1.0 | | Pending (0.5 moved to the week of 28 Sep) |
+| wk 12 Oct | 3 | **Aspiration question:** check its wording and the field map; add 2 art & design cards or drop the option (D77) | 0.5 | | Pending |
 | wk 12 Oct | 3 | Pick the 16 swipe places from the results; download the answers before the free database expires (D70c) | 0.5 | | Pending |
 | wk 12 Oct | 2 | Review workbook GUESS inputs and `assumptions.md` (first half) | (1.5) | | **Paused (D52)** |
 | wk 19 Oct – 9 Nov | 3 | Run Tests A–D by hand: Test B plans 1–3 days after each Test A (see the Phase 3 table) | 15.0 | | Pending (D63, D68) |
@@ -161,10 +165,10 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
-| 2026-09-21 | 7.5 | 13.25 (kick-off, checkpoints, decision rounds D1–D76 and seed batch 1, already spent 12.25; Apple and IP checks 1.0): **5.75 over** | |
-| 2026-09-28 | 7.5 | 9.0 (Areas 1–3 review 5, seed moments 1, conjoint and swipe candidates 0.5, **swipe page 0.75**, **designer brief and Part A 1.5**, Apple membership check 0.25): **1.5 over** | |
-| 2026-10-05 | 7.5 | 7.5 (Areas 5–7 review 3.0, Test E recruiting 1.25, Areas 18 and 20 0.75, **moments for Test B 2.0, WhatsApp set-up 0.5**). Areas 8–12 review (2.5) deferred to after Checkpoint 3 | |
-| 2026-10-12 | 7.5 | 8.0 (**Test E interviews 4.0, decision note 1.0**, validation materials 1.0, **moment cards 1.5**, pick the 16 places 0.5): **0.5 over** | |
+| 2026-09-21 | 7.5 | 13.5 (kick-off, checkpoints, decision rounds D1–D79 and seed batch 1, already spent 12.5; Apple and IP checks 1.0): **6.0 over** | |
+| 2026-09-28 | 7.5 | 10.5 (Areas 1–3 review 5, seed moments 1, conjoint and swipe candidates 0.5, **swipe page 0.75**, **designer brief and Part A 1.5**, Apple membership check 0.25, **11 seed cards 1.5**): **3.0 over**. Proposed: move 2 h of Areas 1–3 to the week of 5 Oct (your call) | |
+| 2026-10-05 | 7.5 | 6.5 (Areas 5–7 review 3.0, Test E recruiting 1.25, Areas 18 and 20 0.75, **moments for Test B 1.0, WhatsApp set-up 0.5**; card checks moved to 28 Sep). Areas 8–12 review (2.5) deferred to after Checkpoint 3 | |
+| 2026-10-12 | 7.5 | 8.0 (**Test E interviews 4.0, decision note 1.0**, validation materials 1.0, moment cards 1.0, pick the 16 places 0.5, **aspiration question 0.5**): **0.5 over** | |
 | 2026-10-19 | 7.5 | 7.5 (Phase 3: landing page, recruitment, Test A chats) | |
 | 2026-10-26 | 7.5 | 6.75 (Test A wrap-up 0.5, **Test B plans 3.5**, Test C follow-ups 1.0, brain review 1.0, GitHub secrets 0.75) | |
 | 2026-11-02 | 7.5 | 7.0 (Test C follow-ups 1.0, Area 4 review 2.0, Areas 13–17 and 19 review 3.0, brain review 1.0). **Test B reports** | |
@@ -187,17 +191,18 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 - D50–D58: v0 is a native iOS app, tested through TestFlight, replacing the Telegram bot; Brain (FastAPI) and Face (SwiftUI), with the Brain started now; economics paused; a new gate before App Store release (Apple outside-activities policy); the overrun question held until the iOS re-plan; Abram names the backup helper, who signs before support goes live; the Area 4 review moved to the week of 2 Nov; the Test E bar confirmed; the Uzbek payment route accepted, with one adviser call first.
 - D59–D64: the iOS v0 accepted at 53.5 h with the cuts (+3 h for the build loop, so ≈ 56.5); the Apple policy and IP-clause checks this week; an individual developer account for TestFlight and a company before the App Store launch (D-U-N-S lead time added); keyboard dictation for voice; Tests A–C by hand with Checkpoint 3 kept in November and the app built in parallel; iOS builds on GitHub Actions.
 - D65–D68: build the Brain now and use it for the Test B plans; the designer starts; iOS app code waits until Test B reports; Test A on WhatsApp Business with a separate number; the 1.3-week overrun accepted; Test B first and fast after Test E.
+- D77–D79: aspiration match in Test B (one optional question, fields mapped to existing tags or listed moments, flagged below 2 ready moments); British Museum card redrafted as Great Court → Enlightenment Gallery; this week's review, Apple check and Part A signing.
 - D72–D76: seed moments batch 1 drafted as 11 cards, with entry types (moment/area), day/night variants and route direction, and drafts never in real plans; the agreement split into a Part A deed (sign now) and Part B equity terms (solicitor, before incorporation), with no fixed hours; renew the Apple membership only if Test B passes, with auto-renew off; new ideas that don't help Test B go on the after-9-Nov list; the swipe page's privacy note approved.
 - D69–D71: Claude makes minor decisions and batches them for each checkpoint; WhatsApp number ready; Test E as a call guide and a message version (EN/RU/UZ) with the hotel budget-holder line; an anonymous swipe page picks the 16 places; contributors agreement drafted (~10%, 4-year vesting, 1-year cliff); the iOS pipeline starts now, with app code still after Test B; the Areas 8–12 review stays deferred; moment names arrive as they come.
 
 ## Open questions
 
 1. **The ~25 moments for Test B.** Send the names as they come (D71). I draft each card (coordinates, approach, times, tags) for you to check.
-2. **Aspiration match for Test B?** One optional Test A question, ≈ 0.5 h of your time, and it's a scope change: yes, or on the after-9-Nov list? (`decisions/new-moment-features.md`)
+2. **Art & design has no moments** (D77): add 2 cards or drop it from the question before Test A. **The week of 28 Sep is 10.5 h**: move 2 h of the Areas 1–3 review to the week of 5 Oct?
    - Still open from D69–D71: the solicitor review, now of Part B only (D73), and the designer signing Part A.
    - Resolved: the privacy note (D76) and the Apple timing (D74).
 2b. **Seed batch 1 gaps**, card by card: `research/seed-moments/02-batch-1.md`.
 3. **Helper hours** (`helper_hours_week`, default 0). Set your own number when you know it.
 4. **Weekend test hours.** Your weekend test isn't in this budget.
 
-Resolved 2026-09-26: network access; Test D vs legal gates (D1/D2); Test A audio (D3); voice vs text (D4); Python version (D12); place DB sourcing (D11); Phase 4 budget (D14, D27, D44, D45, D59); peak–end default (D15); photo pairs (D16); Checkpoint 1 and thresholds (D18); food question (D19); source re-verification (D20); recruitment posts (D21); Checkpoint 2 (D23–D29); payment channel deferred (D24); Test D prices (D25, D31); Meta test deferred (D26); Phase 3 at 12 participants (D30); Jev timing (D32); legal gates (D33, D38, D60); seed moment 1 (D35); Test E order (D36); year-one scope (D37); trip money guardrail (D39); team capacity input (D41); friends and family channel (D43); safety cover (D46); expansion thresholds (D47); week of 21 Sep (D48); Uzbek focus (D49); v0 platform (D50–D52); backup helper (D55); Area 4 review week (D56); Test E bar (D57); Uzbek payment route (D58); developer account (D61); voice in the app (D62); Checkpoint 3 date (D63); how the app is built (D64); Brain now, app code after Test B (D65); Test A channel (D66); timeline (D67); Test B timing (D68); Areas 8–12 review deferral and moment timing (D71); seed cards and entry types (D72); agreement split (D73); Apple renewal (D74); after-9-Nov rule (D75); swipe privacy note (D76).
+Resolved 2026-09-26: network access; Test D vs legal gates (D1/D2); Test A audio (D3); voice vs text (D4); Python version (D12); place DB sourcing (D11); Phase 4 budget (D14, D27, D44, D45, D59); peak–end default (D15); photo pairs (D16); Checkpoint 1 and thresholds (D18); food question (D19); source re-verification (D20); recruitment posts (D21); Checkpoint 2 (D23–D29); payment channel deferred (D24); Test D prices (D25, D31); Meta test deferred (D26); Phase 3 at 12 participants (D30); Jev timing (D32); legal gates (D33, D38, D60); seed moment 1 (D35); Test E order (D36); year-one scope (D37); trip money guardrail (D39); team capacity input (D41); friends and family channel (D43); safety cover (D46); expansion thresholds (D47); week of 21 Sep (D48); Uzbek focus (D49); v0 platform (D50–D52); backup helper (D55); Area 4 review week (D56); Test E bar (D57); Uzbek payment route (D58); developer account (D61); voice in the app (D62); Checkpoint 3 date (D63); how the app is built (D64); Brain now, app code after Test B (D65); Test A channel (D66); timeline (D67); Test B timing (D68); Areas 8–12 review deferral and moment timing (D71); seed cards and entry types (D72); agreement split (D73); Apple renewal (D74); after-9-Nov rule (D75); swipe privacy note (D76); aspiration match (D77); British Museum card (D78).

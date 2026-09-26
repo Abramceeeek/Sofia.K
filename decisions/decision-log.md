@@ -2,6 +2,27 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (late) — aspiration match for Test B, British Museum card, this week's actions
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D77 | **Aspiration match is in Test B**, limited to fields with moments.<br>**One optional Test A question (5.7)** with a fixed list: finance & tech, food, history & culture, nature, art & design, none of these.<br>Each field maps to **existing tags** where one fits: food ≥ 2, history & culture ≥ 2, green/nature ≥ 2. Finance & tech and art & design have no such tag, so their moments are **listed by id** (`brain/data/aspiration.yaml`).<br>Model feature `aspiration_match`: prior +0.5 (GUESS), personal δ sd 0.5. Swipes can move it.<br>The answer goes in the results sheet, Participants **column AG**.<br>**Any field with fewer than 2 ready moments is flagged** (`python -m brain.testb fields`, and a warning in `plans`) | On the after-9-Nov list (D75) | Founder decision; `decisions/new-moment-features.md` |
+| D78 | **British Museum card redrafted as Room 4 (Egyptian sculpture) → Great Court → Room 1, the Enlightenment Gallery** (the former King's Library). Abram confirms at review | The Great Court alone (the Reading Room is closed) | Founder request; route checked (map, Wikipedia, search) |
+| D79 | **This week Abram:** reviews the 11 cards, checks the Apple membership (auto-renew off), and signs Part A with the designer | — | Founder plan |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m14 | A field matches a tag only at level **2** (the defining trait). At ≥ 1, "history" would match almost every card | `brain/data/aspiration.yaml` |
+| m15 | The answer goes in a new **column AG**, after the formula block. Inserting it earlier would break the existing formulas. The sheet was recalculated: 4,100 formulas, 0 errors | `validation/results-sheet.xlsx` |
+| m16 | The aspiration weight stays **out of the generic read-back**, because its prior alone reads as "confident". The read-back quotes the person's own answer instead | `brain/src/brain/testb.py` |
+| m17 | The question asks about **interests, never a job or employer**. It's optional, and "none" is an answer | `validation/interview-script.md` 5.7 |
+
+**For Abram:**
+1. **Art & design has no moments.** Before Test A (week of 19 Oct), add 2 art & design cards (e.g. the Tate Modern Turbine Hall, already on the swipe list) or drop the option from the question.
+2. **The week of 28 Sep is now 10.5 h** with the card review. Suggestion: move 2 h of the Areas 1–3 review to the week of 5 Oct, making both weeks 8.5 h. It's a move over 1 h, so it's your call.
+
 ## 2026-09-26 (night) — seed moments batch 1, agreement split, Apple renewal, after-9-Nov rule
 
 | # | Decision | Replaces | Why |

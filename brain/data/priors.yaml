@@ -49,3 +49,6 @@ features:
   - {name: transfer_30_plus, label: "transfers over 30 min",       group: leg,    mean: -0.7,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior (50 vs 15 min = -1.0 in total)"}
   - {name: packed_pace,      label: "a packed day (5 stops, not 3)", group: day,  mean: 0.0,   delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}
   - {name: long_walk,        label: "long walking days (8 km, not 3)", group: day, mean: 0.0,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}
+  # Person x moment (D77): 1 when the moment belongs to a field the person said inspires them
+  # (data/aspiration.yaml). GUESS: +0.5 is about a third of one rating step; swipes can move it.
+  - {name: aspiration_match, label: "places tied to a field that inspires them", group: person, mean: 0.5, delta_sd: 0.5, personal: true}

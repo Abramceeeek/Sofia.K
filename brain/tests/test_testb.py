@@ -23,6 +23,7 @@ def fill_results(path: Path):
     wb = load_workbook(REPO / "validation/results-sheet.xlsx")
     ws = wb["Participants"]
     ws["T6"], ws["T7"] = "stranger", "friends & family"
+    ws["AG6"] = "Food, nature"          # Test A 5.7 (D77); P02 skipped the question
     sw = wb["Swipes"]
     rows = [("P01", 11, "Greenwich view", 1), ("P01", 7, "Camden Market", 3), ("P01", 13, "Primrose Hill", 1),
             ("P01", 3, "Borough Market", 3), ("P01", 1, "Big Ben", 4),
@@ -44,7 +45,7 @@ def fill_results(path: Path):
 def data_dir(tmp_path, test_moments):
     d = tmp_path / "data"
     (d / "moments").mkdir(parents=True)
-    for f in ("priors.yaml", "swipe_items.yaml", "conjoint_design.csv"):
+    for f in ("priors.yaml", "swipe_items.yaml", "conjoint_design.csv", "aspiration.yaml"):
         shutil.copy(DATA / f, d / f)
     for m in test_moments:
         (d / "moments" / f"{m.id}.yaml").write_text(yaml.safe_dump(m.model_dump(by_alias=True)))
@@ -139,6 +140,9 @@ def test_plans_command_writes_blind_identical_plans_and_a_review(tmp_path, data_
     assert "Test moment t_view" in p1_personal            # the must-do stop
     review = (out / "P01_review.md").read_text()
     assert "Personalised plan is **A**" in review and "Read-back lines" in review
+    assert "Inspiring fields (Test A 5.7): Food, Nature." in review
+    assert "Said these fields inspire them: Food, Nature" in review
+    assert "Inspiring fields (Test A 5.7): none given." in (out / "P02_review.md").read_text()
     assert "Big Ben and Parliament Square" in (out / "P02_plan_A.txt").read_text()   # P02's generic plan is A
 
 

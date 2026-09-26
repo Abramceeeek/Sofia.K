@@ -1,29 +1,36 @@
 # Seed moment, batch 1, #2 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
-# FLAG: the Reading Room part can't be planned as described. It has been closed to the public since 2013
-# (British Museum site via search, 2026-09-26; the page itself blocked our fetch). A search result also
-# mentions volunteer-led Reading Room tours on Tuesdays (UNVERIFIED). This card keeps only the Great Court
-# part until you choose (research/seed-moments/02-batch-1.md).
-# For later (after 9 Nov, D75): scale 2 ("feeling small"); colour/light contrast (white court -> dark,
-# colourful Reading Room).
+# Redrafted (D78): the "library" at the end is probably the Enlightenment Gallery (Room 1, the former
+# King's Library), not the round Reading Room, which has been closed to the public since 2013.
+# Abram confirms at review.
+# CHECKED (2026-09-26):
+# - British Museum map (May 2026 PDF): Room 1 "Enlightenment", Room 4 "Egyptian sculpture".
+# - Wikipedia "King's Library": east wing, 91 m long, built 1823-27, oldest room in the building,
+#   now the Enlightenment Gallery.
+# - Search results (britishmuseum.org blocked our fetches): Room 4 opens off the west side of the Great Court
+#   and Room 1 off the east side; restored 2000-03 with oak and mahogany floors, a gilded balcony, and
+#   yellow and gold plasterwork; the books on the shelves are on loan from the House of Commons Library.
+# For later (after 9 Nov, D75): scale 2 ("feeling small"); colour/light contrast (white court -> warm
+# wood-and-gold library).
 id: m_bm_great_court
-title: "Out of the Egypt galleries into the Great Court"
+title: "Egypt galleries, the Great Court, then the King's Library"
 status: draft
 swipe: false
 kind: moment
+direction: "Room 4 (Egyptian sculpture, west) -> Great Court -> Room 1 (Enlightenment, east)"
 place:
-  name: "British Museum: Great Court"
+  name: "British Museum: Great Court and the Enlightenment Gallery (Room 1)"
   lat: 51.51931          # CHECKED: British Museum, OpenStreetMap
   lon: -0.12671
 approach:
-  from: "the Egypt galleries (GAP: which room you come out of)"
+  from: "Room 4, the Egyptian sculpture gallery (GAP: confirm it's the Egypt room you meant)"
   start_point: {lat: 51.51931, lon: -0.12671}
-  path: null             # GAP: the room and door you walk out through into the Great Court
-  duration_min: 10       # GUESS: from the entrance through the Egypt galleries
+  path: "Leave Room 4 by its door on the west side of the Great Court, cross the court past the round Reading Room, and enter Room 1 on the east side"   # CHECKED via search; walk it to confirm
+  duration_min: 10       # GUESS: from the main entrance, through Room 4
   step_free: null
 experience:
-  what_happens: "From the Egypt galleries you step into the huge white Great Court under its glass roof, with the round Reading Room at its centre."   # FOUNDER, place CHECKED
-  why_it_works: "Scale and space: feeling small. Then the darker, colourful Reading Room, history and colour contrast (not open to the public now, see FLAG)."   # FOUNDER
-  duration_min: [15, 30] # GUESS
+  what_happens: "From the stone statues of the Egypt gallery you step out into the huge white Great Court under its glass roof, cross it, and walk into the long King's Library: shelves of books, warm wood and gold, and cases of collected objects."   # FOUNDER + CHECKED
+  why_it_works: "Scale and space in the court (feeling small), then the darker, more colourful library room: history and colour contrast."   # FOUNDER (the Reading Room part now points to Room 1; to confirm)
+  duration_min: [30, 60] # GUESS
   end_point: null
 best_time:
   time_of_day: ["10:00-17:00"]   # CHECKED: daily 10:00-17:00 (Fridays to 20:30), last entry 16:45

@@ -4,7 +4,7 @@ Input is Abram's filled-in results sheet (`validation/raw/results.xlsx`, never c
 - the Swipes tab: item number and reaction 1-4;
 - the Choices tab: task and A/B;
 - the TestB tab: the pre-randomised label of the personalised plan;
-- the Participants tab: launch channel.
+- the Participants tab: launch channel, and the inspiring fields in column AG (Test A 5.7, optional, D77).
 
 For each participant it fits δ_person from the swipes and choices (the same Laplace update the
 app will use). It then plans the day with the shared brief, and writes:
@@ -18,6 +18,7 @@ personalised and break the blind test.
     python -m brain.testb plans --results ../validation/raw/results.xlsx \\
         --brief ../validation/raw/testb/brief.yaml --generic ../validation/raw/testb/generic.yaml \\
         --out ../validation/raw/testb/out
+    python -m brain.testb fields        # which aspiration fields have enough ready moments (D77)
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ import yaml
 
 from .config import DATA_DIR
 from .features import Conditions, conjoint_plan_features, moment_features
+from .aspiration import AspirationMap, load_aspiration
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior
 from .planner import DayPlan, LegWeights, candidate_for, hhmm, parse_hhmm, plan_day
@@ -52,6 +54,7 @@ class Participant:
     swipes: list[tuple[int, str]] = field(default_factory=list)   # (item number, reaction)
     choices: list[tuple[int, str]] = field(default_factory=list)  # (task, "A"/"B")
     personal_label: str | None = None                             # "A" or "B"
+    fields_raw: str | None = None                                 # Test A 5.7, optional (D77)
 
 
 def _rows(ws, ncols: int):
@@ -69,9 +72,10 @@ def load_results(path: Path) -> dict[str, Participant]:
         pid = str(pid).strip()
         return people.setdefault(pid, Participant(pid))
 
-    for row in _rows(wb["Participants"], 20):
+    for row in _rows(wb["Participants"], 33):
         p = get(row[0])
         p.channel = str(row[19]).strip() if row[19] else None
+        p.fields_raw = str(row[32]).strip() if len(row) > 32 and row[32] not in (None, "") else None   # column AG
     for pid, item, _name, reaction, *_ in _rows(wb["Swipes"], 5):
         if item is not None and reaction is not None:
             get(pid).swipes.append((int(item), REACTIONS[int(reaction)]))
@@ -129,11 +133,24 @@ def load_brief(path: Path) -> Brief:
 
 # ---- fitting ------------------------------------------------------------------------
 
+def person_fields(amap: AspirationMap | None, p: Participant) -> frozenset[str]:
+    """The fields a participant picked (Test A 5.7). Unknown entries are reported, not guessed."""
+    if amap is None or not p.fields_raw:
+        return frozenset()
+    fields, unknown = amap.parse(p.fields_raw)
+    if unknown:
+        print(f"{p.pid}: unknown inspiring field(s) {unknown} in Participants column AG; ignored", file=sys.stderr)
+    return fields
+
+
 def fit_participant(pop: PopulationModel, p: Participant, swipe_items: dict[int, Moment],
-                    tasks: dict[int, dict[str, dict]]) -> DeltaPosterior:
+                    tasks: dict[int, dict[str, dict]], amap: AspirationMap | None = None) -> DeltaPosterior:
+    fields = person_fields(amap, p)
     obs = []
     for item, reaction in p.swipes:
-        if item in swipe_items and (o := swipe_observation(pop, swipe_items[item], reaction)):
+        m = swipe_items.get(item)
+        asp = amap.match(m, fields) if (amap and m is not None) else 0.0
+        if m is not None and (o := swipe_observation(pop, m, reaction, asp)):
             obs.append(o)
     for task, choice in p.choices:
         if task in tasks and choice in ("A", "B"):
@@ -142,28 +159,42 @@ def fit_participant(pop: PopulationModel, p: Participant, swipe_items: dict[int,
     return update_person(pop, obs)
 
 
-def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6) -> list[str]:
-    """Confident weights only, as plain lines Abram can turn into the read-back message."""
-    ws = [w for w in named_weights(pop, post) if w.confident]
+def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6,
+                   field_labels: list[str] | None = None) -> list[str]:
+    """Confident weights only, as plain lines Abram can turn into the read-back message.
+
+    The aspiration weight is left out of that list: its prior alone looks "confident", and it only
+    matters for people who picked a field, so it is read back from their answer instead (D77).
+    """
+    ws = [w for w in named_weights(pop, post) if w.confident and w.name != "aspiration_match"]
     ws.sort(key=lambda w: abs(w.weight), reverse=True)
     lines = []
+    if field_labels:
+        asp = next(w for w in named_weights(pop, post) if w.name == "aspiration_match")
+        lines.append(f"Said these fields inspire them: {', '.join(field_labels)} "
+                     f"(moments tied to them get weight {asp.weight:+.2f})")
     for w in ws[:top]:
         verb = "seems to put them off" if w.direction == "dislikes" else "seems to appeal to them"
         lines.append(f"{w.label}: {verb} (weight {w.weight:+.2f}, P(negative) {w.p_negative:.2f})")
-    return lines or ["No confident weights yet: use the persona and the open answers for the read-back."]
+    if len(lines) == (1 if field_labels else 0):
+        lines.append("No confident weights yet: use the persona and the open answers for the read-back.")
+    return lines
 
 
 # ---- planning -----------------------------------------------------------------------
 
 def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], brief: Brief,
-                  travel: LondonEstimate, must_do: str | None = None) -> tuple[DayPlan, list[dict], list[dict]]:
+                  travel: LondonEstimate, must_do: str | None = None, amap: AspirationMap | None = None,
+                  fields: frozenset[str] = frozenset()) -> tuple[DayPlan, list[dict], list[dict]]:
     b = pop.b_person(post.mean)
     cond = Conditions(brief.temp_c, brief.rain_prob)
     usable = [m for m in moments if m.plannable()]
     if brief.rain_prob is not None and brief.rain_prob >= 0.5:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
     by_id = {m.id: m for m in usable}
-    cands = [candidate_for(m, float(pop.vector(moment_features(m, cond)) @ b)) for m in usable]
+    asp = {m.id: (amap.match(m, fields) if amap else 0.0) for m in usable}
+    cands = [candidate_for(m, float(pop.vector(moment_features(m, cond, aspiration_match=asp[m.id])) @ b))
+             for m in usable]
     idx = {n: i for i, n in enumerate(pop.names)}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
     plan = plan_day(cands, brief.start, parse_hhmm(brief.start_time), parse_hhmm(brief.end_time), travel, legs,
@@ -182,7 +213,7 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
             "cost_gbp": m.cost_gbp or 0.0,
             # review only, never sent:
             "moment_id": m.id, "predicted": st.utility,
-            "why": contributions(pop, b, moment_features(m, cond, st.travel_min)),
+            "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
         })
         prev_point, prev_name = m.end(), m.title
     utilities = sorted(((c.utility, c.moment_id) for c in cands), reverse=True)
@@ -267,15 +298,17 @@ def plan_pdf(label: str, brief: Brief, stops: list[dict], path: Path) -> None:
 
 
 def review_text(p: Participant, post: DeltaPosterior, plan: DayPlan, stops: list[dict], left_out: list[dict],
-                pop: PopulationModel, brief: Brief, must_do: str | None, intent: dict) -> str:
+                pop: PopulationModel, brief: Brief, must_do: str | None, intent: dict,
+                field_labels: list[str] | None = None) -> str:
     personal, generic = (p.personal_label or "?"), ("B" if p.personal_label == "A" else "A")
     out = [f"# {p.pid}: review before sending (for Abram only)", "",
            f"- Channel: {p.channel or 'unknown'}. Personalised plan is **{personal}**, generic is **{generic}** (TestB tab).",
            f"- Data used: {len(p.swipes)} swipes, {len(p.choices)} choices ({post.n_obs} informative).",
            f"- Planner status: {plan.status}.",
-           f"- Trip intent: {intent or 'none recorded'}. Must-do: {must_do or 'none'}.", "",
+           f"- Trip intent: {intent or 'none recorded'}. Must-do: {must_do or 'none'}.",
+           f"- Inspiring fields (Test A 5.7): {', '.join(field_labels) if field_labels else 'none given'}.", "",
            "## Read-back lines (confident weights only)", ""]
-    out += [f"- {l}" for l in readback_lines(pop, post)]
+    out += [f"- {l}" for l in readback_lines(pop, post, field_labels=field_labels)]
     out += ["", "## Personalised plan: why each stop", ""]
     total = 0.0
     for s in stops:
@@ -303,15 +336,43 @@ def _load_common(data_dir: Path):
             load_moments(data_dir / "moments"))
 
 
+def _load_aspiration(data_dir: Path) -> AspirationMap | None:
+    path = data_dir / "aspiration.yaml"
+    return load_aspiration(path) if path.exists() else None
+
+
+def coverage_lines(amap: AspirationMap, moments: list[Moment]) -> list[str]:
+    lines = []
+    for r in amap.coverage(moments):
+        flag = "  <-- FLAG: fewer than %d ready" % amap.min_ready if r["flag"] else ""
+        lines.append(f"{r['label']:18s} ready {r['ready']} (in {r['ready_groups']} variant groups), "
+                     f"drafts {r['drafts']}{flag}")
+    return lines
+
+
+def cmd_fields(args) -> int:
+    """Which aspiration fields have enough checked moments (D77)."""
+    data = Path(args.data)
+    amap = _load_aspiration(data)
+    if amap is None:
+        print("No data/aspiration.yaml", file=sys.stderr)
+        return 2
+    for line in coverage_lines(amap, load_moments(data / "moments")):
+        print(line)
+    return 0
+
+
 def cmd_weights(args) -> int:
     pop, items, tasks, _ = _load_common(Path(args.data))
+    amap = _load_aspiration(Path(args.data))
     people = load_results(Path(args.results))
     for pid in sorted(people):
         if args.ids and pid not in args.ids:
             continue
-        post = fit_participant(pop, people[pid], items, tasks)
+        post = fit_participant(pop, people[pid], items, tasks, amap)
+        labels = amap.labels(person_fields(amap, people[pid])) if amap else []
         print(f"{pid} ({people[pid].channel or 'channel?'}, {post.n_obs} informative answers)")
-        for line in readback_lines(pop, post):
+        for line in readback_lines(pop, post, field_labels=labels):
             print(f"  - {line}")
     return 0
 
@@ -329,6 +390,12 @@ def cmd_plans(args) -> int:
     elif drafts_skipped:
         print(f"DRY RUN: using {len(drafts_skipped)} unchecked draft moments. Don't send these plans.", file=sys.stderr)
     plannable = [m for m in moments if m.plannable()]
+    amap = _load_aspiration(Path(args.data))
+    if amap:
+        flagged = [l for l in coverage_lines(amap, moments) if "FLAG" in l]
+        if flagged:
+            print("Aspiration fields with too few ready moments (people who picked them get little from it):\n  "
+                  + "\n  ".join(flagged), file=sys.stderr)
     brief = load_brief(Path(args.brief))
     if len(plannable) < brief.stops:
         drafts = {m.id: m.missing_for_planning()[:3] for m in moments if not m.plannable()}
@@ -360,15 +427,17 @@ def cmd_plans(args) -> int:
             continue
         intent = intents.get(pid, {}) or {}
         must_do = intent.get("must_do")
-        post = fit_participant(pop, p, items, tasks)
-        plan, stops, left_out = personal_plan(pop, post, moments, brief, travel, must_do)
+        post = fit_participant(pop, p, items, tasks, amap)
+        fields = person_fields(amap, p)
+        labels = amap.labels(fields) if amap else []
+        plan, stops, left_out = personal_plan(pop, post, moments, brief, travel, must_do, amap, fields)
         generic_label = "B" if p.personal_label == "A" else "A"
         for label, st in ((p.personal_label, stops), (generic_label, gen)):
             (out / f"{pid}_plan_{label}.txt").write_text(plan_text(label, brief, st), encoding="utf-8")
             if not args.no_pdf:
                 plan_pdf(label, brief, st, out / f"{pid}_plan_{label}.pdf")
         (out / f"{pid}_review.md").write_text(
-            review_text(p, post, plan, stops, left_out, pop, brief, must_do, intent), encoding="utf-8")
+            review_text(p, post, plan, stops, left_out, pop, brief, must_do, intent, labels), encoding="utf-8")
         print(f"{pid}: plans A and B written ({plan.status})")
     return 0
 
@@ -380,6 +449,7 @@ def main(argv: list[str] | None = None) -> int:
     w = sub.add_parser("weights", help="read-back lines for each participant")
     w.add_argument("--results", required=True)
     w.add_argument("--ids", type=lambda s: set(s.split(",")))
+    sub.add_parser("fields", help="aspiration fields: ready moments per field, flagged below the minimum (D77)")
     pl = sub.add_parser("plans", help="write both plans and a review sheet for each participant")
     pl.add_argument("--results", required=True)
     pl.add_argument("--brief", required=True)
@@ -391,7 +461,7 @@ def main(argv: list[str] | None = None) -> int:
     pl.add_argument("--include-drafts", action="store_true",
                     help="dry run: also plan with draft moments (unchecked GUESS values); never send these")
     args = ap.parse_args(argv)
-    return {"weights": cmd_weights, "plans": cmd_plans}[args.cmd](args)
+    return {"weights": cmd_weights, "plans": cmd_plans, "fields": cmd_fields}[args.cmd](args)
 
 
 if __name__ == "__main__":

@@ -21,8 +21,9 @@ def score(x: np.ndarray, b: np.ndarray) -> float:
 
 
 def score_moment(pop: PopulationModel, b: np.ndarray, moment: Moment,
-                 conditions: Conditions | None = None, travel_min: float | None = None) -> float:
-    return score(pop.vector(moment_features(moment, conditions, travel_min)), b)
+                 conditions: Conditions | None = None, travel_min: float | None = None,
+                 aspiration_match: float = 0.0) -> float:
+    return score(pop.vector(moment_features(moment, conditions, travel_min, aspiration_match)), b)
 
 
 def contributions(pop: PopulationModel, b: np.ndarray, x: dict[str, float], top: int = 3) -> list[dict]:
@@ -41,19 +42,21 @@ def conjoint_observation(pop: PopulationModel, x_a: dict[str, float], x_b: dict[
     return Observation(x=x, y=1 if chose_a else 0, scale=pop.scales["conjoint"])
 
 
-def swipe_observation(pop: PopulationModel, moment: Moment, reaction: str) -> Observation | None:
+def swipe_observation(pop: PopulationModel, moment: Moment, reaction: str,
+                      aspiration_match: float = 0.0) -> Observation | None:
     if reaction not in SWIPE_LEVELS:
         return None
-    x = pop.vector(moment_features(moment))
+    x = pop.vector(moment_features(moment, aspiration_match=aspiration_match))
     return Observation(x=x, y=SWIPE_LEVELS[reaction], scale=pop.scales["swipe"],
                        cutpoints=pop.cutpoints["swipe"])
 
 
 def rating_observation(pop: PopulationModel, moment: Moment, rating: int,
-                       conditions: Conditions | None, travel_min: float | None) -> Observation:
+                       conditions: Conditions | None, travel_min: float | None,
+                       aspiration_match: float = 0.0) -> Observation:
     if not 1 <= rating <= 5:
         raise ValueError("rating must be 1-5")
-    x = pop.vector(moment_features(moment, conditions, travel_min))
+    x = pop.vector(moment_features(moment, conditions, travel_min, aspiration_match))
     return Observation(x=x, y=rating - 1, scale=pop.scales["rating"], cutpoints=pop.cutpoints["rating"])
 
 
