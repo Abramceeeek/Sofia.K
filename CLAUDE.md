@@ -127,6 +127,10 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 - No consumer credit, no card issuing (both need FCA authorisation) — Open Banking via a licensed provider only, and only later.
 - **Never hold trip money.** Use Stripe Connect direct charges only, so each payment goes to the host's or venue's own account and only our fee reaches us (D39, Area 18).
 - Trust & safety (strangers + travel) is part of the product; Online Safety Act duties apply regardless of size.
+- **Safety alerts always go to a person, never only to the AI** (D46, Area 19).
+  - **At the start, Abram handles them**, with a response target of **within a few hours**.
+  - **A named backup helper** covers the hours when Abram is at work. The helper signs the contributors agreement, including confidentiality, before seeing any user messages (D38).
+  - The automatic reply tells the user straight away to call 999 in an emergency, and says that a person will reply within a few hours. It never promises a faster reply.
 
 ## Working rules for Claude in this repo
 

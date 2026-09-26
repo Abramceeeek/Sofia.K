@@ -1,8 +1,8 @@
-# City-expansion gate (D42)
+# City-expansion gate (D42, thresholds confirmed D47)
 
-**Rule:** no second city until **London passes all three thresholds, on strangers only (D43), for 3 consecutive months.** Friends and family never count.
+**Rule:** no second city until **London passes all three thresholds, on strangers only (D43), for 3 consecutive months.** Friends and family never count. Abram confirmed the thresholds on 2026-09-26 (D47).
 
-| Gate | Proposed threshold (Abram to confirm) | Why this level |
+| Gate | Threshold (confirmed, D47) | Why this level |
 |---|---|---|
 | Usage | ≥ 300 monthly active strangers in London | Enough per-stop ratings to re-fit the hierarchical model (Area 3) and to estimate K with some precision |
 | Return rate | ≥ 30% of active strangers ask for a second plan within 30 days | Same bar as the Test C threshold |
@@ -26,4 +26,4 @@ Track it in `economics/unit-economics.xlsx` → `Expansion`: fill in the three a
 ## Candidate next cities (not decided)
 
 - A second UK city, if the product-engine case is strongest.
-- An Uzbek city, **only if** Test E shows Uzbek hotels or tour operators want it (D36). At local prices (~33% of UK price levels), the B2B hours per £ are about three times London's, so it needs local help.
+- An Uzbek city is **not pursued in year one** (D49). The Uzbek work is outbound agencies buying London plans at London prices. At local prices (~33% of UK price levels), B2B would take about three times London's hours per £, so an Uzbek city would need local help.

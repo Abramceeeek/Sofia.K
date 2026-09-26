@@ -17,12 +17,12 @@
 | 1 | Independent or boutique hotel, London | Guest experience or front-of-house manager, head concierge |
 | 2 | Serviced apartments or aparthotel operator, London | Guest services lead |
 | 3 | Tourism body: a London borough visitor service, Business Improvement District, or destination organisation | Visitor experience or marketing lead |
-| 4 | **Uzbekistan: travel agency sending clients to London** (D36) | Owner or London product manager |
-| 5 | **Uzbekistan: hotel or tour operator** (D36) | Guest experience lead or owner |
+| 4 | **Uzbekistan: travel agency sending clients to London** (D36, D49) | Owner or London product manager |
+| 5 | **Uzbekistan: a second outbound agency**, or a tour operator selling London trips (D49) | Owner or London product manager |
 
-Interviews 4 and 5 test two different offers:
-- **An outbound agency** would buy London moment plans for its clients, and could pay London prices.
-- **An Uzbekistan hotel or tour operator** would need Uzbek cities curated first. That is a city expansion, behind the London gate (D42), at local prices (~33% of UK price levels; workbook `B2B` tab).
+**Both Uzbek interviews test one offer (D49):** London moment plans for the agency's clients, **at London prices** (£200–500 a month).
+- Uzbek hotels and tour operators working inside Uzbekistan are **not pursued in year one**. They would need Uzbek cities curated first, at ~33% of UK prices (`decisions/city-expansion-gate.md`).
+- How they would pay us is set out in `research/notes/20-uzbek-b2b-payments.md`: a GBP invoice paid by international card or SWIFT, with no Stripe presence in Uzbekistan needed.
 
 Employers (staff wellbeing, team offsites) are the third B2B segment. They are not in these 5, so add 2 later if hotels and tourism look weak.
 
@@ -55,17 +55,16 @@ Log each contact in `results-sheet.xlsx` → `Posts` (For = "B2B"), with minutes
 8. "How do you know whether a recommendation was good? Do reviews, repeat stays or complaints show it?"
 9. *Tourism bodies:* "What do you measure for visitors (spend, dwell time, spreading people beyond the hotspots)? What did you last commission for visitor experience, and how did the budget decision work?"
 
-**Uzbekistan variants** (replace questions 2–9 as they fit; ask in the language the contact prefers)
-- *Outbound agency:*
-  - "Tell me about the last client you sent to London. What did they do on their free days? How did they choose?"
-  - "What did they complain about or wish they'd known?"
-  - "Do you sell tours or guides in London? What do you pay for them, and what do you charge?"
-- *Hotel or tour operator in Uzbekistan:*
-  - "Tell me about the last guest who asked what to do in [city]. What did you suggest?"
-  - "Do guests go beyond the main sights? What stops them?"
-- *Both:*
-  - "What do you pay each month for tools or services such as booking systems, guides or marketing? Who approves it?"
-  - "How do you pay foreign suppliers?" (Uzbekistan is not on Stripe's supported-country list, so ask about bank transfer and cards.)
+**Uzbek outbound-agency variant** (replace questions 2–9; ask in the language the contact prefers)
+- "Tell me about the last client you sent to London. What did they do on their free days? How did they choose?"
+- "What did they complain about or wish they'd known?"
+- "Do you sell tours, guides or day plans in London? What do you pay for them, and what do you charge?"
+- "What do you pay each month for tools or services such as booking systems, guides or marketing? Who approves it?"
+- **Payment (past behaviour, Area 20):**
+  - "How did you last pay a supplier in London or elsewhere abroad: card or bank transfer? A company card or a personal one? In which currency?"
+  - "What did your bank or accountant need for that payment: a contract, an invoice, an acceptance act, anything else?"
+  - "Has your accountant ever withheld tax on a payment to a foreign company?"
+- **Record** card vs transfer, company vs personal card, currency, and the paperwork. They feed the UNVERIFIED items in Area 20.
 
 **Close (only now, 3 min)**
 10. Describe it in two sentences: "a planner that learns what makes each person feel good on a day out and plans around it (moments, not landmarks), with a personal plan for each guest."

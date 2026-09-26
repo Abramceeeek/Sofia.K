@@ -2,6 +2,16 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (Phase 3 round 4) — Phase 4 trim, safety cover, gate confirmed, Uzbek focus
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D45 | **Content automation (≈5 h) moves to after v0.** Phase 4 keeps self-serve onboarding (3 h) and the AI support agent (6 h), so Phase 4 ≈ 47 h and the plan ≈ 108 h | Automation 3 in Phase 4 (D44) | Brings the plan back to about 14.4 weeks |
+| D46 | **Safety alerts at the start: Abram handles them, with a response target of within a few hours. A named backup helper covers his working hours.** The helper signs the contributors agreement, including confidentiality, first (D38). The auto-reply gives 999 guidance and never promises a faster reply. Added to `CLAUDE.md` and Area 19 | "A human, promptly", same hour where possible (D44) | 7.5 h a week and a full-time job |
+| D47 | **City-expansion thresholds confirmed:** ≥ 300 monthly active strangers, ≥ 30% asking for a second plan within 30 days, stranger K ≥ 0.3, all held for 3 consecutive months | Proposed thresholds (D42) | Founder confirmed |
+| D48 | **The review of the conjoint attributes and swipe places moves to the week of 28 Sep** | Week of 21 Sep (D30) | That week was 2.5 h over |
+| D49 | **Uzbekistan: focus on outbound agencies sending clients to London, at London prices.** Both Uzbek Test E interviews are with outbound agencies. Uzbek hotels and tour operators, and local PPP prices, are not pursued in year one. Payment route checked (Area 20): invoice from the UK company, paid by an Uzbek-issued international Visa or Mastercard through Stripe, or by SWIFT transfer to the UK business bank account. **No Stripe presence in Uzbekistan is needed** | Uzbek hotel or tour operator interview and local price scenarios (D36) | London prices are ~3× the local level, and the curation already exists |
+
 ## 2026-09-26 (Phase 3 round 3) — B2B first in Phase 3, team, automation, expansion
 
 | # | Decision | Replaces | Why |

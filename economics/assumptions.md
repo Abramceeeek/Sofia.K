@@ -45,14 +45,23 @@
 - **Team capacity** (D41): one input, `helper_hours_week`, default 0. Helpers cost 1.5 h a week of founder coordination.
   - Founder-only work stays with Abram: technical and payment escalations, B2B sales and set-up, and coordination.
   - Helpers need a signed contributors agreement first (D38).
-- **Automation** (D44): builds added to Phase 4 are self-serve onboarding 3 h, an AI support agent 6 h and content automation 5 h (**+14 h, Phase 4 ≈ 52 h**).
+- **Automation** (D44, D45):
+  - Phase 4 builds self-serve onboarding (3 h) and an AI support agent (6 h): **+9 h, so Phase 4 ≈ 47 h**.
+  - Content automation (5 h) moves to **after v0** (D45). The Path50k steady state still includes its 1 h a month of review.
   - At 1,000 active users and 100 sign-ups a month, founder time falls from ~17.7 to ~5.3 h a month.
-  - Safety issues and complaints stay with a human and are never automated.
-- **Expansion** (D42): a new city takes ~30 h one-off curation, then ~3.3 h a month. The London gate thresholds are proposed; Abram to confirm.
-- **Uzbekistan prices** (D36):
-  - World Bank 2025 data put Uzbek prices at ~33% of UK prices at market exchange rates. The PPP-scaled B2B prices are £65 / £114 / £164 a month (≈ 1.0 / 1.8 / 2.6 million UZS at the CBU rate on 26.09.2026).
-  - At local prices, £50k needs 26–64 clients and 577–1,421 hours a year: the hours cost too much. Outbound agencies sending clients to London could pay London prices.
-  - Uzbekistan is not on Stripe's list of supported business countries.
+  - Safety issues and complaints are never automated. Abram handles safety alerts, with a target of within a few hours; a named backup helper covers his work hours (D46). The model counts all of this as founder time, which is conservative.
+- **Expansion** (D42, D47): a new city takes ~30 h one-off curation, then ~3.3 h a month. The London gate thresholds are **confirmed**: ≥ 300 monthly active strangers, ≥ 30% second plan, K ≥ 0.3, for 3 months.
+- **Uzbek outbound agencies at London prices** (D49, Area 20):
+  - They pay the same £200 / £350 / £500 a month as London clients. The invoice is in GBP from the UK company, and no Stripe presence in Uzbekistan is needed.
+  - **Net per £350 invoice** with an HMRC certificate of residence:
+    - international card via Stripe Invoicing: **£337** (3.15% + 20p + 0.4%);
+    - the same card invoiced in USD: £330 (Stripe adds 2% to convert);
+    - SWIFT to a Wise Business account: **£348**, before intermediary charges (UNVERIFIED).
+  - **Without the certificate**, 20% Uzbek tax is withheld, leaving £270 (card) or £278 (SWIFT). The 0% treaty rate assumes the plans count as services, not royalties (UNVERIFIED; take advice).
+  - £50k from agencies alone needs 13 clients at £350.
+- **Local prices inside Uzbekistan** (D36): kept for reference, **not pursued in year one** (D49).
+  - World Bank 2025 data put Uzbek prices at ~33% of UK prices at market exchange rates, so the PPP-scaled prices are £65 / £114 / £164 a month.
+  - At those prices, £50k needs 26–64 clients and 577–1,421 hours a year.
 
 ## The three stacks
 

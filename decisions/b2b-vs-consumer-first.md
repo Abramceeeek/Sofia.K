@@ -37,7 +37,7 @@ Four £50k paths, steady state. Stranger K = 0.3, community posting 1.5 h a week
 | E2 | London serviced apartments | | | | | |
 | E3 | London tourism body | | | | | |
 | E4 | Uzbek agency sending clients to London | | | | | |
-| E5 | Uzbek hotel or tour operator | | | | | |
+| E5 | Second Uzbek outbound agency (D49) | | | | | |
 
 **Read-out vs the proposed bar:** ≥ 2 of 5 already spend money or staff time; ≥ 2 of 5 give an introduction or agree to an unpaid pilot.
 
@@ -51,9 +51,11 @@ Four £50k paths, steady state. Stranger K = 0.3, community posting 1.5 h a week
 
 - **B2B-first if** the bar is met, a price anchor of ≥ £200 a month appears, and account time looks nearer 1 h than 3 h per client per month. The consumer app is then the product engine and a free acquisition channel.
 - **Consumer-first if** Test E shows no current spend and no commitment, and the plan is to lean on Tests A–D (onboarding desirability, plan preference, use, and the priced-option share).
-- **Uzbek interviews:**
-  - an outbound agency at London prices strengthens B2B-first;
-  - Uzbek hotels at local prices point to a later city expansion (D42), not year one.
+- **Uzbek interviews (D49):**
+  - Both are outbound agencies at London prices. One or two agencies wanting to pay strengthens B2B-first.
+  - **Payment is not a blocker.** Agencies can pay a GBP invoice by international card (≈ £337 net of £350) or by SWIFT (≈ £348), with no Stripe presence in Uzbekistan (Area 20).
+  - Before the first invoice, get an HMRC certificate of residence. Without it, 20% is withheld.
+  - Record how each agency last paid a foreign supplier.
 
 ## Hours
 

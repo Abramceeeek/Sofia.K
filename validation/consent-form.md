@@ -8,6 +8,8 @@
 - A 20–30 minute chat on Telegram, by voice notes or typing, your choice.
 - Then two day plans to compare. Optionally, use one on a real day and send a 1–5 rating after each stop.
 
+**If something goes wrong on the day:** in an emergency, call 999. For anything else that feels unsafe, message Abram on Telegram. He will reply within a few hours.
+
 **What is recorded, and why**
 
 | What | Why | How long we keep it |

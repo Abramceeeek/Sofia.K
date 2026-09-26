@@ -78,9 +78,9 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Two sign-up rates:** sign-ups with a `ref` code (invitees) are counted for K, and the Test D rates are reported both with and without them.
 - **Meta ads: none** (D26).
 
-## Test E — B2B discovery (5 interviews, D34, D36): runs first
+## Test E — B2B discovery (5 interviews, D34, D36, D49): runs first
 
-- **Who:** 3 London contacts (a hotel, a serviced-apartment operator, a tourism body) and **2 Uzbek contacts** (a travel agency sending clients to London; a hotel or tour operator in Uzbekistan).
+- **Who:** 3 London contacts (a hotel, a serviced-apartment operator, a tourism body) and **2 Uzbek outbound agencies** sending clients to London, at London prices (D49). The Uzbek interviews also ask how the agency pays foreign suppliers (Area 20).
 - **How:** past-behaviour questions only, **no pitching** until the close (`discovery-interviews.md`). Optional: 3 venue conversations about off-peak slots and group discounts.
 - **Measures:** current spend on helping guests find things to do; whether a budget owner is named; the strongest pain quote; commitment (none / introduction / unpaid pilot).
 - **Proposed read-out (Abram to confirm):** ≥ 2 of 5 already spend money or staff time on this, **and** ≥ 2 of 5 give an introduction or agree to an unpaid pilot.
