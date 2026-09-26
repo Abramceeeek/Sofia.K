@@ -1,6 +1,10 @@
 # Phase 3 test plan
 
-**Sample:** 12 completing participants (recruit 14). Strangers only: record the source of each, since that is the distribution signal. Adults 18+ in or near London. Test B needs ≥10 who finish Test A for the "7 of 10" threshold.
+**Order (D36):** Test E (B2B discovery) runs **first**, then the decision note `decisions/b2b-vs-consumer-first.md` (D40), then Tests A–D.
+
+**Sample:** 12 completing **strangers** (recruit 14). Record the source of each, since that is the distribution signal. Adults 18+ in or near London. Test B needs ≥10 strangers who finish Test A for the "7 of 10" threshold.
+
+**Friends and family are a separate launch channel (D43).** They are welcome, tagged `friends & family` in the results sheet and reported separately. **Every threshold and K are measured on strangers only.** Rule: anyone Abram knows, or who was sent by someone he knows, counts as friends and family.
 
 **Principle:** no code except the Test D page. Abram plays "the system" (Wizard of Oz). Participants are told a person runs the chat, and that AI helps draft summaries and plans (`consent-form.md`).
 
@@ -61,22 +65,22 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Invites sent** per participant (self-report, plus forwarded "bring a friend" messages they mention).
 - **Invitee sign-ups:** waitlist sign-ups carrying their `ref`, or friends who contact Abram and name them.
 - **Shot-card shares** per participant (self-report).
-- **K** = invitee sign-ups ÷ participants who did Test C. Also report invites per participant, sign-ups per invite and shares per participant.
+- **K** = invitee sign-ups ÷ **stranger** participants who did Test C (D43). Their invitees count, whoever they are; friends-and-family participants' invites are reported separately. Also report invites per participant, sign-ups per invite and shares per participant.
 - **Compare with the workbook** (`Virality` tab): £50k needs K ≈ 0.98 (base) or ≈ 0.69 (upside).
 - **Caveat:** with ~12 people, one enthusiastic sharer moves K a lot, so report counts, not just the ratio.
 
 ## Test D — willingness to pay (landing page, D1, D2, D25)
 
-- **Its own recruitment post** (D21) and its own visitors. Traffic from study participants carries `src=participant` and is excluded from the rates.
+- **Its own recruitment post** (D21) and its own visitors. Traffic from study participants (`src=participant`) and from friends and family (`src=ff`) is excluded from the rates and counted separately.
 - **Random arm on first visit:** A = £4.99/month or £49.99/year; B = £9.99/month or £99.99/year. Both annual prices are about two months free (D31). The copy says the first plan is free and payment would be asked for after it.
 - **Buttons:** "Join the free waitlist", "Reserve founding price (monthly)", "Reserve founding price (annual)". **All three lead to the same waitlist form**, with an honest note: no payment is taken now; we'll email before anything is ever charged.
 - **Measures:** visits by arm (GoatCounter); sign-ups by arm and by option (Tally hidden fields); monthly vs annual split.
 - **Two sign-up rates:** sign-ups with a `ref` code (invitees) are counted for K, and the Test D rates are reported both with and without them.
 - **Meta ads: none** (D26).
 
-## Test E — B2B discovery (5 interviews, D34)
+## Test E — B2B discovery (5 interviews, D34, D36): runs first
 
-- **Who:** 5 hotel and tourism contacts: 2 hotels, 1 serviced-apartment operator, 1 tourism body, 1 budget holder.
+- **Who:** 3 London contacts (a hotel, a serviced-apartment operator, a tourism body) and **2 Uzbek contacts** (a travel agency sending clients to London; a hotel or tour operator in Uzbekistan).
 - **How:** past-behaviour questions only, **no pitching** until the close (`discovery-interviews.md`). Optional: 3 venue conversations about off-peak slots and group discounts.
 - **Measures:** current spend on helping guests find things to do; whether a budget owner is named; the strongest pain quote; commitment (none / introduction / unpaid pilot).
 - **Proposed read-out (Abram to confirm):** ≥ 2 of 5 already spend money or staff time on this, **and** ≥ 2 of 5 give an introduction or agree to an unpaid pilot.
@@ -103,7 +107,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 
 | Risk | Mitigation |
 |---|---|
-| Friends of friends join and inflate scores | Recruit only from the posts; ask "how do you know me?"; flag and report any links |
+| Friends and family inflate scores | Separate launch channel (D43): tag on sign-up ("how do you know me?"); thresholds and K on strangers only; report friends and family side by side |
 | Wizard of Oz is smoother than software will be | Keep Abram's replies to scripted prompts; note every improvisation |
 | Novelty effect in Test C | Unprompted second-plan requests over 2 weeks are the real signal |
 | Test D traffic is too low for two arms | If there are fewer than ~100 visits per arm after 2 weeks, report the pooled rate and treat the arm split as descriptive |

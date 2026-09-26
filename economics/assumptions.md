@@ -28,10 +28,31 @@
   - £50k needs 21 / 12 / 9 clients.
   - Management plus replacing churned clients takes 466 / 266 / 200 founder hours a year, against 390 for everything.
   - All inputs are guesses until the 5 discovery interviews.
-- **Path50k** (D34): consumer at K = 0.3 + group trips + 5 venues, with B2B filling the gap.
-  - Consumer and venue revenue: base ~£6k, upside ~£38k.
-  - B2B clients needed at £350: base 11 (88% of revenue), upside 3.
-  - **Both cases are ~420–440 h a year over the founder budget.** Posting, curation, venues and B2B alone use most of the 390 h, so support must be near-automated and one line has to be dropped or delegated.
+- **Path50k** (rebuilt, D37, D41, D44): **B2B is the primary line; the consumer app is the product engine.**
+  - No paid group trips; venues are a user benefit only (their 45 h a year stays as a cost).
+  - Four paths: base or upside consumer pricing, each with and without automation. Stranger K = 0.3; community posting 1.5 h a week.
+  - Consumer revenue: base ~£0.6k, upside ~£15k. **B2B clients needed at £350 a month: base 12, upside 9.**
+  - **Hours per £1,000 of revenue:**
+
+    | Line | Manual | Automated |
+    |---|---|---|
+    | B2B | 14.9 h | 6.6 h |
+    | Consumer, base | 313 h | 181 h |
+    | Consumer, upside | 17.6 h | 7.4 h |
+
+  - **None fits 7.5 h a week alone.** Helper hours needed per week: manual 11.5–13.8; **automated 2.6 (upside) to 4.2 (base)**.
+  - B2B account management (1.5 h per client per month) is the biggest remaining block once support is automated.
+- **Team capacity** (D41): one input, `helper_hours_week`, default 0. Helpers cost 1.5 h a week of founder coordination.
+  - Founder-only work stays with Abram: technical and payment escalations, B2B sales and set-up, and coordination.
+  - Helpers need a signed contributors agreement first (D38).
+- **Automation** (D44): builds added to Phase 4 are self-serve onboarding 3 h, an AI support agent 6 h and content automation 5 h (**+14 h, Phase 4 ≈ 52 h**).
+  - At 1,000 active users and 100 sign-ups a month, founder time falls from ~17.7 to ~5.3 h a month.
+  - Safety issues and complaints stay with a human and are never automated.
+- **Expansion** (D42): a new city takes ~30 h one-off curation, then ~3.3 h a month. The London gate thresholds are proposed; Abram to confirm.
+- **Uzbekistan prices** (D36):
+  - World Bank 2025 data put Uzbek prices at ~33% of UK prices at market exchange rates. The PPP-scaled B2B prices are £65 / £114 / £164 a month (≈ 1.0 / 1.8 / 2.6 million UZS at the CBU rate on 26.09.2026).
+  - At local prices, £50k needs 26–64 clients and 577–1,421 hours a year: the hours cost too much. Outbound agencies sending clients to London could pay London prices.
+  - Uzbekistan is not on Stripe's list of supported business countries.
 
 ## The three stacks
 

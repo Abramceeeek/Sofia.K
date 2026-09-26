@@ -24,9 +24,10 @@ A static page with **no payments and no card details** (D1, D25). It randomly sh
 | Recruitment post in a group | `https://<site>/?src=<group-id>` |
 | Study participant's referral link (Test C) | `https://<site>/?src=invite&ref=P07` |
 | Study participants at the close | `https://<site>/?src=participant` |
+| Friends and family (D43) | `https://<site>/?src=ff` |
 
 ## Reading the results (into `results-sheet.xlsx` → `TestD`)
 
 - **Visits per arm:** GoatCounter paths `/arm-A` and `/arm-B` (exclude the `participant` paths).
-- **Sign-ups per arm and option:** the Tally export, filtered to `src` ≠ `participant`.
+- **Sign-ups per arm and option:** the Tally export, filtered to `src` ≠ `participant` and `src` ≠ `ff`. Count the `ff` rows separately (friends-and-family channel, D43).
 - **Invitee sign-ups:** Tally rows with a `ref` code. These go to the `TestC` tab for K. Report the Test D rates with and without them.

@@ -7,7 +7,7 @@ One note per area in `notes/`, copied from `notes/_template.md` and named `NN-sl
 
 | Column | Values |
 |---|---|
-| `area` | Area number (`1`–`18`), `econ` for unit-economics sources, or `val` for Phase 3 validation tooling |
+| `area` | Area number (`1`–`19`), `econ` for unit-economics sources, or `val` for Phase 3 validation tooling |
 | `type` | `paper`, `book`, `repo`, `dataset`, `product`, `docs`, `pricing`, `guidance`, `report` |
 | `title` | Title as published (third-party sources say so in the title) |
 | `url` | Canonical link (DOI / repo / official page), or the third-party page actually used |

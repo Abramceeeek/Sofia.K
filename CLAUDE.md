@@ -8,11 +8,15 @@ This file is the standing context for this project. Read it fully before any tas
 - **Time budget:** ~7.5 hours/week alongside full-time work and actuarial exams. Hours, not money, are the binding constraint. Every plan must state its hour cost.
 - **Stage:** idea + design. Nothing built. No users tested yet.
 - **Existing gate from the founder's own plan:** the core social idea (strangers join trips posted by someone they've never met, turn up and pay their share) is tested by a no-code "weekend test": post 5 real trips in existing travel/hiking/uni groups, pass = ≥3 strangers join and turn up. This project's validation work should run alongside or reuse that test, not replace it.
-- **Legal gates before taking any money** *(updated D33, confirmed by Abram 2026-09-26)*:
+- **Legal gates** *(updated D33 and D38, confirmed by Abram 2026-09-26)*:
   - **Cleared:** right to run a business.
-  - **Remaining 1:** Apple's outside-activities policy — check it and disclose if required. All project work stays on personal time and personal devices.
-  - **Remaining 2:** written secondary-employment approval from Abram's government agency employer.
-  - Revenue from trips or subscriptions can start once both remaining gates are done. Research and unpaid tests can proceed now.
+  - **Before taking any money:**
+    1. Apple's outside-activities policy — check it and disclose if required. All project work stays on personal time and personal devices.
+    2. Written secondary-employment approval from Abram's government agency employer.
+    3. IP/invention clauses checked in **both** employment contracts.
+  - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
+  - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company.
+  - Revenue from trips or subscriptions can start once the money gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
 
@@ -121,6 +125,7 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 - Disclose AI-generated hosts.
 - Never use nationality or other protected characteristics to match or filter people.
 - No consumer credit, no card issuing (both need FCA authorisation) — Open Banking via a licensed provider only, and only later.
+- **Never hold trip money.** Use Stripe Connect direct charges only, so each payment goes to the host's or venue's own account and only our fee reaches us (D39, Area 18).
 - Trust & safety (strangers + travel) is part of the product; Online Safety Act duties apply regardless of size.
 
 ## Working rules for Claude in this repo

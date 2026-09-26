@@ -48,6 +48,12 @@
 - **Link:** the landing page with `?src=<group>`, e.g. `?src=reddit-londonsocialclub`.
 - Don't reply with more pitch than the post. The page has to do the work.
 
+## Friends and family: a separate launch channel (D43)
+
+Welcome them, but **tag them**: link `?src=ff` for the landing page, and "Launch channel = friends & family" in the results sheet. Their answers are reported separately, and never count towards a threshold or K.
+
+> I'm testing a way to plan days out around how people want to feel. Would you try it? It's a 20–30 min chat on Telegram and you get a free day plan. (Honest answers help most, including "this is boring".)
+
 ## Message to weekend-test attendees (sent after their trip, D21)
 
 > Thanks for coming on [trip] — hope you enjoyed it. I'm also testing a way to plan days around how people want to feel. Would you do a 20–30 min chat with me on Telegram (voice or typing) and get a free personalised day plan? Totally optional, and it doesn't affect anything about the trip.

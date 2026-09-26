@@ -13,20 +13,26 @@ Will strangers finish a conversational onboarding, prefer a plan built from it, 
 | `privacy-notice.md` | UK GDPR notice for the study and the Test D waitlist |
 | `conjoint/` | The 10 "this or that" tasks (`design.csv`) and the script that makes them |
 | `test-d-landing/` | Test D landing page (static HTML): random arm A £4.99/£49.99 or arm B £9.99/£99.99, waitlist only (D25, D31) |
-| `discovery-interviews.md` | Test E: 5 B2B discovery interviews (hotels, tourism) and 3 optional venue conversations (D34) |
+| `discovery-interviews.md` | Test E (runs first): 5 B2B discovery interviews (3 London, 2 Uzbek) and 3 optional venue conversations (D34, D36) |
 | `shot-card-example.md` | The Test A example shot card, built from seed moment 1 (gaps to fill on one walk) |
 | `results-sheet.xlsx` | Where every result goes; the Summary tab scores against the thresholds, split by voice and text (D18) |
 | `results.md` | *Checkpoint 3, written after the tests* |
 
-## Flow per participant (12 target, 14 recruited)
+## Order (D36)
+
+1. **Test E first:** 5 B2B discovery interviews (3 London, 2 Uzbek) in the weeks of 5 and 12 Oct.
+2. **Decision note:** B2B-first vs consumer-first (`decisions/b2b-vs-consumer-first.md`, D40).
+3. **Then Tests A–D**, from the week of 19 Oct.
+
+## Flow per participant (12 strangers target, 14 recruited)
+
+**Friends and family** are a separate launch channel (D43): tagged, reported separately, and never counted in thresholds or K.
 
 1. **Recruit** (Post 1 or the weekend-trip invitation).
 2. **Consent.**
 3. **Test A:** onboarding chat on Telegram, voice or text. 20–30 min, can be spread over a day.
 4. **Test B:** two plans, A/B blind. Pick one, rate both.
 5. **Test C:** use the plan on a real day. Rate each stop, bring a friend, get a share prompt at the shot-card moment. Follow up for 2 weeks.
-
-**Test E (B2B) runs in parallel:** 5 hotel and tourism conversations (`discovery-interviews.md`).
 
 **Test D runs separately:** its own post and its own visitors. Study participants are tagged and excluded from Test D rates.
 
@@ -52,9 +58,10 @@ Will strangers finish a conversational onboarding, prefer a plan built from it, 
 | Test C: follow-ups over 2 weeks and data entry | 2.0 |
 | Analysis and `results.md` with Claude | 1.5 |
 | **Tests A–D total** (accepted, D30) | **≈ 17** |
-| Test E: 5 B2B discovery interviews, including recruiting (D34) | 5.0 |
+| Test E: 5 B2B discovery interviews, including recruiting and an Uzbek script check (D34, D36) | 5.25 |
+| Decision note: B2B-first vs consumer-first (D40) | 1.0 |
 | Seed moment walk and shot card | 0.5 |
-| **Phase 3 total** | **≈ 22.5** |
+| **Phase 3 total** | **≈ 23.75** |
 | *Optional:* 3 venue conversations | *+2.0* |
 
-Tests A–D are 2 h over the 15 h budget at 12 participants (accepted, D30). The Test E additions bring Phase 3 to ≈ 22.5 h. The biggest single saving is not building plans by hand: the personalised plan is LLM-drafted from the extracted profile, and you only check it.
+Tests A–D are 2 h over the 15 h budget at 12 participants (accepted, D30). Test E and the decision note bring Phase 3 to ≈ 23.75 h. The biggest single saving is not building plans by hand: the personalised plan is LLM-drafted from the extracted profile, and you only check it.

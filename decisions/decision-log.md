@@ -2,6 +2,20 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-26 (Phase 3 round 3) — B2B first in Phase 3, team, automation, expansion
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D36 | **Test E runs first in Phase 3, all 5 interviews kept.** Two of the five are **Uzbek contacts**: travel agencies sending clients to London, and hotels or tour operators in Uzbekistan. Add local price scenarios | Test E in parallel (D34) | B2B is the likely primary line |
+| D37 | **Year one: no paid group trips** (the unpaid weekend test stays). **Venues are a user benefit only**, not revenue. B2B account management is kept. **Path50k is rebuilt with B2B as the primary line** and the consumer app as the product engine, showing hours per £ for each line | Group-trip fee and venue commission lines (D34) | Hours: every £50k path was ~420–440 h a year over budget |
+| D38 | **More gates.** IP/invention clauses checked in both employment contracts. Incorporation, the ICO fee and public liability + PI insurance before the first paid client or trip. **A written founders/contributors agreement** (roles, hours, equity or compensation, IP assignment to the company) before anyone contributes work | D33 gate list | Founder decision |
+| D39 | **Guardrail: never hold trip money; Stripe Connect direct charges only.** Added to `CLAUDE.md` | Proposed in Area 18 | FCA commercial agent exclusion |
+| D40 | **After Test E:** a short decision note, B2B-first vs consumer-first, with hours, revenue and interview evidence (`decisions/b2b-vs-consumer-first.md`) | — | Founder request |
+| D41 | **Team capacity is one input: extra helper hours per week, default 0.** Helpers cost 1.5 h a week of founder coordination. The model shows which £50k paths become feasible, and the helper hours each path needs. The earlier "3 helpers" assumption is removed | — | Founder sets it |
+| D42 | **City-expansion gate:** London must pass usage, return-rate and stranger-K thresholds before the next city. Curation hours per new city are estimated (`decisions/city-expansion-gate.md`) | — | Founder request |
+| D43 | **Friends and family are a separate launch channel.** K and every Phase 3 threshold are measured on **strangers only** | Friends excluded from the study | Keeps the evidence clean while using the warm network |
+| D44 | **Automation scenario, built in Phase 4:** (1) fully self-serve onboarding; (2) an AI support agent with escalation (technical and payment issues wait for Abram; safety issues and complaints always go to a human promptly; AI disclosed, with an option to reach a person); (3) content generated from moments and shot cards, auto-scheduled on our own channels, with community-group posting kept manual. Build hours are added to Phase 4 and the £50k paths are recomputed | — | Hours are the wall |
+
 ## 2026-09-26 (Phase 3 round 2) — Legal gates, prices, new revenue lines
 
 | # | Decision | Replaces | Why |

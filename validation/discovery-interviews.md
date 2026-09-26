@@ -1,20 +1,28 @@
-# Test E — B2B discovery interviews (5) and optional venue conversations (D34)
+# Test E — B2B discovery interviews (5) and optional venue conversations (D34, D36)
 
-**Goal:** learn whether hotels and tourism bodies already spend money or time helping guests and visitors find good things to do, who owns that budget, and what "better" would be worth. We are **not pitching and not selling** (no money can be taken until both legal gates clear, CLAUDE.md).
+**Runs first in Phase 3 (D36).** Its results feed the decision note `decisions/b2b-vs-consumer-first.md` (D40) before Tests A–D start.
 
-**Founder hours:** ≈ 5.0
+**Goal:** learn whether hotels and tourism bodies already spend money or time helping guests and visitors find good things to do, who owns that budget, and what "better" would be worth. We are **not pitching and not selling** (no money can be taken until the money gates clear, CLAUDE.md).
+
+**Founder hours:** ≈ 5.25
 - recruiting ≈ 1.25 h;
-- 5 × (15 min prep + 30 min call + 15 min notes) ≈ 3.75 h.
+- 5 × (15 min prep + 30 min call + 15 min notes) ≈ 3.75 h;
+- checking a translated script for the Uzbek interviews, if you run them in Uzbek or Russian ≈ 0.25 h (Claude translates).
 - **Optional venue conversations:** 3 × 40 min ≈ 2.0 h.
 
 ## Who (5 interviews)
 
 | # | Type | Role to ask for |
 |---|---|---|
-| 1–2 | Independent or boutique hotel, London | Guest experience or front-of-house manager, head concierge |
-| 3 | Serviced apartments or aparthotel operator | Guest services lead |
-| 4 | Tourism body: a London borough visitor service, Business Improvement District, or destination organisation | Visitor experience or marketing lead |
-| 5 | Any of the above, or a hotel group's regional manager | Whoever signs off guest-experience spend |
+| 1 | Independent or boutique hotel, London | Guest experience or front-of-house manager, head concierge |
+| 2 | Serviced apartments or aparthotel operator, London | Guest services lead |
+| 3 | Tourism body: a London borough visitor service, Business Improvement District, or destination organisation | Visitor experience or marketing lead |
+| 4 | **Uzbekistan: travel agency sending clients to London** (D36) | Owner or London product manager |
+| 5 | **Uzbekistan: hotel or tour operator** (D36) | Guest experience lead or owner |
+
+Interviews 4 and 5 test two different offers:
+- **An outbound agency** would buy London moment plans for its clients, and could pay London prices.
+- **An Uzbekistan hotel or tour operator** would need Uzbek cities curated first. That is a city expansion, behind the London gate (D42), at local prices (~33% of UK price levels; workbook `B2B` tab).
 
 Employers (staff wellbeing, team offsites) are the third B2B segment. They are not in these 5, so add 2 later if hotels and tourism look weak.
 
@@ -46,6 +54,18 @@ Log each contact in `results-sheet.xlsx` → `Posts` (For = "B2B"), with minutes
 **How they judge it (5 min)**
 8. "How do you know whether a recommendation was good? Do reviews, repeat stays or complaints show it?"
 9. *Tourism bodies:* "What do you measure for visitors (spend, dwell time, spreading people beyond the hotspots)? What did you last commission for visitor experience, and how did the budget decision work?"
+
+**Uzbekistan variants** (replace questions 2–9 as they fit; ask in the language the contact prefers)
+- *Outbound agency:*
+  - "Tell me about the last client you sent to London. What did they do on their free days? How did they choose?"
+  - "What did they complain about or wish they'd known?"
+  - "Do you sell tours or guides in London? What do you pay for them, and what do you charge?"
+- *Hotel or tour operator in Uzbekistan:*
+  - "Tell me about the last guest who asked what to do in [city]. What did you suggest?"
+  - "Do guests go beyond the main sights? What stops them?"
+- *Both:*
+  - "What do you pay each month for tools or services such as booking systems, guides or marketing? Who approves it?"
+  - "How do you pay foreign suppliers?" (Uzbekistan is not on Stripe's supported-country list, so ask about bank transfer and cards.)
 
 **Close (only now, 3 min)**
 10. Describe it in two sentences: "a planner that learns what makes each person feel good on a day out and plans around it (moments, not landmarks), with a personal plan for each guest."
