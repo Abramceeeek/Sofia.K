@@ -46,7 +46,20 @@ The founder's hours below are for reviewing each note and skimming its 1–2 key
 | Decision round D18–D22 (Checkpoint 1 approval) | 0.5 | Done 2026-09-26 |
 | **Phase 2 total** | **5.0** | On budget |
 
-Claude re-verified the pricing and cost sources before building the model (D20). That corrected the Met Office tiers and the Tavus plans, and found the Telegram Stars rule. Sources now total 196 in `research/sources.csv`: 96 read on the page, 97 through search only, 3 UNVERIFIED. Nineteen are Phase 2 (`econ`) sources.
+Claude re-verified the pricing and cost sources before building the model (D20). That corrected the Met Office tiers and the Tavus plans, and found the Telegram Stars rule. Nineteen sources are Phase 2 (`econ`) sources.
+
+## Areas 13–17 (light scans, D22): design now, build after Phase 3
+
+| # | Note | Review (hrs) | Build later (hrs) | Status |
+|---|---|---|---|---|
+| 13 | `13-moment-mining.md` | 0.5 | ~6 (pilot on Wikivoyage + Geograph) | Drafted: 9 sources. Reddit and Tripadvisor ruled out on their terms |
+| 14 | `14-spatial-moments.md` | 0.5 | 8–10 (2D isovist reveal score + scenicness prior) | Drafted: 10 sources |
+| 15 | `15-travel-motivation.md` | 0.5 | ~1 in Phase 4 (store intent) + 4–6 later | Drafted: 6 sources |
+| 16 | `16-home-contrast-novelty.md` | 0.5 | 4–6 | Drafted: 3 sources (plus Areas 12 and 14) |
+| 17 | `17-on-device-personalisation.md` | 0.5 | ~1 in Phase 4 (separate δ) + 8–12 on device + 20–30 federated/DP, needs a native app | Drafted: 7 sources |
+| | **Total** | **2.5** | **~2 in Phase 4; ~50–70 later** | The 2 h in Phase 4 fit if the planner's end-bonus toggle tests stay small; otherwise Phase 4 becomes ≈38 h |
+
+Sources now total 231 in `research/sources.csv`: 121 read on the page, 107 through search only, 3 UNVERIFIED.
 
 ## Phase 4 build estimate (founder hours, assuming Claude Code writes most code)
 
