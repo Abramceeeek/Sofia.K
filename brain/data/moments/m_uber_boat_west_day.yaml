@@ -2,9 +2,11 @@
 # Day variant of the Greenwich river trip; the night variant is m_uber_boat_west_night (same variant_of,
 # so a plan holds at most one of them).
 # For later (after 9 Nov, D75): crowd energy at the end (relaxed, leisure) vs Canary Wharf (driven, work).
+# REVIEWED by Abram 2026-09-27: times and scores kept; cost kept at £19.30 until he checks the charge
+# the next time he taps in. Marked ready.
 id: m_uber_boat_west_day
 title: "Up the river from Greenwich to Battersea, by day"
-status: draft
+status: ready
 swipe: false
 kind: moment
 variant_of: uber_boat_greenwich_west
@@ -41,7 +43,8 @@ features:
   moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 2}
 # CHECKED: contactless adult single, "All Zones", fares from March 2026 (valid to 31 Oct 2026; new fares after).
 # UNVERIFIED: that Greenwich (East) to Battersea (West) is charged as All Zones; the zone map wasn't on the pages read.
+# Abram checks the charge the next time he taps in (2026-09-27).
 cost_gbp: 19.30
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

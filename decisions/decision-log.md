@@ -2,6 +2,19 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — trip cost layer parked; card 3
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D87 | **The trip cost layer goes on `decisions/after-9-nov.md` (#14)**, in three stages: (1) total cost per day plan and a feeling-per-pound ranking; (2) multi-city trips that always link out to the provider's checkout, with no in-app booking (because of the April 2027 package-travel change); (3) price-timing alerts. The API and price-prediction research comes first.<br>**No work before 9 Nov except a short note on whether Stage 1 fits v0.** The note is written (`decisions/trip-cost-stage-1.md`): a thin Stage 1 fits for about 1.5 h, and it's decided at Checkpoint 3 | — | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m29 | The Stage 1 note suggests showing a money-metric "worth about £V to you" in place of a raw S ÷ cost ratio, because the ratio depends on utility's arbitrary origin. **This amends CLAUDE.md's "feeling per pound = S ÷ cost" only if you agree at Checkpoint 3**, so it's listed there, not applied | `decisions/trip-cost-stage-1.md` |
+| m30 | The note is read at Checkpoint 3 (about 10 min), inside the checkpoint's time | `LOG.md` |
+
 ## 2026-09-27 — Test E postponed until v0 exists
 
 | # | Decision | Replaces | Why |
