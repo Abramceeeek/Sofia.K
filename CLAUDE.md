@@ -97,7 +97,7 @@ Replace forms with a conversation that feels like talking to a well-travelled fr
 - Budget per trip/day — **not** income or financial situation.
 - Languages spoken, home city / where they grew up, food needs (halal, vegetarian, allergies) — **not** nationality. *Amended (D19): v0 asks one optional question, "Any foods or drinks you avoid?", with a one-line consent note, and **no allergy question**. Allergies are health data and halal may reveal religion (Area 12).*
 - Travel style: solo / friends / partner; morning or night person; activity level.
-- **Inspiring fields (D77, optional):** finance & tech / food / history & culture / nature / art & design / none. This asks about interests, never a job or employer.
+- **Inspiring fields (D77, optional):** finance & tech / food / history & culture / nature / none. Art & design was dropped for Test B (D83). This asks about interests, never a job or employer.
   - It feeds `aspiration_match`, mapped onto moments in `brain/data/aspiration.yaml`.
   - A field with fewer than 2 ready moments is flagged.
 

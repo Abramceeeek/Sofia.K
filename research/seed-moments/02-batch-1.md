@@ -42,11 +42,10 @@ From `python -m brain.testb fields` (2026-09-26). A field is **flagged** until i
 | Food | Open-kitchen dinner, outdoor dining near TCR (food tag 2); both need your restaurant and spend first | 0 → flag |
 | History & culture | Whale hall, British Museum (history tag 2) | 0 → flag |
 | Nature | St James's Park, Richmond Park (nature tag 2) | 0 → flag |
-| **Art & design** | **None** | 0 → flag |
+| ~~Art & design~~ | Dropped from the Test B question (D83); parked on `decisions/after-9-nov.md` | — |
 
-- **Art & design has no cards at all.** Before Test A starts (week of 19 Oct), either add 2 art & design moments or drop the option from the question (your call, D77).
-- A candidate for the first is the Tate Modern Turbine Hall, which is already on the swipe list.
-- The other four clear the flag once you mark their cards ready.
+- **Art & design is dropped for Test B (D83)** and parked on the after-9-Nov list.
+- The other four fields clear the flag once you mark their cards ready.
 
 ## What changed in the Brain to hold these (D72)
 

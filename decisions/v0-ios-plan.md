@@ -150,6 +150,8 @@
 
 ## Schedule (7.5 h a week, D63)
 
+*The current week-by-week schedule is in `LOG.md`, which supersedes the rows below after D80–D84.*
+
 | Week of | Plan |
 |---|---|
 | 21 Sep (this week) | **Apple outside-activities check and the IP/invention-clause check in both contracts (D60)** |

@@ -11,7 +11,7 @@ AMAP = load_aspiration(DATA / "aspiration.yaml")
 
 def test_question_offers_the_fixed_list_and_none():
     assert [f.label for f in AMAP.fields.values()] == [
-        "Finance & tech", "Food", "History & culture", "Nature", "Art & design", "None of these"]
+        "Finance & tech", "Food", "History & culture", "Nature", "None of these"]   # art & design dropped (D83)
 
 
 def test_answers_parse_from_codes_or_labels_and_none_means_no_field():
@@ -33,8 +33,8 @@ def test_fields_map_to_existing_tags_or_listed_moments():
 
 def test_coverage_flags_fields_with_fewer_than_two_ready_moments(test_moments):
     rows = {r["field"]: r for r in AMAP.coverage(load_moments(DATA / "moments"))}
-    assert rows["art_design"]["ready"] == 0 and rows["art_design"]["drafts"] == 0 and rows["art_design"]["flag"]
-    assert rows["finance_tech"]["drafts"] == 2
+    assert "art_design" not in rows                              # dropped from Test B (D83)
+    assert rows["finance_tech"]["drafts"] == 2 and rows["finance_tech"]["flag"]   # drafts don't count as ready
     # checked test moments count as ready
     ready = {r["field"]: r for r in AMAP.coverage(test_moments)}
     assert all(r["ready"] + r["drafts"] >= 0 for r in ready.values())
@@ -58,4 +58,4 @@ def test_fields_command_prints_a_flag_per_short_field(capsys):
     from brain import testb
     assert testb.main(["--data", str(DATA), "fields"]) == 0
     out = capsys.readouterr().out
-    assert "Art & design" in out and "FLAG" in out
+    assert "Finance & tech" in out and "FLAG" in out and "Art & design" not in out

@@ -85,7 +85,7 @@ No "why" questions here. Speed is the point.
 5. "What kind of place did you grow up in? Big city, town, coast or countryside?" *(Optional. Only used to guess what will feel new to you; Area 16.)*
 6. "**Any foods or drinks you avoid?** *(Optional — only used to choose food stops, and you can skip it.)*" (D19; no allergy question)
 7. "**Which of these fields inspire you? Pick any, or none.** *(Optional. We only use it to add places tied to what inspires you.)*"
-   - Finance & tech / Food / History & culture / Nature / Art & design / None of these (D77)
+   - Finance & tech / Food / History & culture / Nature / None of these (D77; art & design dropped for Test B, D83)
    - Send it as a list and let them reply with the names.
    - It asks about interests, never a job or employer.
    - Enter the answer in the results sheet → Participants → **column AG**, e.g. "food, nature". Enter "none" for none of these; leave it blank if they skip.

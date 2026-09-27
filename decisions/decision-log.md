@@ -2,6 +2,21 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — art & design, the week of 28 Sep, published pages
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D83 | **Art & design is dropped from the Test B question** and parked on `decisions/after-9-nov.md`. The question now offers finance & tech, food, history & culture, nature, none. The mapping, tests and the results-sheet note are updated (4,100 formulas recalculated, 0 errors, no cell changed) | D77's art & design option | Founder decision; it had no moments |
+| D84 | **Week of 28 Sep:** the first 2 Test E interviews go there if contacts reply (otherwise the week of 5 Oct). **The Areas 5–7 review (3 h) is parked after 9 Nov.** The remaining ~5 h is kept as buffer.<br>**Keeping published pages in sync with decisions is a minor decision** under D69, so Claude does it without asking | The week of 28 Sep and 5 Oct plan (D80, D82) | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m22 | The aspiration question check drops from 0.5 to 0.25 h, since there's no art & design choice left | `LOG.md` |
+| m23 | The published screens page is updated to D81 (who designs, 4 custom screens, native elsewhere, timing) | https://claude.ai/artifact/CqRgaT1e328Qm4H2cX3W91 |
+| m24 | `decisions/v0-ios-plan.md` now points to `LOG.md` for the week-by-week schedule | `decisions/v0-ios-plan.md` |
+
 ## 2026-09-26 (evening, later) — Abram designs v0; extra hours on the blockers
 
 | # | Decision | Replaces | Why |
