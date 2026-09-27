@@ -3,9 +3,12 @@
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Source: https://en.wikivoyage.org/wiki/London/City (read): 8AM-7PM or dusk, whichever is earlier; free. Hours may be dated: check.
 # Aspiration: nature (green 2). Dusk is about 16:30 in November (GUESS), so the window ends at 16:15.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (City of London garden page, via search): 08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan; free.
 id: m_st_dunstan_garden
 title: "A ruined church garden hidden in the City"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -29,7 +32,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: "Weekday lunchtimes bring office workers (GUESS)"
-  opening_hours: "08:00 to 19:00 or dusk, whichever is earlier. Free. Wikivoyage, read 2026-09-27; check"
+  opening_hours: "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27"
 features:
   place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 2, iconic: 0, local_novel: 2,
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}

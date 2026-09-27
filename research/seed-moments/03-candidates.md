@@ -32,7 +32,7 @@ Test B compares a personal plan with a good generic top-attractions plan, for st
 | 3 | Leadenhall Market: in through a passage | Reveal | Finance & tech | £0 | **A** |
 | 4 | Borough Market: graze a lunch | Food | Food | GUESS £10–20 | **A** |
 | 5 | Maltby Street Market (weekends) | Food | Food | GUESS £10–20 | **A** |
-| 6 | Indoor go-karting at Tower Bridge | Active / flow | Absorbing, active | from £20 | **A** |
+| 6 | ~~Indoor go-karting at Tower Bridge~~ **Karting at K1 Speed Canary Wharf** (Tower Bridge closed in 2018) | Active / flow | Absorbing, active | £35 | **A** |
 | 7 | Millennium Bridge towards St Paul's dome | Reveal | — | £0 | **A** |
 | 8 | Waterloo Bridge at sunset | View | — | £0 | **A** |
 | 9 | Choral evensong at St Paul's | Awe | — | £0 | **A** |
@@ -106,7 +106,7 @@ Test B compares a personal plan with a good generic top-attractions plan, for st
 - **Best time:** Sat 10:00–17:00, Sun 11:00–16:00.
 - **Source:** [maltbystreetmarket.co.uk](http://www.maltbystreetmarket.co.uk/)
 
-**6. Indoor go-karting at Tower Bridge**
+**6. Indoor go-karting at Tower Bridge** *(CORRECTED 27 Sep: this track closed in 2018. The card uses K1 Speed Canary Wharf instead: 15 Cabot Square, one 15-min race £29 plus a £6 Racer's Pack, adults 14+, official site.)*
 - **Where / arrive:** TeamSport, Tower Bridge Business Park, 100 Clements Road SE16. A short walk from Bermondsey station.
 - **What happens:** You're kitted out in a suit and helmet, then race electric karts round a two-level indoor track with up to 20 drivers.
 - **Why it works:** Total absorption: there's no room to think about work. It's the go-karting you added to the swipe page, and it's strongly social.

@@ -55,6 +55,9 @@ Founder's example: you come out of South Kensington tube and walk out to the Nat
 - **Entry types (D72):** a **moment** (one specific experience) or an **area vibe** (a wander or street scene: a centre point, flexible time, at most one a day, never the day's peak).
   - **Variants** (the same trip by day and by night) share a group, and a plan holds at most one.
   - **Draft cards never go into real plans**; only `status: ready`.
+  - **Who marks a card ready (D91):**
+    - **Research-sourced cards:** Claude verifies the facts from official sources and marks them ready, then gives Abram one list with a line each to flag disagreements.
+    - **Abram's own cards:** Claude asks only what only he knows (route, feeling), batched, and fills the rest with checked guesses.
 
 ## The model: satisfaction as an equation
 

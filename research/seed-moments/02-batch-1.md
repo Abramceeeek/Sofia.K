@@ -25,10 +25,12 @@
 | 5 ✅ **ready (27 Sep)** | Steak dinner at Meet Bros (`m_open_kitchen_steakhouse`) | **Meet Bros, Paddington; about £60 a head.** The open kitchen is UNVERIFIED, so the card now promises the room's buzz. **Which restaurant.**** "Meat Bros" is probably **Meet Bros**, 29–31 Craven Road, Paddington (via search); whether it has an open kitchen is UNVERIFIED. Or the Liverpool Street steakhouse: which one? Also your usual spend per person. Not plannable until filled | 5 min |
 | 6 ✅ **ready (27 Sep)** | Canary Wharf towers (`m_canary_wharf_towers`) | **Up the Jubilee escalators, among the towers, ending at the Crossrail Place Roof Garden; weekdays only; reveal 2.** The window is 10:00–18:00 so the garden is open. Was: your route among the towers | 5 min |
 | 7 ✅ **ready (27 Sep)** | City towers (`m_city_towers_walk`) | **Bank → Cornhill → Leadenhall Market → Leadenhall Street (Lloyd's, the Leadenhall Building) → St Mary Axe (the Gherkin) → Bishopsgate → Liverpool Street; weekdays only; reveal 2.** Was: your streets from Bank to Liverpool Street. **Cards 6 and 7 share a variant group**, so a plan holds at most one, because they give the same feeling. OK? | 5 min |
-| 8 | Covent Garden and Soho (`a_covent_garden_soho`) | Nothing required: it's an **area vibe** (centre, flexible 45–90 min, no set route). Favourite streets are optional | — |
+| 8 ✅ **ready (27 Sep)** | Covent Garden and Soho (`a_covent_garden_soho`) | Nothing required: it's an **area vibe** (centre, flexible 45–90 min, no set route). Favourite streets are optional | — |
 | 9 | Outdoor dining near TCR (`a_tcr_outdoor_dining`) | **Which street(s)**, and your usual spend. Not plannable until the cost is filled | 3 min |
 | 10 | A London park (`a_st_james_park`) | **"Any London park" needs specific parks.** I proposed **St James's Park**: the pelicans have lived on the lake since 1664 and are fed about 14:30 daily (Royal Parks). Want others (Regent's, Hyde, Greenwich)? The spring/summer rule waits until after 9 Nov | 3 min |
 | 11 | Richmond Park (`m_richmond_park_view`) | **Which viewpoint.** I proposed **King Henry's Mound** in Pembroke Lodge Gardens, with a protected view to St Paul's (Royal Parks). Also the walk in from Richmond Gate (GUESS). The card warns people to keep 50 m from the deer | 3 min |
+
+**Cards 9–11 (D91):** only the route and the feeling are asked, in one batched message; everything else is filled with checked facts.
 
 **For every card:** check my draft tags and the GUESS durations and windows, then set `status: ready`. Seed 1 (tube to museum, `m_southken_nhm_reveal`) still waits for your walk.
 

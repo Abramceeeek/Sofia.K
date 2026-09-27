@@ -3,9 +3,13 @@
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Sources: https://www.royalparks.org.uk/visit/parks/greenwich-park/monuments ; https://www.rmg.co.uk/attractions/greenwich-park (search).
 # Aspiration: nature (green 2). A natural start before the day river trip (card 3, m_uber_boat_west_day, from Greenwich Pier).
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (royalparks.org.uk, read): pedestrian gates 06:00-20:00 as listed now; Royal Museums Greenwich (search) says it
+# closes as early as 18:00 in winter, so the window ends at 17:00.
 id: m_greenwich_wolfe_view
 title: "The whole of London from General Wolfe's hill, Greenwich Park"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -29,7 +33,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: null
-  opening_hours: "Park opens 06:00 all year; closes as early as 18:00 in winter. Free. Checked 2026-09-27 via search"
+  opening_hours: "Pedestrian gates 06:00-20:00 (Royal Parks, read 2026-09-27); as early as 18:00 in winter (RMG). Free"
 features:
   place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}

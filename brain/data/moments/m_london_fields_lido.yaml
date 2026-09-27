@@ -3,10 +3,15 @@
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Sources: https://www.better.org.uk/leisure-centre/london/hackney/london-fields-lido (search);
 # prices page (read 2026-09-27): adult pay-as-you-go £6.40, peak and off-peak. Sessions bookable 7 days ahead (search).
-# Hours 06:30-21:00 daily are from a third-party page: check the Better timetable. Bring swim kit.
+# Bring swim kit.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (Better prices page, read): £6.40 adult pay-as-you-go; peak Mon-Fri 06:30-09:00 and 16:00-21:00, Sat-Sun 06:30-13:00,
+# off-peak the rest of 06:30-21:00, so it runs 06:30-21:00 daily. Official timetable (read): lane-swim sessions are booked
+# online and some sell out.
 id: m_london_fields_lido
 title: "A heated outdoor swim at London Fields Lido"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -30,7 +35,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: "Off-peak: weekdays 09:00-16:00 (CHECKED: Better's peak times)"
-  opening_hours: "Daily 06:30-21:00 (third-party page; check the Better timetable). Book sessions up to 7 days ahead. Checked 2026-09-27"
+  opening_hours: "Daily 06:30-21:00 (from Better's peak/off-peak times). Book a lane-swim session online; some sell out. Official site, read 2026-09-27"
 features:
   place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2,
           crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 2, photo_potential: 1}

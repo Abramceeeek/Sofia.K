@@ -2,6 +2,22 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — how cards get checked from now on; type mix
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D91 | **The card rule from now on:**<br>(1) **Research-sourced cards:** Claude verifies the facts from official sources and marks each card ready once it is complete. Abram gets **one list** with a one-line summary each and flags any he disagrees with.<br>(2) **Abram's own cards (9–11):** Claude asks only what only he can know (route, feeling), in one batched message for all three, and fills everything else with its best checked guess | D72's "Abram checks each card"; the one-at-a-time walkthrough | Founder decision; it saves about 50 min of card checks |
+| D92 | **Check that the ready cards cover a mix of experience types**, and say if one is missing for Test B. **Add the moment-engine notes** (a finder per type; new types: quiet and rest, social, learning by doing, music and nightlife, seasonal events) to `decisions/after-9-nov.md` (#15) | — | Founder request |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m40 | **Corrected the go-karting card.** TeamSport's Tower Bridge track closed in 2018; its replacement (Docklands) is in Charlton, a 30-min walk from the nearest stations. The card now uses **K1 Speed Canary Wharf** (central; official prices and hours) as `m_go_karting_canary_wharf` | `brain/data/moments/`, `03-candidates.md` |
+| m41 | Official-source changes to the research cards:<br>- the Garden at 120's planting (wisteria, roses, hydrangeas; no fruit trees on the official page);<br>- Beigel Bake at £7.50 (the salt beef beigel);<br>- Horizon 22 needs a booked slot;<br>- the Bank of England Museum is closed Fri 2 Oct and from 15:00 Fri 27 Nov;<br>- evensong is "most days" | the cards |
+| m42 | Cards 10–11 are filled with checked facts. St James's Park: gates 05:00–midnight. Richmond: Pembroke Lodge 09:00–17:30; the deer rut runs late Sept–early Nov, so keep at least 50 m away. Their windows now end in daylight for the Test B weeks | `a_st_james_park.yaml`, `m_richmond_park_view.yaml` |
+| m43 | Two tests now follow the data (how many field cards are ready), not a fixed count | `brain/tests/test_aspiration.py` |
+
 ## 2026-09-27 — 12 research cards drafted; card 5
 
 | # | Decision | Replaces | Why |

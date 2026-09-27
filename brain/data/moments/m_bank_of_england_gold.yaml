@@ -3,9 +3,14 @@
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Sources: https://www.ianvisits.co.uk/venues/bank-of-england-museum/ ; https://en.wikivoyage.org/wiki/London/City
 # Aspiration: finance & tech (listed by id in data/aspiration.yaml).
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (bankofengland.co.uk/museum, read): Mon-Fri 10:00-17:00, last entry 16:30; Museum Lates every third Thursday
+# to 20:00 (booking recommended); closed weekends and bank holidays; closed all day Fri 2 Oct and from 15:00 Fri 27 Nov;
+# free; Bartholomew Lane, EC2R 8AH. The gold bar (~13 kg) is from search results, not the official page.
 id: m_bank_of_england_gold
 title: "Lift a real gold bar at the Bank of England Museum"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -15,7 +20,7 @@ place:
 approach:
   from: "Bank station"
   start_point: {lat: 51.51406, lon: -0.08806}
-  path: "Walk round the Bank of England to the museum entrance on Bartholomew Lane, on the building's east side"   # * (check)
+  path: "Walk round the Bank of England to the museum entrance on Bartholomew Lane"   # CHECKED (official address)
   duration_min: 4        # GUESS
   step_free: null
 experience:
@@ -30,7 +35,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: "Weekday mornings are likely quieter (GUESS)"
-  opening_hours: "Mon-Fri 10:00-17:00, to 20:00 on the third Thursday of the month; closed weekends and bank holidays. Free, no booking. Checked 2026-09-27 via search"
+  opening_hours: "Mon-Fri 10:00-17:00 (last entry 16:30); third Thursday to 20:00; closed weekends, bank holidays, Fri 2 Oct and from 15:00 Fri 27 Nov. Free. Official site, read 2026-09-27"
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 2,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}

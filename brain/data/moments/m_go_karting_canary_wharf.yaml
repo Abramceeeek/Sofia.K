@@ -1,0 +1,46 @@
+# Research candidate #6 (research/seed-moments/03-candidates.md, D89), redrafted 2026-09-27.
+# CORRECTED: the candidate named TeamSport Tower Bridge, but that track closed in 2018 (Wikipedia; Kart Directory) and is
+# not on TeamSport's London page (read). TeamSport's replacement, Docklands, is in Charlton, a 30-min walk from the
+# nearest stations. K1 Speed Canary Wharf (formerly Capital Karts) is central, so the card uses it.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (k1speed.com/uk, read): 15 Cabot Square E14 4QT; Mon-Fri 12:00-21:00, Sat 08:30-22:00, Sun 08:30-21:00 (junior races
+# end 17:00); adult race (15 min) £29, 2 races £45; Racer's Pack £6 (balaclava and gloves) unless you bring your own;
+# adults 14+, minimum height 145 cm; booking advised, not required (limited places per session). An annual licence is
+# mentioned in search results but not in the UK FAQ: UNVERIFIED.
+# Pairs with card 6 (Canary Wharf towers): the two are in different groups, so a plan could hold both.
+id: m_go_karting_canary_wharf
+title: "Race electric karts at Canary Wharf"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "K1 Speed Canary Wharf, 15 Cabot Square E14 4QT"
+  lat: 51.50509          # CHECKED: E14 4QT postcode centroid (postcodes.io, 2026-09-27)
+  lon: -0.02093
+approach:
+  from: "Canary Wharf station"   # *
+  start_point: {lat: 51.50509, lon: -0.02093}
+  path: "Walk to Cabot Square"   # *
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You pull on a balaclava, gloves and helmet, get a short briefing, then race electric karts for 15 minutes round an indoor track."   # CHECKED (race length, kit)
+  why_it_works: "Total absorption: at speed there's no room to think about anything else, and racing friends is a laugh."
+  duration_min: [45, 60] # GUESS, including kit and briefing
+  end_point: null
+best_time:
+  time_of_day: ["12:00-21:00"]   # the weekday hours; weekends open earlier (08:30)
+  light: null
+  weather: ["any"]
+  company: "Best with friends (GUESS)"
+  crowd_window: "Book ahead: places per session are limited (CHECKED)"
+  opening_hours: "Mon-Fri 12:00-21:00, Sat 08:30-22:00, Sun 08:30-21:00. Adults 14+, 145 cm+. Official site, read 2026-09-27"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 2}
+cost_gbp: 35             # CHECKED (official): one 15-min race £29 + the £6 Racer's Pack
+shot_card: null
+source: research
+last_checked: "2026-09-27"

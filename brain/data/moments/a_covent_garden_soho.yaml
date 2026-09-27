@@ -1,9 +1,10 @@
 # Seed, batch 1, #8 (Abram's voice note, 2026-09-26): an AREA VIBE, not a single moment (kind: area).
 # DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml. Areas have a centre instead of an approach path,
 # and the planner allows one area a day (D72).
+# REVIEWED by Abram 2026-09-27: no named streets; dry days only; times and scores kept; marked ready.
 id: a_covent_garden_soho
 title: "A wander through Covent Garden and Soho"
-status: draft
+status: ready
 swipe: false
 kind: area
 place:
@@ -35,4 +36,4 @@ features:
 cost_gbp: 0              # spending is optional
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

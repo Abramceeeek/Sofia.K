@@ -4,9 +4,13 @@
 # Source: https://horizon22.co.uk/visit (search). Free, but book online; a few walk-in places. Aspiration: finance & tech (listed by id).
 # Weekdays only for now: the last arrival is about 16:30-17:00 on weekdays but earlier at weekends (Sat ~15:30, Sun ~14:30),
 # and different hours by day wait (after-9-nov #7).
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (horizon22.co.uk/visit, read): weekdays 10:00-18:00, Sat 10:00-17:00, Sun 10:00-16:00; free; book in advance for
+# a time slot and QR code; 22 Bishopsgate, EC2N 4BQ; level 58, lifts in 41 seconds. Last arrival times: search results.
 id: m_horizon_22
 title: "Level 58: the City from Horizon 22"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -31,7 +35,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: null
-  opening_hours: "Mon-Fri 10:00-18:00 (last arrival about 16:30-17:00), Sat 10:00-17:00, Sun 10:00-16:00; closed 25-26 Dec and 1 Jan. Free; book online, a few walk-ins. Checked 2026-09-27 via search"
+  opening_hours: "Mon-Fri 10:00-18:00, Sat 10:00-17:00, Sun 10:00-16:00. Free; book a time slot in advance. Official site, read 2026-09-27"
 features:
   place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}

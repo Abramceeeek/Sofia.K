@@ -58,8 +58,21 @@ def test_a_match_raises_the_score_and_swipes_can_move_it(pop, test_moments):
     assert prior["aspiration_match"].weight == pop.spec("aspiration_match").mean
 
 
-def test_fields_command_prints_a_flag_per_short_field(capsys):
+def test_fields_command_prints_a_flag_per_short_field(capsys, tmp_path):
+    import shutil
     from brain import testb
     assert testb.main(["--data", str(DATA), "fields"]) == 0
     out = capsys.readouterr().out
-    assert "Finance & tech" in out and "FLAG" in out and "Art & design" not in out
+    assert "Finance & tech" in out and "Art & design" not in out
+    flagged = {r["label"] for r in AMAP.coverage(load_moments(DATA / "moments")) if r["flag"]}
+    for line in out.splitlines():
+        label = line.split("  ")[0].strip()
+        if label in flagged:
+            assert "FLAG" in line
+    # with only draft cards, every field is flagged
+    shutil.copytree(DATA, tmp_path / "data")
+    for f in (tmp_path / "data" / "moments").glob("*.yaml"):
+        f.write_text(f.read_text().replace("status: ready", "status: draft"))
+    assert testb.main(["--data", str(tmp_path / "data"), "fields"]) == 0
+    out = capsys.readouterr().out
+    assert out.count("FLAG") >= 4

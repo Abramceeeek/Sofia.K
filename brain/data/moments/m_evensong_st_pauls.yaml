@@ -4,9 +4,13 @@
 # Source: https://www.stpauls.co.uk/whats-on/choral-evensong-sunday (search). Swapped in by Claude for #13 Parliament Hill (m35).
 # Offered as music and architecture. The app never uses it to infer anyone's religion (a protected characteristic).
 # Sunday's service is at 15:00; the card covers Mon-Sat 17:00 only (different hours by day wait: after-9-nov #7).
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (stpauls.co.uk, read): Choral Evensong "most days at 5pm (3pm on Sunday)", about 45 minutes, free and
+# unticketed, on the Cathedral Floor, with an easy-to-follow order of service. Arriving 15 min early: search results.
 id: m_evensong_st_pauls
 title: "Choral evensong under St Paul's dome"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -31,7 +35,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: "Arrive about 15 minutes early for a good seat (CHECKED)"
-  opening_hours: "Choral evensong Mon-Sat 17:00, Sun 15:00; about 45 min; free. Checked 2026-09-27 via search"
+  opening_hours: "Choral Evensong most days at 17:00 (15:00 on Sunday); about 45 min; free and unticketed. Official site, read 2026-09-27"
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}

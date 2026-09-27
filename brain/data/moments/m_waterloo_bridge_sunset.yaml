@@ -4,9 +4,12 @@
 # Source: https://southbank.london/guides/south-banks-best-sunset-views (search).
 # Sunset times are GUESSES: about 18:00 before the clocks go back on 25 Oct, about 16:30 after. The planner has no
 # sunset rule yet (after-9-nov #6), so the window spans both.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# A public bridge, open at all hours; no opening times or price to check.
 id: m_waterloo_bridge_sunset
 title: "Waterloo Bridge at sunset, both ways"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:

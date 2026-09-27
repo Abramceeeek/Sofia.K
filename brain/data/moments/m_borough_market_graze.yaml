@@ -3,9 +3,13 @@
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Source: https://boroughmarket.org.uk/visit-us/ (search). Aspiration: food (food 2). Also a swipe place (borough_market).
 # The window is the Sunday closing time (16:00) so it holds on every open day.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (boroughmarket.org.uk/visit-us, read): Tue-Fri 10:00-17:00, Sat 09:00-17:00, Sun 10:00-16:00, closed Mondays;
+# festive and bank-holiday hours vary; 8 Southwark Street SE1 1TL, right next to London Bridge station.
 id: m_borough_market_graze
 title: "Graze your way round Borough Market"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -15,7 +19,7 @@ place:
 approach:
   from: "London Bridge station"
   start_point: {lat: 51.50556, lon: -0.09083}
-  path: "Take the Borough High Street exit and walk a minute south into the market"   # *
+  path: "The market is right next to London Bridge station"   # CHECKED (official)
   duration_min: 5        # GUESS
   step_free: null
 experience:

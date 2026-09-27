@@ -2,9 +2,12 @@
 # Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Source: https://en.wikivoyage.org/wiki/London/East_End (read): 159 Brick Lane, open 24 hours. Aspiration: food (food 2).
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# Official (beigelbake.co.uk, read): "London's 24/7 Bagel Shop"; salt beef beigel £7.50 (hand-carved salt beef, mustard, pickles).
 id: m_beigel_bake_late
 title: "A late bagel on Brick Lane"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
@@ -18,7 +21,7 @@ approach:
   duration_min: 10       # GUESS
   step_free: null
 experience:
-  what_happens: "You queue at a counter that never closes and eat a fresh bagel on the pavement."
+  what_happens: "You queue at a counter that never closes and eat a hot salt beef bagel with mustard on the pavement."   # CHECKED (official menu)
   why_it_works: "A cheap, local food ritual that suits the end of a day or a late night."
   duration_min: [15, 30] # GUESS
   end_point: null
@@ -28,12 +31,12 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: "Queues late on weekend nights (GUESS)"
-  opening_hours: "Open 24 hours (Wikivoyage, read 2026-09-27; check)"
+  opening_hours: "Open 24/7. Official site, read 2026-09-27"
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 1}
   moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 2}
-cost_gbp: 6              # GUESS
+cost_gbp: 7.50           # CHECKED (official): salt beef beigel
 shot_card: null
 source: research
 last_checked: "2026-09-27"

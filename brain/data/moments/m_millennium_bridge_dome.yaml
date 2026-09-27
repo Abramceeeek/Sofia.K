@@ -2,9 +2,12 @@
 # Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Source: https://www.londonmuseum.org.uk/collections/london-stories/london-millennium-bridge/ (search); Wikivoyage South Bank (always open).
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
+# Abram flags any he disagrees with from the one-line list.
+# A public bridge, open at all hours; no opening times or price to check.
 id: m_millennium_bridge_dome
 title: "Across the Millennium Bridge towards St Paul's dome"
-status: draft
+status: ready
 swipe: false
 kind: moment
 direction: "South (Tate Modern) -> north (St Paul's): the dome stays ahead the whole way"
