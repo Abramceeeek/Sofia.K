@@ -15,7 +15,8 @@ fields:
     label: "Finance & tech"
     tags: {}
     moments: [m_canary_wharf_towers, m_city_towers_walk,   # no existing tag: listed by id
-              m_bank_of_england_gold, m_garden_at_120, m_horizon_22]   # research picks (D89)
+              m_bank_of_england_gold, m_garden_at_120, m_horizon_22,   # research picks (D89)
+              a_kings_cross_canal]   # D93
   food:
     label: "Food"
     tags: {food: 2}

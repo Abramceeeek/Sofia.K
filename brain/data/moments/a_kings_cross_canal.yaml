@@ -1,0 +1,40 @@
+# Research candidate #15 (research/seed-moments/03-candidates.md), added 2026-09-27 (D93) to thin the area-vibe gap.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91, D93). Tags are Claude's judgement.
+# kingscross.co.uk (via search): Granary Square's fountains run daily in daylight and can be walked through on warm days;
+# wide steps lead down to Regent's Canal; Coal Drops Yard is two Victorian coal warehouses whose roofs Thomas Heatherwick
+# curved to meet (opened 2018); Google, Meta and others have offices at King's Cross. Aspiration: finance & tech (by id).
+id: a_kings_cross_canal
+title: "Canal steps and Coal Drops Yard at King's Cross"
+status: ready
+swipe: false
+kind: area
+place:
+  name: "Granary Square and Coal Drops Yard, King's Cross"
+  lat: 51.53556          # CHECKED: Granary Square, Wikipedia coordinates, 2026-09-27
+  lon: -0.125
+approach:
+  from: "King's Cross St Pancras station"
+  start_point: {lat: 51.53556, lon: -0.125}
+  path: "Walk north from the station up King's Boulevard to Granary Square"   # *
+  duration_min: 8        # GUESS
+  step_free: null
+experience:
+  what_happens: "You sit on the wide steps down to Regent's Canal, walk through the fountains in Granary Square, and wander under the curved roofs of Coal Drops Yard, among the new tech offices."   # CHECKED
+  why_it_works: "Old industry remade into a place people want to be, with the tech companies of King's Cross all around."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-20:00"]   # GUESS; the fountains run in daylight
+  light: "Daylight for the fountains; the yard is lit in the evening (GUESS)"
+  weather: ["dry"]
+  company: null
+  crowd_window: null
+  opening_hours: "Public squares and canal steps; always open. Fountains daily in daylight. kingscross.co.uk via search, 2026-09-27"
+features:
+  place: {movement_views: 1, food: 1, green_nature: 0, history_culture: 1, iconic: 0, local_novel: 2,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 0, social_pull: 2}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-27"

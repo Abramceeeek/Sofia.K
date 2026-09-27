@@ -1,0 +1,44 @@
+# Seed, batch 1, #10, rebuilt 2026-09-27 as a PARK BREAK group (D93). FOUNDER: "all parks feel roughly the same to me;
+# choose whichever fits the plan's location" (Kyoto Garden, Regent's Park, Hyde Park, Battersea Park, Queen Elizabeth
+# Olympic Park). St James's Park is Claude's addition (central, with the pelicans).
+# How it works: all six cards share variant_of: park_break, so a plan holds at most one, and they carry the same tags,
+# so the planner picks the park that fits the rest of the day's route best (usually the nearest). kind: moment, not
+# area, so a park break can sit alongside an area vibe. Window 10:00-16:00: daylight in the Test B weeks (some parks
+# close at dusk). Marked ready (D91: founder answers + checked facts).
+id: m_park_break_hyde
+title: "A park break: the Serpentine in Hyde Park"
+status: ready
+swipe: false
+kind: moment
+variant_of: park_break
+variant: hyde
+place:
+  name: "Hyde Park, by the Serpentine"
+  lat: 51.50528          # CHECKED: The Serpentine, Wikipedia coordinates
+  lon: -0.16944
+approach:
+  from: "Hyde Park Corner or Knightsbridge station"   # *
+  start_point: {lat: 51.50528, lon: -0.16944}
+  path: "Walk into the park"
+  duration_min: 8        # GUESS
+  step_free: null
+experience:
+  what_happens: "Walk into the park to the Serpentine and slow down by the water."
+  why_it_works: "Green, water and birds: a calm break in the day."   # FOUNDER (card 10)
+  duration_min: [30, 45] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-16:00"]
+  light: "Daylight; spring and summer are best (FOUNDER)"
+  weather: ["dry"]
+  company: null
+  crowd_window: null
+  opening_hours: "Pedestrian gates 05:00-midnight. Royal Parks FAQ, read 2026-09-27"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}   # the same for every park: FOUNDER's card 10 tags
+cost_gbp: 0
+shot_card: null
+source: founder
+last_checked: "2026-09-27"

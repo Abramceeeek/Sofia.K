@@ -2,6 +2,20 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — cards 9–11; park break; two more cards
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D93 | **Research cards: no flags. Karting stays at K1 Speed Canary Wharf.**<br>**Card 9** is eating outside around Oxford Circus and Regent Street, at places like OshPaz or Angus Steakhouse. What made it good: sitting outside, watching the street, good food.<br>**Card 10 is a flexible park break** that picks the park nearest the rest of the day's plan, from Abram's list: Kyoto Garden, Regent's, Hyde, Battersea and the Olympic Park.<br>**Card 11** runs from Richmond Gate to King Henry's Mound.<br>**Add King's Cross canal steps and Coal Drops Yard, and a park bike loop** | the draft cards 9–11 | Founder answers (D91) |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m44 | **How the park break works:**<br>- six park cards share one variant group, so a plan holds at most one;<br>- they carry identical tags ("all parks feel roughly the same"), so the route decides which one;<br>- they are `kind: moment`, so a park break can sit alongside an area vibe;<br>- the window is 10:00–16:00 (daylight in the Test B weeks).<br>St James's Park is Claude's addition to the list.<br>*Dry run:* with only parks to choose from, a Stratford start picks the Olympic Park; in a full day heading into the centre, it picks Regent's Park on the way | `brain/data/moments/m_park_break_*.yaml` |
+| m45 | **Card 9 is renamed** `a_west_end_outdoor_dining`:<br>- OshPaz's restaurant is at 7 Regent Street, at the Piccadilly end, not by Oxford Circus (official site);<br>- Angus Steakhouse Oxford Circus has a heated terrace;<br>- the cost is £45, TheFork's average there | `a_west_end_outdoor_dining.yaml` |
+| m46 | **The bike loop is in Hyde Park,** on the routes where the Royal Parks allow cycling (Serpentine Road, the Broad Walk). It uses a £3 Santander day pass. The 14+ age rule is from search results; TfL's own page refused our fetch | `m_park_bike_loop_hyde.yaml` |
+
 ## 2026-09-27 — how cards get checked from now on; type mix
 
 | # | Decision | Replaces | Why |

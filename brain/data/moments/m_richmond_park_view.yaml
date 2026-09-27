@@ -7,20 +7,22 @@
 # FILLED by Claude 2026-09-27 (D91), from Royal Parks pages via search: King Henry's Mound is in Pembroke Lodge Gardens,
 # with views over the Thames Valley and to St Paul's; Pembroke Lodge opens 09:00-17:30 (or 30 min before the park gates
 # close). The deer rut runs late September to early November, right in the Test B weeks: keep at least 50 m from the
-# deer, and up to 100 m if they are active. Waiting on Abram: his viewpoint and route in, and the feeling.
+# deer, and up to 100 m if they are active.
+# REVIEWED by Abram 2026-09-27: he doesn't remember his gate or spot, so the card uses Richmond Gate to King Henry's
+# Mound; the feeling is from his voice note. Marked ready.
 id: m_richmond_park_view
 title: "Deer, forest and the long view in Richmond Park"
-status: draft
+status: ready
 swipe: false
 kind: moment
 place:
-  name: "Richmond Park: King Henry's Mound (proposed viewpoint)"
+  name: "Richmond Park: King Henry's Mound, Pembroke Lodge Gardens"
   lat: 51.44492          # CHECKED: King Henry VIII's Mound viewpoint, OpenStreetMap
   lon: -0.29477
 approach:
   from: "Richmond Gate"
   start_point: {lat: 51.44982, lon: -0.29497}   # CHECKED (approx.): OSM "Richmond Gate" stop
-  path: "In through Richmond Gate, then south along the edge of the park to Pembroke Lodge Gardens and the Mound"   # GUESS: confirm on a walk
+  path: "In through Richmond Gate, then south along the edge of the park to Pembroke Lodge Gardens and the Mound"   # GUESS, accepted by Abram
   duration_min: 10       # GUESS: about 550 m
   step_free: null
 experience:
@@ -42,4 +44,4 @@ features:
 cost_gbp: 0
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

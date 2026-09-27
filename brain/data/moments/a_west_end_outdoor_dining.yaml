@@ -1,0 +1,44 @@
+# Seed, batch 1, #9 (Abram's voice note 2026-09-26; answers 2026-09-27): an AREA VIBE (kind: area). Replaces
+# a_tcr_outdoor_dining. FOUNDER: eating outside around Oxford Circus / Tottenham Court Road, at places like Oshpaz or
+# Angus Steakhouse; what made it good was sitting outside, watching the street, and good food. Filled by Claude (D91):
+# - Angus Steakhouse Oxford Circus: on Argyll Street next to Oxford Circus station, with a heated outdoor terrace;
+#   average spend about £45 a head (TheFork, via search, 2026-09-27).
+# - OshPaz (Uzbek; name checked): its restaurant is at 7 Regent Street, St James, SW1Y 4LR, at the Piccadilly Circus end
+#   of Regent Street, not by Oxford Circus; open 11:00-22:00 (oshpaz.co.uk, read). Its other central site is a stall
+#   in Seven Dials Market (35 Earlham Street, WC2H 9LX, 12:00-22:00). Outdoor seating at OshPaz: UNVERIFIED.
+# Marked ready (D91: founder answers + checked facts).
+id: a_west_end_outdoor_dining
+title: "Eating outside in the West End, watching the street"
+status: ready
+swipe: false
+kind: area
+place:
+  name: "Outdoor tables around Oxford Circus and Regent Street"
+  lat: 51.5152           # CHECKED: Oxford Circus station, Wikipedia coordinates
+  lon: -0.1416
+approach:
+  from: "Oxford Circus station"
+  start_point: {lat: 51.5152, lon: -0.1416}
+  path: "No set route: pick an outside table between Oxford Circus and Regent Street (for example Angus Steakhouse's terrace by the station, or OshPaz on lower Regent Street)"
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "A meal at an outside table in the West End, watching the street go by."   # FOUNDER
+  why_it_works: "Sitting outside, watching the street, and good food."   # FOUNDER
+  duration_min: [60, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["12:00-21:30"]   # inside both restaurants' hours (OshPaz 11:00-22:00; Angus hours not found)
+  light: null
+  weather: ["dry"]
+  company: null
+  crowd_window: "Busy streets are part of it (FOUNDER: watching the street)"
+  opening_hours: "OshPaz Regent Street 11:00-22:00 (official). Angus Steakhouse Oxford Circus: heated terrace; hours not found. Checked 2026-09-27"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 2}
+cost_gbp: 45             # CHECKED (third party): TheFork's average price at Angus Steakhouse Oxford Circus
+shot_card: null
+source: founder
+last_checked: "2026-09-27"

@@ -1,0 +1,42 @@
+# Research candidate #33 (research/seed-moments/03-candidates.md), added 2026-09-27 (D93) for low-barrier activity.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91, D93). Tags are Claude's judgement.
+# Royal Parks Hyde Park FAQ (read): gates 05:00-midnight; "Cycling is permitted within Hyde Park, but only where stated
+# (e.g. Serpentine Road, The Broad Walk etc.)"; smaller paths are signed 'no cycling'; pedestrians have priority.
+# Santander Cycles (TfL pricing via search; the TfL pages refused our fetch): £1.65 per 30 min; a £3 day pass gives
+# unlimited 30-min rides for 24 h. Riders must be 14+ and at least 4 ft 11 in (search results: UNVERIFIED on TfL's own page).
+# Kept to the park's permitted routes, for strangers' safety. Docking stations are around the park (Royal Parks).
+id: m_park_bike_loop_hyde
+title: "A bike loop round Hyde Park"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Hyde Park: Serpentine Road and the Broad Walk"
+  lat: 51.50528          # CHECKED: The Serpentine, Wikipedia coordinates
+  lon: -0.16944
+approach:
+  from: "Hyde Park Corner"
+  start_point: {lat: 51.50278, lon: -0.15125}   # CHECKED: Hyde Park Corner, Wikipedia coordinates
+  path: "Take a Santander Cycle from a docking station at Hyde Park Corner and ride into the park on the permitted routes"   # * for the docking station
+  duration_min: 8        # GUESS: find a bike and set off
+  step_free: null
+experience:
+  what_happens: "You hire a Santander Cycle and ride an easy loop on the park's cycle routes, along Serpentine Road beside the lake and up the Broad Walk, then dock it again."   # CHECKED (routes)
+  why_it_works: "Easy movement with green and water all round: enough action to switch your head off, with no booking and no kit."
+  duration_min: [30, 45] # GUESS
+  end_point: {lat: 51.50278, lon: -0.15125}
+best_time:
+  time_of_day: ["10:00-16:00"]   # daylight in the Test B weeks
+  light: "Daylight"
+  weather: ["dry"]
+  company: null
+  crowd_window: "Pedestrians have priority; weekends are busier (GUESS)"
+  opening_hours: "Park gates 05:00-midnight. Cycling only on signed routes. Royal Parks, read 2026-09-27"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 2, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+cost_gbp: 3              # CHECKED (search, TfL pricing): the Santander Cycles day pass
+shot_card: null
+source: research
+last_checked: "2026-09-27"

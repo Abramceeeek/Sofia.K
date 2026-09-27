@@ -2,7 +2,17 @@
 
 *2026-09-27. 20 ready cards (8 of yours, 12 verified research cards). A card can count under more than one type; the main type is in bold. Tags are from the cards (2 = the defining trait).*
 
-## Verdict
+## Update, 27 Sep (D93): the two gaps are filled
+
+- **Now 30 ready cards,** after cards 9–11, a park-break group of six parks (one per plan), King's Cross and the bike loop.
+- **Area vibes: 3:** Covent Garden and Soho; eating outside in the West End; King's Cross canal steps.
+- **Activity: 3:** karting, the lido, and the Hyde Park bike loop, which needs no booking and no kit.
+- **Nature and calm:** a park break that fits any route, plus Richmond Park.
+- **Fields:** food has 4 ready cards; finance & tech 6 (in 5 groups).
+
+The rest of this note is the check as it was before the update.
+
+## Verdict (before the update)
 
 **Mostly balanced, but tilted towards views and reveals. Two types are thin for Test B: area vibes and low-barrier activity.**
 - 8 of 20 cards have reveal at 2, 7 have awe at 2, and 12 have photo at 2. Don't add more pure views.
