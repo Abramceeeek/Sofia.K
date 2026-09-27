@@ -138,7 +138,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-27 | 3 | Decisions D83–D84 (art & design dropped; Test E first; Areas 5–7 parked) | 0.25 | | |
 | **26 Sep – 1 Oct** | — | **Extra hours, outside the weekly budget (D82), in your priority order:** | **6.25** | | Report the actual hours as you go |
 | 26 Sep – 1 Oct | 3 | **1. Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, set `status: ready` | 1.5 | | **In progress:** cards 1–4 ready (27 Sep). Moved from the week of 28 Sep |
-| 26 Sep – 1 Oct | 3 | **2. Send the remaining ~14 moment names** (~25 in total for Test B) | 1.0 | | Pending. Moved from the week of 5 Oct |
+| 26 Sep – 1 Oct | 3 | **2. Send the remaining ~14 moment names** (~25 in total for Test B) | 1.0 | | Pending. Moved from the week of 5 Oct. **Or pick by number from the 34 researched candidates** (`research/seed-moments/03-candidates.md`, D89), about 0.25 h |
 | 26 Sep – 1 Oct | 3 | **3. Swipe page:** confirm the conjoint attributes, check the 30 candidates, deploy on Render with **no payment method**, try it once, share the link (D70c, D76) | 1.25 | | **Mostly done:** candidates changed (D85); **deployed 27 Sep** (web service and database live in Frankfurt, no card), tried and shared; the results page checked (27 Sep). Left: confirm the conjoint attributes |
 | 2026-09-27 | 3 | Card 1 review (whale hall) and the swipe candidates check | — | **0.17** | Reported by Abram: 10 min (D82) |
 | 2026-09-27 | 3 | Card 2 review (British Museum) | — | **0.08** | Reported by Abram: 5 min |

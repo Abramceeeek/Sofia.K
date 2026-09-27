@@ -14,6 +14,7 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | # | What | Where |
 |---|---|---|
 | m31 | **The constraint is built now, because it protects the Test B plans:** a participant whose cost weight crossed zero would get plans that favour the dearest stops.<br>- In the model, β_cost = −0.25 · e^δ, with δ ~ N(0, 0.8²) (GUESS, matched to the old prior's negative range).<br>- Each step uses the full Hessian when it's negative definite, otherwise Gauss-Newton.<br>- The read-back says cost matters "more" or "less" to someone than to most people, never whether they like it.<br>- 62 tests pass | `brain/src/brain/personal.py`, `population.py`, `scoring.py` (`value_gbp`), `testb.py`, `data/priors.yaml` |
+| m33 | The candidate list (`research/seed-moments/03-candidates.md`) has 34 moments in three tiers. Picking from it can stand in for most of blocker #2 (sending ~14 names, 1.0 h), at about 0.25 h. Cards drafted from it get `source: research`, with the link | `LOG.md` |
 | m32 | **V isn't shown in the Test B plans.** Test B plans never say why a stop was chosen (they stay blind), so V waits for the v0 moment card | — |
 
 ## 2026-09-27 — trip cost layer parked; card 3
