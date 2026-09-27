@@ -13,10 +13,11 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | # | What | Where |
 |---|---|---|
 | m34 | Card 5 is retitled "Steak dinner in a buzzing room at Meet Bros" and no longer promises chef-watching, because the open kitchen is unconfirmed. A Test B plan shouldn't promise what may not be there | `m_open_kitchen_steakhouse.yaml` |
-| m35 | **Swapped 13 (Parliament Hill) for 9 (evensong at St Paul's).** It's dark by about 16:30 in the Test B weeks, and few cards work after dark. Evensong is free, adds awe and absorption, and pairs with the Millennium Bridge (7). Parliament Hill would have been a third skyline view, far from the other clusters; 11 and 14 already give skylines | `research/seed-moments/03-candidates.md` |
+| m35 | **Swapped 13 (Parliament Hill) for 9 (evensong at St Paul's).** *Abram left the choice to Claude (27 Sep): evensong stays.* It's dark by about 16:30 in the Test B weeks, and few cards work after dark. Evensong is free, adds awe and absorption, and pairs with the Millennium Bridge (7). Parliament Hill would have been a third skyline view, far from the other clusters; 11 and 14 already give skylines | `research/seed-moments/03-candidates.md` |
 | m36 | **Built the day-of-week part of after-9-nov #7**, because weekday-only places (the Bank of England Museum, Horizon 22) would otherwise land in weekend plans. A card can list `best_time.days`, a Test B brief can set `weekday`, and the API uses the plan's date. Different hours on different days stay parked | `brain/src/brain/moments.py`, `testb.py`, `api.py` |
 | m37 | Coordinates come from Wikipedia's geodata and postcodes.io postcode centroids, because OpenStreetMap's servers refused requests from here. Each card says which one it used | the 13 cards |
 | m38 | The three finance & tech picks (1, 2, 14) are listed by id in `aspiration.yaml`. Food and nature picks map through their tags as before | `brain/data/aspiration.yaml` |
+| m39 | Card 6's window moves from 08:00–19:00 to **10:00–18:00**, so the Crossrail Place Roof Garden at the end is open (its winter hours). The weekday rush hours before 10:00 are lost; the lunchtime and 17:00 crowds remain | `m_canary_wharf_towers.yaml` |
 
 ## 2026-09-27 — value in pounds; moment candidates; card 4
 

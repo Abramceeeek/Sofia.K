@@ -1,9 +1,13 @@
 # Seed moment, batch 1, #6 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
 # Shares variant_of with m_city_towers_walk: both give the same "towers" feeling, so a plan holds at most one.
-# For later (after 9 Nov, D75): aspiration match (finance, tech) 2; crowd energy (driven, work).
+# For later (after 9 Nov, D75): crowd energy (driven, work).
+# REVIEWED by Abram 2026-09-27: route from the Jubilee line escalators, among the towers, ending at the Crossrail
+# Place Roof Garden; weekdays only; reveal 2 (the rise out of the Jubilee escalators); marked ready.
+# The window is 10:00-18:00 so the roof garden is open at the end (winter hours 10:00-18:00, Oct-Mar; search,
+# third-party pages, 2026-09-27; free, no booking). Aspiration: finance & tech (listed by id).
 id: m_canary_wharf_towers
 title: "Among the Canary Wharf towers"
-status: draft
+status: ready
 swipe: false
 kind: moment
 variant_of: towers_aspiration
@@ -13,28 +17,29 @@ place:
   lat: 51.50477          # CHECKED: Canada Square Park, OpenStreetMap
   lon: -0.01794
 approach:
-  from: "Canary Wharf station"
-  start_point: {lat: 51.50282, lon: -0.01988}   # CHECKED (approx.): OSM "Canary Wharf Station" stop on Bank Street; confirm the exit
-  path: null             # GAP: your route among the towers (optional ending: Crossrail Place Roof Garden, 51.5061, -0.0176, OSM)
+  from: "Canary Wharf station (Jubilee line)"   # FOUNDER
+  start_point: {lat: 51.503, lon: -0.018}       # CHECKED: Wikipedia coordinates for the Jubilee line station, 2026-09-27
+  path: "Ride the Jubilee line to Canary Wharf and take the long escalators up out of the station into Canada Square"   # FOUNDER
   duration_min: 3        # GUESS
   step_free: null
 experience:
-  what_happens: "A walk between the glass towers around Canada Square, with the weekday crowd heading in and out of work."   # FOUNDER
+  what_happens: "You rise up the escalators out of the Jubilee line into Canada Square, walk between the glass towers with the weekday crowd heading in and out of work, and finish in the Crossrail Place Roof Garden under its timber roof."   # FOUNDER + CHECKED (the roof garden)
   why_it_works: "A New York feeling. Inspiring if you're into finance or tech: something important is happening here."   # FOUNDER
   duration_min: [20, 40] # GUESS
-  end_point: null
+  end_point: {lat: 51.5061, lon: -0.0175}      # CHECKED: Crossrail Place, Wikipedia coordinates, 2026-09-27
 best_time:
-  time_of_day: ["08:00-19:00"]   # GUESS; weekdays for the work energy (the planner can't pick weekdays yet)
+  time_of_day: ["10:00-18:00"]   # the roof garden's winter hours; Abram accepted the times
+  days: [mon, tue, wed, thu, fri]   # FOUNDER: weekdays only, for the work energy
   light: null
   weather: ["any"]
   company: null
   crowd_window: "Weekdays, when the offices are full"   # GUESS from FOUNDER's "work energy"
-  opening_hours: "Public streets; always open"
+  opening_hours: "Streets always open. Crossrail Place Roof Garden: Oct-Mar 10:00-18:00, Apr-Sep 10:00-21:00; free, no booking (third-party pages via search, 2026-09-27; check)"
 features:
   place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
-  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}   # reveal 2: FOUNDER, 2026-09-27
 cost_gbp: 0
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

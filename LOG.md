@@ -137,7 +137,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-26 | 4 | Decisions D81–D82 (own design; extra hours on the blockers) | 0.25 | | |
 | 2026-09-27 | 3 | Decisions D83–D84 (art & design dropped; Test E first; Areas 5–7 parked) | 0.25 | | |
 | **26 Sep – 1 Oct** | — | **Extra hours, outside the weekly budget (D82), in your priority order:** | **6.25** | | Report the actual hours as you go |
-| 26 Sep – 1 Oct | 3 | **1. Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, set `status: ready` | 1.5 | | **In progress:** cards 1–5 ready (27 Sep). Moved from the week of 28 Sep |
+| 26 Sep – 1 Oct | 3 | **1. Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, set `status: ready` | 1.5 | | **In progress:** cards 1–6 ready (27 Sep). Moved from the week of 28 Sep |
 | 26 Sep – 1 Oct | 3 | **2. Send the remaining ~14 moment names** (~25 in total for Test B) | 1.0 | | **Mostly done 27 Sep:** 12 picked from the researched candidates and drafted as cards (D90). There are now 24 cards: 5 ready and 19 drafts. **Next: check the 12 new drafts** (about 5 min each, ≈ 1 h, inside the moment-card hours) |
 | 26 Sep – 1 Oct | 3 | **3. Swipe page:** confirm the conjoint attributes, check the 30 candidates, deploy on Render with **no payment method**, try it once, share the link (D70c, D76) | 1.25 | | **Mostly done:** candidates changed (D85); **deployed 27 Sep** (web service and database live in Frankfurt, no card), tried and shared; the results page checked (27 Sep). Left: confirm the conjoint attributes |
 | 2026-09-27 | 3 | Card 1 review (whale hall) and the swipe candidates check | — | **0.17** | Reported by Abram: 10 min (D82) |
@@ -147,6 +147,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-27 | 3 | Swipe page: the results check | — | **0.08** | Reported by Abram: 5 min |
 | 2026-09-27 | 3 | Card 4 review (river at night) | — | **0.08** | Reported by Abram: 5 min |
 | 2026-09-27 | 3 | Card 5 review (Meet Bros) and picking 12 candidates | — | **0.25** | Reported by Abram: 15 min |
+| 2026-09-27 | 3 | Card 6 review (Canary Wharf) | — | **0.08** | Reported by Abram: 5 min |
 | 26 Sep – 1 Oct | 3 | **4. Moment cards from friends' suggestions:** check Claude's drafts as they arrive (D86; replaces Test E recruiting) | 1.25 | | Pending. Paste the moments when they arrive |
 | 26 Sep – 1 Oct | gate | **5. Apple outside-activities policy and the IP/invention clauses in both contracts (D60)**, plus the membership status with **auto-renew off** (D74) | 1.25 | | Pending. Moved from the weeks of 21 and 28 Sep |
 | wk 28 Sep | 1 | Seed moments 2–5 in the Area 2 schema (D13); walk for seed 1 (D35) | 1.0 | | Pending. Seed 1 received 2026-09-26 |
@@ -181,7 +182,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
 | 2026-09-21 | 7.5 | 13.25 (kick-off, checkpoints, decision rounds D1–D84 and seed batch 1; all spent, estimated): **5.75 over** | |
-| **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, **friends' moment cards 1.25** (replaces Test E recruiting, D86), Apple and IP checks 1.25) | **1.42 so far** (85 min on 27 Sep: cards 1–5, the swipe candidates, the Render set-up and sharing, the results check, and the candidate picks) |
+| **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, **friends' moment cards 1.25** (replaces Test E recruiting, D86), Apple and IP checks 1.25) | **1.50 so far** (90 min on 27 Sep: cards 1–6, the swipe candidates, the Render set-up and sharing, the results check, and the candidate picks) |
 | 2026-09-28 | 7.5 | 2.5 (seed moments 2–5 and the seed 1 walk 1.0, **Test B dry run 1.0, moment cards 0.5**, D86). **5.0 h kept as buffer** (D84) | |
 | 2026-10-05 | 7.5 | 1.0 (Area 18 0.5, WhatsApp set-up 0.5). Area 20 moves with Test E (D86). Areas 5–7 (D84) and 8–12 reviews deferred to after Checkpoint 3 | |
 | 2026-10-12 | 7.5 | 6.25 (validation materials 1.0, pick the 16 places 0.5, aspiration question 0.25, moment cards 1.5, then **the landing page and first recruitment posts 3.0, a week early**, D86) | |
