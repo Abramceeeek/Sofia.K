@@ -3,10 +3,13 @@
 # FLAG: it ends at Westminster, not Battersea. Westminster is the only pier the evening boats reach every day:
 # weekday evening boats end at London Eye, and weekend boats don't call there but continue to Battersea
 # until the 22:32 departure. Confirm, or ask for a weekend-only Battersea version.
+# REVIEWED by Abram 2026-09-27: Westminster is fine, with no weekend-only Battersea version for v0; the
+# 18:30 start is safe (it gets dark earlier after the clocks change); cost kept at £11.40 until he
+# checks it; scores kept. Marked ready.
 # For later (after 9 Nov, D75): time variants by season (sunset); light and colour.
 id: m_uber_boat_west_night
 title: "The river at night, from Greenwich to Westminster"
-status: draft
+status: ready
 swipe: false
 kind: moment
 variant_of: uber_boat_greenwich_west
@@ -43,8 +46,8 @@ features:
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
   moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
 # CHECKED: contactless adult single, "Central & East", fares from March 2026 (valid to 31 Oct 2026).
-# UNVERIFIED: that Greenwich -> Westminster is Central & East.
+# UNVERIFIED: that Greenwich -> Westminster is Central & East. Abram checks the charge next time (2026-09-27).
 cost_gbp: 11.40
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

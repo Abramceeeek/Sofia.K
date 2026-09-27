@@ -1,6 +1,6 @@
 # Does Stage 1 of the trip cost layer fit v0? (D87)
 
-*Short note, 2026-09-27. For Checkpoint 3, where v0's scope is decided. The rest of the trip cost layer is on `decisions/after-9-nov.md` (#14). Anything marked **(my judgement)** is opinion. The facts are in `research/sources.csv` (area `cost`).*
+*Short note, 2026-09-27. **The value display is decided (D88)**: "worth about £V to you", ranked by V − price, with the cost weight kept negative (built in the Brain, 27 Sep). **The day total is still decided at Checkpoint 3**, where v0's scope is decided. The rest of the trip cost layer is on `decisions/after-9-nov.md` (#14). Anything marked **(my judgement)** is opinion. The facts are in `research/sources.csv` (area `cost`).*
 
 ## Answer
 
@@ -42,7 +42,7 @@ In a choice model, utility is identified only up to location and scale. Add a co
 | Piece | Your hours |
 |---|---|
 | Choose the food rule and check the wording | 0.25 |
-| Review the fare table, the cap and the cost-weight change (with the Brain review) | 0.5 |
+| Review the fare table, the cap and the cost-weight change (with the Brain review; the cost-weight change is built, D88) | 0.5 |
 | Design: the total on the day plan screen and V on the moment card (on top of D81's 7 h) | 0.5 |
 | Check the station zone Claude adds to each card, during card reviews | 0.25 |
 | **Total** | **≈ 1.5** (Phase 4 would go from ≈ 57 to ≈ 58.5 h) |

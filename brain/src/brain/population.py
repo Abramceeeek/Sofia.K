@@ -8,6 +8,8 @@ from pathlib import Path
 import numpy as np
 import yaml
 
+from .personal import apply_delta
+
 
 @dataclass(frozen=True)
 class FeatureSpec:
@@ -18,6 +20,7 @@ class FeatureSpec:
     delta_sd: float
     personal: bool
     source: str | None = None
+    scale: str = "linear"   # "log": the weight keeps the sign of `mean` and δ is on the log scale (D88)
 
 
 @dataclass(frozen=True)
@@ -44,6 +47,11 @@ class PopulationModel:
         return np.array([i for i, f in enumerate(self.features) if f.personal], dtype=int)
 
     @property
+    def log_mask(self) -> np.ndarray:
+        """Over the personal features: True where δ is on the log scale (sign-constrained, D88)."""
+        return np.array([f.scale == "log" for f in self.features if f.personal], dtype=bool)
+
+    @property
     def delta_prior_sd(self) -> np.ndarray:
         return np.array([f.delta_sd for f in self.features if f.personal], dtype=float)
 
@@ -61,11 +69,11 @@ class PopulationModel:
         return np.array([x.get(n, 0.0) for n in self.names], dtype=float)
 
     def b_person(self, delta: np.ndarray | None) -> np.ndarray:
-        """b_person = b_population + δ_person (δ only on the personal features)."""
-        b = self.b_pop.copy()
-        if delta is not None and len(delta):
-            b[self.personal_idx] += delta
-        return b
+        """b_person = b_population + δ_person (δ only on the personal features).
+
+        Log-scale features use b_population · exp(δ) instead, so their sign never flips (D88).
+        """
+        return apply_delta(self.b_pop, self.personal_idx, delta, self.log_mask)
 
 
 def load_population(path: Path) -> PopulationModel:
@@ -78,6 +86,10 @@ def load_population(path: Path) -> PopulationModel:
     for f in feats:
         if f.personal and f.delta_sd <= 0:
             raise ValueError(f"{f.name}: a personal feature needs delta_sd > 0")
+        if f.scale not in ("linear", "log"):
+            raise ValueError(f"{f.name}: scale must be 'linear' or 'log'")
+        if f.scale == "log" and (not f.personal or f.mean == 0):
+            raise ValueError(f"{f.name}: a log-scale weight must be personal with a non-zero mean")
     return PopulationModel(
         version=str(d["version"]),
         features=feats,

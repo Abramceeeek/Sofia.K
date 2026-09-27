@@ -174,6 +174,11 @@ def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6,
         lines.append(f"Said these fields inspire them: {', '.join(field_labels)} "
                      f"(moments tied to them get weight {asp.weight:+.2f})")
     for w in ws[:top]:
+        if w.direction in ("stronger", "weaker"):   # sign-constrained, e.g. cost (D88)
+            more = "more" if w.direction == "stronger" else "less"
+            lines.append(f"{w.label}: seems to matter {more} to them than to most people "
+                         f"(weight {w.weight:+.2f}; population {w.population:+.2f})")
+            continue
         verb = "seems to put them off" if w.direction == "dislikes" else "seems to appeal to them"
         lines.append(f"{w.label}: {verb} (weight {w.weight:+.2f}, P(negative) {w.p_negative:.2f})")
     if len(lines) == (1 if field_labels else 0):

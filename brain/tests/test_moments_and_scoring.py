@@ -83,3 +83,32 @@ def test_moment_template_is_a_complete_valid_record():
     from brain.moments import load_moment_file
     m = load_moment_file(DATA / "moment_template.yaml")
     assert m.missing_for_planning() == []
+
+
+def test_value_in_pounds_ranks_like_the_score(pop, test_moments):
+    # D88: "worth about £V to you"; ranking by V − price is the same as ranking by S
+    from brain.scoring import value_gbp
+    rng = np.random.default_rng(5)
+    for _ in range(5):
+        delta = rng.normal(0, 0.6, len(pop.personal_names))
+        b = pop.b_person(delta)
+        assert b[pop.names.index("cost_per_10gbp")] < 0          # the sign never flips
+        s = [score_moment(pop, b, m) for m in test_moments]
+        net = [value_gbp(pop, b, m) - (m.cost_gbp or 0.0) for m in test_moments]
+        assert np.argsort(s).tolist() == np.argsort(net).tolist()
+        scale = -b[pop.names.index("cost_per_10gbp")] / 10.0
+        assert np.allclose(s, [scale * n for n in net])
+
+
+def test_cost_weight_reads_as_stronger_or_weaker_not_as_a_sign(pop):
+    from brain.testb import readback_lines
+    w = {n.name: n for n in named_weights(pop, prior_only(pop.delta_prior_sd))}
+    assert w["cost_per_10gbp"].direction == "unsure" and w["cost_per_10gbp"].p_negative == 1.0
+    # many choices of the cheaper plan: more cost-sensitive than most people
+    x_cheap = {"cost_per_10gbp": 0.0}
+    x_dear = {"cost_per_10gbp": 2.0}
+    post = update_person(pop, [conjoint_observation(pop, x_cheap, x_dear, True) for _ in range(30)])
+    w = {n.name: n for n in named_weights(pop, post)}
+    assert w["cost_per_10gbp"].direction == "stronger"
+    assert w["cost_per_10gbp"].weight < pop.spec("cost_per_10gbp").mean
+    assert any("matter more to them than to most people" in l for l in readback_lines(pop, post))

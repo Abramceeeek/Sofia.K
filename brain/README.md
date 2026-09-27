@@ -2,7 +2,7 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
-**Status:** first draft, written 2026-09-26. The 58 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
+**Status:** first draft, written 2026-09-26. The 62 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
 
 ## Run it
 

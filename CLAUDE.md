@@ -47,7 +47,10 @@ Founder's example: you come out of South Kensington tube and walk out to the Nat
   - photo potential;
   - social pull ("I need to bring people here");
   - cost in £.
-- **Feeling per pound is computed, not tagged.** The model derives it as predicted S ÷ cost. Tagging it directly would double-count cost.
+- **Feeling per pound is computed, not tagged** (tagging it would double-count cost). *Amended (D88): no raw S ÷ cost ratio. It depends on utility's arbitrary zero, and free moments divide by zero.*
+  - **The app shows "worth about £V to you":** V = the non-cost part of S ÷ the person's cost weight (per £), next to the price.
+  - **Ranking is by V − price**, which is the same as ranking by S, so the planner doesn't change.
+  - **The person's cost weight is constrained to stay negative:** it is fitted on a log scale (β_cost = b_pop · e^δ), so V never explodes.
 - **Seed moments come from Abram's own experience.** Five to start. Batch 1 (11 cards, D72) is in `brain/data/moments/`.
 - **Entry types (D72):** a **moment** (one specific experience) or an **area vibe** (a wander or street scene: a centre point, flexible time, at most one a day, never the day's peak).
   - **Variants** (the same trip by day and by night) share a group, and a plan holds at most one.

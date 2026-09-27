@@ -1,6 +1,7 @@
 import numpy as np
 
-from brain.personal import Observation, fit_delta, log_posterior, loglik_terms, prior_only, prob_negative
+from brain.personal import (Observation, apply_delta, fit_delta, log_posterior, loglik_terms, prior_only,
+                            prob_negative)
 
 
 def test_ordered_logit_derivatives_match_finite_differences():
@@ -73,3 +74,42 @@ def test_prob_negative():
     assert abs(prob_negative(0.0, 1.0) - 0.5) < 1e-12
     assert prob_negative(-2.0, 1.0) > 0.97
     assert prob_negative(2.0, 1.0) < 0.03
+
+
+# ---- sign-constrained (log-scale) weights, D88 ---------------------------------------
+
+def test_log_scale_weight_never_turns_positive():
+    # Someone keeps choosing the dearer option. On the linear scale the cost weight would cross zero;
+    # on the log scale it only shrinks towards zero and keeps its sign.
+    b_pop = np.array([-0.25])
+    obs = [Observation(x=np.array([1.0]), y=1) for _ in range(40)]   # x_A − x_B: A costs £10 more
+    lin = fit_delta(b_pop, np.array([0]), np.array([0.5]), obs)
+    assert b_pop[0] + lin.mean[0] > 0
+    log = fit_delta(b_pop, np.array([0]), np.array([0.8]), obs, log_mask=np.array([True]))
+    b = apply_delta(b_pop, np.array([0]), log.mean, np.array([True]))
+    assert log.mean[0] < 0 and -0.25 < b[0] < 0
+    assert np.all(np.linalg.eigvalsh(log.precision) > 0)
+
+
+def test_log_scale_map_is_a_maximum_and_matches_the_linear_fit_without_the_mask():
+    rng = np.random.default_rng(3)
+    b_pop = np.array([0.1, -0.25, 0.0])
+    personal = np.array([0, 1])
+    sd = np.array([0.75, 0.8])
+    mask = np.array([False, True])
+    b_true = np.array([0.6, -0.9, 0.0])
+    obs = []
+    for _ in range(120):
+        x = rng.uniform(-1, 1, 3)
+        p = 1 / (1 + np.exp(-(x @ b_true)))
+        obs.append(Observation(x=x, y=int(rng.uniform() < p)))
+    post = fit_delta(b_pop, personal, sd, obs, log_mask=mask)
+    b = apply_delta(b_pop, personal, post.mean, mask)
+    assert b[1] < b_pop[1]   # more cost-sensitive than the population, as simulated
+    lp = log_posterior(post.mean, b_pop, personal, sd, obs, mask)
+    for step in (np.array([0.03, 0]), np.array([-0.03, 0]), np.array([0, 0.03]), np.array([0, -0.03])):
+        assert log_posterior(post.mean + step, b_pop, personal, sd, obs, mask) <= lp
+    # with no log-scale features the new code path is the old linear model
+    a = fit_delta(b_pop, personal, sd, obs)
+    c = fit_delta(b_pop, personal, sd, obs, log_mask=np.array([False, False]))
+    assert np.allclose(a.mean, c.mean) and np.allclose(a.precision, c.precision)

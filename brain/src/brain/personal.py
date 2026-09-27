@@ -12,6 +12,12 @@ with three likelihood blocks sharing δ (Area 3):
     - stop rating:      ordered logit, 5 levels (1-5).
 Prior δ ~ N(0, diag(sd²)). Hyperparameters (b_pop, cutpoints, λ) are held fixed, and the
 posterior is the Laplace approximation around the MAP, found by Newton's method.
+
+Sign-constrained weights (D88). A feature marked in `log_mask` keeps the sign of its population
+weight: β = b_pop · exp(δ), so δ lives on the log scale and the cost weight can never turn
+positive. η is then non-linear in δ, so each step uses the full Hessian when it is negative
+definite and the Gauss-Newton one (always negative definite) otherwise. With no log-scale
+features this is exactly the linear model above.
 """
 
 from __future__ import annotations
@@ -102,46 +108,74 @@ def loglik_terms(eta: float, obs: Observation) -> tuple[float, float, float]:
     return math.log(P), d1, d2P / P - d1 * d1
 
 
-def log_posterior(delta: np.ndarray, b_pop: np.ndarray, personal_idx: np.ndarray,
-                  prior_sd: np.ndarray, observations: list[Observation]) -> float:
+def apply_delta(b_pop: np.ndarray, personal_idx: np.ndarray, delta: np.ndarray | None,
+                log_mask: np.ndarray | None = None) -> np.ndarray:
+    """b_person: b_pop + δ on linear features, b_pop · exp(δ) on log-scale ones (D88)."""
     b = b_pop.copy()
-    b[personal_idx] += delta
+    if delta is None or not len(delta):
+        return b
+    lm = np.zeros(len(personal_idx), dtype=bool) if log_mask is None else np.asarray(log_mask, dtype=bool)
+    b[personal_idx[~lm]] += delta[~lm]
+    b[personal_idx[lm]] = b_pop[personal_idx[lm]] * np.exp(delta[lm])
+    return b
+
+
+def log_posterior(delta: np.ndarray, b_pop: np.ndarray, personal_idx: np.ndarray,
+                  prior_sd: np.ndarray, observations: list[Observation],
+                  log_mask: np.ndarray | None = None) -> float:
+    b = apply_delta(b_pop, personal_idx, delta, log_mask)
     lp = -0.5 * float(np.sum((delta / prior_sd) ** 2))
     for o in observations:
         lp += loglik_terms(o.scale * float(o.x @ b), o)[0]
     return lp
 
 
+def _negative_definite(H: np.ndarray) -> bool:
+    try:
+        np.linalg.cholesky(-H)
+        return True
+    except np.linalg.LinAlgError:
+        return False
+
+
 def fit_delta(b_pop: np.ndarray, personal_idx: np.ndarray, prior_sd: np.ndarray,
-              observations: list[Observation], max_iter: int = 50, tol: float = 1e-9) -> DeltaPosterior:
+              observations: list[Observation], max_iter: int = 50, tol: float = 1e-9,
+              log_mask: np.ndarray | None = None) -> DeltaPosterior:
     """MAP of δ by damped Newton, then the Laplace precision at the MAP."""
     P = len(personal_idx)
+    lm = np.zeros(P, dtype=bool) if log_mask is None else np.asarray(log_mask, dtype=bool)
     prior_prec = np.diag(1.0 / prior_sd ** 2)
     delta = np.zeros(P)
     if not observations:
         return DeltaPosterior(delta, prior_prec, 0, 0)
 
-    def grad_hess(d: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        b = b_pop.copy()
-        b[personal_idx] += d
+    def grad_hess(d: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Gradient, full Hessian and Gauss-Newton Hessian of the log posterior."""
+        b = apply_delta(b_pop, personal_idx, d, lm)
+        bp = b[personal_idx]
         g = -prior_prec @ d
-        H = -prior_prec.copy()
+        H_gn = -prior_prec.copy()
+        curv = np.zeros(P)
         for o in observations:
-            xp = o.x[personal_idx]
+            xt = o.x[personal_idx].copy()
+            xt[lm] *= bp[lm]                 # ∂η/∂δ = λ x b on log-scale features
             _, d1, d2 = loglik_terms(o.scale * float(o.x @ b), o)
-            g += o.scale * d1 * xp
-            H += (o.scale ** 2) * d2 * np.outer(xp, xp)
-        return g, H
+            g += o.scale * d1 * xt
+            H_gn += (o.scale ** 2) * d2 * np.outer(xt, xt)
+            curv += o.scale * d1 * np.where(lm, xt, 0.0)   # ∂²η/∂δ² = λ x b on log-scale features
+        return g, H_gn + np.diag(curv), H_gn
 
-    lp = log_posterior(delta, b_pop, personal_idx, prior_sd, observations)
+    lp = log_posterior(delta, b_pop, personal_idx, prior_sd, observations, lm)
     it = 0
     for it in range(1, max_iter + 1):
-        g, H = grad_hess(delta)
-        step = np.linalg.solve(H, -g)   # H is negative definite (log-concave likelihoods + Gaussian prior)
+        g, H, H_gn = grad_hess(delta)
+        # Log-concave likelihoods + Gaussian prior make H negative definite in the linear model;
+        # a log-scale feature can break that, and then the Gauss-Newton matrix still gives ascent.
+        step = np.linalg.solve(H if _negative_definite(H) else H_gn, -g)
         t = 1.0
         while True:
             cand = delta + t * step
-            lp_new = log_posterior(cand, b_pop, personal_idx, prior_sd, observations)
+            lp_new = log_posterior(cand, b_pop, personal_idx, prior_sd, observations, lm)
             if lp_new >= lp - 1e-12 or t < 1e-6:
                 break
             t *= 0.5
@@ -149,8 +183,8 @@ def fit_delta(b_pop: np.ndarray, personal_idx: np.ndarray, prior_sd: np.ndarray,
         delta, lp = cand, lp_new
         if converged:
             break
-    _, H = grad_hess(delta)
-    return DeltaPosterior(delta, -H, it, len(observations))
+    _, H, H_gn = grad_hess(delta)
+    return DeltaPosterior(delta, -(H if _negative_definite(H) else H_gn), it, len(observations))
 
 
 def prob_negative(mean: float, sd: float) -> float:

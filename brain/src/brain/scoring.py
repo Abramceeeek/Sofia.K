@@ -61,7 +61,29 @@ def rating_observation(pop: PopulationModel, moment: Moment, rating: int,
 
 
 def update_person(pop: PopulationModel, observations: list[Observation]) -> DeltaPosterior:
-    return fit_delta(pop.b_pop, pop.personal_idx, pop.delta_prior_sd, observations)
+    return fit_delta(pop.b_pop, pop.personal_idx, pop.delta_prior_sd, observations, log_mask=pop.log_mask)
+
+
+# ---- "worth about £V to you" (D88) ----------------------------------------------------
+
+COST = "cost_per_10gbp"
+
+
+def value_gbp(pop: PopulationModel, b: np.ndarray, moment: Moment, conditions: Conditions | None = None,
+              travel_min: float | None = None, aspiration_match: float = 0.0) -> float:
+    """V: the non-cost part of S, in pounds, using the person's own cost weight (D88).
+
+    S = S_rest + β_cost · cost/10, so V = S_rest ÷ (−β_cost/10) and S = (−β_cost/10) · (V − cost).
+    Ranking by V − price is therefore the same as ranking by S. The cost weight is fitted on a log
+    scale, so it stays negative and V stays finite.
+    """
+    i = pop.names.index(COST)
+    beta = float(b[i])
+    if beta >= 0:
+        raise ValueError("the cost weight must be negative to express value in pounds")
+    x = pop.vector(moment_features(moment, conditions, travel_min, aspiration_match))
+    s_rest = float(x @ b) - beta * x[i]
+    return s_rest * 10.0 / -beta
 
 
 @dataclass(frozen=True)
@@ -73,7 +95,7 @@ class NamedWeight:
     sd: float | None        # None for population-only features
     p_negative: float | None
     confident: bool
-    direction: str          # "likes" | "dislikes" | "unsure"
+    direction: str          # "likes" | "dislikes" | "unsure"; sign-constrained: "stronger" | "weaker" | "unsure"
 
 
 def named_weights(pop: PopulationModel, post: DeltaPosterior) -> list[NamedWeight]:
@@ -82,7 +104,18 @@ def named_weights(pop: PopulationModel, post: DeltaPosterior) -> list[NamedWeigh
     pidx = {n: i for i, n in enumerate(pop.personal_names)}
     out = []
     for i, f in enumerate(pop.features):
-        if f.name in pidx:
+        if f.name in pidx and f.scale == "log":
+            # The sign is fixed (D88), so "confident" means clearly stronger or weaker than most people:
+            # P(δ > 0) on the log scale. The sd is put back on the weight's scale (delta method).
+            k = pidx[f.name]
+            d, sd_log = float(post.mean[k]), float(sds[k])
+            p_up = 1.0 - prob_negative(d, sd_log)
+            confident = p_up > CONFIDENT or p_up < 1 - CONFIDENT
+            direction = ("stronger" if p_up > 0.5 else "weaker") if confident else "unsure"
+            out.append(NamedWeight(f.name, f.label, round(float(b[i]), 3), f.mean,
+                                   round(abs(float(b[i])) * sd_log, 3), 1.0 if f.mean < 0 else 0.0,
+                                   confident, direction))
+        elif f.name in pidx:
             sd = float(sds[pidx[f.name]])
             p = prob_negative(float(b[i]), sd)
             confident = p > CONFIDENT or p < 1 - CONFIDENT
