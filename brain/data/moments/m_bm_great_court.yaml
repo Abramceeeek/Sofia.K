@@ -1,7 +1,8 @@
 # Seed moment, batch 1, #2 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
 # Redrafted (D78): the "library" at the end is probably the Enlightenment Gallery (Room 1, the former
 # King's Library), not the round Reading Room, which has been closed to the public since 2013.
-# Abram confirms at review.
+# REVIEWED by Abram 2026-09-27: Room 1 is probably the library he remembers (he confirms on his next
+# visit); Room 4 is his Egypt room; times and scores kept. Marked ready.
 # CHECKED (2026-09-26):
 # - British Museum map (May 2026 PDF): Room 1 "Enlightenment", Room 4 "Egyptian sculpture".
 # - Wikipedia "King's Library": east wing, 91 m long, built 1823-27, oldest room in the building,
@@ -13,7 +14,7 @@
 # wood-and-gold library).
 id: m_bm_great_court
 title: "Egypt galleries, the Great Court, then the King's Library"
-status: draft
+status: ready
 swipe: false
 kind: moment
 direction: "Room 4 (Egyptian sculpture, west) -> Great Court -> Room 1 (Enlightenment, east)"
@@ -22,15 +23,15 @@ place:
   lat: 51.51931          # CHECKED: British Museum, OpenStreetMap
   lon: -0.12671
 approach:
-  from: "Room 4, the Egyptian sculpture gallery (GAP: confirm it's the Egypt room you meant)"
+  from: "Room 4, the Egyptian sculpture gallery"   # FOUNDER: confirmed 2026-09-27
   start_point: {lat: 51.51931, lon: -0.12671}
   path: "Leave Room 4 by its door on the west side of the Great Court, cross the court past the round Reading Room, and enter Room 1 on the east side"   # CHECKED via search; walk it to confirm
-  duration_min: 10       # GUESS: from the main entrance, through Room 4
+  duration_min: 10       # GUESS, accepted by Abram 2026-09-27: from the main entrance, through Room 4
   step_free: null
 experience:
   what_happens: "From the stone statues of the Egypt gallery you step out into the huge white Great Court under its glass roof, cross it, and walk into the long King's Library: shelves of books, warm wood and gold, and cases of collected objects."   # FOUNDER + CHECKED
-  why_it_works: "Scale and space in the court (feeling small), then the darker, more colourful library room: history and colour contrast."   # FOUNDER (the Reading Room part now points to Room 1; to confirm)
-  duration_min: [30, 60] # GUESS
+  why_it_works: "Scale and space in the court (feeling small), then the darker, more colourful library room: history and colour contrast."   # FOUNDER: Room 1 accepted 2026-09-27; confirm on the next visit
+  duration_min: [30, 60] # GUESS, accepted by Abram 2026-09-27
   end_point: null
 best_time:
   time_of_day: ["10:00-17:00"]   # CHECKED: daily 10:00-17:00 (Fridays to 20:30), last entry 16:45
@@ -46,4 +47,4 @@ features:
 cost_gbp: 0              # CHECKED: free entry
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

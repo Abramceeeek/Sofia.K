@@ -1,6 +1,6 @@
 # Test E — B2B discovery interviews (5) and optional venue conversations (D34, D36)
 
-**Runs first in Phase 3 (D36).** Its results feed the decision note `decisions/b2b-vs-consumer-first.md` (D40) before Tests A–D start.
+**Postponed until v0 exists (D86).** It runs with a working demo after Test B, and before any B2B-specific build work. Its results feed the decision note `decisions/b2b-vs-consumer-first.md` (D40). The questions stay as they are; Claude adds a short demo section at the close before it runs. *(Was: runs first in Phase 3, D36.)*
 
 **Goal:** learn whether hotels and tourism bodies already spend money or time helping guests and visitors find good things to do, who owns that budget, and what "better" would be worth. We are **not pitching and not selling** (no money can be taken until the money gates clear, CLAUDE.md).
 

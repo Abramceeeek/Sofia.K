@@ -1,6 +1,6 @@
 # Decision note — B2B-first vs consumer-first (D40)
 
-*Status: **template, to fill after Test E** (5 interviews, weeks of 5–12 Oct). Model numbers below are pre-filled from `economics/unit-economics.xlsx` → `Path50k` and rest on GUESS inputs. Founder time to finish and decide: ≈ 1 h.*
+*Status: **template, to fill after Test E**, which is **postponed until v0 exists (D86)**: 5 interviews with a working demo, after Test B and before any B2B-specific build. **Until then, the business line is an explicit, untested assumption and the main revenue risk.** Model numbers below are pre-filled from `economics/unit-economics.xlsx` → `Path50k` and rest on GUESS inputs. Founder time to finish and decide: ≈ 1 h.*
 
 ## Decision
 

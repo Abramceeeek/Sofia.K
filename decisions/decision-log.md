@@ -2,6 +2,21 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — Test E postponed until v0 exists
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D86 | **Test E is postponed until v0 exists.** It runs with a working demo after Test B, and before any B2B-specific build work. The B2B-vs-consumer decision note (D40) moves with it; the pass bar (D57) is kept.<br>**Until then, "businesses will pay" is an explicit, untested assumption. It is the main revenue risk:** the model's main money line (business clients, D37, `Path50k`) rests on it, and no business has been asked. The founder briefing says so (§6–7).<br>**The 6.25 h freed (recruiting 1.25, interviews 3.75, Uzbek script check 0.25, decision note 1.0) go to moment cards (2.25) and Test B (4.0).**<br>**The desk research stays as a light task after 9 Nov** (`decisions/after-9-nov.md` #13): companies selling itinerary or guest tools to hotels and agencies, and their prices; what hotels offer guests today; how many Uzbek agencies send clients to London | D36 (Test E first), D40's timing, D82's Test E recruiting slot, D84's Test E interviews | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m25 | **How the 6.25 h are split:**<br>- **1.25 h:** checking Claude's cards for the moments friends send. This takes Test E recruiting's place as #4 in the extra-hours list (26 Sep – 1 Oct).<br>- **Week of 28 Sep, 1.5 h:** a **Test B dry run** (1.0: read one generic and one personalised plan made from made-up answers, as a participant would get them) and moment cards (0.5).<br>- **Week of 12 Oct, 3.5 h:** the landing page and first recruitment posts (3.0) **start a week early**, and moment cards get +0.5.<br>- **Week of 19 Oct, 3.0 h:** the hours the move frees become a **Test B buffer**, for a second recruitment round if fewer than 12 strangers sign up. They're spent only if needed.<br>Phase 3 stays at ≈ 28.25 h | `LOG.md`, `validation/README.md` |
+| m26 | The Area 20 review (Uzbek B2B payments, 0.25 h) moves with Test E, since nothing before it uses the note | `LOG.md` |
+| m27 | The Test E guide, kit and published kit page are marked postponed. Before Test E runs, Claude adds a short demo section at the close of the call guide | `validation/`, https://claude.ai/artifact/LZQEYVFmjWUXXpVMLx7qu8 |
+| m28 | A reminder is set to download both swipe CSVs before the free database expires (Wed 21 Oct; the database expires about 26 Oct). The final copy goes on your own device, or in `validation/raw/` (git-ignored), never in the repo | `LOG.md` |
+
 ## 2026-09-27 — swipe candidates
 
 | # | Decision | Replaces | Why |

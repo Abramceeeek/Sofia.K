@@ -19,7 +19,7 @@
 | # | Card (file) | What to fill or decide | How long |
 |---|---|---|---|
 | 1 ✅ **ready (27 Sep)** | Into the whale hall (`m_nhm_whale_hall`) | **Which galleries you pass through, in order.** The hall with the blue whale model is the Mammals hall, on the ground floor of the North Wing (NHM, checked). On the museum map, "Human Evolution" is in the East Wing and "Images of Nature" is in the central building. Are those your "evolution and picture galleries"? | 5 min, or on your next visit |
-| 2 | Great Court → King's Library (`m_bm_great_court`) | **Redrafted (D78):** Room 4 (Egyptian sculpture, west side) → across the Great Court → **Room 1, the Enlightenment Gallery** (the former King's Library, east side). It's 91 m long, with shelves of books, warm wood and gold (map and Wikipedia checked; the route is from search). The round Reading Room has been closed to the public since 2013. **Confirm Room 1 is the "library" you remember**, and that Room 4 is your Egypt room | 3 min |
+| 2 ✅ **ready (27 Sep)** | Great Court → King's Library (`m_bm_great_court`) | **Room 1 accepted; confirm it on your next visit.** Room 4 confirmed as your Egypt room; times and scores kept. **Redrafted (D78):** Room 4 (Egyptian sculpture, west side) → across the Great Court → **Room 1, the Enlightenment Gallery** (the former King's Library, east side). It's 91 m long, with shelves of books, warm wood and gold (map and Wikipedia checked; the route is from search). The round Reading Room has been closed to the public since 2013. **Confirm Room 1 is the "library" you remember**, and that Room 4 is your Egypt room | 3 min |
 | 3 | River by day (`m_uber_boat_west_day`) | Nothing required. The trip runs 58–65 min, and weekday through boats run 10:00–17:05 (weekends 07:55–22:32), from the timetable. **Cost £19.30 assumes the trip is "All Zones"** (the zone map was UNVERIFIED): check the charge the next time you tap in. Fares change after 31 Oct | 2 min |
 | 4 | River at night (`m_uber_boat_west_night`) | **I ended it at Westminster, not Battersea.** It's the only pier the evening boats reach every day. Weekday evening boats stop at London Eye; weekend boats skip London Eye and run on to Battersea until the 22:32 departure. OK, or do you want a weekend-only Battersea version? The "after dark" window (18:30 on) is set for the Test B weeks, and a sunset rule comes later | 2 min |
 | 5 | Open-kitchen dinner (`m_open_kitchen_steakhouse`) | **Which restaurant.** "Meat Bros" is probably **Meet Bros**, 29–31 Craven Road, Paddington (via search); whether it has an open kitchen is UNVERIFIED. Or the Liverpool Street steakhouse: which one? Also your usual spend per person. Not plannable until filled | 5 min |
@@ -34,18 +34,18 @@
 
 ## Aspiration fields (D77): which cards feed which answer
 
-From `python -m brain.testb fields` (2026-09-26). A field is **flagged** until it has at least 2 cards marked `status: ready`.
+From `python -m brain.testb fields` (updated 2026-09-27). A field is **flagged** until it has at least 2 cards marked `status: ready`.
 
 | Field | Cards | Ready now |
 |---|---|---|
 | Finance & tech | Canary Wharf towers, City towers (listed by id; they share a variant group, so a plan holds one) | 0 → flag |
 | Food | Open-kitchen dinner, outdoor dining near TCR (food tag 2); both need your restaurant and spend first | 0 → flag |
-| History & culture | Whale hall, British Museum (history tag 2) | 0 → flag |
+| History & culture | Whale hall, British Museum (history tag 2) | **2 ✅ no flag** (27 Sep) |
 | Nature | St James's Park, Richmond Park (nature tag 2) | 0 → flag |
 | ~~Art & design~~ | Dropped from the Test B question (D83); parked on `decisions/after-9-nov.md` | — |
 
 - **Art & design is dropped for Test B (D83)** and parked on the after-9-Nov list.
-- The other four fields clear the flag once you mark their cards ready.
+- History & culture is clear (27 Sep). The other three fields clear the flag once you mark their cards ready.
 
 ## What changed in the Brain to hold these (D72)
 

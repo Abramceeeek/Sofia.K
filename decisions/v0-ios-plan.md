@@ -32,7 +32,7 @@
 - **The system has two parts:**
   - **Brain:** a FastAPI backend holding the moment database, the scoring (hierarchical βs, with δ_person kept separate so it can move onto the phone later) and the OR-Tools planner.
   - **Face:** the SwiftUI app. It covers onboarding (text first, voice optional), moment and shot cards, the day plan with a map, and one-tap ratings.
-- **The brain is started.** A working first version was drafted on 2026-09-26 and is in `brain/`, with 28 passing tests. It runs in parallel with Test E, because it does not depend on test results.
+- **The brain is started.** A working first version was drafted on 2026-09-26 and is in `brain/`, with 28 passing tests. It runs in parallel with Phase 3, because it does not depend on test results.
 - **Hours:**
 
   | Version | Founder hours |
@@ -150,7 +150,7 @@
 
 ## Schedule (7.5 h a week, D63)
 
-*The current week-by-week schedule is in `LOG.md`, which supersedes the rows below after D80–D84.*
+*The current week-by-week schedule is in `LOG.md`, which supersedes the rows below after D80–D86. **Test E is postponed until v0 exists (D86)**, so the Test E rows below no longer apply.*
 
 | Week of | Plan |
 |---|---|

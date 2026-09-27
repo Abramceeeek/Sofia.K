@@ -1,6 +1,6 @@
 # Founder briefing: where we are, what's true, and what I'd do
 
-*For Abram. Written 2026-09-26, after decisions D1–D64. Plain English on purpose. Anything marked **(my judgement)** is my opinion, not something a source showed. Everything else comes from the research notes (`research/notes/`, 311 sources) or the model (`economics/unit-economics.xlsx`).*
+*For Abram. Written 2026-09-26, after decisions D1–D64. **Updated 2026-09-27 for D86 (Test E postponed; see the box below).** Plain English on purpose. Anything marked **(my judgement)** is my opinion, not something a source showed. Everything else comes from the research notes (`research/notes/`, 311 sources) or the model (`economics/unit-economics.xlsx`).*
 
 ---
 
@@ -14,9 +14,11 @@
 - **What could be yours** is learning how each moment *actually felt* for each person, from their ratings, and getting visibly better each time. That is only defensible once you have a lot of ratings.
 - **The next month decides it.**
   - **Test B:** does a personal plan beat a good generic one for strangers?
-  - **Test E:** will businesses pay?
+  - ~~Test E: will businesses pay?~~ **Postponed until v0 exists (D86)**, then run with a working demo after Test B, before any business-only build.
 - **Money is the weakest part.** No path to £50k a year fits your 7.5 hours a week without help, and the consumer-only path needs people to spread the app far more than is typical (my judgement).
 - **My verdict:** worth pursuing to the 9 November checkpoint, with a real stop/go there. Not yet worth betting on as a £50k business.
+
+> **Untested assumption (D86): businesses will pay.** The model's main money line is business clients (D37): hotels, tourism bodies, employers and Uzbek agencies buying plans for their guests. **No business has been asked yet.** Test E (5 interviews) is postponed until v0 exists, so it can run with a working demo, after Test B and before any business-only build work. Until then, every business number below is an assumption, and **this is the main revenue risk.** If Test E fails, the consumer path alone would have to carry the money (§6), and it is the weaker path.
 
 ---
 
@@ -58,7 +60,7 @@
 - **"Best moment and ending" became an optional setting, off by default** (D15).
 - **Typing became an equal choice to voice** (D4). Asking people for voice answers loses about half of them.
 - **Telegram bot → native iPhone app** (D50). The app is built on GitHub Actions, and testers get it through TestFlight, Apple's beta-testing app (D64).
-- **Consumer-first → business-first as the main money line in the model** (D37). Hotels, tourism bodies, employers and Uzbek agencies would buy plans for their guests. **Test E decides whether this holds.**
+- **Consumer-first → business-first as the main money line in the model** (D37). Hotels, tourism bodies, employers and Uzbek agencies would buy plans for their guests. **Test E decides whether this holds. It now runs after v0 exists, with a demo (D86), so until then this is an explicit, untested assumption.**
 - **Paid group trips were dropped for year one** (D37). The legal gates, safety duties and moderation hours made them the wrong first step.
 - **Safety cover:** you, within a few hours, plus a named backup helper (D46, D55).
 - **Tests A–C run by hand**, and the checkpoint stays in November (D63). The app is built alongside.
@@ -231,7 +233,7 @@ Your idea had five parts. Here is each one, honestly.
 | Path | What has to be true | Honest picture | Confidence |
 |---|---|---|---|
 | **Consumer subscription** (e.g. £4.99/month) | People pay after a free plan, and spread it | At normal conversion (2.1% of sign-ups pay) a payer is worth ~£24, and ads cost ~£375 per payer. So **ads don't work.** Posting in groups works but costs about 5 of your hours per payer. For £50k from consumers alone, each user must bring in 0.98 new users (standard price) or 0.53 (£9.99 with a paywall) | **Low.** Spread that high is unusual for a planning app (my judgement; no source). In the app, subscriptions likely go through Apple's in-app payments (15% fee for small developers), which is better than Telegram's ~38% cut but still a cut |
-| **Business clients** (£200–500 a month each) | ≥ 2 of 5 interviews show spend and commitment; a price anchor of £200+; account time nearer 1 h than 3 h a month | £50k ≈ **12 clients at £350**. Uzbek agencies can pay a UK company easily (card or bank transfer), with a tax certificate first (D58). But **every number is a guess** until Test E | **Medium-low.** A plausible model with zero customer evidence yet |
+| **Business clients** (£200–500 a month each) | ≥ 2 of 5 interviews show spend and commitment; a price anchor of £200+; account time nearer 1 h than 3 h a month | £50k ≈ **12 clients at £350**. Uzbek agencies can pay a UK company easily (card or bank transfer), with a tax certificate first (D58). But **every number is a guess** until Test E, which now runs after v0 exists (D86) | **Medium-low.** A plausible model with zero customer evidence yet. **An explicit, untested assumption and the main revenue risk (D86)** |
 | **Paid group trips** (a fee per attendee) | Legal gates, insurance, safety set-up | About £15 per trip, but lots of moderation hours. **Dropped for year one** (D37) | Low for now |
 | **Venue partnerships** | Venues give group discounts | £50k would need ~99 venues. A user benefit, not a revenue line | Very low as revenue |
 | Pay per plan, affiliate links, promoted listings | — | **Ruled out:** fees eat pay-per-plan; affiliate links earn about as much as a plan costs; promotions conflict with honest ranking | — |
@@ -245,21 +247,22 @@ Your idea had five parts. Here is each one, honestly.
 
 ## 7. My overall verdict (my judgement throughout)
 
-**Worth pursuing to the 9 November checkpoint: yes.** The tests are cheap (about 24 of your hours), well designed, and they answer the questions that matter. **Worth committing to as a £50k business today: not yet.** That depends on Tests B and E.
+**Worth pursuing to the 9 November checkpoint: yes.** The tests are cheap (about 24 of your hours), well designed, and they answer the questions that matter. **Worth committing to as a £50k business today: not yet.** That depends on Tests B and E, and Test E now comes after v0 (D86).
 
 **The three biggest reasons for:**
 1. **A real gap.** Nobody learns how *moments* feel for each person from their own ratings. The AI itinerary space is crowded, but not at this.
 2. **Cheap to run and to test.** Pennies per user, a clear kill switch in six weeks, and a product that suits your skills (statistics) and experience (you've shipped iOS).
-3. **A plausible business buyer.** Hotels and agencies already spend time helping guests choose what to do, and the Uzbek agencies' payment path is solved. Test E will say whether they'd pay.
+3. **A plausible business buyer.** Hotels and agencies already spend time helping guests choose what to do, and the Uzbek agencies' payment path is solved. Test E will say whether they'd pay. It runs with a working demo once v0 exists (D86); until then, this is assumed.
 
-**The three biggest risks:**
+**The four biggest risks:**
 1. **The personal plan may not beat a good generic plan** for a stranger (Test B). If it doesn't, the premise fails.
 2. **Distribution and hours.** Every consumer costs your time to find, spreading would have to be unusually strong, and no £50k path fits 7.5 hours a week.
-3. **Your employment, and copying.** The Apple policy or IP clauses could restrict you, which you're checking now. And big players can copy the idea cheaply, so the moat is only data you don't have yet.
+3. **Businesses paying is assumed, not tested (D86).** It's the main revenue risk: the model's main money line rests on it, and Test E now waits for v0.
+4. **Your employment, and copying.** The Apple policy or IP clauses could restrict you, which you're checking now. And big players can copy the idea cheaply, so the moat is only data you don't have yet.
 
 **What I would do differently if it were my decision:**
 - **Run Test B first and fastest.** Two plans, blind, to 10 strangers within two weeks, before any more building. It's the single most informative test.
-- **Hold app building (beyond what's drafted) until Test B and Test E report.** The current plan already keeps only about 8.5 of your hours before the checkpoint, which is close to this.
+- **Hold app building (beyond what's drafted) until Test B reports, and any business-only building until Test E reports (D86).** The current plan already keeps only about 8.5 of your hours before the checkpoint, which is close to this.
 - **Pick one first customer type for v0.** Either "Londoners' day off" or "hotel guests" (if Test E is strong); not both. They need different screens, content and selling.
 - **Line up helper hours early** (a contributors agreement for someone), because every money path needs them.
 
@@ -274,8 +277,8 @@ Your idea had five parts. Here is each one, honestly.
 2. **Weeks of 28 Sep – 12 Oct:**
    - confirm the 6 "this or that" factors and the 16 swipe places;
    - do one walk to fill the seed moment's gaps;
-   - recruit and run the **5 business interviews (Test E)**, then the business-vs-consumer decision note;
-   - the designer signs the agreement and gets the brief.
+   - ~~recruit and run the 5 business interviews (Test E), then the business-vs-consumer decision note~~ **postponed until v0 exists (D86)**; those hours go to moment cards and Test B;
+   - ~~the designer signs the agreement and gets the brief~~ (dropped, D81: you design v0 yourself after Test B).
 3. **Weeks of 19 Oct – 9 Nov:** run **Tests A–D by hand**, then **Checkpoint 3 on 9 Nov**: go, change course or stop.
 
 **Meanwhile (Claude, when you say go):**

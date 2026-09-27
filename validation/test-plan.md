@@ -1,12 +1,12 @@
 # Phase 3 test plan
 
-**Order (D36):** Test E (B2B discovery) runs **first**, then the decision note `decisions/b2b-vs-consumer-first.md` (D40), then Tests A–D.
+**Order (D36, changed by D86):** Tests A–D first. **Test E (B2B discovery) is postponed until v0 exists:** it runs with a working demo after Test B, before any B2B-specific build work, then the decision note `decisions/b2b-vs-consumer-first.md` (D40). Until then, "businesses will pay" is an explicit, untested assumption.
 
 **Sample:** 12 completing **strangers** (recruit 14). Record the source of each, since that is the distribution signal. Adults 18+ in or near London. Test B needs ≥10 strangers who finish Test A for the "7 of 10" threshold.
 
 **Friends and family are a separate launch channel (D43).** They are welcome, tagged `friends & family` in the results sheet and reported separately. **Every threshold and K are measured on strangers only.** Rule: anyone Abram knows, or who was sent by someone he knows, counts as friends and family.
 
-**Principle (D63, D65–D68):** Tests A–C run **by hand**. Test A is a chat on **WhatsApp Business with a separate number** (D66), and the Test B/C plans are sent as messages or PDFs. **Test B runs first and fast after Test E:** each person gets their two plans 1–3 days after their Test A chat, so Test B reports about the week of 2 Nov (D68). **The Brain writes the Test B plans** (D65). Abram plays "the system" (Wizard of Oz). Participants are told a person runs the chat, and that AI helps draft summaries and plans (`consent-form.md`). Test D is a web page, and Test E is interviews. **Checkpoint 3 is in the week of 9 Nov.** The iOS app is built in parallel; its first external TestFlight build comes after Checkpoint 3 and carries these lessons (`decisions/v0-ios-plan.md`).
+**Principle (D63, D65–D68):** Tests A–C run **by hand**. Test A is a chat on **WhatsApp Business with a separate number** (D66), and the Test B/C plans are sent as messages or PDFs. **Test B runs first and fast:** each person gets their two plans 1–3 days after their Test A chat, so Test B reports about the week of 2 Nov (D68). **The Brain writes the Test B plans** (D65). Abram plays "the system" (Wizard of Oz). Participants are told a person runs the chat, and that AI helps draft summaries and plans (`consent-form.md`). Test D is a web page, and Test E is interviews. **Checkpoint 3 is in the week of 9 Nov.** The iOS app is built in parallel; its first external TestFlight build comes after Checkpoint 3 and carries these lessons (`decisions/v0-ios-plan.md`).
 
 ## Pass thresholds (D2, D18)
 
@@ -82,7 +82,9 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Two sign-up rates:** sign-ups with a `ref` code (invitees) are counted for K, and the Test D rates are reported both with and without them.
 - **Meta ads: none** (D26).
 
-## Test E — B2B discovery (5 interviews, D34, D36, D49): runs first
+## Test E — B2B discovery (5 interviews, D34, D36, D49): postponed until v0 exists (D86)
+
+- **When:** after Test B, with a working demo, and before any B2B-specific build work (D86). The questions below stay as they are; a short demo section is added at the close before it runs.
 
 - **Who:** 3 London contacts (a hotel, a serviced-apartment operator, a tourism body) and **2 Uzbek outbound agencies** sending clients to London, at London prices (D49). The Uzbek interviews also ask how the agency pays foreign suppliers (Area 20).
 - **How:** past-behaviour questions only, **no pitching** until the close (`discovery-interviews.md`). Optional: 3 venue conversations about off-peak slots and group discounts.

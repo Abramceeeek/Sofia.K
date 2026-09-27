@@ -136,7 +136,8 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 - **Phase 3 (D63, D65–D68):**
   - Tests A–C run by hand. Test A is a chat on **WhatsApp Business with a separate number**; the plans go as messages or PDFs.
   - **The Brain generates the Test B plans** from the results sheet, and Abram checks them.
-  - Test B runs first and fast after Test E, and reports about the week of 2 Nov. Checkpoint 3 is in the week of 9 Nov.
+  - Test B runs first and fast, and reports about the week of 2 Nov. Checkpoint 3 is in the week of 9 Nov.
+  - **Test E is postponed until v0 exists (D86).** It runs with a working demo after Test B, and before any B2B-specific build work. Until then, **"businesses will pay" is an explicit, untested assumption and the main revenue risk.** Its hours went to moment cards and Test B.
   - **Abram designs v0 himself in Claude Design after Test B (D81).** Four custom screens (welcome, moment card, shot card, day plan); everything else is native SwiftUI. **iOS app code waits until Test B reports.** The GitHub Actions pipeline and a placeholder `app/` exist now (D70e), and it builds for the simulator until Abram adds the signing secrets.
   - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.
 - **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`.

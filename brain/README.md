@@ -2,7 +2,7 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
-**Status:** first draft, written 2026-09-26. The 57 tests pass on Python 3.12. Nothing is deployed. **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
+**Status:** first draft, written 2026-09-26. The 58 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
 
 ## Run it
 
@@ -89,7 +89,9 @@ An anonymous, mobile-first page where strangers swipe ~30 candidate London place
 2. When asked for `CALIBRATION_CONTACT`, enter the email for questions. It shows in the privacy note.
 3. Open the service URL (`https://london-places-swipe….onrender.com`), do the swipe yourself once, then share the link.
 4. For results, open `<URL>/results` and paste `CALIBRATION_ADMIN_TOKEN` (the service's Environment tab). Download **all answers (CSV)** into `validation/raw/` (never committed) **before day 30**. The free database expires 30 days after it is created.
-5. After picking the 16, suspend or delete the service and database in Render.
+5. After the final download, suspend or delete the service and database in Render.
+
+**Live since 2026-09-27** (deployed by Abram from branch `claude/vigilant-cannon-my82dj`; Frankfurt; no card). **Final download by Fri 23 Oct**: the database expires about 26 Oct.
 
 The free service sleeps after 15 minutes without visits. The first visitor after that waits about a minute.
 

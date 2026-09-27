@@ -1,5 +1,7 @@
 # Test E kit: call guide and message version (D70)
 
+> **Postponed until v0 exists (D86).** Test E runs with a working demo after Test B, and before any B2B-specific build work. Don't send these yet. Before it runs, Claude adds a short demo section at the close of the call guide.
+
 **What this is:** the Test E questions from `discovery-interviews.md` in two shareable forms:
 - **A. Call guide** (30 min), for all 5 contacts;
 - **B. By message**, for agencies that prefer to answer in writing or by voice note, in English, Russian and Uzbek.
