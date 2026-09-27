@@ -156,6 +156,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | wk 12 Oct | 3 | **Aspiration question:** check its wording and the field map (art & design dropped, D83) | 0.25 | | Pending |
 | wk 12 Oct | 3 | Pick the 16 swipe places from the results, **before the recruitment posts go out**; download the answers (D70c) | 0.5 | | Pending |
 | **by Fri 23 Oct** | 3 | **Download both swipe CSVs again (the final copy): the free database expires about 26 Oct.** Keep them on your device or in `validation/raw/` (git-ignored), never in the repo | inside the 0.5 | | Reminder set for Wed 21 Oct (m28). Check the exact date on the database's page in Render |
+| **by 31 Mar 2027** | 3 | **Delete the downloaded answers CSV**, keeping only counts per place: the swipe page's privacy note promises this | ~0 | | Pending |
 | wk 12 Oct | 2 | Review workbook GUESS inputs and `assumptions.md` (first half) | (1.5) | | **Paused (D52)** |
 | wk 19 Oct – 9 Nov | 3 | Run Tests A–D by hand: Test B plans 1–3 days after each Test A (see the Phase 3 table) | 12.0 | | Pending (D63, D68). Landing page and recruitment (3.0) moved to the week of 12 Oct (D86) |
 | wk 19 Oct | 3 | **Test B buffer:** a second recruitment round if fewer than 12 strangers sign up (D86) | 3.0 | | Only if needed |
