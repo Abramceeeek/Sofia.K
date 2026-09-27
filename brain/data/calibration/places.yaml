@@ -172,20 +172,6 @@ places:
     line: "The palace front, and the guard ceremony when it's on"
     place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
-  - id: oxford_street
-    name: "Shopping on Oxford Street"
-    area: "West End"
-    icon: "🛒"
-    line: "The long high street of big department stores and chain shops"
-    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 0, crowds: 2, walking_effort: 2, active: 0, outdoor_exposure: 1, photo_potential: 0}
-    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
-  - id: piccadilly_leicester
-    name: "Piccadilly Circus and Leicester Square"
-    area: "West End"
-    icon: "🌆"
-    line: "The big screens, the square and the busy streets around them"
-    place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 0, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 1}
-    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
   - id: kew_gardens
     name: "Kew Gardens"
     area: "Kew"
@@ -242,3 +228,18 @@ places:
     line: "Large indoor shopping centre with restaurants and a cinema"
     place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+  # Added by Abram 2026-09-27 (D85), replacing Oxford Street and Piccadilly Circus / Leicester Square
+  - id: go_karting
+    name: "Go-karting"
+    area: "Indoor tracks around London"
+    icon: "🏎️"
+    line: "Racing friends round an indoor kart track"
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 0, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 2}
+  - id: canary_wharf_towers
+    name: "Canary Wharf among the towers"
+    area: "Canary Wharf"
+    icon: "🏙️"
+    line: "Walking between the glass towers around Canada Square"
+    place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}

@@ -1,6 +1,6 @@
 # LOG
 
-These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude fills in the estimates. **Actuals (D82): Claude fills the Actual column when Abram reports hours spent. None reported yet (26 Sep).**
+These are the founder's hours, not Claude's. Budget is **~7.5 hrs/week**. Claude fills in the estimates. **Actuals (D82): Claude fills the Actual column when Abram reports hours spent. First actual logged 27 Sep.**
 
 ## Phase status
 
@@ -137,9 +137,10 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-26 | 4 | Decisions D81–D82 (own design; extra hours on the blockers) | 0.25 | | |
 | 2026-09-27 | 3 | Decisions D83–D84 (art & design dropped; Test E first; Areas 5–7 parked) | 0.25 | | |
 | **26 Sep – 1 Oct** | — | **Extra hours, outside the weekly budget (D82), in your priority order:** | **6.25** | | Report the actual hours as you go |
-| 26 Sep – 1 Oct | 3 | **1. Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, set `status: ready` | 1.5 | | Pending. Moved from the week of 28 Sep |
+| 26 Sep – 1 Oct | 3 | **1. Review the 11 seed cards** (`research/seed-moments/02-batch-1.md`), fill the gaps, set `status: ready` | 1.5 | | **In progress:** card 1 ready (27 Sep). Moved from the week of 28 Sep |
 | 26 Sep – 1 Oct | 3 | **2. Send the remaining ~14 moment names** (~25 in total for Test B) | 1.0 | | Pending. Moved from the week of 5 Oct |
-| 26 Sep – 1 Oct | 3 | **3. Swipe page:** confirm the conjoint attributes, check the 30 candidates, deploy on Render with **no payment method**, try it once, share the link (D70c, D76) | 1.25 | | Pending. Moved from the week of 28 Sep |
+| 26 Sep – 1 Oct | 3 | **3. Swipe page:** confirm the conjoint attributes, check the 30 candidates, deploy on Render with **no payment method**, try it once, share the link (D70c, D76) | 1.25 | | **In progress:** candidates checked and changed (D85), 27 Sep; conjoint attributes still to confirm. Moved from the week of 28 Sep |
+| 2026-09-27 | 3 | Card 1 review (whale hall) and the swipe candidates check | — | **0.17** | Reported by Abram: 10 min (D82) |
 | 26 Sep – 1 Oct | 3 | **4. Test E: recruit 5 B2B contacts** (`validation/test-e-kit.md`) | 1.25 | | Pending. Moved from the week of 28 Sep |
 | 26 Sep – 1 Oct | gate | **5. Apple outside-activities policy and the IP/invention clauses in both contracts (D60)**, plus the membership status with **auto-renew off** (D74) | 1.25 | | Pending. Moved from the weeks of 21 and 28 Sep |
 | wk 28 Sep | 1 | Seed moments 2–5 in the Area 2 schema (D13); walk for seed 1 (D35) | 1.0 | | Pending. Seed 1 received 2026-09-26 |
@@ -170,7 +171,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
 | 2026-09-21 | 7.5 | 13.25 (kick-off, checkpoints, decision rounds D1–D84 and seed batch 1; all spent, estimated): **5.75 over** | |
-| **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, Test E recruiting 1.25, Apple and IP checks 1.25) | |
+| **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, Test E recruiting 1.25, Apple and IP checks 1.25) | **0.17 so far** (27 Sep: card 1 and the swipe candidates) |
 | 2026-09-28 | 7.5 | 2.5 (seed moments 2–5 and the seed 1 walk 1.0, **first 2 Test E interviews 1.5 if contacts reply**, D84). **5.0 h kept as buffer** (D84) | |
 | 2026-10-05 | 7.5 | 1.25 (Areas 18 and 20 0.75, WhatsApp set-up 0.5), plus the first 2 Test E interviews (1.5) if they didn't happen in the week of 28 Sep. Areas 5–7 (D84) and 8–12 reviews deferred to after Checkpoint 3 | |
 | 2026-10-12 | 7.5 | 6.25 (**last 3 Test E interviews and Uzbek check 2.5, decision note 1.0**, validation materials 1.0, moment cards 1.0, pick the 16 places 0.5, aspiration question 0.25) | |

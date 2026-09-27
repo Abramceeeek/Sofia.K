@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — swipe candidates
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D85 | **Swipe candidates:** out go Oxford Street shopping, and Piccadilly Circus and Leicester Square. In come **go-karting** and **Canary Wharf among the towers**. Still 30 places (`brain/data/calibration/places.yaml`; the two new entries have Claude's draft tags) | The 14 added candidates (D70c) | Founder decision at Render step 1 |
+
 ## 2026-09-27 — art & design, the week of 28 Sep, published pages
 
 | # | Decision | Replaces | Why |
