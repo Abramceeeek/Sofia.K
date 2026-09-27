@@ -1,0 +1,40 @@
+# Research candidate #7 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://www.londonmuseum.org.uk/collections/london-stories/london-millennium-bridge/ (search); Wikivoyage South Bank (always open).
+id: m_millennium_bridge_dome
+title: "Across the Millennium Bridge towards St Paul's dome"
+status: draft
+swipe: false
+kind: moment
+direction: "South (Tate Modern) -> north (St Paul's): the dome stays ahead the whole way"
+place:
+  name: "Millennium Bridge"
+  lat: 51.51017          # CHECKED: Wikipedia coordinates (mid-bridge), 2026-09-27
+  lon: -0.09844
+approach:
+  from: "Tate Modern, Bankside (Southwark or Blackfriars station)"
+  start_point: {lat: 51.5078, lon: -0.0994}    # CHECKED: Tate Modern, Wikipedia coordinates
+  path: "From Tate Modern's river side, step onto the south end of the bridge and walk north"
+  duration_min: 3        # GUESS
+  step_free: null
+experience:
+  what_happens: "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step."   # CHECKED (the view)
+  why_it_works: "A framed reveal: from new London to old London in a few minutes."
+  duration_min: [10, 15] # GUESS
+  end_point: {lat: 51.5138, lon: -0.0983}      # CHECKED: St Paul's Cathedral, Wikipedia coordinates
+best_time:
+  time_of_day: ["07:00-23:00"]   # always open; the window keeps it to sensible hours
+  light: "Any time; at dusk the dome is lit (GUESS)"
+  weather: ["any"]
+  company: null
+  crowd_window: "Busiest at weekend afternoons (GUESS)"
+  opening_hours: "Always open, free. Checked 2026-09-27 (Wikivoyage)"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-27"

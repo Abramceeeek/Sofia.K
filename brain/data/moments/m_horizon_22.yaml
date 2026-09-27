@@ -1,0 +1,42 @@
+# Research candidate #14 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://horizon22.co.uk/visit (search). Free, but book online; a few walk-in places. Aspiration: finance & tech (listed by id).
+# Weekdays only for now: the last arrival is about 16:30-17:00 on weekdays but earlier at weekends (Sat ~15:30, Sun ~14:30),
+# and different hours by day wait (after-9-nov #7).
+id: m_horizon_22
+title: "Level 58: the City from Horizon 22"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Horizon 22, 22 Bishopsgate"
+  lat: 51.5145           # CHECKED: Wikipedia coordinates for 22 Bishopsgate, 2026-09-27
+  lon: -0.0829
+approach:
+  from: "Liverpool Street or Bank station"   # *
+  start_point: {lat: 51.5145, lon: -0.0829}
+  path: "Go to the Horizon 22 entrance at 22 Bishopsgate, pass security, and take the lift to level 58"   # CHECKED (level 58)
+  duration_min: 10       # GUESS, including security
+  step_free: null
+experience:
+  what_happens: "A fast lift takes you 254 m up to level 58 and a 300-degree view over the City's towers and far beyond."   # CHECKED
+  why_it_works: "Height and awe from inside the finance district itself."
+  duration_min: [30, 45] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-16:30"]
+  days: [mon, tue, wed, thu, fri]
+  light: "Near sunset on a clear day (GUESS)"
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Mon-Fri 10:00-18:00 (last arrival about 16:30-17:00), Sat 10:00-17:00, Sun 10:00-16:00; closed 25-26 Dec and 1 Jan. Free; book online, a few walk-ins. Checked 2026-09-27 via search"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+cost_gbp: 0              # CHECKED: free
+shot_card: null
+source: research
+last_checked: "2026-09-27"

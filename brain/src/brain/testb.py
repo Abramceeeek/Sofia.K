@@ -119,6 +119,7 @@ class Brief:
     stops: int
     budget_gbp: float | None = None
     day_label: str = "A day out in London"
+    weekday: str | None = None     # "mon".."sun": cards closed that day are left out
     temp_c: float | None = None
     rain_prob: float | None = None
     time_limit_s: float = 2.0
@@ -193,7 +194,7 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
                   fields: frozenset[str] = frozenset()) -> tuple[DayPlan, list[dict], list[dict]]:
     b = pop.b_person(post.mean)
     cond = Conditions(brief.temp_c, brief.rain_prob)
-    usable = [m for m in moments if m.plannable()]
+    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)]
     if brief.rain_prob is not None and brief.rain_prob >= 0.5:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
     by_id = {m.id: m for m in usable}

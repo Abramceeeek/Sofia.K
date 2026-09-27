@@ -22,7 +22,7 @@
 | 2 ✅ **ready (27 Sep)** | Great Court → King's Library (`m_bm_great_court`) | **Room 1 accepted; confirm it on your next visit.** Room 4 confirmed as your Egypt room; times and scores kept. **Redrafted (D78):** Room 4 (Egyptian sculpture, west side) → across the Great Court → **Room 1, the Enlightenment Gallery** (the former King's Library, east side). It's 91 m long, with shelves of books, warm wood and gold (map and Wikipedia checked; the route is from search). The round Reading Room has been closed to the public since 2013. **Confirm Room 1 is the "library" you remember**, and that Room 4 is your Egypt room | 3 min |
 | 3 ✅ **ready (27 Sep)** | River by day (`m_uber_boat_west_day`) | **Kept at £19.30; you check the charge the next time you tap in.** Nothing required. The trip runs 58–65 min, and weekday through boats run 10:00–17:05 (weekends 07:55–22:32), from the timetable. **Cost £19.30 assumes the trip is "All Zones"** (the zone map was UNVERIFIED): check the charge the next time you tap in. Fares change after 31 Oct | 2 min |
 | 4 ✅ **ready (27 Sep)** | River at night (`m_uber_boat_west_night`) | **Westminster kept; no weekend-only Battersea version for v0. £11.40 kept until you check it.** I ended it at Westminster, not Battersea. It's the only pier the evening boats reach every day. Weekday evening boats stop at London Eye; weekend boats skip London Eye and run on to Battersea until the 22:32 departure. OK, or do you want a weekend-only Battersea version? The "after dark" window (18:30 on) is set for the Test B weeks, and a sunset rule comes later | 2 min |
-| 5 | Open-kitchen dinner (`m_open_kitchen_steakhouse`) | **Which restaurant.** "Meat Bros" is probably **Meet Bros**, 29–31 Craven Road, Paddington (via search); whether it has an open kitchen is UNVERIFIED. Or the Liverpool Street steakhouse: which one? Also your usual spend per person. Not plannable until filled | 5 min |
+| 5 ✅ **ready (27 Sep)** | Steak dinner at Meet Bros (`m_open_kitchen_steakhouse`) | **Meet Bros, Paddington; about £60 a head.** The open kitchen is UNVERIFIED, so the card now promises the room's buzz. **Which restaurant.**** "Meat Bros" is probably **Meet Bros**, 29–31 Craven Road, Paddington (via search); whether it has an open kitchen is UNVERIFIED. Or the Liverpool Street steakhouse: which one? Also your usual spend per person. Not plannable until filled | 5 min |
 | 6 | Canary Wharf towers (`m_canary_wharf_towers`) | Your route among the towers. An optional end point is the Crossrail Place Roof Garden (it's on OpenStreetMap; the idea is mine) | 5 min |
 | 7 | City towers (`m_city_towers_walk`) | Your streets from Bank to Liverpool Street. **Cards 6 and 7 share a variant group**, so a plan holds at most one, because they give the same feeling. OK? | 5 min |
 | 8 | Covent Garden and Soho (`a_covent_garden_soho`) | Nothing required: it's an **area vibe** (centre, flexible 45–90 min, no set route). Favourite streets are optional | — |
@@ -38,14 +38,14 @@ From `python -m brain.testb fields` (updated 2026-09-27). A field is **flagged**
 
 | Field | Cards | Ready now |
 |---|---|---|
-| Finance & tech | Canary Wharf towers, City towers (listed by id; they share a variant group, so a plan holds one) | 0 → flag |
-| Food | Open-kitchen dinner, outdoor dining near TCR (food tag 2); both need your restaurant and spend first | 0 → flag |
+| Finance & tech | Canary Wharf towers, City towers (one variant group); research drafts: Bank of England gold bar, Garden at 120, Horizon 22 (all listed by id) | 0 → flag until 2 are ready |
+| Food | Meet Bros dinner (**ready**), outdoor dining near TCR; research drafts: Borough Market, Beigel Bake | 1 → flag until 1 more is ready |
 | History & culture | Whale hall, British Museum (history tag 2) | **2 ✅ no flag** (27 Sep) |
-| Nature | St James's Park, Richmond Park (nature tag 2) | 0 → flag |
+| Nature | St James's Park, Richmond Park; research drafts: Garden at 120, Greenwich Park view, St Dunstan-in-the-East | 0 → flag until 2 are ready |
 | ~~Art & design~~ | Dropped from the Test B question (D83); parked on `decisions/after-9-nov.md` | — |
 
 - **Art & design is dropped for Test B (D83)** and parked on the after-9-Nov list.
-- History & culture is clear (27 Sep). The other three fields clear the flag once you mark their cards ready.
+- History & culture is clear (27 Sep). The other three fields clear the flag once you mark their cards ready (updated 27 Sep with the 12 research drafts, D90).
 
 ## What changed in the Brain to hold these (D72)
 

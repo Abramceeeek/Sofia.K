@@ -2,7 +2,7 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
-**Status:** first draft, written 2026-09-26. The 62 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
+**Status:** first draft, written 2026-09-26. The 63 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
 
 ## Run it
 
@@ -47,7 +47,7 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 ## Test B plans (D65, D68)
 
 **Once per test,** copy the three example files to `validation/raw/testb/` and edit them:
-- `brief.yaml`: the shared start, times, number of stops and budget;
+- `brief.yaml`: the shared start, times, number of stops and budget. An optional `weekday: sat` (mon..sun) leaves out cards closed that day (`best_time.days`, e.g. weekday-only museums);
 - `generic.yaml`: your "top sights" plan, with the same number of stops, and `approach` and `what` for each stop;
 - `intent.yaml` (optional): each person's must-do and mode.
 

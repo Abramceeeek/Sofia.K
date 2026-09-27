@@ -1,0 +1,40 @@
+# Research candidate #12 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://en.wikivoyage.org/wiki/London/City (read): 8AM-7PM or dusk, whichever is earlier; free. Hours may be dated: check.
+# Aspiration: nature (green 2). Dusk is about 16:30 in November (GUESS), so the window ends at 16:15.
+id: m_st_dunstan_garden
+title: "A ruined church garden hidden in the City"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "St Dunstan-in-the-East"
+  lat: 51.50967          # CHECKED: Wikipedia coordinates, 2026-09-27
+  lon: -0.08272
+approach:
+  from: "Monument or Tower Hill station"   # CHECKED (Wikivoyage)
+  start_point: {lat: 51.50967, lon: -0.08272}
+  path: "Walk down St Dunstan's Hill towards the river"   # *
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "Among office blocks, you walk into the ruins of a medieval church that is now a public garden."   # CHECKED
+  why_it_works: "Green, quiet and old, in the middle of the City: a sharp contrast with the streets outside."
+  duration_min: [15, 25] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["08:00-16:15"]
+  light: "Daylight"
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekday lunchtimes bring office workers (GUESS)"
+  opening_hours: "08:00 to 19:00 or dusk, whichever is earlier. Free. Wikivoyage, read 2026-09-27; check"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 2, iconic: 0, local_novel: 2,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-27"

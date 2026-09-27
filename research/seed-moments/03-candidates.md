@@ -1,6 +1,6 @@
 # Candidate moments for Test B: research pass (D89)
 
-*2026-09-27. 34 London candidates beyond the current cards, for Abram to pick which to draft. Written in Claude's own words from open sources: Wikivoyage, official venue pages and travel articles. They were read for ideas only; nothing was scraped or copied, and no forum text is used. Sources are in `research/sources.csv` (area `cand`).*
+*2026-09-27. 34 London candidates beyond the current cards, for Abram to pick which to draft. **Picked and drafted as cards on 27 Sep (D90): 1, 2, 4, 6, 7, 8, 9, 11, 12, 14, 16, 19.** Claude swapped 13 (Parliament Hill) for 9 (evensong), m35. Written in Claude's own words from open sources: Wikivoyage, official venue pages and travel articles. They were read for ideas only; nothing was scraped or copied, and no forum text is used. Sources are in `research/sources.csv` (area `cand`).*
 - **Facts** (hours, prices, booking) are as the source states them on 27 Sep. Wikivoyage hours can be out of date, so those are marked "(Wikivoyage; check)".
 - **Details marked \*** (stations and street names) are from Claude's own knowledge, not from a source read today.
 - **These are ideas, not your experiences.** Pick the ones you've felt, or accept some you haven't. Cards drafted from them get `source: research` and the link.

@@ -10,7 +10,7 @@ import hashlib
 import secrets
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
@@ -208,6 +208,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         b = p.b_person(posterior(user, p).mean)
         cond = Conditions(body.conditions.temp_c, body.conditions.rain_prob) if body.conditions else Conditions()
         ms = {k: m for k, m in moments_by_id(s).items() if m.plannable() and m.status == "ready"}  # checked cards only (D72)
+        if body.date:   # weekday-only places stay out of weekend plans
+            wd = date.fromisoformat(body.date).strftime("%a").lower()
+            ms = {k: m for k, m in ms.items() if m.open_on(wd)}
         if cond.rain_prob is not None and cond.rain_prob >= 0.5:
             ms = {k: m for k, m in ms.items() if m.best_time.weather != ["dry"]}
         cands = [candidate_for(m, float(p.vector(moment_features(m, cond)) @ b)) for m in ms.values()]

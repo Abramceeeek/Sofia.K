@@ -1,0 +1,41 @@
+# Research candidate #4 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://boroughmarket.org.uk/visit-us/ (search). Aspiration: food (food 2). Also a swipe place (borough_market).
+# The window is the Sunday closing time (16:00) so it holds on every open day.
+id: m_borough_market_graze
+title: "Graze your way round Borough Market"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Borough Market"
+  lat: 51.50556          # CHECKED: Wikipedia coordinates, 2026-09-27
+  lon: -0.09083
+approach:
+  from: "London Bridge station"
+  start_point: {lat: 51.50556, lon: -0.09083}
+  path: "Take the Borough High Street exit and walk a minute south into the market"   # *
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You taste your way round the stalls, pick a few things, and eat standing up among the traders."
+  why_it_works: "Food as the experience itself, not a stop between sights."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-16:00"]
+  days: [tue, wed, thu, fri, sat, sun]
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Saturdays are the busiest; late weekday mornings are calmer (GUESS)"
+  opening_hours: "Tue-Fri 10:00-17:00, Sat 09:00-17:00, Sun 10:00-16:00; closed Mondays (open daily in December). Checked 2026-09-27 via search"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,
+          crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: 15             # GUESS: a grazing lunch per person
+shot_card: null
+source: research
+last_checked: "2026-09-27"

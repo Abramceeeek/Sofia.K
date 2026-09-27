@@ -1,0 +1,41 @@
+# Research candidate #19 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Sources: https://www.better.org.uk/leisure-centre/london/hackney/london-fields-lido (search);
+# prices page (read 2026-09-27): adult pay-as-you-go £6.40, peak and off-peak. Sessions bookable 7 days ahead (search).
+# Hours 06:30-21:00 daily are from a third-party page: check the Better timetable. Bring swim kit.
+id: m_london_fields_lido
+title: "A heated outdoor swim at London Fields Lido"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "London Fields Lido, London Fields Westside, E8 3EU"
+  lat: 51.54306          # CHECKED: E8 3EU postcode centroid (postcodes.io, 2026-09-27)
+  lon: -0.06249
+approach:
+  from: "London Fields station"   # *
+  start_point: {lat: 51.54306, lon: -0.06249}
+  path: "Walk into London Fields park to the lido on its west side"   # CHECKED (Westside address)
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED (search): no steps; ramp, pool hoist
+experience:
+  what_happens: "You swim lengths in a 50 m pool heated to 25 C under an open sky: warm water, cold air, and floodlights after dark."   # CHECKED
+  why_it_works: "The rhythm of lengths takes over your head, and warm water in cold air feels like a small adventure."
+  duration_min: [45, 75] # GUESS, including changing
+  end_point: null
+best_time:
+  time_of_day: ["06:30-20:00"]
+  light: "After dark under the floodlights, or a crisp morning (GUESS)"
+  weather: ["any"]
+  company: null
+  crowd_window: "Off-peak: weekdays 09:00-16:00 (CHECKED: Better's peak times)"
+  opening_hours: "Daily 06:30-21:00 (third-party page; check the Better timetable). Book sessions up to 7 days ahead. Checked 2026-09-27"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2,
+          crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 2, photo_potential: 1}
+  moment: {contrast_reveal: 1, absorption: 2, awe: 0, social_pull: 1}
+cost_gbp: 6.40           # CHECKED: Better prices page, adult pay-as-you-go
+shot_card: null
+source: research
+last_checked: "2026-09-27"

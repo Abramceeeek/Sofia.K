@@ -1,0 +1,41 @@
+# Research candidate #8 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://southbank.london/guides/south-banks-best-sunset-views (search).
+# Sunset times are GUESSES: about 18:00 before the clocks go back on 25 Oct, about 16:30 after. The planner has no
+# sunset rule yet (after-9-nov #6), so the window spans both.
+id: m_waterloo_bridge_sunset
+title: "Waterloo Bridge at sunset, both ways"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Waterloo Bridge"
+  lat: 51.50861          # CHECKED: Wikipedia coordinates (mid-bridge), 2026-09-27
+  lon: -0.11694
+approach:
+  from: "Waterloo station"   # *
+  start_point: {lat: 51.50861, lon: -0.11694}
+  path: "Walk to the south end of the bridge by the Southbank Centre and up to the middle"   # *
+  duration_min: 8        # GUESS
+  step_free: null
+experience:
+  what_happens: "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light."   # CHECKED (the views)
+  why_it_works: "Two of London's great views a road's width apart, free, in the best season for sunsets."
+  duration_min: [15, 30] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["15:45-18:30"]
+  light: "Sunset; late autumn and winter skies are the best (CHECKED)"
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Always open, free"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-27"

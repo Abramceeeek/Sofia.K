@@ -1,0 +1,40 @@
+# Research candidate #11 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Sources: https://www.royalparks.org.uk/visit/parks/greenwich-park/monuments ; https://www.rmg.co.uk/attractions/greenwich-park (search).
+# Aspiration: nature (green 2). A natural start before the day river trip (card 3, m_uber_boat_west_day, from Greenwich Pier).
+id: m_greenwich_wolfe_view
+title: "The whole of London from General Wolfe's hill, Greenwich Park"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "General Wolfe statue, Greenwich Park (by the Royal Observatory)"
+  lat: 51.4773           # CHECKED: Wikipedia coordinates for Greenwich Park; the statue is within ~150 m (GUESS)
+  lon: 0.0
+approach:
+  from: "Cutty Sark DLR or Greenwich Pier"
+  start_point: {lat: 51.48406, lon: -0.00941}  # CHECKED: Greenwich Pier (as card 3)
+  path: "Walk into the park and climb the hill to the statue beside the Royal Observatory"   # CHECKED (statue beside the Observatory)
+  duration_min: 15       # GUESS: a steep climb
+  step_free: null
+experience:
+  what_happens: "You climb through the park to the statue, and all of London opens up across the river: Canary Wharf, the Shard and St Paul's."   # CHECKED (the view)
+  why_it_works: "Green space, history and the whole skyline together, and a natural start before the river trip."
+  duration_min: [20, 40] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["09:00-17:00"]   # inside park hours (opens 06:00; closes as early as 18:00 in winter)
+  light: "A clear day; late-afternoon light (GUESS)"
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Park opens 06:00 all year; closes as early as 18:00 in winter. Free. Checked 2026-09-27 via search"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 2, social_pull: 2}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-27"

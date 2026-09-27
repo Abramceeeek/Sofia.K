@@ -2,6 +2,22 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-27 — 12 research cards drafted; card 5
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D90 | **Draft 12 of the researched candidates as cards:** 1, 2, 4, 6, 7, 8, 9, 11, 12, 14, 16 and 19. They are drafts (`source: research`) until Abram checks them. **Card 5 is Meet Bros, Paddington, at about £60 a head**, and is ready | — | Founder decision; he invited changes to the list |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m34 | Card 5 is retitled "Steak dinner in a buzzing room at Meet Bros" and no longer promises chef-watching, because the open kitchen is unconfirmed. A Test B plan shouldn't promise what may not be there | `m_open_kitchen_steakhouse.yaml` |
+| m35 | **Swapped 13 (Parliament Hill) for 9 (evensong at St Paul's).** It's dark by about 16:30 in the Test B weeks, and few cards work after dark. Evensong is free, adds awe and absorption, and pairs with the Millennium Bridge (7). Parliament Hill would have been a third skyline view, far from the other clusters; 11 and 14 already give skylines | `research/seed-moments/03-candidates.md` |
+| m36 | **Built the day-of-week part of after-9-nov #7**, because weekday-only places (the Bank of England Museum, Horizon 22) would otherwise land in weekend plans. A card can list `best_time.days`, a Test B brief can set `weekday`, and the API uses the plan's date. Different hours on different days stay parked | `brain/src/brain/moments.py`, `testb.py`, `api.py` |
+| m37 | Coordinates come from Wikipedia's geodata and postcodes.io postcode centroids, because OpenStreetMap's servers refused requests from here. Each card says which one it used | the 13 cards |
+| m38 | The three finance & tech picks (1, 2, 14) are listed by id in `aspiration.yaml`. Food and nature picks map through their tags as before | `brain/data/aspiration.yaml` |
+
 ## 2026-09-27 — value in pounds; moment candidates; card 4
 
 | # | Decision | Replaces | Why |

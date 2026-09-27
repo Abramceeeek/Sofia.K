@@ -1,0 +1,39 @@
+# Research candidate #16 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://en.wikivoyage.org/wiki/London/East_End (read): 159 Brick Lane, open 24 hours. Aspiration: food (food 2).
+id: m_beigel_bake_late
+title: "A late bagel on Brick Lane"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Beigel Bake, 159 Brick Lane"
+  lat: 51.52447          # CHECKED: Wikipedia coordinates, 2026-09-27
+  lon: -0.07181
+approach:
+  from: "Liverpool Street or Aldgate East station"   # CHECKED (Wikivoyage)
+  start_point: {lat: 51.52447, lon: -0.07181}
+  path: "Walk up Brick Lane to number 159"
+  duration_min: 10       # GUESS
+  step_free: null
+experience:
+  what_happens: "You queue at a counter that never closes and eat a fresh bagel on the pavement."
+  why_it_works: "A cheap, local food ritual that suits the end of a day or a late night."
+  duration_min: [15, 30] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["08:00-23:30"]   # open 24 hours; the window keeps it inside a day plan
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Queues late on weekend nights (GUESS)"
+  opening_hours: "Open 24 hours (Wikivoyage, read 2026-09-27; check)"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 2}
+cost_gbp: 6              # GUESS
+shot_card: null
+source: research
+last_checked: "2026-09-27"

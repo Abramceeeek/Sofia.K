@@ -17,6 +17,7 @@ PLACE_TAGS = [
 MOMENT_TAGS = ["contrast_reveal", "absorption", "awe", "social_pull"]
 
 _WINDOW = re.compile(r"^\s*(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\s*$")
+WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
 
 class Point(BaseModel):
@@ -56,6 +57,9 @@ class BestTime(BaseModel):
     company: str | None = None
     crowd_window: str | None = None
     opening_hours: str | None = None
+    # Days the card can be planned ("mon".."sun"); empty means every day. Keeps weekday-only
+    # museums out of weekend plans. Different hours on different days still wait (after-9-nov #7).
+    days: list[str] = Field(default_factory=list)
 
 
 class Features(BaseModel):
@@ -153,7 +157,15 @@ class Moment(BaseModel):
             self.windows()
         except ValueError:
             missing.append("best_time.time_of_day (format)")
+        if any(d.lower() not in WEEKDAYS for d in self.best_time.days):
+            missing.append("best_time.days (format)")
         return missing
+
+    def open_on(self, weekday: str | None) -> bool:
+        """Can the card be planned on this day ("mon".."sun")? No listed days means every day."""
+        if weekday is None or not self.best_time.days:
+            return True
+        return weekday.lower()[:3] in {d.lower() for d in self.best_time.days}
 
     def plannable(self) -> bool:
         return not self.missing_for_planning()

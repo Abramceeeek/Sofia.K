@@ -1,42 +1,43 @@
-# Seed moment, batch 1, #5 (Abram's voice note, 2026-09-26). DRAFT card by Claude. Key as in m_nhm_whale_hall.yaml.
-# GAP: which restaurant. You mentioned "Meat Bros" and a Liverpool Street steakhouse.
-# - A search finds Meet Bros, a steakhouse at 29-31 Craven Road, Paddington W2 3BX (meetbros.co.uk, via search
-#   2026-09-26). Whether it has an open kitchen is UNVERIFIED.
-# - The Liverpool Street steakhouse: name to confirm.
-# The planner skips this card until the place, start point and cost are filled.
-# For later (after 9 Nov, D75): process watching 2; crowd energy (buzzing).
+# Seed moment, batch 1, #5 (Abram's voice note, 2026-09-26). Key as in m_nhm_whale_hall.yaml.
+# REVIEWED by Abram 2026-09-27: the restaurant is Meet Bros, Paddington; about £60 a head; times and scores
+# kept; marked ready. He isn't sure it has an open kitchen, but the atmosphere was great, so the card now
+# promises the room's buzz, not chef-watching (retitled by Claude, m34). Open kitchen: UNVERIFIED.
+# CHECKED (search, 2026-09-27): 29-31 Craven Road, W2 3BX; Mon-Thu 12:00-23:00, Fri 15:00-23:00,
+# Sat-Sun 12:00-23:00; a stone-walled, medieval-style room; Halal-certified and alcohol-free (a fact about
+# the restaurant only, never used to infer anything about a person).
+# For later (after 9 Nov, D75): process watching; crowd energy (buzzing).
 id: m_open_kitchen_steakhouse
-title: "Dinner by the open kitchen"
-status: draft
+title: "Steak dinner in a buzzing room at Meet Bros"
+status: ready
 swipe: false
 kind: moment
 place:
-  name: "Open-kitchen steakhouse (GAP: which restaurant)"
-  lat: null
-  lon: null
+  name: "Meet Bros Steakhouse, 29-31 Craven Road, Paddington W2 3BX"
+  lat: 51.51348          # CHECKED: W2 3BX postcode centroid (postcodes.io, 2026-09-27)
+  lon: -0.17903
 approach:
-  from: null
-  start_point: null      # GAP: filled from the restaurant's address
-  path: null
-  duration_min: 0
+  from: "Paddington or Lancaster Gate station"   # Claude's knowledge
+  start_point: {lat: 51.51348, lon: -0.17903}
+  path: "A short walk to Craven Road"             # GUESS
+  duration_min: 5        # GUESS
   step_free: null
 experience:
-  what_happens: "A steak dinner at a table where you can watch the chefs at work in the open kitchen, with the buzz of a full room around you."   # FOUNDER
-  why_it_works: "Watching the chefs, and the buzz of people."   # FOUNDER
-  duration_min: [75, 105]   # GUESS
+  what_happens: "A steak dinner in a busy, stone-walled room, with the buzz of a full restaurant around you."   # FOUNDER + CHECKED (the room)
+  why_it_works: "The atmosphere and the buzz of people."   # FOUNDER
+  duration_min: [75, 105]   # GUESS, accepted by Abram 2026-09-27
   end_point: null
 best_time:
-  time_of_day: ["18:00-22:30"]   # GUESS: dinner; replace with the restaurant's hours
+  time_of_day: ["18:00-22:30"]   # accepted by Abram; inside the opening hours every day
   light: null
   weather: ["any"]
   company: null
   crowd_window: "Busy is the point here: a full room"   # FOUNDER (the buzz)
-  opening_hours: null    # GAP: from the restaurant
+  opening_hours: "Mon-Thu 12:00-23:00, Fri 15:00-23:00, Sat-Sun 12:00-23:00. Checked 2026-09-27 via search (meetbros.co.uk)"
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}
   moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
-cost_gbp: null           # GAP: your usual spend per person there
+cost_gbp: 60             # FOUNDER: his usual spend per person
 shot_card: null
 source: founder
-last_checked: "2026-09-26"
+last_checked: "2026-09-27"

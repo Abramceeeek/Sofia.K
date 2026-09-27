@@ -1,0 +1,40 @@
+# Research candidate #2 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://fen-court.com/garden-at-120/ (search). Aspiration: finance & tech (listed by id) and nature (green 2).
+# The window is the weekend closing time (17:00) so it holds every day; weekdays in winter run to 18:30.
+id: m_garden_at_120
+title: "A rooftop garden among the City towers"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "The Garden at 120, Fen Court, 120 Fenchurch Street"
+  lat: 51.5121           # CHECKED: Wikipedia coordinates for Fen Court, 2026-09-27
+  lon: -0.0815
+approach:
+  from: "Bank, Monument or Fenchurch Street station"   # *
+  start_point: {lat: 51.5121, lon: -0.0815}
+  path: "Enter from Fenchurch Street or Fenchurch Avenue through Hogarth Court, pass a short security check, and take the lift to floor 15"   # CHECKED
+  duration_min: 5        # GUESS, including security
+  step_free: null
+experience:
+  what_happens: "You step out of a lift 15 floors up into a garden of wisteria and fruit trees, with a long water channel and the City's towers all around you."   # CHECKED (the garden)
+  why_it_works: "A quiet garden where you expect glass and steel: calm, and a close view of the finance district."
+  duration_min: [20, 40] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]
+  light: "Daylight; the towers light up at dusk (GUESS)"
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Winter (1 Oct-31 Mar): daily 10:00-18:30, weekends to 17:00; summer to 21:00; closed bank holidays. Free, no booking (groups of 12+ book). No alcohol. Checked 2026-09-27 via search"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 2,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0              # CHECKED: free
+shot_card: null
+source: research
+last_checked: "2026-09-27"

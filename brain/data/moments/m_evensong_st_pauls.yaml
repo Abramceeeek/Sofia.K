@@ -1,0 +1,42 @@
+# Research candidate #9 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Source: https://www.stpauls.co.uk/whats-on/choral-evensong-sunday (search). Swapped in by Claude for #13 Parliament Hill (m35).
+# Offered as music and architecture. The app never uses it to infer anyone's religion (a protected characteristic).
+# Sunday's service is at 15:00; the card covers Mon-Sat 17:00 only (different hours by day wait: after-9-nov #7).
+id: m_evensong_st_pauls
+title: "Choral evensong under St Paul's dome"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "St Paul's Cathedral"
+  lat: 51.5138           # CHECKED: Wikipedia coordinates, 2026-09-27
+  lon: -0.0983
+approach:
+  from: "St Paul's station"
+  start_point: {lat: 51.5138, lon: -0.0983}
+  path: "Walk round to the cathedral's west front and go in about 15 minutes before the service"   # * + CHECKED (arrive early)
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You sit under the dome for about 45 minutes while the choir sings evensong, as the light fades outside."   # CHECKED (length)
+  why_it_works: "Awe and stillness in one of London's great rooms, with live choral music, for free."
+  duration_min: [45, 55]
+  end_point: null
+best_time:
+  time_of_day: ["16:45-17:50"]
+  days: [mon, tue, wed, thu, fri, sat]
+  light: "After dark in November (GUESS)"
+  weather: ["any"]
+  company: null
+  crowd_window: "Arrive about 15 minutes early for a good seat (CHECKED)"
+  opening_hours: "Choral evensong Mon-Sat 17:00, Sun 15:00; about 45 min; free. Checked 2026-09-27 via search"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 1, absorption: 2, awe: 2, social_pull: 1}
+cost_gbp: 0              # CHECKED: free
+shot_card: null
+source: research
+last_checked: "2026-09-27"

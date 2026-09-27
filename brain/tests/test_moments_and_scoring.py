@@ -112,3 +112,13 @@ def test_cost_weight_reads_as_stronger_or_weaker_not_as_a_sign(pop):
     assert w["cost_per_10gbp"].direction == "stronger"
     assert w["cost_per_10gbp"].weight < pop.spec("cost_per_10gbp").mean
     assert any("matter more to them than to most people" in l for l in readback_lines(pop, post))
+
+
+def test_days_keep_weekday_only_places_out_of_weekend_plans(test_moments):
+    m = test_moments[2].model_copy(deep=True)
+    assert m.open_on("sat") and m.open_on(None)          # no days listed: every day
+    m.best_time.days = ["mon", "tue", "wed", "thu", "fri"]
+    assert m.open_on("Mon") and not m.open_on("sat") and m.open_on(None)
+    assert m.plannable()
+    m.best_time.days = ["weekdays"]
+    assert "best_time.days (format)" in m.missing_for_planning()

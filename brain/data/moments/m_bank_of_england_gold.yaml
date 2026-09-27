@@ -1,0 +1,41 @@
+# Research candidate #1 (research/seed-moments/03-candidates.md, D89). DRAFT card by Claude, 2026-09-27.
+# Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Sources: https://www.ianvisits.co.uk/venues/bank-of-england-museum/ ; https://en.wikivoyage.org/wiki/London/City
+# Aspiration: finance & tech (listed by id in data/aspiration.yaml).
+id: m_bank_of_england_gold
+title: "Lift a real gold bar at the Bank of England Museum"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Bank of England Museum"
+  lat: 51.51406          # CHECKED: Wikipedia coordinates, 2026-09-27
+  lon: -0.08806
+approach:
+  from: "Bank station"
+  start_point: {lat: 51.51406, lon: -0.08806}
+  path: "Walk round the Bank of England to the museum entrance on Bartholomew Lane, on the building's east side"   # * (check)
+  duration_min: 4        # GUESS
+  step_free: null
+experience:
+  what_happens: "You walk through three centuries of money and banking, then put your arm through a secure hatch and lift a real gold bar of about 13 kg."   # CHECKED (the gold bar)
+  why_it_works: "Finance made physical: the weight of the bar in your hand is the surprise people talk about afterwards."
+  duration_min: [40, 60] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]
+  days: [mon, tue, wed, thu, fri]
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekday mornings are likely quieter (GUESS)"
+  opening_hours: "Mon-Fri 10:00-17:00, to 20:00 on the third Thursday of the month; closed weekends and bank holidays. Free, no booking. Checked 2026-09-27 via search"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 2,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 2}
+cost_gbp: 0              # CHECKED: free
+shot_card: null
+source: research
+last_checked: "2026-09-27"

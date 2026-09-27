@@ -32,9 +32,13 @@ def test_fields_map_to_existing_tags_or_listed_moments():
 
 
 def test_coverage_flags_fields_with_fewer_than_two_ready_moments(test_moments):
-    rows = {r["field"]: r for r in AMAP.coverage(load_moments(DATA / "moments"))}
+    ms = load_moments(DATA / "moments")
+    rows = {r["field"]: r for r in AMAP.coverage(ms)}
     assert "art_design" not in rows                              # dropped from Test B (D83)
-    assert rows["finance_tech"]["drafts"] == 2 and rows["finance_tech"]["flag"]   # drafts don't count as ready
+    fin = [m for m in ms if "finance_tech" in AMAP.fields_of(m)]
+    assert rows["finance_tech"]["drafts"] == sum(m.status != "ready" for m in fin)   # drafts don't count as ready
+    assert rows["finance_tech"]["ready"] == sum(m.status == "ready" for m in fin)
+    assert rows["finance_tech"]["flag"] == (rows["finance_tech"]["ready"] < 2)
     # checked test moments count as ready
     ready = {r["field"]: r for r in AMAP.coverage(test_moments)}
     assert all(r["ready"] + r["drafts"] >= 0 for r in ready.values())
