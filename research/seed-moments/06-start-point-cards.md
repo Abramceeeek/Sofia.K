@@ -19,7 +19,7 @@
 
 **The trade-off:** London Bridge has the Jubilee line and Borough Market, but little else nearby that is open at weekends.
 
-`brain/data/testb/brief.example.yaml` now starts at Charing Cross. **Confirm it or pick another start (about 5 min).**
+`brain/data/testb/brief.example.yaml` starts at Charing Cross. **Confirmed by Abram, 28 Sep (D105).**
 
 ## Nine new cards: one line each, flag any you disagree with
 
@@ -31,11 +31,11 @@
 | 2 | `m_national_portrait_gallery` | **Centuries of British faces:** free, 10:30–18:00 (Fri–Sat to 21:00) |
 | 3 | `m_st_martin_crypt_lunch` | **Lunch in the brick-vaulted crypt of St Martin-in-the-Fields:** tombstones in the floor, a daily menu; about £12 (GUESS); **only ever the lunch stop** |
 | 4 | `m_soane_museum` | **Sir John Soane's house of curiosities:** free, Wed–Sun 10:00–17:00; kept as it was in 1837; 10 min queue allowed |
-| 5 | `m_courtauld_gallery` | **The Courtauld: Van Gogh's bandaged ear and Manet's barmaid:** £12 at weekends (£10 weekdays); open days UNVERIFIED (assumed daily) |
+| 5 | `m_courtauld_gallery` | **The Courtauld: Van Gogh's bandaged ear and Manet's barmaid:** £12 at weekends (£10 weekdays); **open daily, 10:00–18:00 (official site, confirmed 28 Sep, D105)** |
 | 6 | `m_rfh_foyers_rest` | **A rest in the Royal Festival Hall's free foyers:** Tue–Sun; the first "quiet and rest" card (a gap from the type-mix check) |
 | 7 | `m_park_break_embankment` | **A park break in Victoria Embankment Gardens:** joins the park-break group; closes 16:30 after the clocks change |
 | 8 | `m_chinatown_dim_sum` | **Dim sum lunch on Gerrard Street:** about £20 (GUESS), 10 min queue; **only ever the lunch stop** |
-| 9 | `m_transport_museum` | **Climb aboard old buses and Tube trains at the London Transport Museum:** £18.50 (an annual pass), timed ticket booked ahead |
+| 9 | `m_transport_museum` | **Climb aboard old buses and Tube trains at the London Transport Museum:** £18.50 (an annual pass), timed ticket booked ahead. **Out of Test B, kept for the app (D105)** |
 
 ## Checked with the two made-up people (real day, from Charing Cross)
 

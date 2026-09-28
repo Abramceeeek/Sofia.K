@@ -34,6 +34,7 @@ best_time:
   time_of_day: ["15:30-20:30"]   # FRIEND: sunset or evening
   light: "Sunset and evening"    # FRIEND
   best_window: ["16:00-20:30"]   # D100: when the light line is shown
+  best_around_sunset: [-30, 240]   # D105: minutes from sunset, when the brief gives it
   weather: ["any"]
   company: null
   crowd_window: null

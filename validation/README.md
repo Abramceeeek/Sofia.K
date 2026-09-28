@@ -27,10 +27,10 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 
 ## Order (D36, changed by D86)
 
-1. **Tests A–D**, by hand. **Recruitment starts in the week of 12 Oct**, a week earlier than before (D86), and the Test A chats run from the first sign-ups to 26 Oct.
+1. **Tests A–D**, by hand. **Recruitment starts now (D105, pulled forward from the week of 12 Oct)**, once the blockers in `recruit-now.md` are done. Test A chats run from the first sign-ups to about mid-October.
 2. **Test E after v0 exists (D86):** 5 B2B discovery interviews (3 London, 2 Uzbek) **with a working demo**, after Test B and before any B2B-specific build work. Then the decision note, B2B-first vs consumer-first (`decisions/b2b-vs-consumer-first.md`, D40). **Until then, "businesses will pay" is an explicit, untested assumption: the main revenue risk.**
 
-Detail for step 1: **Test B goes first and fast (D68):** each person's two plans are sent 1–3 days after their Test A chat, written by the Brain from the results sheet (D65). Test B reports about the week of 2 Nov, and that decides whether the iOS app code starts. **Checkpoint 3 in the week of 9 Nov.**
+Detail for step 1: **Test B goes first and fast (D68):** each person's two plans are sent 1–3 days after their Test A chat, written by the Brain from the results sheet (D65). Test B reports about 23 Oct *(proposed, D105; was the week of 2 Nov)*, and that decides whether the iOS app code starts. **Checkpoint 3 in the week of 2 Nov, if confirmed (was 9 Nov).**
 
 ## Flow per participant (12 strangers target, 14 recruited)
 
@@ -47,10 +47,10 @@ Detail for step 1: **Test B goes first and fast (D68):** each person's two plans
 ## Before the first participant (checklist)
 
 - [x] Abram confirms the conjoint attributes (`conjoint/README.md`): **confirmed 28 Sep, with heat replaced by the 3-level weather factor (D95).**
-- [ ] The 16 swipe items (`interview-script.md` §3) come from the swipe page in the week of 12 Oct.
+- [ ] The 16 swipe items (`interview-script.md` §3) come from the swipe page **now** (D105): paste the results table, or lock the provisional 16 (`recruit-now.md` §2).
 - [ ] Seed moment 1 is in (`research/seed-moments/01-tube-to-museum.md`). **Fill its gaps on one walk** (exit, route, best time, shot position), take a photo from the spot, and complete `shot-card-example.md` (≈ 0.5 h).
 - [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data.
-- [ ] **WhatsApp Business on a separate number (D66)**, on a personal phone, never the work one (CLAUDE.md). **The number is ready (2026-09-26); you'll share it when it's needed.** Still to do:
+- [ ] **WhatsApp Business on a separate number (D66)**; the account exists, so confirm the checklist in `recruit-now.md` §1, on a personal phone, never the work one (CLAUDE.md). **The number is ready (2026-09-26); you'll share it when it's needed.** Still to do:
   - Set a greeting message and an away message: "I reply within a few hours; in an emergency call 999".
   - Save the script's prompts as quick replies, and use labels for each person's stage (A done, plans sent, day done). WhatsApp lists all four as Business app features.
   - Check the chat-backup setting, so voice notes you delete after transcribing aren't kept in a backup.

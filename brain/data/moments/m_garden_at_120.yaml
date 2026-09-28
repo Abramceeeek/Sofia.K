@@ -32,6 +32,7 @@ best_time:
   time_of_day: ["10:00-17:00"]
   light: "At dusk, when the towers light up (GUESS)"
   best_window: ["16:00-17:00"]   # D100: when the light line is shown
+  best_around_sunset: [-25, 35]   # D105: minutes from sunset, when the brief gives it
   weather: ["any"]
   company: null
   crowd_window: null

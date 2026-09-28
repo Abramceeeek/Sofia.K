@@ -4,7 +4,8 @@
 # * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
 # Source: courtauld.ac.uk (search results from the official site, 2026-09-28): open 10:00-18:00, last entry 17:15;
 # weekday tickets from £10, weekend from £12; under-18s free; in Somerset House; the collection includes Van Gogh's
-# Self-Portrait with Bandaged Ear (1889) and Manet's A Bar at the Folies-Bergère. Open days: UNVERIFIED (assumed daily).
+# Self-Portrait with Bandaged Ear (1889) and Manet's A Bar at the Folies-Bergère.
+# Open days CHECKED 2026-09-28 (courtauld.ac.uk/gallery, read): "Open daily, 10:00 - 18:00" (D105).
 id: m_courtauld_gallery
 title: "Van Gogh's bandaged ear and Manet's barmaid at the Courtauld"
 plan_title: "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid"   # D102: name the place
@@ -32,7 +33,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: null
-  opening_hours: "10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site via search, 2026-09-28"
+  opening_hours: "Open daily 10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site, 2026-09-28"
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
           crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}

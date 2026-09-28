@@ -32,6 +32,7 @@ best_time:
   time_of_day: ["07:00-23:00"]   # always open; the window keeps it to sensible hours
   light: "At dusk, when the dome is lit (GUESS)"
   best_window: ["16:15-18:00"]   # D100: when the light line is shown
+  best_around_sunset: [-15, 90]   # D105: minutes from sunset, when the brief gives it
   weather: ["any"]
   company: null
   crowd_window: "Busiest at weekend afternoons (GUESS)"

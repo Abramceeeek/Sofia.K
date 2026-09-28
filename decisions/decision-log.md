@@ -2,6 +2,23 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — start point confirmed; recruiting pulled forward
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D105 | **The start point is Charing Cross (Trafalgar Square exit).**<br>**Cards:**<br>- the Courtauld is in once its open days are confirmed (done: "Open daily, 10:00–18:00", official site);<br>- the London Transport Museum is out of Test B (booking plus £18.50) but stays in the app.<br>**The week-of-12-Oct tasks are pulled forward to now:**<br>- the swipe 16;<br>- the aspiration question and materials check;<br>- the sign-up form, landing page and analytics;<br>- the recruitment posts;<br>- the real generic plan, before the first Test A chat.<br>**Proposed, for Abram to confirm:** Test B reports around 23 Oct (was ~2 Nov) and **Checkpoint 3 in the week of 2 Nov (was 9 Nov)** | D86's week-of-12-Oct schedule; D104's recommendation | Founder decisions. Blockers and the walkthrough: `validation/recruit-now.md` |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m87 | **`in_test_b: false`** keeps a card out of Test B plans; the run lists what it left out | `moments.py`, `testb.py`, the Transport Museum card |
+| m88 | **Sunset-aware "Best" lines:**<br>- the brief can give `sunset`, and cards (and generic stops) can give `best_around_sunset` (minutes from sunset);<br>- 12 sunset or dusk cards now do;<br>- plans used before 25 Oct (sunset around 18:00) no longer say "Best: Sunset" at 16:30, because moving recruiting earlier puts some plan days before the clocks change;<br>- sunset times are from sunrise-sunset.org | `moments.py`, `testb.py`, 12 cards, the brief |
+| m89 | **The example brief is a Saturday** (`weekday: sat`, "A Saturday out in London"), so weekday-only City cards stay out, and it carries the sunset time. The generic plan's last stop is worded to hold before and after 25 Oct | `brain/data/testb/*.example.yaml` |
+| m90 | **Provisional swipe 16 = the current list** in `interview-script.md` §3, if the results still show low-n places; lock the 16 before the first chat | `validation/recruit-now.md` |
+| m91 | **The ICO fee self-assessment is listed as a blocker before collecting data,** as the validation checklist already said. `CLAUDE.md`'s gate says "before the first paid client". Paying is Abram's decision | `validation/recruit-now.md` |
+| m92 | **Actual hours:** 10 min for the start point and card flags, logged 28 Sep (D82) | `LOG.md` |
+
 ## 2026-09-28 — dry runs finished; overlap check; the start point
 
 | # | Decision | Replaces | Why |

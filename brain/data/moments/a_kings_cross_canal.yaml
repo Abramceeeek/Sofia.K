@@ -27,6 +27,7 @@ best_time:
   time_of_day: ["10:00-20:00"]   # GUESS; the fountains run in daylight
   light: "Dusk, when Coal Drops Yard is lit (GUESS)"
   best_window: ["16:15-20:00"]   # D100: when the light line is shown
+  best_around_sunset: [-15, 200]   # D105: minutes from sunset, when the brief gives it
   weather: ["dry"]
   company: null
   crowd_window: null

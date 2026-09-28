@@ -88,7 +88,7 @@ Plan in `validation/README.md`. **Test E is postponed until v0 exists (D86).** *
 | Transcripts and read-back checks | 1.0 | 19–26 Oct |
 | Test B plans (generic once + 12 personalised: `brain.testb` writes them from the results sheet, you check and send). **The day runs 12:00–17:00 (D99)**; write the generic plan to end around sunset | 3.5 | 21–30 Oct, rolling |
 | Test C follow-ups over 2 weeks and data entry | 2.0 | 26 Oct – 9 Nov |
-| Analysis and `results.md` (Checkpoint 3) | 1.5 | 9 Nov |
+| Analysis and `results.md` (Checkpoint 3) | 1.5 | 9 Nov → **2 Nov proposed (D105)** |
 | **Total** | **≈ 28.25** | Tests A–D ≈ 17 (D30) + swipe page 0.75 (D70c) + aspiration question 0.25 (D77, D83) + moments for Test B 4.5 (D65, D86) + friends' moment cards 1.25 (D86) + Test B dry run and buffer 4.0 (D86) + seed walk 0.5. **Test E and the decision note (6.25) are after v0 (D86)** |
 | *Optional:* 3 venue conversations | *+2.0* | — |
 
@@ -155,6 +155,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | 2026-09-28 | 3 | Dry-run decisions and friends' moments (D97–D98) | — | **0.50** | Reported by Abram: about 30 min (the earlier "[X]", given later) |
 | 2026-09-28 | 3 | Test B dry run round 1: reading, sharing with friends, and friends' moments (D99–D100) | — | **0.50** | Reported by Abram: about 30 min (the earlier "[X]", given later) |
 | 2026-09-28 | 3 | Test B dry run round 2: sending the pairs to friends, collecting and reading the feedback | — | **1.00** | Reported by Abram: 60 min |
+| 2026-09-28 | 3 | Start point confirmed (Charing Cross) and the nine new cards flagged (D104–D105) | — | **0.17** | Reported by Abram: 10 min |
 | 26 Sep – 1 Oct | 3 | **4. Moment cards from friends' suggestions:** check Claude's drafts as they arrive (D86; replaces Test E recruiting) | 1.25 | | **Done 28 Sep (D98).** The time is in the dated rows (30 min with the dry-run decisions) |
 | 26 Sep – 1 Oct | gate | **5. Apple outside-activities policy and the IP/invention clauses in both contracts (D60)**, plus the membership status with **auto-renew off** (D74) | 1.25 | | **Mostly done 28 Sep (D94):** government job, no conflict (done); auto-renew off (done). Government contract confirmed with no IP clause over your own projects (D96). **Left: your double-check of the Apple policy and the Apple IP clause**. Moved from the weeks of 21 and 28 Sep |
 | wk 28 Sep | 1 | Seed moments 2–5 in the Area 2 schema (D13); walk for seed 1 (D35) | 1.0 | | Pending. Seed 1 received 2026-09-26 |
@@ -162,20 +163,21 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | after 9 Nov | 1 | Review Areas 5–7 (D17) | 3.0 | | **Deferred (D84)**; on `decisions/after-9-nov.md` |
 | wk 5 Oct | 3 | Review the Area 18 note (the Area 20 review moves with Test E, D86) | 0.5 | | Pending |
 | wk 28 Sep | 3 | **Test B dry run** (1.0) and moment cards (0.5), in place of the first 2 Test E interviews (D86) | 1.5 | | **Done 28 Sep: dry runs finished (D103), 2.0 h actual** across three rounds (see the dated rows). The moment-card 0.5 h is already done |
-| wk 5 Oct | 3 | WhatsApp Business set-up (D66) | 0.5 | | Pending. The number is ready (D70a). Moment names moved to 26 Sep – 1 Oct (D82) |
-| wk 12 Oct | 3 | Validation materials (WhatsApp version) 1.0, then **the landing page and first recruitment posts, a week early** (3.0, D86) | 4.0 | | Pending. Replaces the last 3 Test E interviews and the decision note |
-| wk 28 Sep | 3 | **Confirm the Test B start point** (Charing Cross recommended) **and flag any of the nine new cards** (`research/seed-moments/06-start-point-cards.md`, D104) | 0.25 | | Pending |
+| wk 28 Sep | 3 | WhatsApp Business set-up (D66) | 0.25 | | **Checklist sent 28 Sep** (`recruit-now.md` §1). The account exists; marked done when you confirm |
+| ~~wk 12 Oct~~ wk 28 Sep | 3 | Validation materials (one list, 0.5), the study sign-up form (0.3), **Post 1** (2.0); the Test D landing page in a different week (0.7) | 3.5 | | **Pulled forward (D105)**; see `recruit-now.md` |
+| wk 28 Sep | 3 | **Confirm the Test B start point** (Charing Cross recommended) **and flag any of the nine new cards** (`research/seed-moments/06-start-point-cards.md`, D104) | 0.25 | | **Done 28 Sep (D105):** Charing Cross; Courtauld confirmed open daily; Transport Museum out of Test B |
+| **wk 28 Sep (pulled forward, D105)** | 3 | **Recruit now: blockers 1–8** in `validation/recruit-now.md` (ICO self-assessment, name and email, WhatsApp checklist, sign-up form, lock the 16, seed 1 walk, brief and generic plan, the one list), **then Post 1** | 4.5 | | Pending |
 | wk 12 Oct | 3 | ~~Check the rest of the drafted moment cards~~ | — | | **Covered (D91, D104):** research cards come as one-line lists. The drafts left are seed 1 (your walk) and Winter Wonderland (seasonal). 1.5 h freed |
-| wk 12 Oct | 3 | **Aspiration question:** check its wording and the field map (art & design dropped, D83) | 0.25 | | Pending |
-| wk 12 Oct | 3 | Pick the 16 swipe places from the results, **before the recruitment posts go out**; download the answers (D70c) | 0.5 | | Pending |
+| ~~wk 12 Oct~~ wk 28 Sep | 3 | **Aspiration question:** check its wording and the field map (in the one list, D105) | — | | Pulled forward; inside the list's 0.5 h |
+| ~~wk 12 Oct~~ wk 28 Sep | 3 | Pick the 16 swipe places from the results, **before the recruitment posts go out**; download the answers (D70c) | 0.1 | | **Pulled forward (D105):** paste the results table; if places are still low-n, lock the provisional 16 |
 | **by Fri 23 Oct** | 3 | **Download both swipe CSVs again (the final copy): the free database expires about 26 Oct.** Keep them on your device or in `validation/raw/` (git-ignored), never in the repo | inside the 0.5 | | Reminder set for Wed 21 Oct (m28). Check the exact date on the database's page in Render |
 | **by 31 Mar 2027** | 3 | **Delete the downloaded answers CSV**, keeping only counts per place: the swipe page's privacy note promises this | ~0 | | Pending |
 | wk 12 Oct | 2 | Review workbook GUESS inputs and `assumptions.md` (first half) | (1.5) | | **Paused (D52)** |
-| wk 19 Oct – 9 Nov | 3 | Run Tests A–D by hand: Test B plans 1–3 days after each Test A (see the Phase 3 table) | 12.0 | | Pending (D63, D68). Landing page and recruitment (3.0) moved to the week of 12 Oct (D86) |
+| wk 5 Oct – 2 Nov *(proposed, D105)* | 3 | Run Tests A–D by hand: Test B plans 1–3 days after each Test A (see the Phase 3 table) | 12.0 | | Pending (D63, D68). **Pulled forward from 19 Oct – 9 Nov (D105)** |
 | wk 19 Oct | 3 | **Test B buffer:** a second recruitment round if fewer than 12 strangers sign up (D86) | 3.0 | | Only if needed |
 | wk 26 Oct – 2 Nov | 4 | Brain code review: scoring maths, the planner and `brain.testb` | 2.0 | | Pending |
 | wk 26 Oct | 4 | Add the six GitHub secrets and the App Store Connect app record (`app/README.md`, D70e) | 0.75 | | **Only if the membership is still active (D74)**; if it has lapsed, this moves to after Test B passes |
-| ~2 Nov | 3 | **Test B reports** → go or hold on the iOS app code (D65) | — | | |
+| ~23 Oct *(proposed, D105; was ~2 Nov)* | 3 | **Test B reports** → go or hold on the iOS app code (D65) | — | | |
 | wk 2 Nov | 1 | Review Area 4 (D56) | 2.0 | | Pending |
 | after 9 Nov | 1 | Review Areas 1–3 in full, including the 15 moment features (D17) | 5.0 | | **Deferred (D80)**; on `decisions/after-9-nov.md`, scheduled at Checkpoint 3 |
 | wk 2 Nov | 1b | Review Areas 13–17 and 19 light scans, including the God's Eye View and Jev addenda (Areas 18 and 20 are in the week of 5 Oct) | 3.0 | | Pending |
@@ -191,13 +193,13 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 |---|---|---|---|
 | 2026-09-21 | 7.5 | 13.25 (kick-off, checkpoints, decision rounds D1–D84 and seed batch 1; all spent, estimated): **5.75 over** | |
 | **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, **friends' moment cards 1.25** (replaces Test E recruiting, D86), Apple and IP checks 1.25) | **2.00 so far** (120 min on 27–28 Sep: the factors and checks, cards 1–11, the research-card list, the swipe candidates, the Render set-up and sharing, the results check, and the candidate picks) |
-| 2026-09-28 | 7.5 | 2.75 (seed moments 2–5 and the seed 1 walk 1.0, **Test B dry run 1.0, moment cards 0.5**, D86; confirm the start and flag the nine cards 0.25, D104). **The rest is buffer** (D84) | **2.00 so far** (120 min on 28 Sep: the dry-run decisions and friends' moments 30, round 1 30, round 2 60) |
-| 2026-10-05 | 7.5 | 1.0 (Area 18 0.5, WhatsApp set-up 0.5). Area 20 moves with Test E (D86). Areas 5–7 (D84) and 8–12 reviews deferred to after Checkpoint 3 | |
-| 2026-10-12 | 7.5 | 4.75 (validation materials 1.0, pick the 16 places 0.5, aspiration question 0.25, then **the landing page and first recruitment posts 3.0, a week early**, D86). The 1.5 h card check is covered by one-line lists (D104) | |
-| 2026-10-19 | 7.5 | 7.5 (Test A chats and transcripts 4.5, **Test B buffer 3.0 only if needed**, D86). **Final swipe CSV download by Fri 23 Oct** | |
-| 2026-10-26 | 7.5 | 6.75 (Test A wrap-up 0.5, **Test B plans 3.5**, Test C follow-ups 1.0, brain review 1.0, GitHub secrets 0.75) | |
-| 2026-11-02 | 7.5 | 7.0 (Test C follow-ups 1.0, Area 4 review 2.0, Areas 13–17 and 19 review 3.0, brain review 1.0). **Test B reports** | |
-| 2026-11-09 | 7.5 | 6.75 (Test C close and analysis 2.5; **Checkpoint 3**, including the trip-cost Stage 1 note, about 10 min (D87); the rest of the CI and Apple set-up 4.25 if Test B passed) | |
+| 2026-09-28 | 7.5 | ≈ 6.75 (**pulled forward, D105**: logged 2.17 + the eight blockers in `validation/recruit-now.md` 2.5, including the seed 1 walk; Post 1 2.0). Seeds 2–5 move later | **2.17 so far** (130 min on 28 Sep: the dry-run decisions and friends' moments 30, round 1 30, round 2 60, start point and cards 10) |
+| 2026-10-05 | 7.5 | ≈ 7.0 *(proposed, D105)* (Test A chats 4.0, transcripts and read-backs 1.0, first Test B plans 1.5, Area 18 0.5) | |
+| 2026-10-12 | 7.5 | ≈ 7.0 *(proposed)* (the last chats, Test B plans 2.0, Test C follow-ups 1.0, the Test D landing page and Post 2 0.7; **a second recruitment round 3.0 only if needed**, which would go over) | |
+| 2026-10-19 | 7.5 | ≈ 5.0 *(proposed)* (the last Test B plans; **Test B reports**; Test C follow-ups; Brain code review 1.0). **Final swipe CSV download by Fri 23 Oct** | |
+| 2026-10-26 | 7.5 | ≈ 5.0 *(proposed)* (Test C follow-ups and data entry 2.0; Area 4 review 2.0; GitHub secrets 0.75 if Test B passed) | |
+| 2026-11-02 | 7.5 | ≈ 6.0 *(proposed)* (**Checkpoint 3**, if you confirm the move from 9 Nov: analysis and `results.md` 1.5 and the trip-cost Stage 1 note; Areas 13–17 and 19 review 3.0; the rest of the CI and Apple set-up if Test B passed) | |
+| 2026-11-09 | 7.5 | 7.5 *(proposed)* (the v0 build could start a week earlier, if Checkpoint 3 says build) | |
 | 2026-11-16 to 2026-12-28 | 7.5 | 7.5 a week (the v0 build with your design, 52.5 h over 7 weeks, D81) | |
 | 2027-01-04 | 7.5 | Phase 5 (10 h over about 2 weeks) | |
 
@@ -215,6 +217,7 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 - D50–D58: v0 is a native iOS app, tested through TestFlight, replacing the Telegram bot; Brain (FastAPI) and Face (SwiftUI), with the Brain started now; economics paused; a new gate before App Store release (Apple outside-activities policy); the overrun question held until the iOS re-plan; Abram names the backup helper, who signs before support goes live; the Area 4 review moved to the week of 2 Nov; the Test E bar confirmed; the Uzbek payment route accepted, with one adviser call first.
 - D59–D64: the iOS v0 accepted at 53.5 h with the cuts (+3 h for the build loop, so ≈ 56.5); the Apple policy and IP-clause checks this week; an individual developer account for TestFlight and a company before the App Store launch (D-U-N-S lead time added); keyboard dictation for voice; Tests A–C by hand with Checkpoint 3 kept in November and the app built in parallel; iOS builds on GitHub Actions.
 - D65–D68: build the Brain now and use it for the Test B plans; the designer starts; iOS app code waits until Test B reports; Test A on WhatsApp Business with a separate number; the 1.3-week overrun accepted; Test B first and fast after Test E.
+- D105: start point Charing Cross confirmed; Courtauld confirmed open daily; Transport Museum out of Test B; the week-of-12-Oct tasks pulled forward (`validation/recruit-now.md`); sunset-aware "Best" lines; **Checkpoint 3 proposed for the week of 2 Nov (confirm)**.
 - D103–D104: familiar favourite off for the real Test B, on by default in the v0 app; dry runs finished; an overlap check across participants' plans; nine verified cards near Charing Cross (eight indoor), the recommended start (16 Saturday cards within a 25-min walk). 44 ready cards.
 - D102: dry-run round 2 (friends; not test data): 6 of 6 preferred the personal plan against a "solid" generic plan (one mixed-up answer discounted); fixes for lunch, weight-aware rain swaps, pace-based stays, walk-to-station legs and slower walking, no double river crossing, place names in titles and queue time.
 - D100–D101: dry-run round 1 (6 friends; not test data): the personal plan was preferred and spotted 6 of 6, from content not format; fixes to the generic plan (a strong "best of London" day), costs, times, "Best" lines, travel legs, rain swaps, wording and buffers; a familiar-favourite rule proposed (off until you say yes); gut-reaction wording for Test B. Visitor mode parked (#18, merged with trip-cost Stage 2).

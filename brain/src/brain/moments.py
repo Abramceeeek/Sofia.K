@@ -67,6 +67,9 @@ class BestTime(BaseModel):
     # D100: when `light` is worth telling people ("hh:mm-hh:mm"). A plan shows "Best: <light>" only if the stop
     # overlaps one of these windows; with none, the line is never shown.
     best_window: list[str] = Field(default_factory=list)
+    # D105: when the light line depends on sunset, the window in minutes from sunset, e.g. [-40, 20]. Used when the
+    # brief gives the sunset time; `best_window` is the fallback (set for late October and November).
+    best_around_sunset: list[int] | None = None
 
 
 class Features(BaseModel):
@@ -110,6 +113,7 @@ class Moment(BaseModel):
     cost_kind: Literal["food", "entry", "ticket", "hire"] | None = None
     # D104: a card that is a meal ("Lunch in the crypt…") is only ever planned as the day's lunch stop
     meal: Literal["lunch"] | None = None
+    in_test_b: bool = True         # D105: False keeps a card out of Test B plans (e.g. booking plus price); the app keeps it
     shot_card: ShotCard | None = None
     source: str = "founder"
     last_checked: str | None = None
@@ -166,8 +170,12 @@ class Moment(BaseModel):
         """Allowed time windows in minutes from midnight, from best_time.time_of_day."""
         return parse_windows(self.best_time.time_of_day, self.id)
 
-    def best_windows(self) -> list[tuple[int, int]]:
-        """When the `light` line applies (D100), in minutes from midnight."""
+    def best_windows(self, sunset: int | None = None) -> list[tuple[int, int]]:
+        """When the `light` line applies (D100), in minutes from midnight; relative to `sunset` when the card says
+        so and a sunset time is known (D105)."""
+        rel = self.best_time.best_around_sunset
+        if rel and sunset is not None:
+            return [(sunset + rel[0], sunset + rel[1])]
         return parse_windows(self.best_time.best_window, self.id)
 
     def price_kind(self) -> str:

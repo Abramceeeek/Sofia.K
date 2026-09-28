@@ -421,3 +421,18 @@ def test_meal_cards_are_only_ever_the_lunch_stop():
     assert "lunch@start" in ids
     evening = testb.lunch_candidates(real, ms, _dry_brief(start_time="15:00", end_time="20:00"))
     assert not any(c.moment_id.startswith("m_st_martin_crypt_lunch") for c in evening)
+
+
+def test_sunset_lines_follow_the_brief_and_some_cards_stay_out_of_test_b():
+    """D105: "Best: Sunset" follows the brief's sunset time (plans used before the clocks change end before sunset);
+    the Transport Museum stays out of Test B but stays in the app."""
+    from brain.moments import load_moments
+    from brain.planner import parse_hhmm
+    ms = {m.id: m for m in load_moments(DATA / "moments")}
+    w = ms["m_waterloo_bridge_sunset"]
+    assert w.best_windows() == [(16 * 60, 17 * 60)]                      # fallback: late Oct and Nov
+    assert w.best_windows(parse_hhmm("18:05")) == [(18 * 60 + 5 - 40, 18 * 60 + 5 + 20)]
+    stop = _stop(best="Sunset", arrive="16:10", depart="16:50")
+    assert testb._best_line({**stop, "best_windows": w.best_windows(parse_hhmm("18:05"))}) == ""   # 17 Oct
+    assert testb._best_line({**stop, "best_windows": w.best_windows(parse_hhmm("16:37"))}) == "Best: Sunset"
+    assert not ms["m_transport_museum"].in_test_b and ms["m_courtauld_gallery"].in_test_b

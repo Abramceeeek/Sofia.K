@@ -87,6 +87,7 @@ cd brain
   - Generic fields: `lunch: true`, `queue_min`.
 - **`--familiar` (D100): off for the real Test B (D103)**, so it measures prediction rather than memory; **on by default in the v0 app.** With it, the personal plan holds exactly one place the person loved, if one fits the day. Either way, the review says for each loved place why it is in the plan or not.
 - **Overlap across participants (D104):** each run saves `<ID>_personal.json` (stop ids and a normalised weight vector, no answers) and writes `overlap.md`: shared stops for every pair, stops in more than half the plans, and a warning when two dissimilar people share more than half their stops. `python -m brain.testb overlap --out DIR` re-runs it.
+- **Test B exclusions and sunset (D105):** cards with `in_test_b: false` are left out of Test B (the run lists them); the brief's `sunset` ("hh:mm", for the Saturday the plans are for) sets the sunset-based "Best" lines through each card's `best_around_sunset`.
 - **Meal cards (D104):** a card with `meal: lunch` is only ever the day's lunch stop; a flexible lunch slot is also offered at the start point.
 - **Both plans in a pair end within 30 min of each other (D97).** The personal plan is first planned to finish by the generic end + 30 min; then its stops move later inside their opening windows until it ends no earlier than the generic end − 30 min. If that can't be done, the status says "fix by hand", and the review shows both end times.
 - It refuses to run until there are enough complete moments in `data/moments/`.

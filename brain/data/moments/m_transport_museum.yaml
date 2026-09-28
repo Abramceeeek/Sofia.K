@@ -37,6 +37,7 @@ features:
           crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 0, photo_potential: 1}
   moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 2}
 cost_gbp: 18.50          # CHECKED: adult annual pass (official, via search)
+in_test_b: false          # D105 (Abram): booking plus £18.50; kept for the app
 shot_card: null
 source: research
 last_checked: "2026-09-28"

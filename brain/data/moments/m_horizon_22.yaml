@@ -33,6 +33,7 @@ best_time:
   days: [mon, tue, wed, thu, fri]
   light: "Near sunset on a clear day (GUESS)"
   best_window: ["15:30-16:30"]   # D100: when the light line is shown
+  best_around_sunset: [-55, 5]   # D105: minutes from sunset, when the brief gives it
   weather: ["any"]
   company: null
   crowd_window: null

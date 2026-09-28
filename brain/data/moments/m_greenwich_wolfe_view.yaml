@@ -31,6 +31,7 @@ best_time:
   time_of_day: ["09:00-17:00"]   # inside park hours (opens 06:00; closes as early as 18:00 in winter)
   light: "Late afternoon on a clear day (GUESS)"
   best_window: ["14:30-17:00"]   # D100: when the light line is shown
+  best_around_sunset: [-120, 15]   # D105: minutes from sunset, when the brief gives it
   weather: ["any"]
   company: null
   crowd_window: null

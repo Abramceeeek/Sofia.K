@@ -142,6 +142,7 @@ class Brief:
     rain_prob: float | None = None
     time_limit_s: float = 2.0
     lunch_gbp: float = 15.0        # D102 (GUESS): the flexible lunch slot's cost per person
+    sunset: str | None = None      # D105: "hh:mm" on the day the plans are for; sets the sunset-based "Best" lines
 
 
 def load_brief(path: Path) -> Brief:
@@ -236,6 +237,10 @@ LUNCH_CARD_MIN = 0.5   # a food card is offered as the lunch stop only if the pe
 def _base(cid: str) -> str:
     """A card's id from a planner id: "m_x#lunch" (the card as the lunch stop) → "m_x"."""
     return cid.split("#")[0]
+
+
+def _sunset(brief: Brief) -> int | None:
+    return parse_hhmm(brief.sunset) if brief.sunset else None
 
 
 def pace_of(pop: PopulationModel, post: DeltaPosterior) -> str:
@@ -401,7 +406,7 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
             m = by_id[_base(st.moment_id)]
             stop = {"title": m.display_title(), "approach": approach_text(m, walked_from_stop=True),
                     "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
-                    "best_windows": m.best_windows(), "queue": m.experience.queue_min or 0,
+                    "best_windows": m.best_windows(_sunset(brief)), "queue": m.experience.queue_min or 0,
                     "moment_id": m.id, "predicted": st.utility,
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops)}
@@ -587,7 +592,7 @@ def _sentence(text: str) -> str:
     return text + "." if text and text[-1] not in ".!?" else text
 
 
-def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
+def generic_stops(path: Path, moments: dict[str, Moment], sunset: int | None = None) -> list[dict]:
     """The generic plan, written once by Abram. Stops are moment ids or free text, same fields.
     D100 fields: `best_window` (when the `best` line is shown), `cost_kind` (food/entry/ticket/hire) and
     `rain_swap` (the "If it rains:" line for an outdoor stop). D102: `lunch: true` marks the meal stop and
@@ -599,12 +604,16 @@ def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
         if "moment_id" in s:
             m = moments[s["moment_id"]]
             s = {"title": m.title, "what": m.experience.what_happens or "", "best": m.best_time.light or "",
-                 "best_window": m.best_time.best_window, "cost_gbp": m.cost_gbp or 0.0, "cost_kind": m.price_kind(),
+                 "best_window": m.best_time.best_window, "best_around_sunset": m.best_time.best_around_sunset,
+                 "cost_gbp": m.cost_gbp or 0.0, "cost_kind": m.price_kind(),
                  "approach": approach_text(m, came_from=s.get("from")), **s}
         out.append({"title": s["title"], "arrive": s["arrive"], "depart": s.get("depart"), "travel_min": s.get("travel_min"),
                     "travel_mode": s.get("travel_mode", "walk"), "from": s.get("from", ""),
                     "approach": _sentence(clean(s.get("approach"))), "what": _sentence(clean(s.get("what"))),
-                    "best": clean(s.get("best")), "best_windows": parse_windows(s.get("best_window") or [], s["title"]),
+                    "best": clean(s.get("best")),
+                    "best_windows": ([(sunset + s["best_around_sunset"][0], sunset + s["best_around_sunset"][1])]
+                                     if s.get("best_around_sunset") and sunset is not None
+                                     else parse_windows(s.get("best_window") or [], s["title"])),
                     "cost_gbp": s.get("cost_gbp") or 0.0, "cost_kind": s.get("cost_kind") or "entry",
                     "rain_swap": _sentence(clean(s.get("rain_swap"))), "lunch": bool(s.get("lunch")),
                     "queue": s.get("queue_min") or 0})
@@ -930,6 +939,10 @@ def cmd_plans(args) -> int:
                   f"or use --include-drafts for a dry run): {', '.join(drafts_skipped)}", file=sys.stderr)
     elif drafts_skipped:
         print(f"DRY RUN: using {len(drafts_skipped)} unchecked draft moments. Don't send these plans.", file=sys.stderr)
+    kept_out = [m.id for m in moments if not m.in_test_b]
+    if kept_out:   # D105: cards the app keeps but Test B doesn't use (e.g. booking plus price)
+        print(f"Kept out of Test B ({len(kept_out)}): {', '.join(kept_out)}", file=sys.stderr)
+        moments = [m for m in moments if m.in_test_b]
     plannable = [m for m in moments if m.plannable()]
     amap = _load_aspiration(Path(args.data))
     if amap:
@@ -948,7 +961,7 @@ def cmd_plans(args) -> int:
     if args.intent:
         with open(args.intent, encoding="utf-8") as f:
             intents = yaml.safe_load(f) or {}
-    gen = generic_stops(Path(args.generic), {m.id: m for m in moments})
+    gen = generic_stops(Path(args.generic), {m.id: m for m in moments}, _sunset(brief))
     gen_end = plan_end(gen)
     if gen and not any(s["lunch"] for s in gen):
         print("Warning: the generic plan has no stop marked 'lunch: true'. Personal plans include lunch when the day "

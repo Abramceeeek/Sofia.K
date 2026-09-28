@@ -3,6 +3,8 @@
 # (validation/raw/testb/generic.yaml) to the same standard, and checks every time, price and opening hour first.
 # Stops can be a moment_id from data/moments, or free text with the same fields as a moment.
 # - D99: the brief runs 12:00-17:00, and the day ends on the river around sunset (16:47 on 26 Oct, 16:24 on 8 Nov).
+# - D105: the real Test B generic plan (Abram copies this to validation/raw/testb/generic.yaml and checks it before
+#   the first Test A chat). Saturday-proof: Borough Market Sat 9-17; the text holds before and after 25 Oct.
 # - D97: every stop has `depart`, so the personal plan can end within 30 min of this one.
 # - D102: one stop is lunch (`lunch: true`) around midday; the river is crossed once (by Tube); a transit leg starts
 #   with the walk to a station; `queue_min` for a busy food stop.
@@ -43,15 +45,16 @@ stops:
     approach: "Walk west along Bankside, past Shakespeare's Globe."
     what: "Walk into the vast Turbine Hall, look round the free collection, then take the lift from Level 1 up to Level 10 for a view over the Thames to St Paul's."
     cost_gbp: 0
-  - title: "The South Bank at sunset, past the London Eye"
+  - title: "Along the South Bank, past the London Eye"
     arrive: "15:40"
     depart: "16:50"
     travel_min: 3
     travel_mode: walk
     from: "Tate Modern"
     approach: "Start on the river path outside Tate Modern."
-    what: "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre as the light goes and the lights come on. You walk past the London Eye; a ride isn't part of this plan."
+    what: "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre to the London Eye, with the river beside you. You walk past the London Eye; a ride isn't part of this plan."
     best: "Sunset"
     best_window: ["16:00-17:00"]
+    best_around_sunset: [-40, 20]   # D105: shown only when the brief's sunset falls in the stop (after 25 Oct)
     rain_swap: "The Royal Festival Hall's free foyers, on the way (closed on Mondays)."
     cost_gbp: 0

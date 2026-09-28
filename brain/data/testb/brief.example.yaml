@@ -6,8 +6,11 @@ start_time: "12:00"                       # D99: the real Test B runs 12:00-17:0
 end_time: "17:00"                         # (16:47 on 26 Oct, 16:24 on 8 Nov), so river, sunset and evening-light cards can appear
 stops: 4                                  # the generic plan must have the same number
 budget_gbp: 40                            # per person; null for no limit
-day_label: "A day out in London"
+day_label: "A Saturday out in London"   # D105: plans are for a Saturday
 temp_c: null                              # leave null unless the day is known
 rain_prob: null
 time_limit_s: 2.0
-# weekday: sat                           # optional (mon..sun): leaves out cards closed that day
+weekday: sat                              # D105: leaves out weekday-only cards (the City towers, Horizon 22, the Bank of England)
+sunset: "16:37"                           # D105: set to the Saturday the plans are for, so "Best: Sunset" lines are right.
+                                          # sunrise-sunset.org, central London: 3 Oct 18:36, 10 Oct 18:20, 17 Oct 18:05,
+                                          # 24 Oct 17:50; clocks back 25 Oct; 31 Oct 16:37, 7 Nov 16:25, 14 Nov 16:14
