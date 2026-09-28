@@ -54,16 +54,29 @@ def test_conjoint_rows_map_onto_model_features(pop):
     for r in rows:
         x = conjoint_plan_features(r)
         assert set(x) <= set(pop.names)
-    x = conjoint_plan_features(rows[1])  # task 1, plan B: 15 min, hot hour, 5 stops, busy, £40, 8 km
-    assert x == {"transfer_15_30": 0.0, "transfer_30_plus": 0.0, "hot_outdoor": 1.0, "packed_pace": 1.0,
-                 "crowds": 1.0, "cost_per_10gbp": 4.0, "long_walk": 1.0}
+    by = {(r["task"], r["plan"]): r for r in rows}
+    for r in rows:   # D95: the weather levels map onto cold_outdoor / rain_outdoor, mild and dry is the baseline
+        x = conjoint_plan_features(r)
+        assert x.get("cold_outdoor", 0.0) == (1.0 if r["weather"].startswith("cold") else 0.0)
+        assert x.get("rain_outdoor", 0.0) == (1.0 if r["weather"].startswith("rainy") else 0.0)
+        assert "hot_outdoor" not in x
+    rainy = next(r for r in rows if r["weather"].startswith("rainy"))
+    x = conjoint_plan_features(rainy)
+    assert x["rain_outdoor"] == 1.0 and set(x) == {"transfer_15_30", "transfer_30_plus", "rain_outdoor", "packed_pace",
+                                                   "crowds", "cost_per_10gbp", "long_walk"}
+    assert len({r["weather"] for r in rows}) == 3 and len(by) == 20
 
 
 def test_named_weights_start_unsure_and_become_confident(pop):
     prior = prior_only(pop.delta_prior_sd)
     w = {n.name: n for n in named_weights(pop, prior)}
     assert w["history_culture"].direction == "unsure"
-    assert w["rain_outdoor"].direction == "population"
+    assert w["heat_walking"].direction == "population"
+    # personal since D95; rain's prior (-1.0, sd 0.75) is already "confident", so the read-back flags it as the prior's
+    assert w["rain_outdoor"].direction == "dislikes" and w["cold_outdoor"].direction == "unsure"
+    from brain.testb import readback_lines
+    rain_line = next(l for l in readback_lines(pop, prior) if l.startswith("rain outdoors"))
+    assert rain_line.endswith("(mostly the population prior, not their answers)")
     # 10 identical choices for the plan without the hot hour
     xa, xb = {"hot_outdoor": 0.0}, {"hot_outdoor": 1.0}
     post = update_person(pop, [conjoint_observation(pop, xa, xb, chose_a=True) for _ in range(10)])

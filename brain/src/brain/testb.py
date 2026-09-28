@@ -181,7 +181,10 @@ def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6,
                          f"(weight {w.weight:+.2f}; population {w.population:+.2f})")
             continue
         verb = "seems to put them off" if w.direction == "dislikes" else "seems to appeal to them"
-        lines.append(f"{w.label}: {verb} (weight {w.weight:+.2f}, P(negative) {w.p_negative:.2f})")
+        # A weight whose sd has barely moved from the prior is the population's view, not theirs (e.g. rain, D95)
+        prior_only = w.sd is not None and w.sd >= 0.9 * pop.spec(w.name).delta_sd
+        note = " (mostly the population prior, not their answers)" if prior_only else ""
+        lines.append(f"{w.label}: {verb} (weight {w.weight:+.2f}, P(negative) {w.p_negative:.2f}){note}")
     if len(lines) == (1 if field_labels else 0):
         lines.append("No confident weights yet: use the persona and the open answers for the read-back.")
     return lines

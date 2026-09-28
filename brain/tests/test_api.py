@@ -56,12 +56,15 @@ def test_onboarding_serves_swipes_tasks_and_questions(client):
 
 def test_full_flow_answers_weights_plan_rating_and_deletion(client):
     h, uid = install(client)
-    # swipes and "this or that": always the plan without the hot hour
+    # swipes and "this or that": always avoid the rainy plan (D95), otherwise take the milder one
     assert client.post("/v1/me/swipes", headers=h, json={"items": [
         {"moment_id": "t_museum", "reaction": "loved"}, {"moment_id": "t_market", "reaction": "didnt_enjoy"},
         {"moment_id": "t_park", "reaction": "havent_been"}]}).status_code == 204
     tasks = client.get("/v1/onboarding", headers=h).json()["conjoint_tasks"]
-    choices = [{"task": t["task"], "choice": "A" if "no hot hour" in t["A"] else "B"} for t in tasks]
+    def pick(t):
+        rank = lambda s: 2 if "rainy" in s else (1 if "cold but dry" in s else 0)
+        return "A" if rank(t["A"]) <= rank(t["B"]) else "B"
+    choices = [{"task": t["task"], "choice": pick(t)} for t in tasks]
     assert client.post("/v1/me/conjoint", headers=h, json={"items": choices}).status_code == 204
     assert client.post("/v1/me/answers", headers=h, json={"items": [
         {"question": "best_hour", "text": "On the boat at sunset.", "input_mode": "typed"}]}).status_code == 204
@@ -70,8 +73,8 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
 
     w = client.get("/v1/me/weights", headers=h).json()
     assert w["n_observations"] == 12          # 2 informative swipes + 10 choices
-    hot = next(x for x in w["weights"] if x["name"] == "hot_outdoor")
-    assert hot["weight"] < -0.5 and hot["direction"] == "dislikes"
+    rain = next(x for x in w["weights"] if x["name"] == "rain_outdoor")
+    assert rain["weight"] < -1.0 and rain["direction"] == "dislikes"
 
     r = client.post("/v1/me/plans", headers=h, json={
         "start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "10:00", "end_time": "18:00",

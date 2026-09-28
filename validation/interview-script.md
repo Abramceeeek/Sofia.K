@@ -71,8 +71,10 @@ Record the first mode (D4).
 Send each task exactly as in `design.csv`, with plan A first, e.g.:
 
 > **Task 1**
-> **A:** longest transfer 30 min · no hot hour outside · 3 stops, relaxed · mostly quiet · £20 per person · about 3 km walking
-> **B:** longest transfer 15 min · one hot hour outside (28°C+) · 5 stops, packed · busy at 2 stops · £40 per person · about 8 km walking
+> **A:** longest transfer 15 min · cold but dry at the outdoor stops · 5 stops, packed · mostly quiet · £60 per person · about 3 km walking
+> **B:** longest transfer 30 min · mild and dry at the outdoor stops · 3 stops, relaxed · busy at 2 stops · £60 per person · about 8 km walking
+
+*If asked what the weather means (D95):* mild and dry ≈ 15°C, no rain; cold but dry ≈ 5°C, no rain; rainy = showers on and off.
 
 No "why" questions here. Speed is the point.
 

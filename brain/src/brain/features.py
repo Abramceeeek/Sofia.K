@@ -1,7 +1,7 @@
 """Named features: the x in S = x·b.
 
 Thresholds, not lines (CLAUDE.md): transfers cost nothing up to 15 min, then two hinges.
-Heat is a threshold (28°C, the conjoint level) that only bites outdoors.
+Heat (28°C+) and cold (8°C or below, D95) are thresholds that only bite outdoors; rain scales with its probability.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from .moments import MOMENT_TAGS, PLACE_TAGS, Moment
 
 HOT_C = 28.0
+COLD_C = 8.0   # GUESS (D95): "cold but dry" in the conjoint; the interviewer says "about 5°C" if asked
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,8 @@ def moment_features(moment: Moment, conditions: Conditions | None = None,
     x["hot_outdoor"] = hot * x["outdoor_exposure"]
     x["heat_walking"] = hot * x["walking_effort"]
     x["rain_outdoor"] = (c.rain_prob or 0.0) * x["outdoor_exposure"]
+    cold = 1.0 if (c.temp_c is not None and c.temp_c <= COLD_C) else 0.0
+    x["cold_outdoor"] = cold * x["outdoor_exposure"]
     x.update(leg_features(travel_min))
     if aspiration_match:
         x["aspiration_match"] = float(aspiration_match)
@@ -63,7 +66,12 @@ def conjoint_plan_features(row: dict[str, str]) -> dict[str, float]:
     """
     transfer = float(row["transfer"].split()[2])          # "longest transfer 30 min"
     x = leg_features(transfer)
-    x["hot_outdoor"] = 1.0 if row["heat"].startswith("one hot hour") else 0.0
+    # D95: "weather at the outdoor stops": mild and dry (baseline) / cold but dry / rainy
+    weather = row["weather"]
+    if weather.startswith("cold"):
+        x["cold_outdoor"] = 1.0
+    elif weather.startswith("rainy"):
+        x["rain_outdoor"] = 1.0
     x["packed_pace"] = 1.0 if row["pace"].startswith("5 stops") else 0.0
     x["crowds"] = 1.0 if row["crowds"].startswith("busy") else 0.0
     x["cost_per_10gbp"] = float(row["cost"].lstrip("£").split()[0]) / 10.0

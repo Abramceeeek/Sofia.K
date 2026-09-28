@@ -46,7 +46,8 @@ Detail for step 1: **Test B goes first and fast (D68):** each person's two plans
 
 ## Before the first participant (checklist)
 
-- [ ] Abram confirms the conjoint attributes (`conjoint/README.md`) and the 16 swipe items (`interview-script.md` §3).
+- [x] Abram confirms the conjoint attributes (`conjoint/README.md`): **confirmed 28 Sep, with heat replaced by the 3-level weather factor (D95).**
+- [ ] The 16 swipe items (`interview-script.md` §3) come from the swipe page in the week of 12 Oct.
 - [ ] Seed moment 1 is in (`research/seed-moments/01-tube-to-museum.md`). **Fill its gaps on one walk** (exit, route, best time, shot position), take a photo from the spot, and complete `shot-card-example.md` (≈ 0.5 h).
 - [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data.
 - [ ] **WhatsApp Business on a separate number (D66)**, on a personal phone, never the work one (CLAUDE.md). **The number is ready (2026-09-26); you'll share it when it's needed.** Still to do:

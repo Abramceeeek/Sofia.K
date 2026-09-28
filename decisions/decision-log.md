@@ -2,6 +2,24 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — employment checks; the weather factor
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D94 | **Employment and Apple checks:**<br>- **Government job: done.** It is in Uzbekistan and doesn't conflict. The gate asked for written approval; it is recorded as done on Abram's confirmation.<br>- **Apple outside-activities policy:** Abram expects it to be fine and is double-checking.<br>- **Apple Developer auto-renew is off** (D74 done) | The pending gate items (D33, D38, D60) | Founder confirmation |
+| D95 | **Conjoint:** "hot hour outside: yes / no" is replaced by **"weather at the outdoor stops: mild and dry / cold but dry / rainy"**; the other 5 factors stay.<br>**The design is regenerated:** Bayesian D-error 0.852 for 8 parameters. It is within 0.5% of a 20-start search, level-balanced, and every weather pair appears.<br>**The levels map onto the model:** cold × outdoors (`cold_outdoor`, new) and rain × outdoors (`rain_outdoor`, now personal). Mild and dry is the baseline.<br>**Updated:** Test A materials, the Brain's copy of the design, the screens scope and page | D30's heat factor | Founder decision |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m47 | **"Cold" is 8°C or below** in the model (GUESS). If a participant asks, the interviewer says mild ≈ 15°C, cold ≈ 5°C, rainy = showers on and off | `brain/src/brain/features.py`, `validation/interview-script.md`, `conjoint/README.md` |
+| m48 | **Priors (GUESS):**<br>- `cold_outdoor` is new: mean −0.5, personal sd 0.75;<br>- `rain_outdoor` becomes personal: mean −1.0, sd 0.75, because the conjoint now identifies it;<br>- `hot_outdoor` keeps its prior and learns from stop ratings;<br>- design priors: cold −0.5, rain −1.0 | `brain/data/priors.yaml`, `make_design.py` |
+| m49 | **The read-back marks weights that come mostly from the prior.** Rain's prior (−1.0, sd 0.75) already reads as a clear dislike, so any line whose sd has barely moved from the prior says "(mostly the population prior, not their answers)" | `brain/src/brain/testb.py` |
+| m50 | **The government contract's IP clause is counted as done** with the job check. The Apple contract's IP clause goes with the Apple double-check. Say if you meant only the secondary-employment item | `CLAUDE.md` |
+| m51 | **10 tasks are kept.** 12 tasks would lower the D-error by 19% for about 1 minute more per participant; that's offered, not applied | `validation/conjoint/README.md` |
+| m52 | The published screens page shows the new weather attribute (D84) | https://claude.ai/artifact/CqRgaT1e328Qm4H2cX3W91 |
+
 ## 2026-09-27 — cards 9–11; park break; two more cards
 
 | # | Decision | Replaces | Why |

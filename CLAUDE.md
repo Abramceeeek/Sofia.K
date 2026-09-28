@@ -11,16 +11,16 @@ This file is the standing context for this project. Read it fully before any tas
 - **Legal gates** *(updated D33 and D38, confirmed by Abram 2026-09-26)*:
   - **Cleared:** right to run a business.
   - **Before taking any money:**
-    1. Apple's outside-activities policy — check it and disclose if required. All project work stays on personal time and personal devices.
-    2. Written secondary-employment approval from Abram's government agency employer.
-    3. IP/invention clauses checked in **both** employment contracts.
+    1. Apple's outside-activities policy — check it and disclose if required. All project work stays on personal time and personal devices. *Abram expects it to be fine and is double-checking (28 Sep).*
+    2. ~~Written secondary-employment approval from Abram's government agency employer.~~ **Done (D94):** the government job is in Uzbekistan and doesn't conflict (Abram, 28 Sep).
+    3. IP/invention clauses checked in **both** employment contracts. **Government contract: done (D94). Apple contract: with the Apple double-check.**
   - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
   - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company. This includes the safety backup helper and any future contributor (D55).
     - **Abram designs v0 himself (D81)**, so no designer agreement is needed unless an outside designer is brought in.
     - *Split by D73:* **Part A** (IP assignment, confidentiality, personal data) is signed as a deed before anyone's work is used, and before the helper sees any user message. **Part B** (equity) gets a solicitor review before incorporation. Contributions are voluntary and flexible, with no set hours.
-  - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. **Abram is doing this check, and the IP/invention-clause check, this week, before any external TestFlight build (D60).**
+  - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. **Abram is double-checking the Apple policy and the Apple IP clause before any external TestFlight build (D60, D94).**
   - **Developer account (D61):** individual for TestFlight. Switch to a company account (incorporation plus a D-U-N-S number) before the public App Store launch. Start about 3 weeks ahead.
-    - **Renew the membership only if Test B passes (D74).** Keep auto-renew off until then.
+    - **Renew the membership only if Test B passes (D74).** Keep auto-renew off until then. **Auto-renew is off (confirmed 28 Sep, D94).**
   - Revenue from trips or subscriptions can start once the money gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
@@ -77,7 +77,7 @@ Satisfaction (per stop and per trip) is the dependent variable:
 
 **b) Places already visited (revealed preference)** — for a city they know, swipe 15–20 places: Loved it / It was fine / Didn't enjoy it / Haven't been. Visiting alone means little (everyone visits Big Ben); the reaction is the data. Each place tagged with attributes (e.g. Big Ben: history, iconic, crowded, passive; Uber Boat: movement, views, relaxed; Borough Market: food, busy, local). Use places that **split** people (British Museum vs cable car; Hyde Park vs Camden). Friendly persona label on the result screen, continuous scores underneath.
 
-**c) "This or that" day plans (choice-based conjoint)** — two versions of a day varying a few factors (e.g. 3 stops, lots of walking, sunny vs 5 stops by boat/train, one hot hour). ~10 choices → weights on travel time, heat, pace, crowds, cost.
+**c) "This or that" day plans (choice-based conjoint)** — two versions of a day varying a few factors (e.g. 3 stops, lots of walking, sunny vs 5 stops by boat/train, one hot hour). ~10 choices → weights on travel time, heat, pace, crowds, cost. *Amended (D95): heat is replaced by "weather at the outdoor stops: mild and dry / cold but dry / rainy", which maps onto the model's cold × outdoors and rain × outdoors.*
 
 **d) One open question** — "Tell me about the best hour of your last trip."
 

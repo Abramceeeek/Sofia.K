@@ -45,7 +45,9 @@ features:
   # negative range). It can't turn positive, so "worth about £V to you" (scoring.value_gbp) stays finite.
   - {name: cost_per_10gbp,   label: "cost (per £10)",              group: cost,   mean: -0.25, delta_sd: 0.8,  personal: true, scale: log, source: "validation/conjoint/README.md prior; log scale D88"}
   - {name: hot_outdoor,      label: "heat outdoors (28°C+)",       group: weather, mean: -0.5, delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior"}
-  - {name: rain_outdoor,     label: "rain outdoors",               group: weather, mean: -1.0, delta_sd: 0.0,  personal: false}
+  # D95: rain and cold are conjoint levels now ("weather at the outdoor stops"), so both are personal.
+  - {name: rain_outdoor,     label: "rain outdoors",               group: weather, mean: -1.0, delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior (D95)"}
+  - {name: cold_outdoor,     label: "cold outdoors (8°C or below)", group: weather, mean: -0.5, delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior (D95); GUESS"}
   - {name: heat_walking,     label: "walking in the heat",         group: weather, mean: -0.5, delta_sd: 0.0,  personal: false}
   # Legs and whole-day shape (the conjoint attributes)
   - {name: transfer_15_30,   label: "transfers of 15-30 min",      group: leg,    mean: -0.3,  delta_sd: 0.75, personal: true, source: "validation/conjoint/README.md prior (30 vs 15 min)"}
