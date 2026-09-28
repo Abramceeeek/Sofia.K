@@ -6,7 +6,7 @@ first external TestFlight build, together with `test-d-landing/privacy.html`. It
 region and the AI service (only with permission), and cover in-app deletion.
 Not legal advice. Check it against ICO guidance before first use.
 ICO fee: Abram does the self-assessment on ico.org.uk and pays if required, before collecting data (D106).
-The WhatsApp number is here and in the consent form (both sent in the chat), but not on the public privacy.html (D106).
+The WhatsApp number is here and in the consent form. Since D107 it is also public (the click-to-chat link in the posts); privacy.html still leaves it out, which is harmless.
 AI row (D106): true for a personal (consumer) Claude account. If Abram moves to the API or a Team plan, Anthropic
 becomes our processor under its DPA: change the row. Sources: research/sources.csv, 28 Sep.
 -->
@@ -33,7 +33,7 @@ becomes our processor under its DPA: change the row. Sources: research/sources.c
 |---|---|---|
 | WhatsApp (Meta) | The chat itself, on a separate WhatsApp Business number; its own privacy policy applies to messages | See WhatsApp's policy |
 | Anthropic (Claude) | Helps write up study summaries and run the planning program. It gets your answers under a participant code (like P07), never your name, number or voice notes. Abram uses a personal Claude account, and under Anthropic's consumer terms Anthropic decides how it handles what it receives (it is a separate controller, not our processor). The setting that lets Anthropic train its models on these chats is off. Abram deletes the chats when he deletes the rest of your data, and Anthropic says deleted chats leave its systems within 30 days | The United States. Anthropic's privacy policy says it protects these transfers with standard contractual clauses and adequacy decisions |
-| Tally | Sign-up and waitlist forms. Our processor, under Tally's data processing agreement | Tally is based in Belgium and stores form data in the EU |
+| Tally | The waitlist form only (the study itself uses no forms). Our processor, under Tally's data processing agreement | Tally is based in Belgium and stores form data in the EU |
 | GoatCounter | Visit counts; no personal data collected | See GoatCounter's policy |
 | Render | Hosts the static waitlist page; no form data stored there | See Render's policy |
 

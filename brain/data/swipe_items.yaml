@@ -1,8 +1,8 @@
 # The 16 Test A swipe items (validation/interview-script.md §3), keyed by the "Item #" column
 # of the results sheet's Swipes tab.
 #
-# STATUS: DRAFT. The final 16 come from the anonymous swipe page (D70c: data/calibration/places.yaml,
-# ranked by familiarity x divisiveness), then Abram confirms them and their tags.
+# STATUS: LOCKED 28 Sep (D107). These 16 are the provisional list; the swipe-page results (D70c) are no longer
+# waited for. Never change the items mid-test. The app's swipe screen uses the same 16.
 # The tags are Claude's first draft from each name (Area 2 process: the LLM drafts, Abram corrects).
 # They are judgements, not facts. Cost is left out (null) until prices are checked, so swipes do
 # not inform the cost weight.

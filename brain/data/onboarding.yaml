@@ -1,6 +1,6 @@
 # Onboarding content served to the app. Wording follows validation/interview-script.md (Test A).
-# The swipe cards are the moments with `swipe: true`; the "this or that" tasks come from
-# conjoint_design.csv (a copy of validation/conjoint/design.csv).
+# The swipe places are the 16 locked items in swipe_items.yaml (D107), served as `swipe_places`; the "this or that"
+# tasks come from conjoint_design.csv (a copy of validation/conjoint/design.csv).
 version: "0.1"
 open_questions:
   - key: best_hour

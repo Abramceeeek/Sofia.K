@@ -46,7 +46,7 @@ Record the first mode (D4).
 
 **Send one per message.** After the first "Loved it" and the first "Didn't enjoy it", ask once: "What made it that way?"
 
-**Proposed items (Abram to confirm; chosen to split people):**
+**The 16 items: LOCKED 28 Sep (D107), the provisional list, without waiting for the swipe-page results. Never change them mid-test (chosen to split people):**
 1. Big Ben and Parliament Square
 2. Uber Boat on the Thames
 3. Borough Market

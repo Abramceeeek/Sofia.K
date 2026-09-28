@@ -6,7 +6,7 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 - v0 is an iOS app.
 - **Tests A–C still run by hand (D63)**: Test A as a chat, and the B/C plans as messages or PDFs.
 - **Checkpoint 3 is in the week of 2 Nov** (D106; was 9 Nov).
-- The app is built in parallel, and its first external TestFlight build comes after the checkpoint (`decisions/v0-ios-plan.md`).
+- **The app is built now, in parallel with the tests (D107)**, and its first external TestFlight build comes after the checkpoint, about the week of 9 Nov (`decisions/v0-ios-plan.md`).
 
 ## Files
 
@@ -29,7 +29,7 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 
 ## Order (D36, changed by D86)
 
-1. **Tests A–D**, by hand. **Recruitment starts now (D105, pulled forward from the week of 12 Oct)**, once the blockers in `recruit-now.md` are done. Test A chats run from the first sign-ups to about mid-October.
+1. **Tests A–C**, by hand. **Recruitment starts now (D105)**, once the four items in `recruit-now.md` are done (D107). Test A chats run from the first sign-ups to about mid-October. **Test D runs after Test B reports (D107).**
 2. **Test E after v0 exists (D86):** 5 B2B discovery interviews (3 London, 2 Uzbek) **with a working demo**, after Test B and before any B2B-specific build work. Then the decision note, B2B-first vs consumer-first (`decisions/b2b-vs-consumer-first.md`, D40). **Until then, "businesses will pay" is an explicit, untested assumption: the main revenue risk.**
 
 Detail for step 1: **Test B goes first and fast (D68):** each person's two plans are sent 1–3 days after their Test A chat, written by the Brain from the results sheet (D65). Test B reports around 23 Oct (D106; was the week of 2 Nov), and that decides whether the iOS app code starts. **Checkpoint 3 in the week of 2 Nov** (D106).
@@ -46,24 +46,23 @@ Detail for step 1: **Test B goes first and fast (D68):** each person's two plans
 
 **Test D runs separately:** its own post and its own visitors. Study participants are tagged and excluded from Test D rates.
 
-## Before the first participant (checklist)
+## Before the first participant (checklist, lean mode D107)
 
-- [x] Abram confirms the conjoint attributes (`conjoint/README.md`): **confirmed 28 Sep, with heat replaced by the 3-level weather factor (D95).**
-- [ ] The 16 swipe items (`interview-script.md` §3) come from the swipe page **now** (D105): paste the results table, or lock the provisional 16 (`recruit-now.md` §2).
-- [x] ~~Seed moment 1 walk for the example shot card.~~ **Replaced (D106):** the example is Waterloo Bridge at sunset, text only. The walk stays a card to finish later and no longer blocks anything.
-- [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data. **Abram is doing it (D106).**
-- [ ] **WhatsApp Business on a separate number (D66)**; the account exists, so confirm the checklist in `recruit-now.md` §1, on a personal phone, never the work one (CLAUDE.md). **The number is ready (2026-09-26); you'll share it when it's needed.** Still to do:
-  - Set a greeting message and an away message: "I reply within a few hours; in an emergency call 999".
-  - Save the script's prompts as quick replies, and use labels for each person's stage (A done, plans sent, day done). WhatsApp lists all four as Business app features.
-  - Check the chat-backup setting, so voice notes you delete after transcribing aren't kept in a backup.
-- [ ] Set up the Tally sign-up form (`recruit-now.md` §4A, step by step). GoatCounter and the waitlist form come with Test D (`test-d-landing/README.md`).
-- [x] **Swipe calibration page (D70):** deployed with the Render Blueprint on 27 Sep (Frankfurt, £0, no card), tried and shared.
-  - [ ] Pick the 16 in the week of 12 Oct, before the recruitment posts go out (D86).
-  - [ ] **Download both CSVs again by Fri 23 Oct.** The free database expires about 26 Oct. Then suspend or delete the service and database in Render.
-- [ ] Safety during Test C: participants message you directly (consent form); you reply within a few hours (D46).
-- [x] Contact email and name in the consent form, privacy notice and landing page: **done (D106)**, "Abram" and abram@abdurakhmonbek.com. The study's WhatsApp number is in the consent form, the privacy notice and the first message after sign-up, never in a public post or page.
-- [ ] Turn off model training in the Claude account that sees study answers (`recruit-now.md` blocker 9).
-- [ ] Copy `results-sheet.xlsx` to `validation/raw/results.xlsx` and fill in the copy. `validation/raw/` is git-ignored, and the template in the repo stays empty. **Never commit participant data.** Participant IDs P01–P20 and the Test B A/B labels are pre-filled.
+The short version is `recruit-now.md`. Only what's needed to run the stranger tests legally and safely:
+
+- [x] Conjoint attributes confirmed (28 Sep, with the 3-level weather factor, D95).
+- [x] **The 16 swipe places: locked 28 Sep (D107)**, the provisional list, without waiting for the swipe page.
+- [x] Consent form and privacy notice filled in (D106), sent as `study-info.pdf` with the first reply.
+- [x] Example shot card: Waterloo Bridge at sunset, text only (D106).
+- [x] Real brief and generic plan copied (`testb-real/`, `raw/testb/`, D106).
+- [ ] ICO data protection fee: the self-assessment, and pay if required, before collecting data. **Abram is doing it.**
+- [ ] **WhatsApp basics** on the study number (a personal phone, never the work one): greeting and away messages with the 999 line, chat backup off, a test message.
+- [ ] Claude's Model Improvement setting off (the privacy notice says so).
+- [ ] Abram reads the generic plan once.
+- [ ] Copy `results-sheet.xlsx` to `validation/raw/results.xlsx` and fill in the copy. `validation/raw/` is git-ignored, and the template in the repo stays empty. **Never commit participant data.**
+- [ ] Safety during Test C: participants message the study number; you reply within a few hours (D46).
+
+**Deferred by D107:** the Tally sign-up form (sign-ups come by click-to-chat), the Test D landing page (after Test B), WhatsApp quick replies and labels, the full materials review, the Area 18 review, and the South Kensington walk. The swipe page's results are no longer waited for; downloading them before 23 Oct is optional.
 
 ## Founder hours (budget 15)
 

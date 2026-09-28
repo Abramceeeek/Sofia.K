@@ -27,7 +27,7 @@ class InstallOut(BaseModel):
 
 
 class SwipeItem(BaseModel):
-    moment_id: str
+    item: int = Field(ge=1)          # one of the 16 locked swipe places (data/swipe_items.yaml, D107), as in Test A
     reaction: Literal["loved", "fine", "didnt_enjoy", "havent_been"]
 
 
@@ -65,6 +65,7 @@ class ProfileIn(BaseModel):
     foods_avoided: str | None = Field(default=None, max_length=200)   # D19: optional, no allergy question
     photos_matter: int | None = Field(default=None, ge=1, le=5)        # D16
     shot_card_appeal: int | None = Field(default=None, ge=1, le=5)     # D16
+    fields: list[str] = Field(default_factory=list, max_length=5)      # inspiring fields (D77): aspiration.yaml codes
 
 
 class ConditionsIn(BaseModel):
@@ -73,14 +74,17 @@ class ConditionsIn(BaseModel):
 
 
 class PlanRequest(BaseModel):
+    """A day to plan. The same engine as the Test B plans (brain.dayplan, D107)."""
     start: Point
-    start_time: str = Field(default="10:00", pattern=r"^\d{2}:\d{2}$")
-    end_time: str = Field(default="18:00", pattern=r"^\d{2}:\d{2}$")
-    date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
-    max_stops: int = Field(default=5, ge=1, le=8)
+    start_name: str = Field(default="your start point", max_length=80)
+    start_time: str = Field(default="12:00", pattern=r"^\d{2}:\d{2}$")
+    end_time: str = Field(default="17:00", pattern=r"^\d{2}:\d{2}$")
+    date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")   # sets open days and sunset lines
+    stops: int = Field(default=4, ge=2, le=6)          # including lunch when the day spans midday (D102)
+    budget_gbp: float | None = Field(default=None, ge=0)   # per person; default: the profile's budget band
     conditions: ConditionsIn | None = None
-    peak_end: bool = False            # D15: off by default
-    intent: dict = Field(default_factory=dict)   # recharge/explore, who might come (D27)
+    familiar: bool = True             # D103: one place they loved plus new places; on by default in the app
+    intent: dict = Field(default_factory=dict)   # recharge/explore, who might come, must_do (D27)
 
 
 class CuratedStop(BaseModel):

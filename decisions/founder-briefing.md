@@ -176,7 +176,7 @@ Your idea had five parts. Here is each one, honestly.
 |---|---|---|
 | Tests, by hand (Phase 3) | ≈ 24 | Now until **Checkpoint 3, week of 2 Nov** (D106) |
 | First version (v0): iPhone app + backend | ≈ 56.5 | About 8.5 h before the checkpoint, the rest mid-Nov to late Dec |
-| Test v0 (Phase 5) | 10 | January, through TestFlight |
+| Test v0 (Phase 5) | 10 | From mid-November, through TestFlight (D107; was January) |
 | **Whole plan** | **≈ 114.5 in the window** | About **1.3 weeks past the 14-week window** |
 
 - **Skills fit well:**

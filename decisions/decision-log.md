@@ -2,6 +2,27 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — lean mode; the app is built now
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D107 | **Lean mode:** keep only what's needed to (a) run the stranger tests legally and safely and (b) build the product.<br>**Kept:**<br>- the ICO self-assessment (Abram);<br>- WhatsApp basics: the business number, and an away message with 999;<br>- Claude's Model Improvement off;<br>- the consent PDF.<br>**Skipped or deferred:**<br>- the Tally form: sign-ups come to the WhatsApp number through a click-to-chat link in the posts, and the first reply asks where they saw it;<br>- the Test D landing page, until after Test B;<br>- waiting for the swipe results: the provisional 16 are locked now;<br>- WhatsApp quick replies and labels;<br>- the full materials review: Abram reads only the generic plan;<br>- the Area 18 review, the South Kensington walk and the desk research.<br>**The iOS app is built now, in parallel with the tests:** the Brain first, then the SwiftUI screens, with Abram's review time kept small | D105–D106's blocker list; D106's "the number never in public posts"; D65 and D70e's hold on the app code; D81's design before the build | Founder decisions. Minimal checklist and dates: `validation/recruit-now.md` |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m102 | **The click-to-chat link** has a ready-made first line and is the same for every group (WhatsApp's format: `wa.me/<number>?text=…`). **The first reply also asks "do we know each other?"**, which sets the stranger or friends-and-family tag under D43's rule (anyone Abram knows, or anyone sent by someone he knows) | `recruitment-posts.md` |
+| m103 | **Chat backup off stays in the WhatsApp basics,** because the consent form promises that voice notes are deleted once transcribed | `recruit-now.md` |
+| m104 | **The personal Claude account stays for the study.** This is my reading of "Model Improvement off", and it matches D106's recommendation | `privacy-notice.md` |
+| m105 | **Native-first screens now.** Abram's custom design pass (D81, 7 h) is optional after Test B. His review is one screenshot page per batch, in three batches | `design/v0-screens.md`, `decisions/v0-ios-plan.md` |
+| m106 | **The app plans with the Test B engine.** `brain/dayplan.py` was moved out of `testb.py`, and Test B's output is byte-identical after the move. The app defaults:<br>- the familiar favourite is on (D103);<br>- the budget comes from the "about you" band (GUESS: under £20 → £20, £20–40 → £40, £40–70 → £70, £70+ → no limit);<br>- the day runs 12:00–17:00 with 4 stops;<br>- the sunset comes from the date (`sun.py`, NOAA equations, within 1 min of sunrise-sunset.org on all seven checked Saturdays) | `brain/` |
+| m107 | **The app's swipes use the 16 locked places** by item number, as in Test A, instead of moment ids. The swipe table changed; there is no data in it yet | `api.py`, `db.py`, `schemas.py` |
+| m108 | **"Chosen for" labels speak to the person in the app,** e.g. "a field that inspires you" | `dayplan.py` |
+| m109 | **CI budget:** one macOS run per batch, plus fixes. Whether macOS minutes count 10× against the free quota is UNVERIFIED | `decisions/v0-ios-plan.md` |
+| m110 | **The first external TestFlight build is planned for about the week of 9 Nov, and Phase 5 from mid-November.** The gates are unchanged. A paid database for the Brain is flagged as Abram's money decision at that point | `recruit-now.md`, `LOG.md` |
+| m111 | **The published screens page** shows the new build timing (D84) | https://claude.ai/artifact/CqRgaT1e328Qm4H2cX3W91 |
+
 ## 2026-09-28 — study contact details; the dates confirmed
 
 | # | Decision | Replaces | Why |

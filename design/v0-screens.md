@@ -2,7 +2,7 @@
 
 **What the app does:** it plans a day out around how a specific person wants to *feel*, not around famous sights. The unit is a **moment**: a specific experience at a place and time, often including how you arrive. One example is walking out of South Kensington tube and seeing the Natural History Museum open up in front of you.
 
-**Who designs (D81):** Abram, in Claude Design, **after Test B reports** (about 23 Oct, D106). An outside designer is optional. If one is brought in, they sign Part A (`legal/contributor-deed-part-a.md`) before their work is used.
+**Who designs (D107, lean mode):** Claude builds **every screen native-first now**, in parallel with the tests: native SwiftUI with one accent colour. Abram reviews one screenshot page per batch. **His own design pass on the four custom screens (D81) is optional, after Test B reports** (about 23 Oct), as a restyle. An outside designer is optional too. If one is brought in, they sign Part A (`legal/contributor-deed-part-a.md`) before their work is used.
 
 ## Design scope (D81): four custom screens, everything else native
 
@@ -38,7 +38,7 @@
 - **Honesty is visible.** Say that a real person runs this test and that AI helps draft summaries and plans. Never imply a person replied when it was the app.
 - **Time limits:** no visible timers and no time limits anywhere in onboarding. A section progress indicator is fine.
 
-**Build 1** = the first external TestFlight build, about the week of 30 Nov: onboarding, safety and settings. **Build 2** = plans and real use, about mid-December. The Phase 3 tests run by hand before either (D63), so the screens should reflect what those tests teach.
+**Build 1 and Build 2 now ship together** in the first external TestFlight build, about the week of 9 Nov (D107). The Phase 3 tests run by hand in parallel (D63), and their lessons go in before that build.
 
 ## A. First run
 
@@ -92,10 +92,12 @@
 
 Login or sign-up, a paywall or payments, an AI support chat, a social feed or profiles, widgets, Live Activities, Watch, iPad, landscape, in-app turn-by-turn routing, or a custom voice recorder (the keyboard mic covers voice in v0).
 
-## Timing (D81)
+## Timing (D107)
 
-- **After Test B reports** (about 23 Oct), and after Checkpoint 3 (week of 2 Nov, D106) so its lessons go in.
-- **Welcome, plus type and colour** (2.5 h): the week of 16 Nov, before Build 1 (about 30 Nov).
-- **Moment card, shot card, day plan** (4.5 h): the weeks of 23–30 Nov, before Claude builds them for Build 2 (mid-December).
-- Native screens need no design pass. Claude builds them from this list.
+- **Now, native-first, in three batches** (Claude builds; Abram looks at one screenshot page per batch, about 15 min):
+  1. **First run and safety** (screens 1, 2, 19, 20 and 22): the week of 28 Sep.
+  2. **Onboarding** (screens 3–10): the week of 5 Oct.
+  3. **Plans and the day out** (screens 11–18 and 21): the week of 12 Oct.
+- **The custom design pass (D81)** on welcome, moment card, shot card and day plan: optional, after Test B reports (about 23 Oct) and Checkpoint 3 (the week of 2 Nov).
+- **The first external TestFlight build:** about the week of 9 Nov.
 - **Plan behind this:** `decisions/v0-ios-plan.md`.

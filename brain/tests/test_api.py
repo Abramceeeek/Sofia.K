@@ -7,17 +7,22 @@ from fastapi.testclient import TestClient
 from brain.api import create_app
 from brain.config import Settings
 
-from conftest import DATA
+from conftest import DATA, make_moment
 
 
 @pytest.fixture
 def client(tmp_path, test_moments):
     data = tmp_path / "data"
     (data / "moments").mkdir(parents=True)
-    for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv"):
+    for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv", "swipe_items.yaml", "aspiration.yaml"):
         shutil.copy(DATA / f, data / f)
-    shutil.copy(DATA / "moments" / "m_southken_nhm_reveal.yaml", data / "moments")
-    for m in test_moments:
+    for f in ("m_southken_nhm_reveal.yaml", "m_waterloo_bridge_sunset.yaml"):
+        shutil.copy(DATA / "moments" / f, data / "moments")
+    # two cards at swipe places (swipe_items.yaml `cards`): the Uber Boat (item 2) and Borough Market (item 3)
+    extra = [make_moment("m_uber_boat_west_day", 51.5071, -0.1218, tags=dict(movement_views=2, outdoor_exposure=1),
+                         cost=12),
+             make_moment("m_borough_market_graze", 51.5055, -0.0905, tags=dict(food=2, crowds=2), cost=15)]
+    for m in test_moments + extra:
         (data / "moments" / f"{m.id}.yaml").write_text(yaml.safe_dump(m.model_dump(by_alias=True)))
     settings = Settings(database_url=f"sqlite:///{tmp_path / 'test.db'}", data_dir=data,
                         admin_token="admin-secret", alert_webhook_url=None, planner_time_limit_s=0.3)
@@ -49,17 +54,19 @@ def test_onboarding_serves_swipes_tasks_and_questions(client):
     h, _ = install(client)
     r = client.get("/v1/onboarding", headers=h).json()
     assert len(r["conjoint_tasks"]) == 10
-    ids = {c["id"] for c in r["swipe_cards"]}
-    assert "m_southken_nhm_reveal" in ids and "t_view" in ids
+    places = r["swipe_places"]
+    assert len(places) == 16 and places[0] == {"item": 1, "name": "Big Ben and Parliament Square"}   # locked, D107
     assert r["open_questions"][0]["key"] == "best_hour"
+    assert {o["key"] for o in r["fields"]["options"]} >= {"food", "nature", "none"}
+    assert r["example_shot_card"]["id"] == "m_waterloo_bridge_sunset" and r["example_shot_card"]["shot_card"]
 
 
 def test_full_flow_answers_weights_plan_rating_and_deletion(client):
     h, uid = install(client)
     # swipes and "this or that": always avoid the rainy plan (D95), otherwise take the milder one
     assert client.post("/v1/me/swipes", headers=h, json={"items": [
-        {"moment_id": "t_museum", "reaction": "loved"}, {"moment_id": "t_market", "reaction": "didnt_enjoy"},
-        {"moment_id": "t_park", "reaction": "havent_been"}]}).status_code == 204
+        {"item": 4, "reaction": "loved"}, {"item": 3, "reaction": "didnt_enjoy"},
+        {"item": 6, "reaction": "havent_been"}]}).status_code == 204
     tasks = client.get("/v1/onboarding", headers=h).json()["conjoint_tasks"]
     def pick(t):
         rank = lambda s: 2 if "rainy" in s else (1 if "cold but dry" in s else 0)
@@ -77,14 +84,20 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
     assert rain["weight"] < -1.0 and rain["direction"] == "dislikes"
 
     r = client.post("/v1/me/plans", headers=h, json={
-        "start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "10:00", "end_time": "18:00",
-        "conditions": {"temp_c": 20, "rain_prob": 0.1}})
+        "start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "Charing Cross station",
+        "start_time": "10:00", "end_time": "18:00", "conditions": {"temp_c": 20, "rain_prob": 0.1}})
     assert r.status_code == 201, r.text
     plan = r.json()
-    assert plan["stops"], plan
-    assert "m_southken_nhm_reveal" not in [st["moment_id"] for st in plan["stops"]]   # draft: never planned
-    first = plan["stops"][0]
-    assert first["why"] and first["arrive"] >= "10:00"
+    assert len(plan["stops"]) == 4, plan
+    ids = [st["moment_id"] for st in plan["stops"]]
+    assert "m_southken_nhm_reveal" not in ids                              # draft: never planned
+    assert "m_borough_market_graze" not in ids                            # a place they didn't enjoy (D100)
+    assert sum(st["lunch"] for st in plan["stops"]) == 1                  # one lunch stop (D102)
+    assert plan["summary"][0].startswith("Start: Charing Cross station at 10:00 · 4 stops, including lunch")
+    for st in plan["stops"]:
+        assert st["pin"] and st["lines"] and st["cost_text"] and st["arrive"] >= "10:00"
+    first = next(st for st in plan["stops"] if st["rateable"])
+    assert first["why"] and first["card"]["id"] == first["moment_id"]
 
     assert client.post(f"/v1/me/plans/{plan['id']}/feedback", headers=h,
                        json={"chosen": True, "fit_rating": 4, "reason": "short walks"}).status_code == 204
@@ -127,7 +140,7 @@ def test_admin_needs_the_admin_token(client):
     h, _ = install(client)
     assert client.get("/v1/admin/safety", headers=h).status_code == 403
     r = client.post("/v1/admin/moments/reload", headers=ADMIN).json()
-    assert r["plannable"] == 6 and "m_southken_nhm_reveal" in r["drafts"]
+    assert r["plannable"] == 9 and "m_southken_nhm_reveal" in r["drafts"]   # 6 test cards, 2 at swipe places, Waterloo
 
 
 def test_curated_plan_for_test_b(client):
@@ -141,3 +154,34 @@ def test_curated_plan_for_test_b(client):
     bad = client.post(f"/v1/admin/users/{uid}/plans", headers=ADMIN,
                       json={"stops": [{"moment_id": "nope", "arrive": "10:00"}]})
     assert bad.status_code == 422
+
+
+def test_swipes_and_fields_are_checked(client):
+    h, _ = install(client)
+    assert client.post("/v1/me/swipes", headers=h, json={"items": [{"item": 99, "reaction": "loved"}]}
+                       ).status_code == 422
+    assert client.put("/v1/me/profile", headers=h, json={"fields": ["astrology"]}).status_code == 422
+    assert client.put("/v1/me/profile", headers=h, json={"fields": ["food"]}).status_code == 204
+
+
+def test_app_plan_keeps_one_place_they_loved_by_default(client):
+    """D103: the familiar favourite is on in the app. The Uber Boat (swipe item 2) was loved, so its card is in."""
+    h, _ = install(client)
+    client.post("/v1/me/swipes", headers=h, json={"items": [{"item": 2, "reaction": "loved"}]})
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "13:30", "end_time": "18:00", "stops": 3}
+    plan = client.post("/v1/me/plans", headers=h, json=body).json()
+    boat = [st for st in plan["stops"] if st["moment_id"] == "m_uber_boat_west_day"]
+    assert boat and boat[0]["familiar"]
+    off = client.post("/v1/me/plans", headers=h, json={**body, "familiar": False}).json()
+    assert "m_uber_boat_west_day" not in [st["moment_id"] for st in off["stops"]]   # Test B rule: new places only
+
+
+def test_budget_band_and_date_shape_the_plan(client):
+    h, _ = install(client)
+    client.put("/v1/me/profile", headers=h, json={"budget_band": "under_20"})
+    plan = client.post("/v1/me/plans", headers=h, json={
+        "start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "10:00", "end_time": "18:00",
+        "date": "2026-10-31"}).json()
+    assert plan["title"] == "Saturday 31 October"
+    assert sum(st["cost_gbp"] for st in plan["stops"]) <= 20
+    assert "t_pricey" not in [st["moment_id"] for st in plan["stops"]]

@@ -1,5 +1,25 @@
 # v0 as a native iOS app: plan, hours, cuts and TestFlight (D50–D54, D59–D64)
 
+> **Updated by D107 (2026-09-28, lean mode): this block supersedes the build timing below.**
+> - **The app is built now, in parallel with the tests**, not after Test B:
+>   - **the Brain first.** Step 1 was done on 28 Sep: the app's plans come from the same engine as Test B (`brain/src/brain/dayplan.py`), using the 16 locked swipe places and sunset lines from the date (`sun.py`);
+>   - **then the SwiftUI screens, in three batches:** first run and safety; onboarding; plans and the day out (`design/v0-screens.md`).
+> - **Native-first:** every screen uses native SwiftUI with one accent colour. Abram's own design pass on the four custom screens (D81, 7 h) becomes **optional, after Test B**, as a restyle.
+> - **Abram's review stays small:** one screenshot page per batch from the CI simulator build (about 15 min each), plus questions batched at the end of each batch.
+>   - **About 3–5 h of his time before the first external build** (GUESS): screenshots 0.75, signing secrets and the internal TestFlight build 1.0, the app's consent text 0.5, and a device check and tester notes 1.5.
+>   - The old estimate was ≈ 52.5 h. Less review means more of the bugs are found by testers in Phase 5.
+> - **CI budget:** one macOS run per batch, plus fixes.
+>   - GitHub's pricing page lists macOS at $0.062 a minute, and states no multiplier against the 2,000 free minutes on a private repo.
+>   - A third-party report says macOS minutes count 10× (**UNVERIFIED**), which would allow about 200 macOS minutes a month.
+>   - Without a payment method, GitHub blocks further runs rather than charging.
+> - **The first external TestFlight build is about the week of 9 Nov** (was ~30 Nov), after Checkpoint 3 and behind the same gates:
+>   - the Apple checks;
+>   - the app's consent text;
+>   - Part A signed by the backup helper;
+>   - a paid database (a money decision).
+>
+>   **Phase 5 starts from about mid-November** (was January).
+>
 > **Updated by D59–D64 (2026-09-26):**
 > - **The cuts are accepted** (D59).
 > - **Tests A–C run by hand** and Checkpoint 3 stays in the week of 9 Nov (D63) *(since moved to the week of 2 Nov, D106)*. The app is built in parallel, so the first external TestFlight build carries the Phase 3 lessons.

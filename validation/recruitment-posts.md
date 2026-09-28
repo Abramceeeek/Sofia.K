@@ -29,32 +29,28 @@
 >
 > Voice notes are transcribed and then deleted. Full privacy details are in the consent note before we start.
 >
-> Interested? Sign up here (1 minute) and I'll message you: **[sign-up link]** — Abram
+> Interested? Message me on WhatsApp and I'll send the details: https://wa.me/447771477717?text=Hi%20Abram%2C%20I%27d%20like%20to%20take%20part%20in%20the%20days-out%20study. — Abram
 
-- **The sign-up link** is the Tally form with one `?src=` per group, e.g. `https://tally.so/r/<id>?src=fb-ucl-hiking`.
-- **The study's WhatsApp number never goes in a public post (D106).** People get it in the first message after they sign up.
+- **Sign-ups come straight to the study's WhatsApp number (D107):** the link above opens a chat with the number and a ready-made first line ("Hi Abram, I'd like to take part in the days-out study."). One link for every group; the first reply asks where they saw it. WhatsApp's format: `https://wa.me/<number in international format, no +>?text=<URL-encoded text>` (WhatsApp Help Center, 28 Sep).
+- **The number is now public** in the posts (D107 replaces D106's rule), so expect the odd stray message. The greeting message answers them.
+- **No Tally form for the study** (D107). Tally stays only for the Test D waitlist, after Test B.
 
-**Sign-up form fields** (Tally, 1 minute; set-up steps in `recruit-now.md` §4A):
-- first name;
-- WhatsApp number;
-- "How do you know me?" (I don't / a friend of a friend / I know you);
-- a required tick box, "I'm 18 or over";
-- a hidden field `src`, filled from the link, so you know which group they came from.
+## First reply to someone who messages (D107)
 
-## First message after sign-up (from the study number, D106)
+Reply within a day, with `validation/study-info.pdf` attached (the consent form and privacy notice).
 
-Send it within a day of the sign-up, with `validation/study-info.pdf` attached (the consent form and privacy notice). Save it as the `/consent` quick reply.
-
-> Hi [first name], it's Abram from the "days out that fit you" study. Thanks for signing up! This is the study's WhatsApp number, +44 7771 477717. Please save it so my messages reach you.
+> Hi [first name], thanks for getting in touch! Two quick questions first: where did you see my post, and do we know each other (not at all / through a friend / yes)?
 >
-> Before we start, the attached PDF explains how the study works and what I keep. If you're happy to take part, reply "I agree". If you're also happy for me to keep your voice notes for 30 days to check the transcripts, reply "I agree, and keep my voice notes".
+> The attached PDF explains how the study works and what I keep. If you're happy to take part, reply "I agree". If you're also happy for me to keep your voice notes for 30 days to check the transcripts, reply "I agree, and keep my voice notes".
 >
 > Then tell me when suits you to start. The chat takes 20–30 minutes, by voice notes or typing, and can be spread over a day.
 >
 > I reply within a few hours. In an emergency, call 999.
 
-- **Keep their "I agree"** (a screenshot or an exported chat, stored with the results sheet in `validation/raw/`). Label the chat "Consented".
+- **Where they saw it** goes in the Posts tab of the results sheet (the group), and **"do we know each other?"** decides the tag: "not at all" is a stranger; "through a friend" or "yes" is friends and family (D43), reported separately.
+- **Keep their "I agree"** (a screenshot or an exported chat, stored with the results sheet in `validation/raw/`).
 - **No "I agree", no questions.** If they don't reply within 3 days, send one reminder, then leave it.
+- **By replying "I agree" they confirm they're 18 or over** (the last line of the consent form).
 
 ## Post 2 — Test D (landing page, a different week or different groups)
 

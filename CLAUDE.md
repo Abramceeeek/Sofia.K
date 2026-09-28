@@ -143,8 +143,13 @@ The same profile matches **people**, not just places. Compatible trip-mates make
   - Tests A–C run by hand. Test A is a chat on **WhatsApp Business with a separate number**; the plans go as messages or PDFs.
   - **The Brain generates the Test B plans** from the results sheet, and Abram checks them.
   - Test B runs first and fast, and reports **around 23 Oct**. **Checkpoint 3 is in the week of 2 Nov** (moved a week earlier, D106). Recruitment starts now (D105).
+  - **Lean mode (D107):** keep only what's needed to run the stranger tests legally and safely, and to build the product (`validation/recruit-now.md`). Sign-ups come by a WhatsApp click-to-chat link in the posts, and the first reply asks where they saw it. The 16 swipe places are locked. **Test D runs after Test B.** Desk reviews, the Tally form, quick replies and labels, and the South Kensington walk are deferred (`decisions/after-9-nov.md` #19).
   - **Test E is postponed until v0 exists (D86).** It runs with a working demo after Test B, and before any B2B-specific build work. Until then, **"businesses will pay" is an explicit, untested assumption and the main revenue risk.** Its hours went to moment cards and Test B.
-  - **Abram designs v0 himself in Claude Design after Test B (D81).** Four custom screens (welcome, moment card, shot card, day plan); everything else is native SwiftUI. **iOS app code waits until Test B reports.** The GitHub Actions pipeline and a placeholder `app/` exist now (D70e), and it builds for the simulator until Abram adds the signing secrets.
+  - **The iOS app is built now, in parallel with the tests (D107):** the Brain first, then native SwiftUI screens in three batches.
+    - Abram's review stays small: one screenshot page per batch from CI.
+    - His own design pass on the four custom screens (D81) is optional, after Test B.
+    - The first external TestFlight build is about the week of 9 Nov, behind the same gates.
+    - The GitHub Actions pipeline builds for the simulator until Abram adds the signing secrets (D70e).
   - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.
 - **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`.
 - **Economics work is paused** unless a decision needs it (D52).

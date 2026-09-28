@@ -2,14 +2,14 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
-**Status:** first draft, written 2026-09-26. The 63 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). **It now also writes the Test B plans (D65), and holds the anonymous swipe page for choosing the 16 onboarding places (D70).** The app itself waits until Test B reports.
+**Status (28 Sep):** 92 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). It writes the Test B plans (D65). **The app build has started (D107):** the app's `POST /v1/me/plans` now uses the same planning engine as Test B (`src/brain/dayplan.py`), with the familiar favourite on by default (D103), and the app's swipes use the 16 locked places.
 
 ## Run it
 
 ```bash
 cd brain
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev]"
-.venv/bin/python -m pytest -q                       # 57 tests
+.venv/bin/python -m pytest -q                       # 92 tests
 BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --reload
 # API docs: http://127.0.0.1:8000/docs
 ```
@@ -31,7 +31,7 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 | `data/aspiration.yaml`, `src/brain/aspiration.py` | **Aspiration match (D77):** the Test A fields mapped onto moments (existing tags ≥ 2, or listed ids). `python -m brain.testb fields` flags fields with fewer than 2 ready moments |
 | `data/priors.yaml` | **b_population and the prior on δ_person**, with named features and labels. All GUESS except the conjoint priors (`validation/conjoint/README.md`). Replace them with the pooled refit from Phase 3 data |
 | `data/onboarding.yaml` | Onboarding copy served to the app (from the Test A script) |
-| `data/swipe_items.yaml` | **The 16 Test A swipe items with DRAFT tags** (Claude's first draft; you confirm the places and the tags). Keyed by the Swipes tab's "Item #" |
+| `data/swipe_items.yaml` | **The 16 swipe places, locked 28 Sep (D107)**, used by Test A and the app. Tags are Claude's draft. Keyed by the Swipes tab's "Item #"; `cards` links each place to its moment cards |
 | `data/testb/*.example.yaml` | Examples of the Test B brief, the generic plan and trip intent. Copy them to `validation/raw/testb/` (never committed) and edit |
 | `data/conjoint_design.csv` | A copy of `validation/conjoint/design.csv`. A test fails if the two differ |
 | `src/brain/moments.py` | The moment schema, and `missing_for_planning()`, which lists what a moment still needs |
@@ -40,7 +40,9 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 | `src/brain/scoring.py` | `S = x · (b_pop + δ)`; the named terms behind each stop's score (input for the explanation); named weights with P(β<0), and "unsure" unless P > 0.8 or < 0.2 |
 | `src/brain/planner.py` | An orienteering problem with time windows in OR-Tools. Prizes are utility above the 2|3 rating threshold, transfers cost the person's own transfer weights, and there is a stop limit. The **peak–end toggle is off by default** (D15). Travel runs from one moment's end to the next moment's start, so it is asymmetric |
 | `src/brain/travel.py` | A straight-line walking estimate; `LondonEstimate` (walk up to 20 min, otherwise a rough Tube/bus time; every parameter is a GUESS); a hook for precomputed OSRM/TfL matrices |
-| `src/brain/testb.py` | **Test B:** reads the results sheet, fits each person's weights from their swipes and choices, plans their day, and writes both blind plans (WhatsApp text and PDF) plus a review sheet for you |
+| `src/brain/dayplan.py` | **The day planner** shared by Test B and the app (D107): lunch, buffers, pace, the familiar favourite, disliked places, rain swaps, sunset-aware "Best" lines and the participant-facing wording |
+| `src/brain/sun.py` | Sunset for a date (NOAA equations), so the app's plans get sunset lines offline; checked against sunrise-sunset.org |
+| `src/brain/testb.py` | **Test B:** reads the results sheet, fits each person's weights from their swipes and choices, plans their day with `dayplan`, and writes both blind plans (WhatsApp text and PDF) plus a review sheet for you |
 | `src/brain/api.py` | 22 endpoints (below) |
 | `src/brain/calibration.py`, `data/calibration/` | **The anonymous swipe page** (D70): a separate small app with its ~30 candidate places, the page, the results page and the ranking. Deployed by `../render.yaml` |
 

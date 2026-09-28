@@ -1,6 +1,6 @@
 # Face: the iOS app (D50, D64, D70)
 
-**Status (2026-09-26):** pipeline placeholder only. `project.yml` (XcodeGen) and one "Pipeline check" screen let GitHub Actions prove it can build, sign and upload with no Mac. **The real app code waits until Test B reports (D65).** The screens it will build are in `design/v0-screens.md`.
+**Status (2026-09-28):** pipeline placeholder, with the real app code starting now (D107, lean mode). The build order is the Brain first (step 1 done), then native SwiftUI screens in three batches (`design/v0-screens.md`, Timing). Each batch ends with one simulator build in CI and a page of screenshots for Abram. `project.yml` (XcodeGen) and one "Pipeline check" screen proved that GitHub Actions can build with no Mac.
 
 **The simulator build passed on its first run** (2026-09-26, run 36262736945; the build step took 18 s). Signing and upload haven't run yet.
 - **Before the secrets exist:** any push that changes `app/` builds for the simulator only (no signing). That checks the runner, XcodeGen and the Swift.

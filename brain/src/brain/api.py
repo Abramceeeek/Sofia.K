@@ -17,18 +17,22 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import db, notify
+from . import dayplan, db, notify
+from .aspiration import NONE, load_aspiration
 from .config import Settings, get_settings
-from .features import Conditions, conjoint_plan_features, moment_features
+from .features import Conditions, conjoint_plan_features
 from .moments import Moment, load_moments
 from .personal import DeltaPosterior, prior_only
-from .planner import LegWeights, candidate_for, hhmm, parse_hhmm, plan_day
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
                       PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, SwipesIn)
-from .scoring import (conjoint_observation, contributions, named_weights, rating_observation,
-                      swipe_observation, update_person)
-from .travel import WalkingEstimate
+from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
+from .sun import sunset
+from .travel import LondonEstimate
+
+# D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
+BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}
+EXAMPLE_SHOT_CARD = "m_waterloo_bridge_sunset"   # the Test A example (D106), shown on the photos screen
 
 
 def _hash(token: str) -> str:
@@ -50,6 +54,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for r in rows:
             tasks.setdefault(int(r["task"]), {})[r["plan"]] = r
         app.state.tasks = tasks
+        # the 16 locked swipe places (D107): their tags for the δ update, and the cards at each place for planning
+        app.state.swipe_items = dayplan.load_swipe_items(settings.data_dir / "swipe_items.yaml")
+        app.state.swipe_cards = dayplan.load_swipe_cards(settings.data_dir / "swipe_items.yaml")
+        asp = settings.data_dir / "aspiration.yaml"
+        app.state.amap = load_aspiration(asp) if asp.exists() else None
+        app.state.travel = LondonEstimate()
         with app.state.Session() as s:   # load the moment files into an empty database
             if s.scalar(select(db.MomentRow.id).limit(1)) is None:
                 _reload_moments(s, settings)
@@ -87,12 +97,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return DeltaPosterior.from_json(user.delta)
         return prior_only(p.delta_prior_sd)
 
+    def person_fields(user: db.User) -> frozenset[str]:
+        """The inspiring fields the person picked (D77), as aspiration.yaml codes."""
+        return frozenset(f for f in (user.profile or {}).get("fields", []) if f != NONE)
+
     def refit(s: Session, user: db.User, p: PopulationModel) -> DeltaPosterior:
         """Rebuild δ_person from everything this person has told us (swipes, choices, ratings)."""
         ms = moments_by_id(s)
+        amap, fields = app.state.amap, person_fields(user)
         obs = []
         for sw in user.swipes:
-            if sw.moment_id in ms and (o := swipe_observation(p, ms[sw.moment_id], sw.reaction)):
+            m = app.state.swipe_items.get(sw.item)
+            asp = amap.match(m, fields) if (amap and m is not None) else 0.0
+            if m is not None and (o := swipe_observation(p, m, sw.reaction, asp)):
                 obs.append(o)
         for ch in user.choices:
             t = app.state.tasks.get(ch.task)
@@ -144,14 +161,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         ms = moments_by_id(s)
         tasks = [{"task": k, "A": v["A"]["description"], "B": v["B"]["description"]}
                  for k, v in sorted(app.state.tasks.items())]
-        return {**app.state.onboarding, "swipe_cards": [card(m) for m in ms.values() if m.swipe],
-                "conjoint_tasks": tasks}
+        amap = app.state.amap
+        fields = None if amap is None else {
+            "question": amap.question, "note": amap.note,
+            "options": [{"key": f.code, "label": f.label} for f in amap.fields.values()]}
+        example = ms.get(EXAMPLE_SHOT_CARD)
+        return {**app.state.onboarding,
+                "swipe_places": [{"item": n, "name": name} for n, (name, _) in sorted(app.state.swipe_cards.items())],
+                "conjoint_tasks": tasks, "fields": fields,
+                "example_shot_card": card(example) if example and example.shot_card else None}
 
     @app.post("/v1/me/swipes", status_code=204)
     def post_swipes(body: SwipesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
                     p: PopulationModel = Depends(pop)):
         for it in body.items:
-            s.add(db.Swipe(user_id=user.id, moment_id=it.moment_id, reaction=it.reaction))
+            if it.item not in app.state.swipe_items:
+                raise HTTPException(422, f"unknown swipe place {it.item}")
+            s.add(db.Swipe(user_id=user.id, item=it.item, reaction=it.reaction))
         s.flush()
         s.refresh(user)
         refit(s, user, p)
@@ -179,8 +205,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return Response(status_code=204)
 
     @app.put("/v1/me/profile", status_code=204)
-    def put_profile(body: ProfileIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+    def put_profile(body: ProfileIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                    p: PopulationModel = Depends(pop)):
+        amap = app.state.amap
+        if amap is not None and (bad := [f for f in body.fields if f not in amap.fields]):
+            raise HTTPException(422, f"unknown fields {bad}")
         user.profile = body.model_dump(exclude_none=True)
+        refit(s, user, p)   # the inspiring fields change the swipes' aspiration term (D77)
         s.commit()
         return Response(status_code=204)
 
@@ -205,32 +236,38 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/plans", status_code=201)
     def make_plan(body: PlanRequest, user: db.User = Depends(current_user), s: Session = Depends(session),
                   p: PopulationModel = Depends(pop)):
-        b = p.b_person(posterior(user, p).mean)
-        cond = Conditions(body.conditions.temp_c, body.conditions.rain_prob) if body.conditions else Conditions()
-        ms = {k: m for k, m in moments_by_id(s).items() if m.plannable() and m.status == "ready"}  # checked cards only (D72)
-        if body.date:   # weekday-only places stay out of weekend plans
-            wd = date.fromisoformat(body.date).strftime("%a").lower()
-            ms = {k: m for k, m in ms.items() if m.open_on(wd)}
-        if cond.rain_prob is not None and cond.rain_prob >= 0.5:
-            ms = {k: m for k, m in ms.items() if m.best_time.weather != ["dry"]}
-        cands = [candidate_for(m, float(p.vector(moment_features(m, cond)) @ b)) for m in ms.values()]
-        idx = {n: i for i, n in enumerate(p.names)}
-        legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
-        result = plan_day(cands, body.start, parse_hhmm(body.start_time), parse_hhmm(body.end_time),
-                          WalkingEstimate(), legs, floor=p.cutpoints["rating"][1], max_stops=body.max_stops,
-                          peak_end=body.peak_end, time_limit_s=settings.planner_time_limit_s)
-        stops = []
-        for st in result.stops:
-            m = ms[st.moment_id]
-            why = contributions(p, b, moment_features(m, cond, st.travel_min))
-            stops.append({**card(m), "moment_id": m.id, "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min),
-                          "travel_min": st.travel_min, "predicted": st.utility, "why": why})
-        plan = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=body.intent, stops=stops,
-                       value=result.value)
-        s.add(plan)
+        """The person's plan, from the same engine as the Test B plans (brain.dayplan, D107)."""
+        day = date.fromisoformat(body.date) if body.date else None
+        budget = body.budget_gbp if body.budget_gbp is not None else \
+            BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
+        c = body.conditions
+        brief = dayplan.Brief(
+            start_name=body.start_name, start=body.start, start_time=body.start_time, end_time=body.end_time,
+            stops=body.stops, budget_gbp=budget,
+            day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
+            weekday=day.strftime("%a").lower() if day else None,
+            temp_c=c.temp_c if c else None, rain_prob=c.rain_prob if c else None,
+            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
+        by_id = {m.id: m for m in ready}
+        cards_at = app.state.swipe_cards
+        loved = [cards_at[sw.item] for sw in user.swipes if sw.reaction == "loved" and sw.item in cards_at]
+        disliked = [cards_at[sw.item] for sw in user.swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
+        must_do = body.intent.get("must_do") if body.intent.get("must_do") in by_id else None
+        plan, stops, _, notes = dayplan.personal_plan(
+            p, posterior(user, p), ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
+            fields=person_fields(user), loved=loved, disliked=disliked, familiar=body.familiar)
+        out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
+               for pst, st in zip(plan.stops, stops)]
+        for st in out:
+            if st["rateable"] and st["moment_id"] in by_id:
+                st["card"] = card(by_id[st["moment_id"]])
+        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=body.intent, stops=out,
+                      value=plan.value)
+        s.add(row)
         s.commit()
-        return {**plan_out(plan), "peak_moment_id": result.peak_moment_id,
-                "end_bonus_applied": result.end_bonus_applied, "solver_status": result.status}
+        return {**plan_out(row), "title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
+                "pace": notes.pace, "solver_status": plan.status}
 
     @app.get("/v1/me/plans")
     def my_plans(user: db.User = Depends(current_user)):
