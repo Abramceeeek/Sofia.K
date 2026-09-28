@@ -1,0 +1,45 @@
+# Start-point card (D104): near Charing Cross, the recommended real Test B start. Written by Claude, 2026-09-28, in
+# Claude's own words; facts verified from official sources (or search results restricted to the official site) and
+# marked ready under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate;
+# * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
+# Source: stmartin-in-the-fields.org (search results from the official site, 2026-09-28): the Café in the Crypt
+# has brick-vaulted ceilings and historic tombstones on the floor, and a daily changing menu; entry to the crypt is free,
+# via the glass pavilion on the north side of the church (steps or lift). Café, week of 28 Sep: Mon-Wed 11:00-17:00,
+# Thu 11:00-19:30, Fri 10:00-17:00, Sat 10:00-19:30, Sun 11:00-17:00; times vary with concerts: check on the day.
+id: m_st_martin_crypt_lunch
+title: "Lunch in the brick-vaulted crypt of St Martin-in-the-Fields"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "St Martin-in-the-Fields, Trafalgar Square"
+  lat: 51.509174         # CHECKED: WC2N 4JJ (the church's old postcode) centroid, postcodes.io, 2026-09-28
+  lon: -0.126747
+approach:
+  from: "Charing Cross station"
+  start_point: {lat: 51.509174, lon: -0.126747}
+  path: "Walk to the church at the corner of Trafalgar Square and go down from the glass pavilion beside it, by the steps or the lift"   # CHECKED (official)
+  duration_min: 3        # GUESS
+  step_free: true        # CHECKED: a lift from the pavilion
+experience:
+  what_happens: "Under brick-vaulted ceilings, with old tombstones set into the floor, you eat a simple lunch from a menu that changes every day."   # CHECKED (official)
+  why_it_works: "A calm, historic room for lunch just off Trafalgar Square, and a good place to be when it rains."
+  duration_min: [40, 60] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["11:00-17:00"]   # the hours common to every day; later on Thu and Sat
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Busy at lunchtime (GUESS)"
+  opening_hours: "Café usually 11:00-17:00 (Fri and Sat from 10:00; Thu and Sat to 19:30); varies with events. Official site via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 12             # GUESS: a lunch per person
+cost_kind: food
+meal: lunch            # D104: only ever the day's lunch stop
+shot_card: null
+source: research
+last_checked: "2026-09-28"

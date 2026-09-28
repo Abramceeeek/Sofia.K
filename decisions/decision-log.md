@@ -2,6 +2,23 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — dry runs finished; overlap check; the start point
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D103 | **The familiar-favourite rule is off for the real Test B**, so the test measures prediction, not memory, and **on by default in the v0 app.** **The dry runs are finished;** no more rounds. The two earlier rounds are logged at about 30 min each | D100's proposal | Founder decisions |
+| D104 | **Before recruiting:**<br>- a check of how much different people's personal plans overlap, warning if two dissimilar people share more than half their stops;<br>- 8–10 verified research cards near the real Test B start, including indoor options for rain;<br>- a start-point recommendation from card density and transport.<br>**Done:**<br>- the overlap report;<br>- nine cards near Charing Cross, eight of them indoors.<br>**Recommended start: Charing Cross (Trafalgar Square exit), for Abram to confirm.** It has 16 Saturday cards within a 25-min walk (London Bridge: 5), all three sunset river cards nearby, is busy at weekends, and has five Tube lines within a few minutes' walk | — | Founder request. Analysis and card list: `research/seed-moments/06-start-point-cards.md` |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m82 | **Overlap thresholds (GUESSES):**<br>- "dissimilar" means the cosine similarity of two people's δ, in prior-sd units, is below 0.3;<br>- a person whose δ is shorter than 0.5 prior-sds has "too little data" and is never flagged;<br>- flexible lunch slots don't count as shared;<br>- the report runs across every personal plan in the output folder, so it covers people planned on different days | `testb.py` (`overlap_report`) |
+| m83 | **Meal cards** (`meal: lunch`: the crypt lunch, dim sum) are only ever the day's lunch stop and never a rain swap. P02 had two lunches in one plan before this. **A flexible lunch slot is also offered at the start point** | `testb.py`, `moments.py`, 2 cards |
+| m84 | **The example brief starts at Charing Cross** (TfL coordinates), and the example generic plan's first leg starts there too | `brain/data/testb/*.example.yaml` |
+| m85 | **Card details:**<br>- Courtauld open days are UNVERIFIED (assumed daily; the official hours snippet gives no days);<br>- St Martin-in-the-Fields uses its old postcode's centroid (WC2N 4JJ, closed in 2008);<br>- Victoria Embankment Gardens sits at Embankment station's coordinates;<br>- station names marked * are Claude's knowledge | 9 cards |
+| m86 | **Actual hours:** 0.5 h each for the two earlier rounds (D97–D98, and round 1), logged 28 Sep on Abram's figure (D82) | `LOG.md` |
+
 ## 2026-09-28 — dry-run feedback round 2
 
 | # | Decision | Replaces | Why |

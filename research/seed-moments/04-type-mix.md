@@ -2,6 +2,15 @@
 
 *2026-09-27. 20 ready cards (8 of yours, 12 verified research cards). A card can count under more than one type; the main type is in bold. Tags are from the cards (2 = the defining trait).*
 
+## Update, 28 Sep (D104): nine cards near Charing Cross
+
+- **Now 44 ready cards.**
+- **Indoor, for rain: 8 more** (the National Gallery, National Portrait Gallery, Soane Museum, Courtauld, Royal Festival Hall foyers, Transport Museum, and two lunch cards).
+- **Quiet and rest: 1** (the Royal Festival Hall foyers), the first of its kind.
+- **Learning by doing: 1** (the Transport Museum).
+- **Food:** two lunch-only cards (the crypt, dim sum).
+- **Still thin:** social, and music and nightlife (after-9-nov #15, #17).
+
 ## Update, 28 Sep (D98): friends' moments
 
 - **Now 35 ready cards** (26 once each variant group counts as one), after five cards from friends' suggestions. Winter Wonderland is a draft, because it opens after Test B.

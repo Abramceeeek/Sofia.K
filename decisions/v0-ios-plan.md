@@ -63,6 +63,8 @@
 
 **iOS 17+** because the SwiftUI `Map`/`Marker` API starts at iOS 17.0 (Apple docs).
 
+**Planner defaults for the app (D103):** the familiar-favourite rule is **on by default** in v0: one place the person loved, if it fits the day, plus new places. It is off for the real Test B, so that test measures prediction, not memory. The rule is built in the Brain (`brain.testb --familiar`, D100); the app's plan endpoint turns it on when v0 is built.
+
 ## Build hours: iOS vs Telegram
 
 | Block | Telegram v0 (D44, D45) | iOS v0, like-for-like | iOS v0, left now |

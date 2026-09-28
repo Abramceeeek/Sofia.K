@@ -1,0 +1,42 @@
+# Start-point card (D104): near Charing Cross, the recommended real Test B start. Written by Claude, 2026-09-28, in
+# Claude's own words; facts verified from official sources (or search results restricted to the official site) and
+# marked ready under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate;
+# * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
+# Source: ltmuseum.co.uk (search results from the official site, 2026-09-28): open daily 10:00-18:00, last entry 17:00,
+# 362 days a year; timed entry tickets booked in advance; an adult ticket is an annual pass, £18.50, with a free timed
+# ticket for the day; kids go free. Covent Garden Piazza, WC2E 7BB.
+id: m_transport_museum
+title: "Climb aboard old buses and Tube trains at the London Transport Museum"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "London Transport Museum, Covent Garden Piazza"
+  lat: 51.512125         # CHECKED: WC2E 7BB postcode centroid (postcodes.io, 2026-09-28)
+  lon: -0.121222
+approach:
+  from: "Covent Garden station"
+  start_point: {lat: 51.512125, lon: -0.121222}
+  path: "Walk to the museum in Covent Garden Piazza; book a timed ticket online beforehand"   # CHECKED (timed tickets)
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You climb aboard old buses, trams and Underground carriages and see how London learned to move."   # * (you can board several vehicles)
+  why_it_works: "Hands-on and playful, with the city's own story; good in any weather."
+  duration_min: [60, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-18:00"]
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Daily 10:00-18:00, last entry 17:00; timed tickets booked ahead; adult annual pass £18.50. Official site via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 2}
+cost_gbp: 18.50          # CHECKED: adult annual pass (official, via search)
+shot_card: null
+source: research
+last_checked: "2026-09-28"

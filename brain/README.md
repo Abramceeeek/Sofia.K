@@ -59,6 +59,7 @@ cd brain
 .venv/bin/python -m brain.testb plans --results ../validation/raw/results.xlsx --ids P07 \
     --brief ../validation/raw/testb/brief.yaml --generic ../validation/raw/testb/generic.yaml \
     --intent ../validation/raw/testb/intent.yaml --out ../validation/raw/testb/out --numbered
+# no --familiar for the real Test B (D103)
 ```
 
 **For each person it writes:**
@@ -84,7 +85,9 @@ cd brain
   - titles name the place, and busy food stops add queue time.
   - Card fields: `end_station`, `queue_min`, `plan_title`.
   - Generic fields: `lunch: true`, `queue_min`.
-- **`--familiar` (D100, proposed):** the personal plan holds exactly one place the person loved, if one fits the day. The review says, for each loved place, why it is in the plan or not.
+- **`--familiar` (D100): off for the real Test B (D103)**, so it measures prediction rather than memory; **on by default in the v0 app.** With it, the personal plan holds exactly one place the person loved, if one fits the day. Either way, the review says for each loved place why it is in the plan or not.
+- **Overlap across participants (D104):** each run saves `<ID>_personal.json` (stop ids and a normalised weight vector, no answers) and writes `overlap.md`: shared stops for every pair, stops in more than half the plans, and a warning when two dissimilar people share more than half their stops. `python -m brain.testb overlap --out DIR` re-runs it.
+- **Meal cards (D104):** a card with `meal: lunch` is only ever the day's lunch stop; a flexible lunch slot is also offered at the start point.
 - **Both plans in a pair end within 30 min of each other (D97).** The personal plan is first planned to finish by the generic end + 30 min; then its stops move later inside their opening windows until it ends no earlier than the generic end − 30 min. If that can't be done, the status says "fix by hand", and the review shows both end times.
 - It refuses to run until there are enough complete moments in `data/moments/`.
 

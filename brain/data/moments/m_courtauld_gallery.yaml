@@ -1,0 +1,43 @@
+# Start-point card (D104): near Charing Cross, the recommended real Test B start. Written by Claude, 2026-09-28, in
+# Claude's own words; facts verified from official sources (or search results restricted to the official site) and
+# marked ready under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate;
+# * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
+# Source: courtauld.ac.uk (search results from the official site, 2026-09-28): open 10:00-18:00, last entry 17:15;
+# weekday tickets from £10, weekend from £12; under-18s free; in Somerset House; the collection includes Van Gogh's
+# Self-Portrait with Bandaged Ear (1889) and Manet's A Bar at the Folies-Bergère. Open days: UNVERIFIED (assumed daily).
+id: m_courtauld_gallery
+title: "Van Gogh's bandaged ear and Manet's barmaid at the Courtauld"
+plan_title: "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid"   # D102: name the place
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "The Courtauld Gallery, Somerset House"
+  lat: 51.510734         # CHECKED: WC2R 0RN postcode centroid (postcodes.io, 2026-09-28)
+  lon: -0.116912
+approach:
+  from: "Temple or Covent Garden station"   # *
+  start_point: {lat: 51.510734, lon: -0.116912}
+  path: "Go in through the Somerset House arch on the Strand and follow the signs to the gallery"
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère."   # CHECKED (official)
+  why_it_works: "World-famous paintings without the crowds of the big museums; an hour is enough."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-18:00"]
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}
+cost_gbp: 12             # CHECKED: weekend tickets from £12 (weekdays from £10)
+shot_card: null
+source: research
+last_checked: "2026-09-28"

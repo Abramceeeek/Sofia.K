@@ -1,0 +1,45 @@
+# Start-point card (D104): near Charing Cross, the recommended real Test B start. Written by Claude, 2026-09-28, in
+# Claude's own words; facts verified from official sources (or search results restricted to the official site) and
+# marked ready under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate;
+# * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
+# Source: soane.org/visit (read): Wednesday to Sunday 10:00-17:00, last admission usually 16:30; closed Mon and Tue
+# (bank holidays open); free, no booking needed, but limited capacity so there may be a wait; 13 Lincoln's Inn Fields,
+# WC2A 3BP; Holborn about five minutes on foot. soane.org (search results): the collections are still arranged as at
+# Soane's death in 1837; top-lit rooms; the Breakfast Room has over 100 mirrors.
+id: m_soane_museum
+title: "Sir John Soane's house of curiosities, top-lit and full of mirrors"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Sir John Soane's Museum, 13 Lincoln's Inn Fields"
+  lat: 51.516956         # CHECKED: WC2A 3BP postcode centroid (postcodes.io, 2026-09-28)
+  lon: -0.117953
+approach:
+  from: "Holborn station"   # CHECKED (official)
+  start_point: {lat: 51.516956, lon: -0.117953}
+  path: "Walk south to Lincoln's Inn Fields and number 13"   # CHECKED (address); * (the route)
+  duration_min: 6        # GUESS: about five minutes (official)
+  step_free: null
+experience:
+  what_happens: "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors."   # CHECKED (official)
+  why_it_works: "Strange, beautiful and free; nothing else in London feels like it."
+  duration_min: [40, 60] # GUESS
+  end_point: null
+  queue_min: 10          # GUESS: limited capacity, so there may be a wait (official)
+best_time:
+  time_of_day: ["10:00-17:00"]
+  light: null
+  weather: ["any"]
+  days: [wed, thu, fri, sat, sun]   # CHECKED (official): closed Monday and Tuesday
+  company: null
+  crowd_window: "A queue at busy times (official)"
+  opening_hours: "Wed-Sun 10:00-17:00, last admission 16:30; free. Official site, read 2026-09-28"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 0, local_novel: 2,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 2}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-28"

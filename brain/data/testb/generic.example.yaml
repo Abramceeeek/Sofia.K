@@ -18,7 +18,7 @@ stops:
     depart: "13:00"
     travel_min: 5
     travel_mode: walk
-    from: "your start station"
+    from: "Charing Cross station"
     approach: "Walk to Trafalgar Square and go in through the Sainsbury Wing entrance."
     what: "Wander the free collection of paintings at your own pace."
     cost_gbp: 0

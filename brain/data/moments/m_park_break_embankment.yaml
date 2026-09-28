@@ -1,0 +1,42 @@
+# Park break group (D93), added 2026-09-28 near the recommended start, Charing Cross (D104). Same tags as the other
+# park cards (FOUNDER's card 10: "all parks feel roughly the same"), so the route decides which park.
+# Source: Westminster City Council parks page (search results, 2026-09-28): opens 07:30 all year; closes 18:00 from 16 Oct
+# to the end of British Summer Time, then 16:30 until 15 Feb. The window 10:00-16:00 fits both.
+# VERIFIED by Claude and marked ready (D91). Tags are the park group's.
+id: m_park_break_embankment
+title: "A park break in Victoria Embankment Gardens"
+status: ready
+swipe: false
+kind: moment
+variant_of: park_break
+variant: embankment
+place:
+  name: "Victoria Embankment Gardens, by Embankment station"
+  lat: 51.507058         # CHECKED: Embankment station, TfL StopPoint API (the gardens are beside it, *)
+  lon: -0.122666
+approach:
+  from: "Embankment station"
+  start_point: {lat: 51.507058, lon: -0.122666}
+  path: "Walk into the gardens beside the station"   # *
+  duration_min: 3        # GUESS
+  step_free: null
+experience:
+  what_happens: "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate."   # * (York Water Gate: search results)
+  why_it_works: "Green, calm and right in the middle of town: a break in the day."   # FOUNDER (card 10), adapted
+  duration_min: [30, 45] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-16:00"]
+  light: null
+  weather: ["dry"]
+  company: null
+  crowd_window: null
+  opening_hours: "07:30 to 18:00 (16 Oct to end of BST), 16:30 after; free. Westminster City Council via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}   # the same for every park: FOUNDER's card 10 tags
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-28"

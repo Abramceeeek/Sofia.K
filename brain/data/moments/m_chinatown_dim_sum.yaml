@@ -1,0 +1,45 @@
+# Start-point card (D104): near Charing Cross, the recommended real Test B start. Written by Claude, 2026-09-28, in
+# Claude's own words; facts verified from official sources (or search results restricted to the official site) and
+# marked ready under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate;
+# * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
+# Source: chinatown.co.uk (search results from the official site, 2026-09-28): Gerrard Street restaurants serve dim sum
+# by day (e.g. Golden Dragon; London Chinatown Restaurant: char siu buns, dumplings, cheung fun rice rolls, egg custard
+# tarts); dim sum guides list several places on and around Gerrard Street. Price and queue: GUESSES.
+id: m_chinatown_dim_sum
+title: "Dim sum lunch on Gerrard Street, Chinatown"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Gerrard Street, Chinatown"
+  lat: 51.5117           # CHECKED: Gerrard Street, Wikipedia coordinates (as a_soho_chinatown_evening)
+  lon: -0.1311
+approach:
+  from: "Leicester Square station"   # *
+  start_point: {lat: 51.5117, lon: -0.1311}
+  path: "Walk to Gerrard Street and pick one of the dim sum restaurants under the lanterns"
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You share small plates of dumplings, steamed buns and rice rolls in a busy Cantonese dining room, with the lanterns strung across the street outside."   # CHECKED (dim sum by day; the dishes)
+  why_it_works: "A lively, sociable lunch with lots of small tastes, right in the middle of town."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+  queue_min: 10          # GUESS: weekend lunchtimes
+best_time:
+  time_of_day: ["11:30-16:00"]   # GUESS: dim sum is served by day
+  light: null
+  weather: ["any"]
+  company: "Friends, to share more dishes (GUESS)"
+  crowd_window: "Busiest at weekend lunchtimes (GUESS)"
+  opening_hours: "Restaurants' own hours; dim sum by day. chinatown.co.uk via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 2}
+cost_gbp: 20             # GUESS: a dim sum lunch per person
+cost_kind: food
+meal: lunch            # D104: only ever the day's lunch stop
+shot_card: null
+source: research
+last_checked: "2026-09-28"

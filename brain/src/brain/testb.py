@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import re
 import sys
@@ -267,7 +268,7 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief) -> list
     lo, hi = LUNCH_START
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     if day_end < lo + LUNCH_MIN or day_start > hi:
-        return list(real)
+        return [c for c in real if not by_id[c.moment_id].meal]   # meal cards only ever serve as lunch (D104)
     out = []
     for c in real:
         m = by_id[c.moment_id]
@@ -277,9 +278,12 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief) -> list
             if wins:
                 c = replace(c, group=c.group or f"meal:{c.moment_id}")
                 out.append(replace(c, moment_id=f"{c.moment_id}#lunch", windows=wins, lunch=True))
-        out.append(c)
-    out += [Candidate(f"lunch@{c.moment_id}", c.end, c.end, LUNCH_MIN, ((lo, hi + LUNCH_MIN),), 0.0,
-                      float(brief.lunch_gbp), None, "moment", lunch=True) for c in real]
+        if not m.meal:
+            out.append(c)
+    slot = lambda mid, p: Candidate(mid, p, p, LUNCH_MIN, ((lo, hi + LUNCH_MIN),), 0.0, float(brief.lunch_gbp),
+                                    None, "moment", lunch=True)
+    out += [slot(f"lunch@{c.moment_id}", c.end) for c in real]
+    out.append(slot("lunch@start", brief.start))   # D104: lunch near the start point, too
     return out
 
 
@@ -374,7 +378,14 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     for st in plan.stops:
         c = by_cand[st.moment_id]
         mode = travel.mode(prev_point, c.start)
-        if st.moment_id.startswith("lunch@"):
+        if st.moment_id == "lunch@start":
+            place = brief.start_name
+            stop = {"title": f"Lunch near {place}", "approach": "",
+                    "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
+                    "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
+                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, place, not stops)}
+            nxt = (c.end, place, brief.start_name)
+        elif st.moment_id.startswith("lunch@"):
             host = by_id[st.moment_id[len("lunch@"):]]
             # the slot sits where the host card ends: after the host, that's where you are; otherwise (no end point
             # of its own) it's where you arrive for it, e.g. Cutty Sark DLR station before the Greenwich hill
@@ -489,7 +500,8 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
     groups = {by_id[i].variant_of for i in planned if i in by_id and by_id[i].variant_of}
     spend = sum(s["cost_gbp"] for s in stops)
     pool = [m for m in by_id.values() if m.id not in planned and m.id in allowed and m.id in cands
-            and m.kind == "moment" and not _outdoors(m) and (m.variant_of is None or m.variant_of not in groups)]
+            and m.kind == "moment" and not m.meal and not _outdoors(m)
+            and (m.variant_of is None or m.variant_of not in groups)]
     used: set[str] = set()
 
     def pick(st, stop: dict, limit: float, any_time: bool):
@@ -784,6 +796,79 @@ def review_text(p: Participant, post: DeltaPosterior, plan: DayPlan, stops: list
     return "\n".join(out)
 
 
+# ---- overlap across participants (D104) -------------------------------------------
+
+DISSIMILAR_BELOW = 0.3   # GUESS: cosine similarity of two people's standardised δ below this counts as "dissimilar"
+MIN_SIGNAL = 0.5         # GUESS: a person whose standardised δ is shorter than this has too little data to compare
+
+
+def taste_vector(pop: PopulationModel, post: DeltaPosterior) -> list[float]:
+    """δ in prior-sd units: how far this person's weights sit from the population's, feature by feature."""
+    return [round(float(d / sd), 4) for d, sd in zip(post.mean, pop.delta_prior_sd)]
+
+
+def save_personal(out: Path, pid: str, stops: list[dict], taste: list[float]) -> None:
+    """What the overlap report needs, next to the plans (stop ids and titles; no answers, no names)."""
+    rows = [{"id": _base(s["moment_id"]), "title": s["title"]} for s in stops]
+    (out / f"{pid}_personal.json").write_text(json.dumps({"pid": pid, "stops": rows, "taste": taste}, indent=1),
+                                              encoding="utf-8")
+
+
+def _cosine(a: list[float], b: list[float]) -> float | None:
+    na, nb = math.sqrt(sum(x * x for x in a)), math.sqrt(sum(x * x for x in b))
+    if na < MIN_SIGNAL or nb < MIN_SIGNAL:
+        return None
+    return sum(x * y for x, y in zip(a, b)) / (na * nb)
+
+
+def overlap_report(out: Path) -> tuple[str, list[str]]:
+    """D104: how much different people's personal plans overlap. Flexible lunch slots never count as shared.
+    Warns when two dissimilar people share more than half their stops, and lists stops in most plans."""
+    people = [json.loads(f.read_text(encoding="utf-8")) for f in sorted(out.glob("*_personal.json"))]
+    stops = {p["pid"]: [s for s in p["stops"] if not s["id"].startswith("lunch@")] for p in people}
+    title = {s["id"]: s["title"] for p in people for s in p["stops"]}
+    lines = ["# Overlap between personal plans (D104, for Abram only)", "",
+             f"{len(people)} personal plans. Flexible lunch slots don't count. \"Dissimilar\" means their weights point "
+             f"different ways (cosine below {DISSIMILAR_BELOW}); \"too little data\" means we can't tell.", "",
+             "## Pairs", "", "| Pair | Shared | Similarity | Shared stops |", "|---|---|---|---|"]
+    warnings = []
+    for i, a in enumerate(people):
+        for b in people[i + 1:]:
+            ids_a, ids_b = {s["id"] for s in stops[a["pid"]]}, {s["id"] for s in stops[b["pid"]]}
+            shared = sorted(ids_a & ids_b)
+            size = min(len(a["stops"]), len(b["stops"])) or 1
+            sim = _cosine(a["taste"], b["taste"])
+            sim_txt = "too little data" if sim is None else f"{sim:+.2f}" + (" (dissimilar)" if sim < DISSIMILAR_BELOW else "")
+            flag = ""
+            if len(shared) > size / 2 and sim is not None and sim < DISSIMILAR_BELOW:
+                flag = " **WARNING**"
+                warnings.append(f"{a['pid']} and {b['pid']} are dissimilar ({sim:+.2f}) but share {len(shared)} of "
+                                f"{size} stops: {', '.join(title[x] for x in shared)}")
+            lines.append(f"| {a['pid']}–{b['pid']}{flag} | {len(shared)} of {size} | {sim_txt} | "
+                         f"{'; '.join(title[x] for x in shared) or '—'} |")
+    counts: dict[str, int] = {}
+    for p in people:
+        for sid in {s["id"] for s in stops[p["pid"]]}:
+            counts[sid] = counts.get(sid, 0) + 1
+    common = sorted(((n, sid) for sid, n in counts.items() if len(people) >= 3 and n > len(people) / 2), reverse=True)
+    lines += ["", "## Stops in more than half the plans", ""]
+    lines += [f"- {title[sid]}: {n} of {len(people)} plans" for n, sid in common] or ["- none"]
+    if warnings:
+        lines += ["", "## Warnings", ""] + [f"- {w}" for w in warnings] + [
+            "", "Check these by hand before sending: the plans may be driven by the start point and the cards nearby "
+                "rather than by the person."]
+    return "\n".join(lines) + "\n", warnings
+
+
+def cmd_overlap(args) -> int:
+    report, warnings = overlap_report(Path(args.out))
+    (Path(args.out) / "overlap.md").write_text(report, encoding="utf-8")
+    for w in warnings:
+        print(f"Overlap warning: {w}", file=sys.stderr)
+    print(report)
+    return 0
+
+
 # ---- CLI ----------------------------------------------------------------------------
 
 def _load_common(data_dir: Path):
@@ -917,7 +1002,12 @@ def cmd_plans(args) -> int:
                                     f"({'within 30 min' if ok else '**more than 30 min apart: fix by hand**'}, D97).\n\n"
                                     "## Read-back lines", 1)
         (out / f"{pid}_review.md").write_text(review, encoding="utf-8")
+        save_personal(out, pid, stops, taste_vector(pop, post))
         print(f"{pid}: plans {min(p.personal_label, generic_label)} and {max(p.personal_label, generic_label)} written ({plan.status})")
+    report, warnings = overlap_report(out)   # D104: across everyone planned so far in this folder
+    (out / "overlap.md").write_text(report, encoding="utf-8")
+    for w in warnings:
+        print(f"Overlap warning: {w}", file=sys.stderr)
     return 0
 
 
@@ -942,8 +1032,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="D100 proposal: include exactly one place the person loved, if one fits the day")
     pl.add_argument("--include-drafts", action="store_true",
                     help="dry run: also plan with draft moments (unchecked GUESS values); never send these")
+    ov = sub.add_parser("overlap", help="how much the personal plans in a folder overlap (D104)")
+    ov.add_argument("--out", required=True)
     args = ap.parse_args(argv)
-    return {"weights": cmd_weights, "plans": cmd_plans, "fields": cmd_fields}[args.cmd](args)
+    return {"weights": cmd_weights, "plans": cmd_plans, "fields": cmd_fields, "overlap": cmd_overlap}[args.cmd](args)
 
 
 if __name__ == "__main__":

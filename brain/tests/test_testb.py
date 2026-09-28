@@ -152,6 +152,7 @@ def test_plans_command_writes_blind_identical_plans_and_a_review(tmp_path, data_
     review = (out / "P01_review.md").read_text()
     assert "- Ends: personalised" in review and "(within 30 min" in review          # D97 pair rule
     assert "Both plans end within 30 min" in review
+    assert (out / "overlap.md").exists() and (out / "P01_personal.json").exists()   # D104
 
 
 def test_plans_command_refuses_without_enough_moments(tmp_path):
@@ -389,3 +390,34 @@ def test_titles_name_the_place_and_queues_are_told():
     assert ms["a_soho_chinatown_evening"].display_title() == ms["a_soho_chinatown_evening"].title   # already named
     assert ms["m_beigel_bake_late"].duration_min() == 10 + 22.5 + 10     # approach + experience + queue
     assert "Allow about 10 min to queue." in testb._stop_lines(_stop(queue=10))
+
+
+def test_overlap_report_warns_when_dissimilar_people_share_most_stops(tmp_path):
+    """D104: shared stops across participants; a warning when two dissimilar people share more than half."""
+    import json
+    def person(pid, ids, taste):
+        stops = [{"id": i, "title": i.upper()} for i in ids]
+        (tmp_path / f"{pid}_personal.json").write_text(json.dumps({"pid": pid, "stops": stops, "taste": taste}))
+    person("P01", ["a", "b", "c", "lunch@a"], [2.0, 0.0, 0.0])
+    person("P02", ["a", "b", "c", "d"], [-2.0, 0.0, 0.0])        # opposite tastes, 3 of 4 shared
+    person("P03", ["a", "b", "e", "f"], [2.0, 0.1, 0.0])         # similar to P01, 2 of 4 shared
+    person("P04", ["x", "y", "z", "w"], [0.0, 0.0, 0.1])         # too little data to compare
+    report, warnings = testb.overlap_report(tmp_path)
+    assert len(warnings) == 1 and warnings[0].startswith("P01 and P02 are dissimilar")
+    assert "| P01–P03 | 2 of 4 | +1.00 |" in report
+    assert "too little data" in report
+    assert "- A: 3 of 4 plans" in report                        # a stop in most plans
+    assert "LUNCH@A" not in report.split("## Pairs")[1].split("## Stops")[0]   # flexible lunch slots don't count
+
+
+def test_meal_cards_are_only_ever_the_lunch_stop():
+    """D104: "Lunch in the crypt…" is offered only as the lunch stop; and there is a lunch slot at the start."""
+    from brain.moments import load_moments
+    from brain.planner import candidate_for
+    ms = {m.id: m for m in load_moments(DATA / "moments") if m.status == "ready"}
+    real = [candidate_for(m, 1.0) for m in ms.values() if m.plannable()]
+    ids = {c.moment_id for c in testb.lunch_candidates(real, ms, _dry_brief(start_time="12:00", end_time="17:00"))}
+    assert "m_st_martin_crypt_lunch" not in ids and "m_st_martin_crypt_lunch#lunch" in ids
+    assert "lunch@start" in ids
+    evening = testb.lunch_candidates(real, ms, _dry_brief(start_time="15:00", end_time="20:00"))
+    assert not any(c.moment_id.startswith("m_st_martin_crypt_lunch") for c in evening)

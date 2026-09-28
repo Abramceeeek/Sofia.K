@@ -1,0 +1,41 @@
+# Start-point card (D104): near Charing Cross, the recommended real Test B start. Written by Claude, 2026-09-28, in
+# Claude's own words; facts verified from official sources (or search results restricted to the official site) and
+# marked ready under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate;
+# * = Claude's own knowledge. Tags are Claude's judgement: Abram flags any he disagrees with from the one-line list.
+# Source: npg.org.uk (search results from the official site, 2026-09-28): St Martin's Place, WC2H 0HE; Sun-Thu
+# 10:30-18:00 (last entry 17:30), Fri-Sat 10:30-21:00; free, with a charge for some exhibitions.
+id: m_national_portrait_gallery
+title: "Centuries of British faces at the National Portrait Gallery"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "National Portrait Gallery, St Martin's Place"
+  lat: 51.509399         # CHECKED: WC2H 0HE postcode centroid (postcodes.io, 2026-09-28)
+  lon: -0.128453
+approach:
+  from: "Charing Cross or Leicester Square station"   # *
+  start_point: {lat: 51.509399, lon: -0.128453}
+  path: "Walk to St Martin's Place, beside the National Gallery, and go in"   # * (the two galleries are neighbours)
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know."   # * the collection's range
+  why_it_works: "History told through people rather than dates; free, calm and easy to leave when you've had enough."
+  duration_min: [40, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:30-18:00"]
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Sun-Thu 10:30-18:00, Fri-Sat to 21:00; free. Official site via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-28"
