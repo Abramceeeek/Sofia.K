@@ -2,7 +2,7 @@
 
 > **Updated by D59–D64 (2026-09-26):**
 > - **The cuts are accepted** (D59).
-> - **Tests A–C run by hand** and Checkpoint 3 stays in the week of 9 Nov (D63). The app is built in parallel, so the first external TestFlight build carries the Phase 3 lessons.
+> - **Tests A–C run by hand** and Checkpoint 3 stays in the week of 9 Nov (D63) *(since moved to the week of 2 Nov, D106)*. The app is built in parallel, so the first external TestFlight build carries the Phase 3 lessons.
 > - **iOS builds run on GitHub Actions**, with no Mac (D64), which adds 3 h, so **Phase 4 ≈ 56.5 h**.
 > - **Individual developer account for TestFlight**; a company account before the App Store launch (D61).
 >
@@ -160,8 +160,8 @@
 | 28 Sep | Areas 1–3 review 5; seed moments and walk 1; conjoint and places 1 (D48) |
 | 5 Oct | Areas 5–12 reviews 5.5; Test E recruiting 1.25; Areas 18 and 20 0.75 |
 | 12 Oct | Test E interviews 4; decision note 1; validation materials 1; moment cards 1.5. **The designer brief moved to the week of 28 Sep** (D65) |
-| 19 Oct – 2 Nov | **Tests A–D by hand**, with each person's Test B plans 1–3 days after their Test A (D68). The brain code review (2 h) is in the weeks of 26 Oct and 2 Nov. The Area 4 review is in the week of 2 Nov (D56). **Test B reports about 2 Nov: go or hold on the iOS code** |
-| 9 Nov | Analysis and **Checkpoint 3** (2.5). If Test B passed, build 5: the GitHub Actions workflow, individual enrolment, the App Store Connect record |
+| ~~19 Oct – 2 Nov~~ **5 Oct – 1 Nov (D106)** | **Tests A–D by hand**, with each person's Test B plans 1–3 days after their Test A (D68). The brain code review (2 h) is in the week of 19 Oct. The Area 4 review is in the week of 26 Oct. **Test B reports around 23 Oct: go or hold on the iOS code** |
+| ~~9 Nov~~ **Week of 2 Nov (D106)** | Analysis and **Checkpoint 3** (2.5). If Test B passed, build 5: the GitHub Actions workflow, individual enrolment, the App Store Connect record |
 | 16 Nov – ~4 Jan | **The build (≈ 52.5 h at 7.5 h a week, including 7 h of Abram's own design, D81), using what Phase 3 taught.** Abram designs the welcome screen first, then the moment card, shot card and day plan (`design/v0-screens.md`). The first external TestFlight build is about the week of 30 Nov |
 | Jan | Phase 5 through TestFlight (10 h), then the decision |
 | ~3 weeks before App Store submission | Incorporate, get the D-U-N-S number and enrol as a company (D61; lead times under Gates) |

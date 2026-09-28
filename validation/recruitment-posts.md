@@ -29,13 +29,32 @@
 >
 > Voice notes are transcribed and then deleted. Full privacy details are in the consent note before we start.
 >
-> Interested? Comment or message me and I'll send the details. — Abram
+> Interested? Sign up here (1 minute) and I'll message you: **[sign-up link]** — Abram
 
-**Sign-up form fields** (Tally, 1 minute):
+- **The sign-up link** is the Tally form with one `?src=` per group, e.g. `https://tally.so/r/<id>?src=fb-ucl-hiking`.
+- **The study's WhatsApp number never goes in a public post (D106).** People get it in the first message after they sign up.
+
+**Sign-up form fields** (Tally, 1 minute; set-up steps in `recruit-now.md` §4A):
 - first name;
-- WhatsApp number (the study uses its own number, not a personal one);
-- which group they saw the post in (prefilled by a per-post link, e.g. `?src=fb-ucl-hiking`);
-- "How do you know me?" (don't / a friend of a friend / I know you).
+- WhatsApp number;
+- "How do you know me?" (I don't / a friend of a friend / I know you);
+- a required tick box, "I'm 18 or over";
+- a hidden field `src`, filled from the link, so you know which group they came from.
+
+## First message after sign-up (from the study number, D106)
+
+Send it within a day of the sign-up, with `validation/study-info.pdf` attached (the consent form and privacy notice). Save it as the `/consent` quick reply.
+
+> Hi [first name], it's Abram from the "days out that fit you" study. Thanks for signing up! This is the study's WhatsApp number, +44 7771 477717. Please save it so my messages reach you.
+>
+> Before we start, the attached PDF explains how the study works and what I keep. If you're happy to take part, reply "I agree". If you're also happy for me to keep your voice notes for 30 days to check the transcripts, reply "I agree, and keep my voice notes".
+>
+> Then tell me when suits you to start. The chat takes 20–30 minutes, by voice notes or typing, and can be spread over a day.
+>
+> I reply within a few hours. In an emergency, call 999.
+
+- **Keep their "I agree"** (a screenshot or an exported chat, stored with the results sheet in `validation/raw/`). Label the chat "Consented".
+- **No "I agree", no questions.** If they don't reply within 3 days, send one reminder, then leave it.
 
 ## Post 2 — Test D (landing page, a different week or different groups)
 
@@ -67,4 +86,4 @@ Tag them `src=weekend-<trip>` so they're counted as a recruitment source.
 - **"Is this a startup / what are you selling?"** "Not selling anything. I'm testing whether the idea is worth building. You'd get a free plan, that's it."
 - **"Why WhatsApp?"** "Most people already have it, and voice notes work well. It's a separate number just for this study. Typing is fine too."
 - **"What happens to my voice notes?"** "Transcribed on my laptop, then deleted. You can ask me to delete everything at any time."
-- **"Is it AI?"** "I run the chat myself. AI helps me draft the summary and the plan, and I check them."
+- **"Is it AI?"** "I run the chat myself. AI helps me write up the summary and run the program that makes the plans, and I check everything."

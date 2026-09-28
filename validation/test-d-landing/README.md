@@ -12,7 +12,7 @@ A static page with **no payments and no card details** (D1, D25). It randomly sh
    - Create a site and put its code in place of `GOATCOUNTER_CODE`.
    - Page views arrive as `/arm-A` and `/arm-B`; study participants arrive as `/participant-arm-A` and `/participant-arm-B`.
    - Clicks arrive as events such as `click-monthly-arm-B`.
-3. **Fill in** `TALLY_FORM_URL` and `CONTACT_EMAIL` in `index.html`, and `[date]`, `[surname]` and `[email]` in `privacy.html` (generated from `../privacy-notice.md`; keep the two in sync).
+3. **Fill in** `TALLY_FORM_URL` in `index.html` (the contact email is in, D106). `privacy.html` is generated from `../privacy-notice.md` by `../make_study_pdf.py`: edit the Markdown and rerun it. It leaves out the study's WhatsApp number, because this page is public (D106).
 4. **Host as a Render static site** ("always free to deploy", render.com/pricing, fetched 2026-09-26).
    - GitHub Pages is not suitable: its limits page rules out sites "primarily directed at ... commercial transactions".
 5. **Test both arms:** open in a private window twice, and check the form receives `arm`, `choice`, `price`, `src` and `ref`.

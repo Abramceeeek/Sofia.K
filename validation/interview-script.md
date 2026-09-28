@@ -1,6 +1,6 @@
 # Host script — Tests A, B and C (WhatsApp Business, Wizard of Oz)
 
-> **Status (D63):** **in use.** Tests A–C run by hand in a chat, with Checkpoint 3 in the week of 9 Nov. The app reuses this wording later (`brain/data/onboarding.yaml`).
+> **Status (D63):** **in use.** Tests A–C run by hand in a chat, with Checkpoint 3 in the week of 2 Nov (D106). The app reuses this wording later (`brain/data/onboarding.yaml`).
 
 **Rules for the host (Abram):**
 - **One question per message.** Wait for the answer. Never interrupt a voice note.
@@ -96,7 +96,7 @@ No "why" questions here. Speed is the point.
 
 > How much do photos and sharing matter on your trips? 1 (not at all) – 5 (a lot)
 
-Then send **the example shot card** (`shot-card-example.md`, built from seed moment 1: where to stand, what to frame, when; photo first):
+Then send **the example shot card** (`shot-card-example.md`: Waterloo Bridge at sunset, where to stand, what to frame, when; text only, the same for everyone, D106):
 
 > If a plan came with a card like this, would it make you more likely to go? 1 (no) – 5 (definitely)
 

@@ -5,7 +5,7 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 **D50–D64 in short:**
 - v0 is an iOS app.
 - **Tests A–C still run by hand (D63)**: Test A as a chat, and the B/C plans as messages or PDFs.
-- **Checkpoint 3 is in the week of 9 Nov.**
+- **Checkpoint 3 is in the week of 2 Nov** (D106; was 9 Nov).
 - The app is built in parallel, and its first external TestFlight build comes after the checkpoint (`decisions/v0-ios-plan.md`).
 
 ## Files
@@ -21,7 +21,9 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 | `test-d-landing/` | Test D landing page (static HTML): random arm A £4.99/£49.99 or arm B £9.99/£99.99, waitlist only (D25, D31) |
 | `discovery-interviews.md` | Test E, **postponed until v0 exists (D86)**: 5 B2B discovery interviews (3 London, 2 Uzbek) and 3 optional venue conversations (D34, D36) |
 | `test-e-kit.md` | Test E in shareable form (D70), **postponed with Test E (D86)**: a 30-min call guide, a two-message version agencies answer in writing (English, Russian, Uzbek), and the hotel budget-holder intro line. Published with copy buttons: https://claude.ai/artifact/LZQEYVFmjWUXXpVMLx7qu8 |
-| `shot-card-example.md` | The Test A example shot card, built from seed moment 1 (gaps to fill on one walk) |
+| `shot-card-example.md` | The Test A example shot card: Waterloo Bridge at sunset, text only (D106) |
+| `study-info.pdf`, `make_study_pdf.py` | The consent form and privacy notice as one PDF, sent with the first message after sign-up. The script also writes the public `test-d-landing/privacy.html`, without the WhatsApp number (D106) |
+| `testb-real/` | The real Test B brief and generic plan (tracked copy; the working copy is `raw/testb/`, D106) |
 | `results-sheet.xlsx` | Where every result goes; the Summary tab scores against the thresholds, split by voice and text (D18) |
 | `results.md` | *Checkpoint 3, written after the tests* |
 
@@ -30,7 +32,7 @@ Will strangers finish the onboarding, prefer a plan built from it, use it, and p
 1. **Tests A–D**, by hand. **Recruitment starts now (D105, pulled forward from the week of 12 Oct)**, once the blockers in `recruit-now.md` are done. Test A chats run from the first sign-ups to about mid-October.
 2. **Test E after v0 exists (D86):** 5 B2B discovery interviews (3 London, 2 Uzbek) **with a working demo**, after Test B and before any B2B-specific build work. Then the decision note, B2B-first vs consumer-first (`decisions/b2b-vs-consumer-first.md`, D40). **Until then, "businesses will pay" is an explicit, untested assumption: the main revenue risk.**
 
-Detail for step 1: **Test B goes first and fast (D68):** each person's two plans are sent 1–3 days after their Test A chat, written by the Brain from the results sheet (D65). Test B reports about 23 Oct *(proposed, D105; was the week of 2 Nov)*, and that decides whether the iOS app code starts. **Checkpoint 3 in the week of 2 Nov, if confirmed (was 9 Nov).**
+Detail for step 1: **Test B goes first and fast (D68):** each person's two plans are sent 1–3 days after their Test A chat, written by the Brain from the results sheet (D65). Test B reports around 23 Oct (D106; was the week of 2 Nov), and that decides whether the iOS app code starts. **Checkpoint 3 in the week of 2 Nov** (D106).
 
 ## Flow per participant (12 strangers target, 14 recruited)
 
@@ -48,18 +50,19 @@ Detail for step 1: **Test B goes first and fast (D68):** each person's two plans
 
 - [x] Abram confirms the conjoint attributes (`conjoint/README.md`): **confirmed 28 Sep, with heat replaced by the 3-level weather factor (D95).**
 - [ ] The 16 swipe items (`interview-script.md` §3) come from the swipe page **now** (D105): paste the results table, or lock the provisional 16 (`recruit-now.md` §2).
-- [ ] Seed moment 1 is in (`research/seed-moments/01-tube-to-museum.md`). **Fill its gaps on one walk** (exit, route, best time, shot position), take a photo from the spot, and complete `shot-card-example.md` (≈ 0.5 h).
-- [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data.
+- [x] ~~Seed moment 1 walk for the example shot card.~~ **Replaced (D106):** the example is Waterloo Bridge at sunset, text only. The walk stays a card to finish later and no longer blocks anything.
+- [ ] ICO data protection fee: do the self-assessment (search: £52/year for tier 1). Pay if required before collecting data. **Abram is doing it (D106).**
 - [ ] **WhatsApp Business on a separate number (D66)**; the account exists, so confirm the checklist in `recruit-now.md` §1, on a personal phone, never the work one (CLAUDE.md). **The number is ready (2026-09-26); you'll share it when it's needed.** Still to do:
   - Set a greeting message and an away message: "I reply within a few hours; in an emergency call 999".
   - Save the script's prompts as quick replies, and use labels for each person's stage (A done, plans sent, day done). WhatsApp lists all four as Business app features.
   - Check the chat-backup setting, so voice notes you delete after transcribing aren't kept in a backup.
-- [ ] Set up the Tally form (asking for the WhatsApp number) and GoatCounter (`test-d-landing/README.md`).
+- [ ] Set up the Tally sign-up form (`recruit-now.md` §4A, step by step). GoatCounter and the waitlist form come with Test D (`test-d-landing/README.md`).
 - [x] **Swipe calibration page (D70):** deployed with the Render Blueprint on 27 Sep (Frankfurt, £0, no card), tried and shared.
   - [ ] Pick the 16 in the week of 12 Oct, before the recruitment posts go out (D86).
   - [ ] **Download both CSVs again by Fri 23 Oct.** The free database expires about 26 Oct. Then suspend or delete the service and database in Render.
 - [ ] Safety during Test C: participants message you directly (consent form); you reply within a few hours (D46).
-- [ ] Put a contact email in the consent form, privacy notice and landing page.
+- [x] Contact email and name in the consent form, privacy notice and landing page: **done (D106)**, "Abram" and abram@abdurakhmonbek.com. The study's WhatsApp number is in the consent form, the privacy notice and the first message after sign-up, never in a public post or page.
+- [ ] Turn off model training in the Claude account that sees study answers (`recruit-now.md` blocker 9).
 - [ ] Copy `results-sheet.xlsx` to `validation/raw/results.xlsx` and fill in the copy. `validation/raw/` is git-ignored, and the template in the repo stays empty. **Never commit participant data.** Participant IDs P01–P20 and the Test B A/B labels are pre-filled.
 
 ## Founder hours (budget 15)

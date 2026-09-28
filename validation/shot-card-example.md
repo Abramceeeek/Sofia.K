@@ -1,22 +1,22 @@
-# Example shot card for Test A §6 (from seed moment 1)
+# Example shot card for Test A §6 (Waterloo Bridge at sunset, D106)
 
-*Built from Abram's seed moment (`research/seed-moments/01-tube-to-museum.md`). The bracketed lines are the gaps he flagged. Fill them in on one walk before Test A starts, and attach his own photo from the spot. Send it as one WhatsApp message, photo first.*
+*Built from the ready card `brain/data/moments/m_waterloo_bridge_sunset.yaml` (research-sourced, verified 27 Sep; shot card added 28 Sep). It replaces seed moment 1, so the South Kensington walk no longer blocks recruiting (D106). **Text only, and the same for every participant:** paste it as one WhatsApp message. Sunset times: sunrise-sunset.org, 28 Sep (`research/sources.csv`).*
 
 ---
 
-**📍 From the tube to the museum** · South Kensington
+**📍 Waterloo Bridge at sunset, both ways** · between the Southbank Centre and the Strand
 
-**Getting there:** come out of South Kensington station by [exit], then [route], about [n] minutes.
+**Getting there:** from Waterloo station, walk to the south end of the bridge by the Southbank Centre, then up to the middle. About 10 minutes.
 
-**The moment:** you go from dark, functional underground transport straight to a huge, castle-like building opening up in front of you. Don't look at your phone for the last bit.
+**The moment:** look west, and the river runs towards Parliament and the London Eye. Then cross the road and look east: St Paul's dome and the City's towers catch the last light. Two of London's great views, a road's width apart.
 
-**Shot:** stand at [spot], facing [direction]. Frame [what to include].
+**Shot:** stand in the middle of the bridge, at the railing. Facing west, frame the river leading to Parliament, with the London Eye in the shot. Then cross over and, facing east, frame St Paul's dome with the City's towers behind it.
 
-**When:** [time of day / light]. Best [alone / with others].
+**When:** the 20 minutes either side of sunset. After the clocks go back on 25 October, that's around 4:30pm. Late autumn and winter skies are the best.
 
 **Bring someone:** this is one people want to show friends and family.
 
-Free. The walk is the moment; you don't need to go in.
+Free, and open at all hours. Stay on the pavement for the shot; the traffic is close.
 
 ---
 
@@ -25,4 +25,5 @@ Free. The walk is the moment; you don't need to go in.
 1. First ask: "How much do photos and sharing matter on your trips?" (1–5).
 2. Then send this card and ask: "If a plan came with a card like this, would it make you more likely to go?" (1–5) (D16).
 3. **Don't explain the card, and don't ask whether they like it.** The 1–5 answer is the measure.
-4. **Test C:** the same card sits in each participant's plan if the museum approach is one of their stops. The share prompt goes out after they rate that stop (D23).
+4. **Test C:** if Waterloo Bridge at sunset is one of their stops, the same card goes with the plan, and the share prompt goes out after they rate that stop (D23). It is the only card with a shot card so far, so plans without it get no share prompt. The rest of the ~20 shot cards come in Phase 4 (D14).
+5. **Seed moment 1** (the South Kensington walk) stays a card to finish later. It no longer blocks anything.

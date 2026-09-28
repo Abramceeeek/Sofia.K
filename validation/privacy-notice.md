@@ -1,10 +1,19 @@
 # Privacy notice — research study and waitlist
 
-> **Status (D63):** this version is **for the hand-run tests and the Test D waitlist**. **An app version is needed before the first external TestFlight build**, together with `test-d-landing/privacy.html`. It must name the server host and its region and the AI service (only with permission), and cover in-app deletion.
+<!-- Internal notes (not sent; the PDF script drops HTML comments):
+Status (D63): this version is for the hand-run tests and the Test D waitlist. An app version is needed before the
+first external TestFlight build, together with `test-d-landing/privacy.html`. It must name the server host and its
+region and the AI service (only with permission), and cover in-app deletion.
+Not legal advice. Check it against ICO guidance before first use.
+ICO fee: Abram does the self-assessment on ico.org.uk and pays if required, before collecting data (D106).
+The WhatsApp number is here and in the consent form (both sent in the chat), but not on the public privacy.html (D106).
+AI row (D106): true for a personal (consumer) Claude account. If Abram moves to the API or a Team plan, Anthropic
+becomes our processor under its DPA: change the row. Sources: research/sources.csv, 28 Sep.
+-->
 
-*Last updated: [date]. This covers the Phase 3 study (Tests A–C) and the Test D waitlist page. It is not legal advice. Check it against ICO guidance before first use.*
+*Last updated: 28 September 2026. This covers the Phase 3 study (Tests A–C) and the Test D waitlist page.*
 
-**Who is responsible (the controller):** Abram [surname], London. Contact: [email]. Check the ICO data protection fee before collecting data (tier 1 is £52 a year, search; `README.md` checklist).
+**Who is responsible (the controller):** Abram, London. Contact: abram@abdurakhmonbek.com. Study participants can also message the study's WhatsApp number, +44 7771 477717.
 
 ## What we collect and why
 
@@ -23,8 +32,8 @@
 | Service | Role | Where |
 |---|---|---|
 | WhatsApp (Meta) | The chat itself, on a separate WhatsApp Business number; its own privacy policy applies to messages | See WhatsApp's policy |
-| AI service (for drafting summaries and plans) | Processor; gets de-identified text only, never audio | Likely the US. Check the provider's DPA before use (UNVERIFIED) |
-| Tally | Sign-up and waitlist forms (processor) | Check Tally's DPA before use (UNVERIFIED) |
+| Anthropic (Claude) | Helps write up study summaries and run the planning program. It gets your answers under a participant code (like P07), never your name, number or voice notes. Abram uses a personal Claude account, and under Anthropic's consumer terms Anthropic decides how it handles what it receives (it is a separate controller, not our processor). The setting that lets Anthropic train its models on these chats is off. Abram deletes the chats when he deletes the rest of your data, and Anthropic says deleted chats leave its systems within 30 days | The United States. Anthropic's privacy policy says it protects these transfers with standard contractual clauses and adequacy decisions |
+| Tally | Sign-up and waitlist forms. Our processor, under Tally's data processing agreement | Tally is based in Belgium and stores form data in the EU |
 | GoatCounter | Visit counts; no personal data collected | See GoatCounter's policy |
 | Render | Hosts the static waitlist page; no form data stored there | See Render's policy |
 
@@ -36,7 +45,7 @@
 
 ## Your rights
 
-You can access, correct or delete your data, withdraw consent, or object, by contacting [email]. We reply within one month. If you're unhappy, you can complain to the Information Commissioner's Office (ico.org.uk).
+You can access, correct or delete your data, withdraw consent, or object, by contacting abram@abdurakhmonbek.com (or, in the study, by messaging the study's WhatsApp number). We reply within one month. If you're unhappy, you can complain to the Information Commissioner's Office (ico.org.uk).
 
 ## No payments
 

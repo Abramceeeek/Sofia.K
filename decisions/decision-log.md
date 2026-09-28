@@ -2,6 +2,26 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — study contact details; the dates confirmed
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D106 | **Dates confirmed:** Test B reports around 23 Oct, and **Checkpoint 3 is in the week of 2 Nov** (was 9 Nov).<br>**Study contact:** "Abram" and abram@abdurakhmonbek.com, in every blank.<br>**The study's WhatsApp number** (+44 7771 477717) goes in the consent form, the privacy notice and the first message after sign-up, **never in the public recruitment posts**, which use the Tally sign-up link only.<br>**The example shot card is a ready card with a shot card, Waterloo Bridge at sunset,** instead of seed moment 1, so the South Kensington walk no longer blocks recruiting.<br>**Claude copies the real brief and generic plan** into `validation/raw/testb/`.<br>**Abram does the ICO self-assessment** and pays if required; he confirms the WhatsApp checklist today (quick replies and labels later) and pastes the swipe table next | D105's proposed dates; the seed-1 example card; blockers 2, 6 and 7 | Founder decisions |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m93 | **The WhatsApp number stays off the public `privacy.html` as well** as the posts: it says participants get the number when they sign up. It is in `privacy-notice.md`, which is sent in the chat | `test-d-landing/privacy.html`, `make_study_pdf.py` |
+| m94 | **The consent form and privacy notice go as one PDF** (`study-info.pdf`) with the first message after sign-up. WhatsApp shows neither tables nor tick boxes, so consent is a reply: "I agree", or "I agree, and keep my voice notes" for the 30-day audio opt-in. `make_study_pdf.py` makes the PDF and the public page from the Markdown, and drops internal notes (now HTML comments) | `validation/` |
+| m95 | **The AI line is accurate for a personal Claude account:** on Free, Pro and Max (including Claude Code) Anthropic is a separate controller, not our processor; it is a processor only on the API, Team or Enterprise (privacy.claude.com, 28 Sep). The notice says so, names Anthropic and the US, says model training is off, and says the chats are deleted with the rest of a person's data. **Staying on the personal account, or moving to a commercial plan, is Abram's call** (blocker 10 in `recruit-now.md`; my recommendation: stay for the study) | `privacy-notice.md`, `consent-form.md` |
+| m96 | **The AI help is described as it is:** it helps write up the summary and run the planning program; the plans come from the Brain, not an AI chat. It gets answers under a code like P07, never names, numbers or audio | consent form, posts' reply template |
+| m97 | **The Tally row is verified:** Tally is Belgian, stores form data in the EU and is our processor under its data processing agreement (tally.so/help, 28 Sep). The sign-up form gets a one-line privacy note at the top, and no fields beyond first name, number, "how do you know me?" and 18+ | `privacy-notice.md`, `recruit-now.md` §4A |
+| m98 | **First message after sign-up:** sent within a day; one reminder after 3 days without an "I agree", then leave it. It carries the 999 line and "I reply within a few hours" | `recruitment-posts.md` |
+| m99 | **The Waterloo shot card:** the middle of the bridge; west to Parliament and the London Eye, then east to St Paul's and the City; the 20 minutes either side of sunset ("around 4:30pm after the clocks go back"). Text only, the same for everyone. It is the only shot card so far, so only plans that include it get Test C's share prompt | the Waterloo card, `shot-card-example.md` |
+| m100 | **A tracked copy of the real brief and generic plan** sits in `validation/testb-real/` (no participant data), because `validation/raw/` is git-ignored and each cloud session starts empty. The brief's `sunset` is 18:20 (Sat 10 Oct) for the first batch | `validation/testb-real/`, `validation/raw/testb/` |
+| m101 | **The published screens page** now shows the new dates (D84) | https://claude.ai/artifact/CqRgaT1e328Qm4H2cX3W91 |
+
 ## 2026-09-28 — start point confirmed; recruiting pulled forward
 
 | # | Decision | Replaces | Why |

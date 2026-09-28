@@ -16,7 +16,7 @@
   - **Test B:** does a personal plan beat a good generic one for strangers?
   - ~~Test E: will businesses pay?~~ **Postponed until v0 exists (D86)**, then run with a working demo after Test B, before any business-only build.
 - **Money is the weakest part.** No path to £50k a year fits your 7.5 hours a week without help, and the consumer-only path needs people to spread the app far more than is typical (my judgement).
-- **My verdict:** worth pursuing to the 9 November checkpoint, with a real stop/go there. Not yet worth betting on as a £50k business.
+- **My verdict:** worth pursuing to Checkpoint 3 (now the week of 2 November, D106), with a real stop/go there. Not yet worth betting on as a £50k business.
 
 > **Untested assumption (D86): businesses will pay.** The model's main money line is business clients (D37): hotels, tourism bodies, employers and Uzbek agencies buying plans for their guests. **No business has been asked yet.** Test E (5 interviews) is postponed until v0 exists, so it can run with a working demo, after Test B and before any business-only build work. Until then, every business number below is an assumption, and **this is the main revenue risk.** If Test E fails, the consumer path alone would have to carry the money (§6), and it is the weaker path.
 
@@ -174,7 +174,7 @@ Your idea had five parts. Here is each one, honestly.
 
 | Phase | Your hours | When |
 |---|---|---|
-| Tests, by hand (Phase 3) | ≈ 24 | Now until the **9 Nov checkpoint** |
+| Tests, by hand (Phase 3) | ≈ 24 | Now until **Checkpoint 3, week of 2 Nov** (D106) |
 | First version (v0): iPhone app + backend | ≈ 56.5 | About 8.5 h before the checkpoint, the rest mid-Nov to late Dec |
 | Test v0 (Phase 5) | 10 | January, through TestFlight |
 | **Whole plan** | **≈ 114.5 in the window** | About **1.3 weeks past the 14-week window** |
@@ -252,7 +252,7 @@ Your idea had five parts. Here is each one, honestly.
 
 ## 7. My overall verdict (my judgement throughout)
 
-**Worth pursuing to the 9 November checkpoint: yes.** The tests are cheap (about 24 of your hours), well designed, and they answer the questions that matter. **Worth committing to as a £50k business today: not yet.** That depends on Tests B and E, and Test E now comes after v0 (D86).
+**Worth pursuing to Checkpoint 3 (week of 2 November, D106): yes.** The tests are cheap (about 24 of your hours), well designed, and they answer the questions that matter. **Worth committing to as a £50k business today: not yet.** That depends on Tests B and E, and Test E now comes after v0 (D86).
 
 **The three biggest reasons for:**
 1. **A real gap.** Nobody learns how *moments* feel for each person from their own ratings. The AI itinerary space is crowded, but not at this.
@@ -284,7 +284,7 @@ Your idea had five parts. Here is each one, honestly.
    - do one walk to fill the seed moment's gaps;
    - ~~recruit and run the 5 business interviews (Test E), then the business-vs-consumer decision note~~ **postponed until v0 exists (D86)**; those hours go to moment cards and Test B;
    - ~~the designer signs the agreement and gets the brief~~ (dropped, D81: you design v0 yourself after Test B).
-3. **Weeks of 19 Oct – 9 Nov:** run **Tests A–D by hand**, then **Checkpoint 3 on 9 Nov**: go, change course or stop.
+3. **5 Oct – 1 Nov:** run **Tests A–D by hand**, then **Checkpoint 3 in the week of 2 Nov** (D106): go, change course or stop.
 
 **Meanwhile (Claude, when you say go):**
 - set up the GitHub Actions builds (the iPhone app on a Mac runner, backend checks on Linux, iPhone builds only when the app folder changes);

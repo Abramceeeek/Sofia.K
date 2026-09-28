@@ -2,7 +2,7 @@
 
 **What the app does:** it plans a day out around how a specific person wants to *feel*, not around famous sights. The unit is a **moment**: a specific experience at a place and time, often including how you arrive. One example is walking out of South Kensington tube and seeing the Natural History Museum open up in front of you.
 
-**Who designs (D81):** Abram, in Claude Design, **after Test B reports** (about 2 Nov). An outside designer is optional. If one is brought in, they sign Part A (`legal/contributor-deed-part-a.md`) before their work is used.
+**Who designs (D81):** Abram, in Claude Design, **after Test B reports** (about 23 Oct, D106). An outside designer is optional. If one is brought in, they sign Part A (`legal/contributor-deed-part-a.md`) before their work is used.
 
 ## Design scope (D81): four custom screens, everything else native
 
@@ -94,7 +94,7 @@ Login or sign-up, a paywall or payments, an AI support chat, a social feed or pr
 
 ## Timing (D81)
 
-- **After Test B reports** (about 2 Nov), and after Checkpoint 3 (9 Nov) so its lessons go in.
+- **After Test B reports** (about 23 Oct), and after Checkpoint 3 (week of 2 Nov, D106) so its lessons go in.
 - **Welcome, plus type and colour** (2.5 h): the week of 16 Nov, before Build 1 (about 30 Nov).
 - **Moment card, shot card, day plan** (4.5 h): the weeks of 23–30 Nov, before Claude builds them for Build 2 (mid-December).
 - Native screens need no design pass. Claude builds them from this list.

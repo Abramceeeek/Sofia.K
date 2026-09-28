@@ -41,6 +41,12 @@ features:
           crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
   moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
 cost_gbp: 0
-shot_card: null
+shot_card:   # D106: the Test A example shot card (validation/shot-card-example.md); text only, no photo
+  stand_at: {lat: 51.50861, lon: -0.11694,
+             note: "The middle of the bridge, at the railing; then cross the road to the other side"}
+  face: "West (upriver) first; then cross over and face east (downriver)"
+  frame: "West: the river leading to Parliament, with the London Eye in the shot. East: St Paul's dome with the City's towers behind it"   # CHECKED (the views)
+  when: "The 20 minutes either side of sunset: around 4:30pm after the clocks go back on 25 Oct, around 6pm in mid-October"   # CHECKED (sunset times, header)
+  avoid: "Stepping into the road for the shot; stay on the pavement"
 source: research
-last_checked: "2026-09-27"
+last_checked: "2026-09-28"
