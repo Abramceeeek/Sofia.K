@@ -29,7 +29,8 @@ experience:
   end_name: "St Paul's Cathedral"
 best_time:
   time_of_day: ["07:00-23:00"]   # always open; the window keeps it to sensible hours
-  light: "Any time; at dusk the dome is lit (GUESS)"
+  light: "At dusk, when the dome is lit (GUESS)"
+  best_window: ["16:15-18:00"]   # D100: when the light line is shown
   weather: ["any"]
   company: null
   crowd_window: "Busiest at weekend afternoons (GUESS)"

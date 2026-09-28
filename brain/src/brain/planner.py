@@ -110,7 +110,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            forced_last: int | None, time_limit_s: float, max_wait_min: int,
            min_stops: int | None = None, budget_gbp: float | None = None,
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
-           max_areas: int = 1) -> DayPlan | None:
+           max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -122,13 +122,23 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
             if i != j:
                 T[i][j] = math.ceil(travel.minutes(cands[i - 1].end, cands[j - 1].start))
     service = [0] + [c.duration_min for c in cands] + [0]
+    # D100: a small buffer between two stops (more after a Tube or bus leg), so a plan is never packed to the
+    # minute. It only moves arrival times; the travel minutes shown to people stay the estimate.
+    mode = getattr(travel, "mode", None)
+    B = [[0] * (n + 2) for _ in range(n + 2)]
+    if buffer_walk_min or buffer_transit_min:
+        for i in range(1, n + 1):
+            for j in range(1, n + 1):
+                if i != j:
+                    transit = mode is not None and mode(cands[i - 1].end, cands[j - 1].start) != "walk"
+                    B[i][j] = buffer_transit_min if transit else buffer_walk_min
 
     manager = pywrapcp.RoutingIndexManager(n + 2, 1, [START], [END])
     routing = pywrapcp.RoutingModel(manager)
 
     def time_cb(fi, ti):
         i, j = manager.IndexToNode(fi), manager.IndexToNode(ti)
-        return service[i] + (0 if j == END else T[i][j])
+        return service[i] + (0 if j == END else T[i][j] + B[i][j])
 
     time_idx = routing.RegisterTransitCallback(time_cb)
     routing.AddDimension(time_idx, max_wait_min, day_end, False, "Time")
@@ -219,7 +229,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              min_stops: int | None = None, budget_gbp: float | None = None,
              must_include: set[str] | frozenset[str] = frozenset(),
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
-             time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1) -> DayPlan:
+             time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
+             buffer_walk_min: int = 0, buffer_transit_min: int = 0) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -238,7 +249,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
     args = dict(start_point=start_point, day_start=day_start, day_end=day_end, travel=travel,
                 legs=legs, floor=floor, max_stops=max_stops, time_limit_s=time_limit_s,
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
-                min_stops=min_stops, max_areas=max_areas)
+                min_stops=min_stops, max_areas=max_areas,
+                buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:
@@ -302,7 +314,9 @@ def spread_to_end(plan: DayPlan, cands: dict[str, Candidate], min_end: int, day_
     carry, prev_depart, new = 0, None, []
     for k, st in enumerate(plan.stops):
         c = cands[st.moment_id]
-        earliest = st.arrive_min if prev_depart is None else max(st.arrive_min, prev_depart + st.travel_min)
+        # keep at least the solver's gap before this stop (travel plus any buffer, D100)
+        gap = st.arrive_min - plan.stops[k - 1].depart_min if k else 0
+        earliest = st.arrive_min if prev_depart is None else max(st.arrive_min, prev_depart + max(gap, st.travel_min))
         want = earliest + share[k] + carry
         latest = max((hi - c.duration_min for lo, hi in c.windows if lo <= earliest <= hi - c.duration_min),
                      default=earliest)

@@ -56,6 +56,9 @@ Every Test A metric is reported **overall, and separately for voice and text** (
   - **Generic:** a top-attractions plan written once and reused (`validation/raw/testb/generic.yaml`). It uses the same fields as the personalised plan, including how to arrive, so the format gives nothing away.
 - **Labels come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed). The sheet says A or B; the plans are sent as **Plan 1 and Plan 2** (A → 1, B → 2; D97, D99).
 - **Measures:** which they prefer and why; "This plan fits me" (1–5) for each.
+  - **Ask for a gut reaction** ("which would you rather do?"), not an analysis (D100).
+  - **Some "why" answers may be AI-assisted.** Mark long, polished answers with "(possibly AI-assisted)" in the "Why (open)" cell; the choice still counts, but those answers aren't quoted as evidence of feeling.
+  - **The dry run (friends, not test data)** found the personal plan easy to spot from its content, and the generic plan weak. So the generic plan is now a strong "best of London" day (D100).
 - **Trip intent** (Area 15) is asked just before: "recharge or explore?", "who's coming?", "one must-do?". It is stored with the plan (D27).
 
 ## Test C — actual use (plus virality, D23)

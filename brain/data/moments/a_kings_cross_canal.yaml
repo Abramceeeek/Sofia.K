@@ -25,7 +25,8 @@ experience:
   end_point: null
 best_time:
   time_of_day: ["10:00-20:00"]   # GUESS; the fountains run in daylight
-  light: "Daylight for the fountains; the yard is lit in the evening (GUESS)"
+  light: "Dusk, when Coal Drops Yard is lit (GUESS)"
+  best_window: ["16:15-20:00"]   # D100: when the light line is shown
   weather: ["dry"]
   company: null
   crowd_window: null

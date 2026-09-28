@@ -26,6 +26,7 @@ experience:
 best_time:
   time_of_day: ["10:00-16:30"]   # daylight in the Test B weeks; The Tide is open 07:00-22:00
   light: "A sunny day"   # FRIEND
+  best_window: ["10:00-16:30"]   # D100: when the light line is shown
   weather: ["dry"]
   company: null
   crowd_window: "Quiet away from O2 event nights (GUESS)"

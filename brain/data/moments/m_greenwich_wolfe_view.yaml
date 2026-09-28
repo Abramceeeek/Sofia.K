@@ -17,19 +17,20 @@ place:
   lat: 51.4773           # CHECKED: Wikipedia coordinates for Greenwich Park; the statue is within ~150 m (GUESS)
   lon: 0.0
 approach:
-  from: "Cutty Sark DLR or Greenwich Pier"
-  start_point: {lat: 51.48406, lon: -0.00941}  # CHECKED: Greenwich Pier (as card 3)
-  path: "Walk into the park and climb the hill to the statue beside the Royal Observatory"   # CHECKED (statue beside the Observatory)
-  duration_min: 15       # GUESS: a steep climb
+  from: "Cutty Sark DLR station"   # D100: the pier only if you arrive by boat
+  start_point: {lat: 51.481675, lon: -0.010802}  # CHECKED: Cutty Sark DLR, TfL StopPoint API, 2026-09-28
+  path: "Walk into the park and up the steep hill to the statue beside the Royal Observatory: about 15-20 min, the last part uphill"   # CHECKED (statue beside the Observatory)
+  duration_min: 20       # GUESS: about 1.2 km from the DLR, the last part a steep climb (D100)
   step_free: null
 experience:
-  what_happens: "You climb through the park to the statue, and all of London opens up across the river: Canary Wharf, the Shard and St Paul's."   # CHECKED (the view)
+  what_happens: "At the top, all of London opens up across the river: Canary Wharf, the Shard and St Paul's."   # CHECKED (the view)
   why_it_works: "Green space, history and the whole skyline together, and a natural start before the river trip."
   duration_min: [20, 40] # GUESS
   end_point: null
 best_time:
   time_of_day: ["09:00-17:00"]   # inside park hours (opens 06:00; closes as early as 18:00 in winter)
-  light: "A clear day; late-afternoon light (GUESS)"
+  light: "Late afternoon on a clear day (GUESS)"
+  best_window: ["14:30-17:00"]   # D100: when the light line is shown
   weather: ["any"]
   company: null
   crowd_window: null

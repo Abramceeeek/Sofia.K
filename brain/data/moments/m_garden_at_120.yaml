@@ -20,17 +20,18 @@ place:
 approach:
   from: "Bank, Monument or Fenchurch Street station"   # *
   start_point: {lat: 51.5121, lon: -0.0815}
-  path: "Enter from Fenchurch Street or Fenchurch Avenue through Hogarth Court, pass an airport-style security check, and take the lift to floor 15"   # CHECKED (official)
+  path: "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15"   # CHECKED (official)
   duration_min: 5        # GUESS, including security
   step_free: true        # CHECKED (official): step-free lifts
 experience:
-  what_happens: "You step out of a lift 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge."   # CHECKED (official)
+  what_happens: "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge."   # CHECKED (official)
   why_it_works: "A quiet garden where you expect glass and steel: calm, and a close view of the finance district."
   duration_min: [20, 40] # GUESS
   end_point: null
 best_time:
   time_of_day: ["10:00-17:00"]
-  light: "Daylight; the towers light up at dusk (GUESS)"
+  light: "At dusk, when the towers light up (GUESS)"
+  best_window: ["16:00-17:00"]   # D100: when the light line is shown
   weather: ["any"]
   company: null
   crowd_window: null

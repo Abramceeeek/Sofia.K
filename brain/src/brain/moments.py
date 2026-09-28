@@ -61,6 +61,9 @@ class BestTime(BaseModel):
     # Days the card can be planned ("mon".."sun"); empty means every day. Keeps weekday-only
     # museums out of weekend plans. Different hours on different days still wait (after-9-nov #7).
     days: list[str] = Field(default_factory=list)
+    # D100: when `light` is worth telling people ("hh:mm-hh:mm"). A plan shows "Best: <light>" only if the stop
+    # overlaps one of these windows; with none, the line is never shown.
+    best_window: list[str] = Field(default_factory=list)
 
 
 class Features(BaseModel):
@@ -99,6 +102,8 @@ class Moment(BaseModel):
     best_time: BestTime = Field(default_factory=BestTime)
     features: Features = Field(default_factory=Features)
     cost_gbp: float | None = None
+    # D100: what the price pays for, so a plan never calls food "entry". Empty: food if the food tag is 2, else entry.
+    cost_kind: Literal["food", "entry", "ticket", "hire"] | None = None
     shot_card: ShotCard | None = None
     source: str = "founder"
     last_checked: str | None = None
@@ -132,14 +137,17 @@ class Moment(BaseModel):
 
     def windows(self) -> list[tuple[int, int]]:
         """Allowed time windows in minutes from midnight, from best_time.time_of_day."""
-        out = []
-        for w in self.best_time.time_of_day:
-            m = _WINDOW.match(w)
-            if not m:
-                raise ValueError(f"{self.id}: time window {w!r} is not 'hh:mm-hh:mm'")
-            h1, m1, h2, m2 = (int(x) for x in m.groups())
-            out.append((h1 * 60 + m1, h2 * 60 + m2))
-        return sorted(out)
+        return parse_windows(self.best_time.time_of_day, self.id)
+
+    def best_windows(self) -> list[tuple[int, int]]:
+        """When the `light` line applies (D100), in minutes from midnight."""
+        return parse_windows(self.best_time.best_window, self.id)
+
+    def price_kind(self) -> str:
+        """What `cost_gbp` pays for: food, entry, ticket or hire (D100)."""
+        if self.cost_kind:
+            return self.cost_kind
+        return "food" if (self.features.place.get("food") or 0) >= 2 else "entry"
 
     def missing_for_planning(self) -> list[str]:
         """Fields the planner needs that are still empty. An empty list means plannable."""
@@ -164,6 +172,10 @@ class Moment(BaseModel):
             self.windows()
         except ValueError:
             missing.append("best_time.time_of_day (format)")
+        try:
+            self.best_windows()
+        except ValueError:
+            missing.append("best_time.best_window (format)")
         if any(d.lower() not in WEEKDAYS for d in self.best_time.days):
             missing.append("best_time.days (format)")
         return missing
@@ -176,6 +188,18 @@ class Moment(BaseModel):
 
     def plannable(self) -> bool:
         return not self.missing_for_planning()
+
+
+def parse_windows(windows: list[str], owner: str = "") -> list[tuple[int, int]]:
+    """["hh:mm-hh:mm", ...] as sorted (start, end) minutes from midnight."""
+    out = []
+    for w in windows:
+        m = _WINDOW.match(w)
+        if not m:
+            raise ValueError(f"{owner}: time window {w!r} is not 'hh:mm-hh:mm'")
+        h1, m1, h2, m2 = (int(x) for x in m.groups())
+        out.append((h1 * 60 + m1, h2 * 60 + m2))
+    return sorted(out)
 
 
 def load_moment_file(path: Path) -> Moment:

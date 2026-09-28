@@ -23,9 +23,9 @@ place:
   lat: 51.51931          # CHECKED: British Museum, OpenStreetMap
   lon: -0.12671
 approach:
-  from: "Room 4, the Egyptian sculpture gallery"   # FOUNDER: confirmed 2026-09-27
+  from: "Tottenham Court Road or Holborn station"   # *; the route inside starts in Room 4 (FOUNDER: confirmed 2026-09-27)
   start_point: {lat: 51.51931, lon: -0.12671}
-  path: "Leave Room 4 by its door on the west side of the Great Court, cross the court past the round Reading Room, and enter Room 1 on the east side"   # CHECKED via search; walk it to confirm
+  path: "Go in by the main entrance and start in Room 4, the Egyptian sculpture gallery, on the west side of the Great Court"   # CHECKED via search; walk it to confirm
   duration_min: 10       # GUESS, accepted by Abram 2026-09-27: from the main entrance, through Room 4
   step_free: null
 experience:

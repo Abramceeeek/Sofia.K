@@ -129,8 +129,10 @@ Their corrections count as data. **Completion = they reply to the read-back.**
 
 Then send the two plans, labelled **Plan 1 and Plan 2** from the results sheet (A → 1, B → 2; never say which is personalised). Numbers keep them apart from the A/B choices in Test A (D97):
 
-> Here are two plans for the same kind of day. **Which would you rather do, Plan 1 or Plan 2? Why?**
+> Here are two plans for the same kind of day. **Go with your gut: which would you rather do, Plan 1 or Plan 2?** No need to analyse them; a line on why is plenty.
 > Then for each: "This plan fits me" 1–5.
+
+*For you, not the participant (D100):* friends in the dry run wrote long, structured comparisons. Ask for a quick gut answer, and read a long, polished "why" with care: it may be AI-assisted. The choice still counts. Add "(possibly AI-assisted)" at the end of their "Why (open)" cell on the TestB tab, and don't quote those answers as evidence of what people felt. Enter the choice as A or B: Plan 1 = A, Plan 2 = B.
 
 ## Test C — the real day
 

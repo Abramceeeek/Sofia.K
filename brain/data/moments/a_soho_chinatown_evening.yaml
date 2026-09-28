@@ -29,6 +29,7 @@ experience:
 best_time:
   time_of_day: ["17:30-22:30"]   # FRIEND: best in the evening when it's busy
   light: "Dusk and after, when the lanterns and signs are lit (CHECKED)"
+  best_window: ["16:30-22:30"]   # D100: when the light line is shown
   weather: ["dry"]
   company: "Friends (FRIEND)"
   crowd_window: "Busy is the point"   # FRIEND

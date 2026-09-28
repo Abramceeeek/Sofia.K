@@ -28,6 +28,7 @@ experience:
 best_time:
   time_of_day: ["15:45-18:30"]   # FRIEND: sunset. 16:47 on 26 Oct, 16:24 on 8 Nov; 17:51 on 24 Oct, before the clocks go back (CHECKED: sunrise-sunset.org)
   light: "Sunset"   # FRIEND
+  best_window: ["16:00-17:00"]   # D100: when the light line is shown
   weather: ["any"]
   company: null
   crowd_window: "Usually quiet (GUESS)"

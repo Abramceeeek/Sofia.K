@@ -35,7 +35,7 @@ import yaml
 from .config import DATA_DIR
 from .features import Conditions, conjoint_plan_features, moment_features
 from .aspiration import AspirationMap, load_aspiration
-from .moments import Moment, Point, load_moments
+from .moments import Moment, Point, load_moments, parse_windows
 from .personal import DeltaPosterior
 from .planner import DayPlan, LegWeights, candidate_for, fits_day, hhmm, parse_hhmm, plan_day, spread_to_end
 from .population import PopulationModel, load_population
@@ -100,6 +100,20 @@ def load_swipe_items(path: Path) -> dict[int, Moment]:
             "place": {"name": it["name"]}, "features": {"place": it["place"], "moment": it["moment"]},
             "cost_gbp": it.get("cost_gbp"), "source": "swipe-item"})
     return out
+
+
+def load_swipe_cards(path: Path) -> dict[int, tuple[str, list[str]]]:
+    """Each swipe place's name and the moment cards at the same place (D100)."""
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f)
+    return {int(num): (it["name"], list(it.get("cards") or [])) for num, it in d["items"].items()}
+
+
+def places_by_reaction(p: Participant, swipe_cards: dict[int, tuple[str, list[str]]]):
+    """(loved, disliked): the swipe places, each with its card ids."""
+    loved = [swipe_cards[i] for i, r in p.swipes if r == "loved" and i in swipe_cards]
+    disliked = [swipe_cards[i] for i, r in p.swipes if r == "didnt_enjoy" and i in swipe_cards]
+    return loved, disliked
 
 
 def load_tasks(path: Path) -> dict[int, dict[str, dict]]:
@@ -193,40 +207,82 @@ def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6,
 
 # ---- planning -----------------------------------------------------------------------
 
+@dataclass
+class PlanNotes:
+    """For the review only (never sent): the familiar favourite and what happened to each loved place (D100)."""
+    favourite: str | None = None
+    loves: list[tuple[str, str]] = field(default_factory=list)       # (place, what happened to it)
+    dislikes: list[tuple[str, str]] = field(default_factory=list)
+
+
+BUFFER_WALK_MIN, BUFFER_TRANSIT_MIN = 5, 10   # D100 (GUESS): breathing space after a walk / a Tube or bus leg
+DAY_NAMES = dict(mon="Mondays", tue="Tuesdays", wed="Wednesdays", thu="Thursdays", fri="Fridays",
+                 sat="Saturdays", sun="Sundays")
+
+
 def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], brief: Brief,
                   travel: LondonEstimate, must_do: str | None = None, amap: AspirationMap | None = None,
-                  fields: frozenset[str] = frozenset(),
-                  end_window: tuple[int, int] | None = None) -> tuple[DayPlan, list[dict], list[dict]]:
+                  fields: frozenset[str] = frozenset(), end_window: tuple[int, int] | None = None,
+                  loved: list[tuple[str, list[str]]] = (), disliked: list[tuple[str, list[str]]] = (),
+                  familiar: bool = False) -> tuple[DayPlan, list[dict], list[dict], PlanNotes]:
     """The personalised plan. `end_window` (earliest, latest end in minutes) keeps it ending within
-    30 min of the generic plan (D97); if that can't be met, it plans without it and says so in `status`."""
+    30 min of the generic plan (D97); if that can't be met, it plans without it and says so in `status`.
+
+    D100: cards at places the person didn't enjoy are never planned. With `familiar`, the plan holds exactly one
+    card at a place they loved (the best combination of the top three that fit the day), and the other stops are
+    places they haven't marked as loved. `loved` and `disliked` are (swipe place, its card ids)."""
     b = pop.b_person(post.mean)
     cond = Conditions(brief.temp_c, brief.rain_prob)
+    rain = brief.rain_prob is not None and brief.rain_prob >= 0.5
     usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)]
-    if brief.rain_prob is not None and brief.rain_prob >= 0.5:
+    if rain:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
     by_id = {m.id: m for m in usable}
     asp = {m.id: (amap.match(m, fields) if amap else 0.0) for m in usable}
+    disliked_ids = {cid for _, ids in disliked for cid in ids} - {must_do}
+    loved_ids = {cid for _, ids in loved for cid in ids} - disliked_ids
     cands = [candidate_for(m, float(pop.vector(moment_features(m, cond, aspiration_match=asp[m.id])) @ b))
-             for m in usable]
+             for m in usable if m.id not in disliked_ids]
+    by_cand = {c.moment_id: c for c in cands}
     idx = {n: i for i, n in enumerate(pop.names)}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     common = dict(floor=pop.cutpoints["rating"][1], max_stops=brief.stops, min_stops=brief.stops,
-                  budget_gbp=brief.budget_gbp, must_include={must_do} if must_do else set(),
-                  time_limit_s=brief.time_limit_s)
-    plan = None
-    if end_window:   # D97: end within 30 min of the generic plan
-        lo, hi = end_window
-        plan = plan_day(cands, brief.start, day_start, min(day_end, hi), travel, legs, **common)
-        if plan.status != "ok" or not plan.stops:
-            plan = None
-    if plan is None:
-        plan = plan_day(cands, brief.start, day_start, day_end, travel, legs, **common)
-    if end_window and plan.stops:
-        by_cand = {c.moment_id: c for c in cands}
-        ok = spread_to_end(plan, by_cand, end_window[0], min(day_end, end_window[1]))
-        if (not ok or plan.stops[-1].depart_min > end_window[1]) and plan.status == "ok":
-            plan.status = "could not end within 30 min of the generic plan: fix by hand"
+                  budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
+                  buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN)
+    base_must = {must_do} if must_do else set()
+
+    def solve(sub: list, must: set[str]) -> DayPlan:
+        plan = None
+        if end_window:   # D97: end within 30 min of the generic plan
+            plan = plan_day(sub, brief.start, day_start, min(day_end, end_window[1]), travel, legs,
+                            must_include=must, **common)
+            if plan.status != "ok" or not plan.stops:
+                plan = None
+        if plan is None:
+            plan = plan_day(sub, brief.start, day_start, day_end, travel, legs, must_include=must, **common)
+        if end_window and plan.stops:
+            ok = spread_to_end(plan, by_cand, end_window[0], min(day_end, end_window[1]))
+            if (not ok or plan.stops[-1].depart_min > end_window[1]) and plan.status == "ok":
+                plan.status = "could not end within 30 min of the generic plan: fix by hand"
+        return plan
+
+    notes = PlanNotes()
+    if familiar and loved_ids:
+        options = sorted((c for c in cands if c.moment_id in loved_ids and fits_day(c, day_start, day_end)
+                          and (brief.budget_gbp is None or c.cost_gbp <= brief.budget_gbp)),
+                         key=lambda c: c.utility, reverse=True)[:3]
+        best = None
+        for fav in options:
+            sub = [c for c in cands if c.moment_id not in loved_ids or c.moment_id == fav.moment_id]
+            trial = solve(sub, base_must | {fav.moment_id})
+            if trial.status == "ok" and fav.moment_id in {st.moment_id for st in trial.stops} \
+                    and (best is None or trial.value > best.value):
+                best, notes.favourite = trial, fav.moment_id
+        plan = best if best is not None else solve([c for c in cands if c.moment_id not in loved_ids], base_must)
+    else:
+        plan = solve(cands, base_must)
+
     stops, prev_point, prev_name = [], brief.start, brief.start_name
     for st in plan.stops:
         m = by_id[st.moment_id]
@@ -234,20 +290,134 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
         stops.append({
             "title": m.title, "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min),
             "travel_min": st.travel_min, "travel_mode": mode, "from": prev_name,
-            "approach": approach_text(m, walked_from_stop=bool(stops) and mode == "walk"),
+            "approach": approach_text(m, walked_from_stop=mode == "walk", came_from=prev_name),
             "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
-            "cost_gbp": m.cost_gbp or 0.0,
+            "best_windows": m.best_windows(), "cost_gbp": m.cost_gbp or 0.0, "cost_kind": m.price_kind(),
+            "rain_swap": "",
             # review only, never sent:
-            "moment_id": m.id, "predicted": st.utility,
+            "moment_id": m.id, "predicted": st.utility, "familiar": m.id == notes.favourite,
             "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
         })
         prev_point, prev_name = m.end(), m.leave_name()
+    # A rain swap is a backup, not part of the planned day: a loved place can be one; a disliked place never is
+    add_rain_swaps(stops, plan, by_id, by_cand, disliked_ids, brief, travel)
     # Only moments that fit the day's hours count as "left out" (D99: no evening cards in a 12:00-17:00 day)
     utilities = sorted(((c.utility, c.moment_id) for c in cands if fits_day(c, day_start, day_end)), reverse=True)
     visited = {s["moment_id"] for s in stops}
     left_out = [{"moment_id": mid, "title": by_id[mid].title, "predicted": round(u, 3)}
                 for u, mid in utilities if mid not in visited][:3]
-    return plan, stops, left_out
+    all_ready = {m.id: m for m in moments}
+    notes.loves = [(name, love_note(ids, all_ready, by_cand, plan, notes.favourite, familiar, brief, rain, travel))
+                   for name, ids in loved]
+    notes.dislikes = [(name, "kept out of the plan" if any(i in all_ready for i in ids) else "no moment card")
+                      for name, ids in disliked]
+    return plan, stops, left_out, notes
+
+
+def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPlan, favourite: str | None,
+              familiar: bool, brief: Brief, rain: bool, travel: LondonEstimate) -> str:
+    """Why a place the person loved is in the plan or not (D100): no card, closed, hours, budget, distance or the
+    one-favourite rule. For Abram's review; never sent."""
+    have = [i for i in ids if i in ready]
+    if not have:
+        return "no moment card yet"
+    planned = {st.moment_id for st in plan.stops}
+    if favourite in have:
+        return "in the plan, as the familiar favourite"
+    if planned & set(have):
+        return "in the plan"
+    day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
+
+    def could_fit(m: Moment) -> bool:
+        return (m.plannable() and m.open_on(brief.weekday) and not (rain and m.best_time.weather == ["dry"])
+                and fits_day(candidate_for(m, 0.0), day_start, day_end)
+                and (brief.budget_gbp is None or (m.cost_gbp or 0) <= brief.budget_gbp))
+
+    # judge the place by its card that could fit the day, if any (the day boat, not the night boat)
+    m = max((ready[i] for i in have), key=lambda m: (could_fit(m), cands[m.id].utility if m.id in cands else -99))
+    if not m.plannable():
+        why = "its card isn't complete yet"
+    elif not m.open_on(brief.weekday):
+        why = f"closed on {DAY_NAMES.get((brief.weekday or '')[:3], brief.weekday)}"
+    elif rain and m.best_time.weather == ["dry"]:
+        why = "it's outdoors and rain is forecast"
+    elif not fits_day(candidate_for(m, 0.0), day_start, day_end):
+        hours = ", ".join(f"{hhmm(a)}–{hhmm(b)}" for a, b in m.windows())
+        why = f"its hours ({hours}) don't fit {brief.start_time}–{brief.end_time}"
+    elif brief.budget_gbp is not None and (m.cost_gbp or 0) > brief.budget_gbp:
+        why = f"it costs {_money(m.cost_gbp)}, over the {_money(brief.budget_gbp)} budget"
+    elif familiar and favourite:
+        why = f"only one familiar favourite per plan, and {_lower_article(ready[favourite].title)} fitted the day better"
+    elif familiar:
+        why = "it didn't fit alongside the other stops"
+    else:
+        why = "it scored lower than the stops chosen, with the travel between them"
+    if plan.stops and m.start() is not None:
+        near = min(travel.minutes(ready[st.moment_id].end(), m.start()) for st in plan.stops if st.moment_id in ready)
+        why += f"; about {round(near)} min from the nearest stop"
+    return why
+
+
+def _lower_article(title: str) -> str:
+    first, _, rest = title.partition(" ")
+    return f"{first.lower()} {rest}" if first in ("A", "An", "The") else title
+
+
+def _outdoors(m: Moment) -> bool:
+    return (m.features.place.get("outdoor_exposure") or 0) >= 2 or m.best_time.weather == ["dry"]
+
+
+def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], cands: dict, excluded: set[str],
+                   brief: Brief, travel: LondonEstimate, max_min: float = 20.0) -> None:
+    """D100: for each outdoor stop, an indoor or covered moment nearby that fits the same time, written as
+    "If it rains: …". Each swap is used once. If no stop gets one and every stop is outdoors, the best indoor
+    moment within 30 min of any stop (at any time of the day) goes on that stop."""
+    day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
+    planned = {st.moment_id for st in plan.stops}
+    groups = {by_id[i].variant_of for i in planned if by_id[i].variant_of}
+    spend = sum(s["cost_gbp"] for s in stops)
+    pool = [m for m in by_id.values() if m.id not in planned and m.id not in excluded and m.id in cands
+            and m.kind == "moment" and not _outdoors(m) and (m.variant_of is None or m.variant_of not in groups)]
+    used: set[str] = set()
+
+    def pick(st, stop: dict, limit: float, any_time: bool):
+        here = by_id[st.moment_id].start()
+        best = None
+        for m in pool:
+            if m.id in used:
+                continue
+            c = cands[m.id]
+            lo, hi = (day_start, day_end) if any_time else (max(day_start, st.arrive_min - 30),
+                                                             min(day_end, st.arrive_min + 30 + c.duration_min))
+            if not fits_day(c, lo, hi):
+                continue
+            if brief.budget_gbp is not None and spend - stop["cost_gbp"] + (m.cost_gbp or 0) > brief.budget_gbp:
+                continue
+            t = travel.minutes(here, m.start())
+            if t > limit:
+                continue
+            score = c.utility - 0.02 * t
+            if best is None or score > best[0]:
+                best = (score, m, t, travel.mode(here, m.start()))
+        return best
+
+    def line(m: Moment, t: float, mode: str) -> str:
+        how = "on foot" if mode == "walk" else "by Tube or bus"
+        place = re.split(r"[:,(]", m.place.name)[0].strip()
+        name = m.title if place.lower() in m.title.lower() else f"{m.title} ({place})"
+        return f"{name}, about {max(5, round(t / 5) * 5)} min away {how}."
+
+    outdoor = [(st, s) for st, s in zip(plan.stops, stops) if _outdoors(by_id[st.moment_id])]
+    for st, s in outdoor:
+        if (hit := pick(st, s, max_min, any_time=False)):
+            used.add(hit[1].id)
+            s["rain_swap"] = line(hit[1], hit[2], hit[3])
+    indoor = [st for st in plan.stops if (by_id[st.moment_id].features.place.get("outdoor_exposure") or 0) == 0]
+    if outdoor and not used and not indoor:
+        hits = [(h, s) for st, s in outdoor if (h := pick(st, s, 30.0, any_time=True))]
+        if hits:
+            hit, s = max(hits, key=lambda x: x[0][0])
+            s["rain_swap"] = line(hit[1], hit[2], hit[3])
 
 
 GENERIC_STOP_MIN = 45   # GUESS: used when a generic stop has no `depart` time
@@ -265,13 +435,29 @@ def plan_end(stops: list[dict]) -> int | None:
     return parse_hhmm(last["arrive"]) + GENERIC_STOP_MIN
 
 
-def approach_text(m: Moment, walked_from_stop: bool = False) -> str:
-    """How to arrive, in one line. If the path already says where from, don't repeat "From X.".
-    After a walk from the previous stop, the card's "from" station is dropped: you aren't coming from it."""
+_VERBS = {"walk", "take", "go", "enter", "leave", "cross", "follow", "climb", "step", "ride", "head", "turn",
+          "come", "start"}
+
+
+def _same_place(a: str, b: str) -> bool:
+    a, b = a.lower().strip(), b.lower().strip()
+    return bool(a and b) and (a in b or b in a)
+
+
+def approach_text(m: Moment, walked_from_stop: bool = False, came_from: str | None = None) -> str:
+    """How to arrive, as full sentences (D100): "From X station, walk ..." when the path starts with a verb, else
+    "Start at X. <path>". The card's "from" is left out after a walk from the previous stop (you aren't coming
+    from it), when the path already says where from, and when you are already coming from there."""
     path = _sentence(clean(m.approach.path))
-    if m.approach.from_ and not walked_from_stop and not path.lower().startswith("from "):
-        return clean(f"From {m.approach.from_}. {path}")
-    return path or ("" if walked_from_stop else clean(m.approach.from_ and f"From {m.approach.from_}."))
+    frm = clean(m.approach.from_)
+    if (not frm or walked_from_stop or path.lower().startswith("from ")
+            or (came_from and _same_place(came_from, frm))):
+        return path
+    if not path:
+        return f"Start at {frm}."
+    if path.split()[0].lower().strip(",:;") in _VERBS:
+        return f"From {frm}, {path[0].lower()}{path[1:]}"
+    return f"Start at {frm}. {path}"
 
 
 def _sentence(text: str) -> str:
@@ -279,7 +465,9 @@ def _sentence(text: str) -> str:
 
 
 def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
-    """The generic plan, written once by Abram. Stops are moment ids or free text, same fields."""
+    """The generic plan, written once by Abram. Stops are moment ids or free text, same fields.
+    D100 fields: `best_window` (when the `best` line is shown), `cost_kind` (food/entry/ticket/hire) and
+    `rain_swap` (the "If it rains:" line for an outdoor stop)."""
     with open(path, encoding="utf-8") as f:
         d = yaml.safe_load(f)
     out = []
@@ -287,24 +475,32 @@ def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
         if "moment_id" in s:
             m = moments[s["moment_id"]]
             s = {"title": m.title, "what": m.experience.what_happens or "", "best": m.best_time.light or "",
-                 "cost_gbp": m.cost_gbp or 0.0,
-                 "approach": " ".join(x for x in (m.approach.from_ and f"From {m.approach.from_}.", m.approach.path) if x),
-                 **s}
+                 "best_window": m.best_time.best_window, "cost_gbp": m.cost_gbp or 0.0, "cost_kind": m.price_kind(),
+                 "approach": approach_text(m, came_from=s.get("from")), **s}
         out.append({"title": s["title"], "arrive": s["arrive"], "depart": s.get("depart"), "travel_min": s.get("travel_min"),
                     "travel_mode": s.get("travel_mode", "walk"), "from": s.get("from", ""),
-                    "approach": clean(s.get("approach")), "what": clean(s.get("what")), "best": clean(s.get("best")),
-                    "cost_gbp": s.get("cost_gbp") or 0.0})
+                    "approach": _sentence(clean(s.get("approach"))), "what": _sentence(clean(s.get("what"))),
+                    "best": clean(s.get("best")), "best_windows": parse_windows(s.get("best_window") or [], s["title"]),
+                    "cost_gbp": s.get("cost_gbp") or 0.0, "cost_kind": s.get("cost_kind") or "entry",
+                    "rain_swap": _sentence(clean(s.get("rain_swap")))})
     return out
 
 
 # ---- rendering (identical for both plans) ------------------------------------------
 
-_MARKER = re.compile(r"\s*\((?:GUESS|CHECKED|FOUNDER|UNVERIFIED)\b[^)]*\)")
+_MARKER = re.compile(r"\s*\((?:GUESS|CHECKED|FOUNDER|FRIEND|UNVERIFIED)\b[^)]*\)")
+
+# D100: the transport estimate. Each Tube or bus leg is counted as one Zone 1 pay-as-you-go single, capped at the
+# Zones 1-2 daily cap. Sources: TfL fare API (London Bridge -> Westminster, valid from 4 Jul 2026: £3.00 off-peak,
+# £3.10 peak; read 2026-09-28) and TfL adult fares 2026 (daily cap £8.90; read 2026-09-27).
+TUBE_FARE_GBP = 3.00
+DAILY_CAP_GBP = 8.90
 
 
 def clean(text: str | None) -> str:
     """Participant-facing text: drop the cards' internal notes, e.g. "(GUESS)" or "(CHECKED: ...)"."""
     return _MARKER.sub("", text or "").strip()
+
 
 def _travel_line(s: dict) -> str:
     if s.get("travel_min") is None:
@@ -314,25 +510,61 @@ def _travel_line(s: dict) -> str:
     return f"Getting there: about {int(s['travel_min'])} min {how}{src}."
 
 
+def _money(c: float) -> str:
+    return f"£{c:,.0f}" if float(c).is_integer() else f"£{c:,.2f}"
+
+
 def _cost(c: float) -> str:
-    return "free" if not c else f"£{c:,.0f}" if float(c).is_integer() else f"£{c:,.2f}"
+    return "free" if not c else _money(c)
 
 
-def _summary(brief: Brief, stops: list[dict]) -> str:
-    total = sum(s["cost_gbp"] for s in stops)
-    money = f"entry costs about {_cost(total)} per person" if total else "no entry costs"
-    return f"{brief.start_time}–{brief.end_time} · {len(stops)} stops · {money}"
+def _cost_line(s: dict) -> str:
+    """Never call food "entry" (D100)."""
+    c = s.get("cost_gbp") or 0.0
+    if not c:
+        return "Cost: free"
+    return {"food": f"Food: about {_money(c)}", "ticket": f"Ticket: {_money(c)}",
+            "hire": f"Hire: {_money(c)}"}.get(s.get("cost_kind") or "entry", f"Entry: {_money(c)}")
+
+
+def transport_gbp(stops: list[dict]) -> float:
+    legs = sum(1 for s in stops if s.get("travel_min") is not None and s.get("travel_mode") != "walk")
+    return round(min(legs * TUBE_FARE_GBP, DAILY_CAP_GBP), 2)
+
+
+def _leave(s: dict) -> str:
+    return s.get("depart") or hhmm(parse_hhmm(s["arrive"]) + GENERIC_STOP_MIN)
+
+
+def _best_line(s: dict) -> str:
+    """"Best: …" only when the stop's own time matches (D100)."""
+    if not s.get("best"):
+        return ""
+    a, b = parse_hhmm(s["arrive"]), parse_hhmm(_leave(s))
+    return f"Best: {s['best']}" if any(lo < b and a < hi for lo, hi in s.get("best_windows") or []) else ""
+
+
+def _header(label: str, brief: Brief, stops: list[dict]) -> list[str]:
+    spend, fare = sum(s["cost_gbp"] for s in stops), transport_gbp(stops)
+    money = (f"about {_money(spend)} for food and entry" if spend else "free entry") + \
+            (f", plus about {_money(fare)} transport" if fare else ", all on foot")
+    return [f"Plan {label}: {brief.day_label}", f"Start: {brief.start_name} at {brief.start_time} · {len(stops)} stops",
+            f"Costs: {money}"]
+
+
+def _stop_lines(s: dict) -> list[str]:
+    parts = (_travel_line(s), s.get("approach"), s.get("what"), _best_line(s), _cost_line(s),
+             s.get("rain_swap") and f"If it rains: {s['rain_swap']}")
+    return [x for x in parts if x]
 
 
 def plan_text(label: str, brief: Brief, stops: list[dict]) -> str:
     """A WhatsApp message (WhatsApp shows *text* as bold)."""
-    lines = [f"*Plan {label}: {brief.day_label}*", _summary(brief, stops), ""]
+    title, *rest = _header(label, brief, stops)
+    lines = [f"*{title}*", *rest, ""]
     for i, s in enumerate(stops, 1):
-        lines.append(f"*{i}. {s['arrive']}  {s['title']}*")
-        for part in (_travel_line(s), s.get("approach"), s.get("what"),
-                     s.get("best") and f"Best: {s['best']}", f"Cost: {_cost(s['cost_gbp'])}"):
-            if part:
-                lines.append(part)
+        lines.append(f"*{i}. {s['arrive']}–{_leave(s)}  {s['title']}*")
+        lines += _stop_lines(s)
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -347,46 +579,81 @@ def plan_pdf(label: str, brief: Brief, stops: list[dict], path: Path) -> None:
     st = getSampleStyleSheet()
     doc = SimpleDocTemplate(str(path), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm,
                             topMargin=16 * mm, bottomMargin=16 * mm, title=f"Plan {label}")
-    flow = [Paragraph(escape(f"Plan {label}: {brief.day_label}"), st["Title"]),
-            Paragraph(escape(_summary(brief, stops)), st["Normal"]), Spacer(1, 6 * mm)]
+    title, *rest = _header(label, brief, stops)
+    flow = [Paragraph(escape(title), st["Title"])] + [Paragraph(escape(x), st["Normal"]) for x in rest]
+    flow.append(Spacer(1, 6 * mm))
     for i, s in enumerate(stops, 1):
-        flow.append(Paragraph(escape(f"{i}. {s['arrive']}  {s['title']}"), st["Heading3"]))
-        for part in (_travel_line(s), s.get("approach"), s.get("what"),
-                     s.get("best") and f"Best: {s['best']}", f"Cost: {_cost(s['cost_gbp'])}"):
-            if part:
-                flow.append(Paragraph(escape(part), st["Normal"]))
+        flow.append(Paragraph(escape(f"{i}. {s['arrive']}–{_leave(s)}  {s['title']}"), st["Heading3"]))
+        flow += [Paragraph(escape(x), st["Normal"]) for x in _stop_lines(s)]
         flow.append(Spacer(1, 4 * mm))
     doc.build(flow)
 
 
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9']+", text.lower())
+
+
+def text_checks(stops: list[dict], n: int = 5) -> list[str]:
+    """For the review (D100): lines that aren't full sentences, and arrival and description lines that repeat
+    each other (5 or more words in a row)."""
+    out = []
+    for i, s in enumerate(stops, 1):
+        for key in ("approach", "what", "rain_swap"):
+            x = s.get(key) or ""
+            if x and x[-1] not in ".!?":
+                out.append(f"stop {i}: no full stop at the end of the {key} line")
+        a, w = _words(s.get("approach") or ""), _words(s.get("what") or "")
+        grams = {tuple(a[k:k + n]) for k in range(len(a) - n + 1)}
+        if any(tuple(w[k:k + n]) in grams for k in range(len(w) - n + 1)):
+            out.append(f"stop {i}: the arrival and description lines repeat each other")
+    return out
+
+
 def review_text(p: Participant, post: DeltaPosterior, plan: DayPlan, stops: list[dict], left_out: list[dict],
                 pop: PopulationModel, brief: Brief, must_do: str | None, intent: dict,
-                field_labels: list[str] | None = None) -> str:
-    personal, generic = (p.personal_label or "?"), OTHER_LABEL.get(p.personal_label or "", "?")
+                field_labels: list[str] | None = None, notes: PlanNotes | None = None,
+                generic: list[dict] | None = None, familiar: bool = False) -> str:
+    personal, generic_label = (p.personal_label or "?"), OTHER_LABEL.get(p.personal_label or "", "?")
+    notes = notes or PlanNotes()
     out = [f"# {p.pid}: review before sending (for Abram only)", "",
-           f"- Channel: {p.channel or 'unknown'}. Personalised plan is **{personal}**, generic is **{generic}** (TestB tab).",
+           f"- Channel: {p.channel or 'unknown'}. Personalised plan is **{personal}**, generic is **{generic_label}** (TestB tab).",
            f"- Data used: {len(p.swipes)} swipes, {len(p.choices)} choices ({post.n_obs} informative).",
            f"- Planner status: {plan.status}.",
            f"- Trip intent: {intent or 'none recorded'}. Must-do: {must_do or 'none'}.",
-           f"- Inspiring fields (Test A 5.7): {', '.join(field_labels) if field_labels else 'none given'}.", "",
+           f"- Inspiring fields (Test A 5.7): {', '.join(field_labels) if field_labels else 'none given'}.",
+           f"- Familiar favourite (D100, {'on' if familiar else 'off'}): "
+           + (next((s['title'] for s in stops if s.get('familiar')), notes.favourite) if notes.favourite
+              else "none" if familiar else "rule not used"), "",
            "## Read-back lines (confident weights only)", ""]
     out += [f"- {l}" for l in readback_lines(pop, post, field_labels=field_labels)]
     out += ["", "## Personalised plan: why each stop", ""]
-    total = 0.0
     for s in stops:
-        total += s["cost_gbp"]
         why = "; ".join(f"{w['label']} {w['contribution']:+.2f}" for w in s["why"])
         flag = " **check this leg**" if s["travel_mode"] != "walk" or s["travel_min"] > 30 else ""
-        out.append(f"- {s['arrive']} {s['title']} (predicted {s['predicted']:+.2f}): {why}. "
-                   f"Travel {s['travel_min']} min ({s['travel_mode']}){flag}")
-    out += ["", f"Total cost: {_cost(total)}" + (f" against a budget of {_cost(brief.budget_gbp)}." if brief.budget_gbp else "."),
-            "", "## Strong moments left out", ""]
+        fam = " **Familiar favourite.**" if s.get("familiar") else ""
+        out.append(f"- {s['arrive']}–{s['depart']} {s['title']} (predicted {s['predicted']:+.2f}): {why}. "
+                   f"Travel {s['travel_min']} min ({s['travel_mode']}){flag}.{fam}")
+    total = sum(s["cost_gbp"] for s in stops)
+    out += ["", f"Food and entry: {_cost(total)}" + (f" against a budget of {_cost(brief.budget_gbp)}" if brief.budget_gbp else "")
+            + f"; transport about {_cost(transport_gbp(stops))}.", "",
+            "## Places they loved: in the plan or why not (D100)", ""]
+    out += [f"- {name}: {why}" for name, why in notes.loves] or ["- none marked as loved"]
+    outdoor_no_swap = [s["title"] for s in stops if not s.get("rain_swap")]
+    if stops and not any(s.get("rain_swap") for s in stops):
+        out.insert(out.index("## Places they loved: in the plan or why not (D100)") - 1,
+                   "\n**Rain: no indoor option found near this plan. Add one by hand before sending (D100).**")
+    out += ["", "## Places they didn't enjoy", ""]
+    out += [f"- {name}: {why}" for name, why in notes.dislikes] or ["- none"]
+    out += ["", "## Strong moments left out", ""]
     out += [f"- {m['title']} (predicted {m['predicted']:+.2f})" for m in left_out] or ["- none"]
+    checks = [f"personalised {c}" for c in text_checks(stops)] + [f"generic {c}" for c in text_checks(generic or [])]
+    out += ["", "## Text checks (D100)", ""] + ([f"- {c}" for c in checks] or ["- none found"])
     out += ["", "## Before sending", "",
             "- [ ] Every Tube/bus leg checked (the times are rough estimates)",
             "- [ ] Opening hours and prices still right on the day",
             "- [ ] Same number of stops and same format as the generic plan",
             "- [ ] Both plans end within 30 min of each other (D97)",
+            "- [ ] Each outdoor stop has a rain swap in both plans, or the plan has an indoor stop (D100)",
             "- [ ] Nothing in the text says why a stop was chosen (keeps the test blind)", ""]
     return "\n".join(out)
 
@@ -472,6 +739,9 @@ def cmd_plans(args) -> int:
             intents = yaml.safe_load(f) or {}
     gen = generic_stops(Path(args.generic), {m.id: m for m in moments})
     gen_end = plan_end(gen)
+    if gen and gen[0].get("from") and not _same_place(gen[0]["from"], brief.start_name):
+        print(f"Warning: the generic plan starts from {gen[0]['from']!r} and the brief from {brief.start_name!r}. "
+              f"Use the same start in both (D100).", file=sys.stderr)
     if gen and not gen[-1].get("depart"):
         print(f"Warning: the generic plan's last stop has no 'depart'; assuming {GENERIC_STOP_MIN} min there.",
               file=sys.stderr)
@@ -486,6 +756,7 @@ def cmd_plans(args) -> int:
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     travel = LondonEstimate()
+    swipe_cards = load_swipe_cards(Path(args.data) / "swipe_items.yaml")
     for pid in sorted(people):
         if args.ids and pid not in args.ids:
             continue
@@ -498,7 +769,9 @@ def cmd_plans(args) -> int:
         post = fit_participant(pop, p, items, tasks, amap)
         fields = person_fields(amap, p)
         labels = amap.labels(fields) if amap else []
-        plan, stops, left_out = personal_plan(pop, post, moments, brief, travel, must_do, amap, fields, end_window)
+        loved, disliked = places_by_reaction(p, swipe_cards)
+        plan, stops, left_out, notes = personal_plan(pop, post, moments, brief, travel, must_do, amap, fields,
+                                                     end_window, loved, disliked, familiar=args.familiar)
         if args.numbered:
             p = replace(p, personal_label=NUMBERED[p.personal_label])
         generic_label = OTHER_LABEL[p.personal_label]
@@ -506,7 +779,8 @@ def cmd_plans(args) -> int:
             (out / f"{pid}_plan_{label}.txt").write_text(plan_text(label, brief, st), encoding="utf-8")
             if not args.no_pdf:
                 plan_pdf(label, brief, st, out / f"{pid}_plan_{label}.pdf")
-        review = review_text(p, post, plan, stops, left_out, pop, brief, must_do, intent, labels)
+        review = review_text(p, post, plan, stops, left_out, pop, brief, must_do, intent, labels,
+                             notes=notes, generic=gen, familiar=args.familiar)
         p_end = plan_end(stops)
         if p_end is not None and gen_end is not None:
             ok = abs(p_end - gen_end) <= 30
@@ -535,6 +809,8 @@ def main(argv: list[str] | None = None) -> int:
     pl.add_argument("--ids", type=lambda s: set(s.split(",")))
     pl.add_argument("--no-pdf", action="store_true")
     pl.add_argument("--numbered", action="store_true", help='label the plans "Plan 1" / "Plan 2" instead of A / B')
+    pl.add_argument("--familiar", action="store_true",
+                    help="D100 proposal: include exactly one place the person loved, if one fits the day")
     pl.add_argument("--include-drafts", action="store_true",
                     help="dry run: also plan with draft moments (unchecked GUESS values); never send these")
     args = ap.parse_args(argv)

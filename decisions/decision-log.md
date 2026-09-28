@@ -2,6 +2,33 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — dry-run feedback round 1; visitor mode parked
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D100 | **Round 1 of the dry run (6 friends, 3 per person; fixes only, not test data):** 6 of 6 preferred the personal plan and 6 of 6 spotted it, from how well the places fitted, never from the format. Read as "blindness held, personalisation visible". Caveats: the persona lines listed likes and dislikes openly, and the generic plan was a weak landmark checklist.<br>**The fixes:**<br>1. The generic plan becomes a strong "best of London" day (market, museum, view, walk), and Abram writes the real one to that standard.<br>2. A familiar-favourite rule is proposed (below).<br>3. Costs read "about £X for food and entry, plus about £Y transport".<br>4. Stop times are ranges.<br>5. "Best" lines show only when the time matches.<br>6. Travel legs are fixed (Greenwich uphill walk; no pier unless by boat; St James's → Palace gone).<br>7. Rain swaps for outdoor stops.<br>8. Wording: one start line, full sentences, no repeats, the London Eye is a walk-past.<br>9. A small buffer between stops.<br>10. The real Test B asks for a gut reaction and marks possibly AI-assisted answers | The D97 plan text and the landmark generic example | Founder decisions from the friends' feedback |
+| D101 | **"Visitor mode" is parked on the after-9-Nov list (#18) and merged with #14 Stage 2:**<br>- flights by link-out;<br>- entry requirements as general information plus links to the GOV.UK checkers only, never personal immigration advice (regulated: Immigration and Asylum Act 1999, s.84);<br>- a driving-licence question with GOV.UK links;<br>- visitor onboarding with home-contrast novelty.<br>Linked to Test E: Uzbek agencies' clients are the target visitors. **No work before 9 Nov** | — | Founder request (D75) |
+
+**Proposed, for your yes or no:**
+- **The familiar-favourite rule (`--familiar`):** the personal plan holds exactly one place the person loved (if one fits the day's hours, the budget and the day of the week), and every other stop is a place they haven't marked as loved. The solver tries the three best-scoring loved places and keeps the best whole day.
+- **Today it is off by default,** and the dry run uses it. Say yes and it becomes the default for the real Test B; say no and nothing changes.
+- **The trade-off (my judgement):** a familiar place makes the plan feel personal and gives an easy anchor to the day. It also makes the personal plan easier to spot, and it tests "we remembered what you like" as well as "we predicted what you'll like".
+- **It only works for loved places that have a card:** 7 of the 16 swipe places do today.
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m65 | **Places they didn't enjoy are never planned**, via each swipe place's `cards` list. This is always on, because it's what the friends' feedback on Big Ben implied | `brain/data/swipe_items.yaml`, `testb.py` |
+| m66 | **Transport estimate:** £3.00 per Tube or bus leg (Zone 1 pay-as-you-go off-peak, TfL fare API, valid from 4 Jul 2026), capped at £8.90 (Zones 1–2 daily cap). Walking legs are free. It doesn't include getting to the start or home | `testb.py` |
+| m67 | **"Best" lines need a `best_window` on the card;** with none, the line is never shown. Windows were set on 15 cards. Sunset windows are 16:00–17:00 for the Test B weeks (after 25 Oct). Compound lines were cut to their time-specific part, e.g. "At dusk, when the dome is lit". The spring and summer notes on the park cards stay in the card but aren't shown in Oct–Nov | 15 cards; `moments.py` |
+| m68 | **Rain swaps:** indoor or covered moments (outdoor exposure ≤ 1, not dry-only), within 20 min and able to start within 30 min of the stop's time, inside the budget, and each used once. A loved place can be a swap, because it's a backup, not part of the planned day. If nothing is found and the plan has no indoor stop, the review says "add one by hand". The generic plan's swaps are written by hand (`rain_swap`) | `testb.py` |
+| m69 | **Buffer:** 5 min after each walk and 10 min after each Tube or bus leg (GUESS). It changes arrival times only; the travel minutes shown stay the estimate | `planner.py` |
+| m70 | **Card text fixes for full sentences and no repeats:**<br>- Garden at 120, Horizon 22, Canary Wharf and City towers (no double "lift" or "escalators" lines);<br>- British Museum and Natural History Museum now start from their stations (the routes inside are unchanged);<br>- Richmond, the steakhouse and Borough Market reworded;<br>- Greenwich hill starts at Cutty Sark DLR (TfL coordinates) with a 20-min approach;<br>- the boats start at Cutty Sark DLR | 12 cards |
+| m71 | **`cost_kind` on cards** (food / entry / ticket / hire). The boats are "ticket" and the bike loop is "hire"; others follow the food tag | 3 cards; `moments.py` |
+| m72 | **The review gains:** the familiar favourite, "Places they loved: in the plan or why not", "Places they didn't enjoy", and text checks (a line without a full stop; arrival and description sharing 5+ words in a row). A warning fires if the generic plan's first `from` isn't the brief's start | `testb.py` |
+| m73 | **"Possibly AI-assisted" answers are marked in the TestB tab's "Why (open)" cell** (there is no notes column). The choice still counts | `validation/interview-script.md`, `test-plan.md` |
+
 ## 2026-09-28 — the real Test B day: 12:00–17:00
 
 | # | Decision | Replaces | Why |

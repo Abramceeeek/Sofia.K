@@ -32,6 +32,7 @@ best_time:
   time_of_day: ["16:45-17:50"]
   days: [mon, tue, wed, thu, fri, sat]
   light: "After dark in November (GUESS)"
+  best_window: ["16:30-18:00"]   # D100: when the light line is shown
   weather: ["any"]
   company: null
   crowd_window: "Arrive about 15 minutes early for a good seat (CHECKED)"

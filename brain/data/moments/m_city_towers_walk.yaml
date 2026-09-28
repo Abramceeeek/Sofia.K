@@ -20,11 +20,11 @@ place:
 approach:
   from: "Bank station"
   start_point: {lat: 51.5133, lon: -0.08975}   # CHECKED (approx.): a point on Walbrook by Bank station, OSM; confirm the exit
-  path: "East along Cornhill, right into Gracechurch Street, then left into Leadenhall Market"   # Claude's route, accepted by Abram
+  path: "Walk east along Cornhill and turn right into Gracechurch Street"   # Claude's route, accepted by Abram
   duration_min: 2        # GUESS
   step_free: null
 experience:
-  what_happens: "From Bank you walk along Cornhill, turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work."   # FOUNDER + Claude's route
+  what_happens: "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work."   # FOUNDER + Claude's route
   why_it_works: "The same aspiration feeling as Canary Wharf, in the City."   # FOUNDER
   duration_min: [20, 35] # GUESS
   end_point: {lat: 51.51802, lon: -0.0828}      # CHECKED: Liverpool Street Station, OSM

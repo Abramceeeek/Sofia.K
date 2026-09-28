@@ -48,7 +48,7 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 
 **Once per test,** copy the three example files to `validation/raw/testb/` and edit them:
 - `brief.yaml`: the shared start, times, number of stops and budget. An optional `weekday: sat` (mon..sun) leaves out cards closed that day (`best_time.days`, e.g. weekday-only museums);
-- `generic.yaml`: your "top sights" plan, with the same number of stops, and `approach`, `what`, `arrive` and `depart` for each stop (the last `depart` sets the pair's end time, D97);
+- `generic.yaml`: your strong "best of London" plan (D100), with the same number of stops, and for each stop `approach`, `what`, `arrive` and `depart` (the last `depart` sets the pair's end time, D97). Optional per stop: `best` with a `best_window` (shown only then), `cost_kind` (food / entry / ticket / hire) and a `rain_swap` for outdoor stops. The first stop's `from` should match the brief's start;
 - `intent.yaml` (optional): each person's must-do and mode.
 
 **After each person's Test A chat**, fill in their rows on the Swipes and Choices tabs of `validation/raw/results.xlsx`, then:
@@ -69,6 +69,14 @@ cd brain
 **How the plans are kept fair:**
 - **The sent plans never give reasons**, which keeps the test blind.
 - **The planner fills exactly the brief's number of stops** within the budget, and includes the must-do stop if it fits.
+- **The plan text follows the dry-run fixes (D100):**
+  - each stop shows arrive–leave;
+  - costs read "about £X for food and entry, plus about £Y transport" (£3 a Tube or bus leg, capped at £8.90);
+  - "Best: …" appears only when the stop's time matches the card's `best_window`;
+  - outdoor stops get an "If it rains: …" swap;
+  - there are 5 min of slack after each walk and 10 after each Tube or bus leg.
+- **Places they didn't enjoy are never planned (D100).** Swipe places link to their cards in `data/swipe_items.yaml` (`cards`).
+- **`--familiar` (D100, proposed):** the personal plan holds exactly one place the person loved, if one fits the day. The review says, for each loved place, why it is in the plan or not.
 - **Both plans in a pair end within 30 min of each other (D97).** The personal plan is first planned to finish by the generic end + 30 min; then its stops move later inside their opening windows until it ends no earlier than the generic end − 30 min. If that can't be done, the status says "fix by hand", and the review shows both end times.
 - It refuses to run until there are enough complete moments in `data/moments/`.
 

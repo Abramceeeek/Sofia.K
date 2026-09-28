@@ -1,43 +1,45 @@
-# Dry run only: the example generic plan, with its first leg from London Bridge and a 'best' line per stop.
+# Dry run only (D100): a strong "best of London" day from London Bridge, 10:00-15:00 (a market, a museum and a
+# view, a walk), written to the same standard as brain/data/testb/generic.example.yaml. Sources in
+# research/sources.csv (28 Sep): Borough Market Sat 9-17 (official); Tate Modern 10:00-18:00, free collection,
+# free Level 10 view (official); One New Change roof terrace free (official; lift and hours from search);
+# Royal Festival Hall foyers free, closed Mondays (Southbank Centre, search). Walking minutes are GUESSES.
 stops:
-- title: Big Ben and Parliament Square
-  arrive: '10:30'
-  depart: '11:00'
-  travel_min: 20
-  travel_mode: transit
-  from: London Bridge station
-  what: The clock tower and the Houses of Parliament from the square.
-  approach: Take the Jubilee line from London Bridge to Westminster, then walk to
-    the square.
-  cost_gbp: 0
-  best: Morning, before the tour groups
-- title: Along the South Bank to the London Eye
-  arrive: '11:15'
-  depart: '12:15'
-  travel_min: 10
-  travel_mode: walk
-  from: Parliament Square
-  what: Cross Westminster Bridge and walk the river path.
-  approach: From Parliament Square, cross Westminster Bridge.
-  cost_gbp: 0
-  best: Late morning, with the river busy
-- title: Trafalgar Square
-  arrive: '12:40'
-  depart: '13:20'
-  travel_min: 20
-  travel_mode: walk
-  from: the London Eye
-  what: Nelson's Column and the fountains.
-  approach: From the London Eye, cross Hungerford Bridge and walk up to the square.
-  cost_gbp: 0
-  best: Any time
-- title: St James's Park to Buckingham Palace
-  arrive: '13:35'
-  depart: '14:30'
-  travel_min: 10
-  travel_mode: walk
-  from: Trafalgar Square
-  what: Walk through the park to the palace gates.
-  approach: From Trafalgar Square, go through Admiralty Arch into the park.
-  cost_gbp: 0
-  best: Early afternoon
+  - title: "Breakfast at Borough Market"
+    arrive: "10:05"
+    depart: "11:00"
+    travel_min: 5
+    travel_mode: walk
+    from: "London Bridge station"
+    approach: "Walk into the market; it sits right beside the station."
+    what: "Graze the food stalls: pick a few things and eat as you wander."
+    cost_gbp: 15
+    cost_kind: food
+  - title: "Tate Modern: the Turbine Hall and the view from Level 10"
+    arrive: "11:15"
+    depart: "12:25"
+    travel_min: 12
+    travel_mode: walk
+    from: "Borough Market"
+    approach: "Walk west along Bankside, past Shakespeare's Globe."
+    what: "Walk into the vast Turbine Hall, look round the free collection, then take the lift from Level 1 up to Level 10 for a view over the Thames to St Paul's."
+    cost_gbp: 0
+  - title: "Over the Millennium Bridge to St Paul's and a free roof terrace"
+    arrive: "12:35"
+    depart: "13:25"
+    travel_min: 3
+    travel_mode: walk
+    from: "Tate Modern"
+    approach: "Cross the Millennium Bridge towards the dome."
+    what: "Walk round St Paul's Cathedral, then go up to the free roof terrace of One New Change, just east of it, for a close view of the dome."
+    rain_swap: "Stay longer inside Tate Modern instead, and cross the bridge later."
+    cost_gbp: 0
+  - title: "Along the South Bank to the London Eye"
+    arrive: "13:40"
+    depart: "14:40"
+    travel_min: 12
+    travel_mode: walk
+    from: "One New Change"
+    approach: "Cross Blackfriars Bridge to the South Bank."
+    what: "Walk west along the river past the Oxo Tower, the National Theatre and the Southbank Centre. You walk past the London Eye; a ride isn't part of this plan."
+    rain_swap: "The Royal Festival Hall's free foyers, on the way (closed on Mondays)."
+    cost_gbp: 0

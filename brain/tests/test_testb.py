@@ -1,5 +1,6 @@
 """Test B plan generation, run against a filled-in copy of the real results-sheet template."""
 
+import re
 import shutil
 from pathlib import Path
 
@@ -132,7 +133,10 @@ def test_plans_command_writes_blind_identical_plans_and_a_review(tmp_path, data_
         b = (out / f"{pid}_plan_B.txt").read_text()
         assert a.startswith("*Plan A:") and b.startswith("*Plan B:")
         for text in (a, b):   # blind: same shape, no reasons, no model words
-            assert text.count("Cost:") == 3
+            assert len(re.findall(r"^(?:Cost|Food|Entry|Ticket|Hire): ", text, re.M)) == 3
+            assert re.search(r"^Start: .+ at 12:00 · 3 stops$", text, re.M)          # D100: same start line
+            assert re.search(r"^\*1\. \d\d:\d\d–\d\d:\d\d  ", text, re.M)          # D100: time ranges
+            assert "entry costs" not in text
             assert "predicted" not in text and "weight" not in text and "Chosen" not in text
         assert (out / f"{pid}_plan_A.pdf").read_bytes().startswith(b"%PDF")
         assert (out / f"{pid}_plan_B.pdf").stat().st_size > 1000
@@ -143,7 +147,8 @@ def test_plans_command_writes_blind_identical_plans_and_a_review(tmp_path, data_
     assert "Inspiring fields (Test A 5.7): Food, Nature." in review
     assert "Said these fields inspire them: Food, Nature" in review
     assert "Inspiring fields (Test A 5.7): none given." in (out / "P02_review.md").read_text()
-    assert "Big Ben and Parliament Square" in (out / "P02_plan_A.txt").read_text()   # P02's generic plan is A
+    assert "The National Gallery" in (out / "P02_plan_A.txt").read_text()   # P02's generic plan is A
+    assert "Food: about £15" in (out / "P02_plan_A.txt").read_text()        # D100: food is never "entry"
     review = (out / "P01_review.md").read_text()
     assert "- Ends: personalised" in review and "(within 30 min" in review          # D97 pair rule
     assert "Both plans end within 30 min" in review
@@ -200,7 +205,7 @@ def test_plan_text_drops_internal_notes_and_names_the_last_place():
     assert ms["m_park_break_olympic"].leave_name() == "Queen Elizabeth Olympic Park"
     # After a walk from the previous stop, the card's station isn't where you come from
     sd = ms["m_st_dunstan_garden"]
-    assert testb.approach_text(sd).startswith("From Monument or Tower Hill station.")
+    assert testb.approach_text(sd) == "From Monument or Tower Hill station, walk down St Dunstan's Hill towards the river."
     walked = testb.approach_text(sd, walked_from_stop=True)
     assert not walked.startswith("From Monument") and walked.endswith(".")
 
@@ -223,3 +228,77 @@ def test_real_brief_lets_sunset_and_river_cards_in():
     generic = yaml.safe_load((DATA / "testb" / "generic.example.yaml").read_text())
     ends = [parse_hhmm(s["depart"]) for s in generic["stops"]]
     assert all(lo <= parse_hhmm(s["arrive"]) for s in generic["stops"]) and max(ends) <= hi
+
+
+
+def _stop(**kw):
+    base = dict(title="X", arrive="10:00", depart="10:45", travel_min=10, travel_mode="walk", **{"from": "A"},
+                approach="Walk up the hill.", what="You see the view.", best="", best_windows=[], cost_gbp=0.0,
+                cost_kind="entry", rain_swap="")
+    base.update(kw)
+    return base
+
+
+def test_costs_best_lines_and_transport_are_worded_as_friends_asked():
+    """D100: food is never "entry"; "Best" only when the time matches; transport is estimated and capped."""
+    assert testb._cost_line(_stop(cost_gbp=15, cost_kind="food")) == "Food: about £15"
+    assert testb._cost_line(_stop(cost_gbp=6.4)) == "Entry: £6.40"
+    assert testb._cost_line(_stop()) == "Cost: free"
+    sunset = [(16 * 60, 17 * 60)]
+    assert testb._best_line(_stop(best="Sunset", best_windows=sunset)) == ""
+    assert testb._best_line(_stop(best="Sunset", best_windows=sunset, arrive="16:10", depart="16:50")) == "Best: Sunset"
+    assert testb._best_line(_stop(best="Daylight")) == ""          # no window: never shown
+    legs = [_stop(travel_mode="transit") for _ in range(4)]
+    assert testb.transport_gbp(legs[:1]) == 3.0 and testb.transport_gbp(legs) == 8.9   # capped at the daily cap
+    brief = testb.Brief(start_name="London Bridge station", start=START, start_time="10:00", end_time="15:00", stops=2)
+    head = testb._header("1", brief, [_stop(cost_gbp=15, cost_kind="food"), _stop(travel_mode="transit")])
+    assert head[1] == "Start: London Bridge station at 10:00 · 2 stops"
+    assert head[2] == "Costs: about £15 for food and entry, plus about £3 transport"
+    assert testb._header("1", brief, [_stop()])[2] == "Costs: free entry, all on foot"
+
+
+def test_text_checks_flag_repeats_and_missing_full_stops():
+    stops = [_stop(approach="Take the lift to floor 15", what="You take the lift to floor 15 and step out.")]
+    checks = testb.text_checks(stops)
+    assert any("full stop" in c for c in checks) and any("repeat" in c for c in checks)
+    assert testb.text_checks([_stop()]) == []
+
+
+def test_familiar_favourite_and_places_they_didnt_enjoy():
+    """D100: with --familiar the plan holds exactly one loved place; a disliked place is never planned."""
+    from brain.moments import load_moments
+    from brain.population import load_population
+    from brain.scoring import update_person
+    pop = load_population(DATA / "priors.yaml")
+    post = update_person(pop, [])   # the population prior: no answers
+    moments = [m for m in load_moments(DATA / "moments") if m.status == "ready"]
+    brief = testb.Brief(start_name="London Bridge station", start=Point(lat=51.5049, lon=-0.0863), start_time="10:00",
+                        end_time="15:00", stops=4, budget_gbp=40, weekday="sat", time_limit_s=1.0)
+    loved = [("Borough Market", ["m_borough_market_graze"]), ("Brick Lane for food", ["m_beigel_bake_late"]),
+             ("Camden Market", [])]
+    disliked = [("Tate Modern Turbine Hall", ["m_millennium_bridge_dome"])]   # a stand-in card to keep out
+    plan, stops, _, notes = testb.personal_plan(pop, post, moments, brief, LondonEstimate(), loved=loved,
+                                                disliked=disliked, familiar=True)
+    ids = [s["moment_id"] for s in stops]
+    assert sum(i in ("m_borough_market_graze", "m_beigel_bake_late") for i in ids) == 1
+    assert notes.favourite in ids and "m_millennium_bridge_dome" not in ids
+    why = dict(notes.loves)
+    assert why["Camden Market"] == "no moment card yet"
+    assert any(w.startswith("in the plan") for w in why.values())
+    assert any(w.startswith("only one familiar favourite") for w in why.values())
+    assert dict(notes.dislikes)["Tate Modern Turbine Hall"] == "kept out of the plan"
+    for s in stops:   # D100: rain swaps are indoor or covered moments, never already in the plan
+        if s["rain_swap"]:
+            assert s["rain_swap"].split(",")[0] not in [x["title"] for x in stops]
+
+
+def test_approach_text_is_full_sentences():
+    from brain.moments import load_moments
+    ms = {m.id: m for m in load_moments(DATA / "moments")}
+    assert testb.approach_text(ms["m_borough_market_graze"], came_from="London Bridge station") == \
+        "Walk into the market; it sits right beside the station."
+    assert testb.approach_text(ms["a_covent_garden_soho"]).startswith("Start at Covent Garden Piazza. ")
+    assert testb.approach_text(ms["m_greenwich_wolfe_view"]).startswith("From Cutty Sark DLR station, walk into the park")
+    for m in ms.values():
+        if m.status == "ready":
+            assert testb.approach_text(m).endswith("."), m.id

@@ -38,6 +38,7 @@ features:
           crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 2, photo_potential: 1}
   moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
 cost_gbp: 3              # CHECKED (search, TfL pricing): the Santander Cycles day pass
+cost_kind: hire   # D100
 shot_card: null
 source: research
 last_checked: "2026-09-27"

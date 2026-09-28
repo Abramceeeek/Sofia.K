@@ -19,11 +19,11 @@ place:
 approach:
   from: "Canary Wharf station (Jubilee line)"   # FOUNDER
   start_point: {lat: 51.503, lon: -0.018}       # CHECKED: Wikipedia coordinates for the Jubilee line station, 2026-09-27
-  path: "Ride the Jubilee line to Canary Wharf and take the long escalators up out of the station into Canada Square"   # FOUNDER
+  path: "Take the long escalators up out of the Jubilee line station"   # FOUNDER
   duration_min: 3        # GUESS
   step_free: null
 experience:
-  what_happens: "You rise up the escalators out of the Jubilee line into Canada Square, walk between the glass towers with the weekday crowd heading in and out of work, and finish in the Crossrail Place Roof Garden under its timber roof."   # FOUNDER + CHECKED (the roof garden)
+  what_happens: "You come up into Canada Square and walk between the glass towers with the weekday crowd heading in and out of work, and finish in the Crossrail Place Roof Garden under its timber roof."   # FOUNDER + CHECKED (the roof garden)
   why_it_works: "A New York feeling. Inspiring if you're into finance or tech: something important is happening here."   # FOUNDER
   duration_min: [20, 40] # GUESS
   end_point: {lat: 51.5061, lon: -0.0175}      # CHECKED: Crossrail Place, Wikipedia coordinates, 2026-09-27

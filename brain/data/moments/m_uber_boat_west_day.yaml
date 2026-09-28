@@ -17,9 +17,9 @@ place:
   lat: 51.48406          # CHECKED: Greenwich Pier, OpenStreetMap
   lon: -0.00941
 approach:
-  from: "Greenwich town centre / Cutty Sark DLR"
+  from: "Cutty Sark DLR station"
   start_point: {lat: 51.48406, lon: -0.00941}
-  path: "To Greenwich Pier; tap in with contactless at the reader by the boarding ramp"   # CHECKED: contactless touch-in at piers
+  path: "Walk to Greenwich Pier and tap in with contactless at the reader by the boarding ramp"   # CHECKED: contactless touch-in at piers
   duration_min: 5        # GUESS: time at the pier before boarding
   step_free: null
 experience:
@@ -46,6 +46,7 @@ features:
 # UNVERIFIED: that Greenwich (East) to Battersea (West) is charged as All Zones; the zone map wasn't on the pages read.
 # Abram checks the charge the next time he taps in (2026-09-27).
 cost_gbp: 19.30
+cost_kind: ticket   # D100
 shot_card: null
 source: founder
 last_checked: "2026-09-27"

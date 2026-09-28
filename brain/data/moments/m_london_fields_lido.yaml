@@ -32,6 +32,7 @@ experience:
 best_time:
   time_of_day: ["06:30-20:00"]
   light: "After dark under the floodlights, or a crisp morning (GUESS)"
+  best_window: ["06:30-10:00", "16:30-20:00"]   # D100: when the light line is shown
   weather: ["any"]
   company: null
   crowd_window: "Off-peak: weekdays 09:00-16:00 (CHECKED: Better's peak times)"

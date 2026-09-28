@@ -22,7 +22,7 @@ place:
 approach:
   from: "Richmond Gate"
   start_point: {lat: 51.44982, lon: -0.29497}   # CHECKED (approx.): OSM "Richmond Gate" stop
-  path: "In through Richmond Gate, then south along the edge of the park to Pembroke Lodge Gardens and the Mound"   # GUESS, accepted by Abram
+  path: "Go in through Richmond Gate, then walk south along the edge of the park to Pembroke Lodge Gardens and the Mound"   # GUESS, accepted by Abram
   duration_min: 10       # GUESS: about 550 m
   step_free: null
 experience:

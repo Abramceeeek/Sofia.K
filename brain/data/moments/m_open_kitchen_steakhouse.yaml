@@ -18,7 +18,7 @@ place:
 approach:
   from: "Paddington or Lancaster Gate station"   # Claude's knowledge
   start_point: {lat: 51.51348, lon: -0.17903}
-  path: "A short walk to Craven Road"             # GUESS
+  path: "Walk a short way to Craven Road"             # GUESS
   duration_min: 5        # GUESS
   step_free: null
 experience:

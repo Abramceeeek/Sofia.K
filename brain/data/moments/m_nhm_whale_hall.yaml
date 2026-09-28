@@ -14,13 +14,13 @@ place:
   lat: 51.49651          # CHECKED: museum building, OpenStreetMap
   lon: -0.176
 approach:
-  from: "the Human Evolution gallery, then Images of Nature"   # FOUNDER confirmed 2026-09-27
+  from: "South Kensington station"   # *; the route inside is FOUNDER confirmed 2026-09-27
   start_point: {lat: 51.49651, lon: -0.176}   # the museum; the walk inside is the approach
-  path: "Through Human Evolution (East Wing), then Images of Nature (central building), into the Mammals hall on the North Wing ground floor"   # FOUNDER confirmed; wings CHECKED on the NHM map
+  path: "Go into the museum and walk through Human Evolution (East Wing), then Images of Nature (central building)"   # FOUNDER confirmed; wings CHECKED on the NHM map
   duration_min: 15       # FOUNDER: fine
   step_free: null
 experience:
-  what_happens: "After the smaller galleries you walk into the huge Mammals hall, where a life-size blue whale model hangs with whale skeletons and other sea mammals."   # FOUNDER, place CHECKED
+  what_happens: "After the smaller galleries you walk into the huge Mammals hall on the North Wing ground floor, where a life-size blue whale model hangs with whale skeletons and other sea mammals."   # FOUNDER, place CHECKED
   why_it_works: "You feel tiny. Loved it many times."   # FOUNDER
   duration_min: [20, 40] # FOUNDER: fine
   end_point: null

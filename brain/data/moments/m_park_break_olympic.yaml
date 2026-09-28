@@ -30,7 +30,8 @@ experience:
   end_point: null
 best_time:
   time_of_day: ["10:00-16:00"]
-  light: "A sunny afternoon (FRIEND); spring and summer are best (FOUNDER)"
+  light: "A sunny afternoon (FRIEND)"   # FOUNDER: spring and summer are best (not shown in Oct-Nov plans)
+  best_window: ["12:00-16:00"]   # D100: when the light line is shown
   weather: ["dry"]
   company: null
   crowd_window: null

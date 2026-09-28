@@ -19,7 +19,7 @@ place:
 approach:
   from: "London Bridge station"
   start_point: {lat: 51.50556, lon: -0.09083}
-  path: "Walk out of the station into the market, right next door"   # CHECKED (official: next to London Bridge station)
+  path: "Walk into the market; it sits right beside the station"   # CHECKED (official: next to London Bridge station)
   duration_min: 5        # GUESS
   step_free: null
 experience:

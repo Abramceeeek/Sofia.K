@@ -28,6 +28,7 @@ experience:
 best_time:
   time_of_day: ["10:00-17:30"]        # NEEDED: one or more "hh:mm-hh:mm" windows (opening hours, light, quiet)
   light: "When it looks best"
+  best_window: []                     # D100: "hh:mm-hh:mm" when the light line is true; the plan shows "Best: …" only then
   weather: ["any"]                    # ["dry"] drops it from rainy-day plans
   company: null
   crowd_window: "When to avoid"
@@ -37,6 +38,7 @@ features:                             # NEEDED: all 15 tags, each 0, 1 or 2
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
   moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 0}
 cost_gbp: 0                           # NEEDED: per person, in £ (0 if free)
+cost_kind: null                       # D100: food / entry / ticket / hire (empty: food if the food tag is 2, else entry)
 shot_card: null                       # for ~20 moments only: stand_at, face, frame, when, avoid
 source: founder
 last_checked: null

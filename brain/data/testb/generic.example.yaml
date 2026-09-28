@@ -1,48 +1,53 @@
-# EXAMPLE generic plan for Test B: a standard "top sights" day, written once and reused.
-# Abram writes the real one (validation/raw/testb/generic.yaml). Check every time, price and
-# opening hour before use. Stops can be a moment_id from data/moments, or free text with the
-# same fields as a moment. Times and walking minutes here are rough examples.
-# D99: the brief runs 12:00-17:00. Each stop has `depart`, so the planner can make the personal plan end within
-# 30 min of this one (D97), and a `best` line, so both plans look alike. A good generic day would also use the
-# sunset, so this one ends on the river around it (sunset 16:47 on 26 Oct, 16:24 on 8 Nov).
+# EXAMPLE generic plan for Test B, written as a strong "best of London" day that a good friend or Google would
+# suggest (D100): a museum, a market, a view and a walk, not a landmark checklist. Abram writes the real one
+# (validation/raw/testb/generic.yaml) to the same standard, and checks every time, price and opening hour first.
+# Stops can be a moment_id from data/moments, or free text with the same fields as a moment.
+# - D99: the brief runs 12:00-17:00, and the day ends on the river around sunset (16:47 on 26 Oct, 16:24 on 8 Nov).
+# - D97: every stop has `depart`, so the personal plan can end within 30 min of this one.
+# - D100: full sentences; `best` shows only inside `best_window`; `cost_kind` (food/entry/ticket/hire);
+#   `rain_swap` on each outdoor stop; a few minutes of slack between stops; the first `from` is the brief's start.
+# Sources (research/sources.csv, 28 Sep): National Gallery daily 10:00-18:00, free (official); Borough Market
+# Tue-Fri 10-17, Sat 9-17, Sun 10-16, closed Mon (official); Tate Modern Sun-Thu 10:00-18:00, Fri-Sat to 21:00,
+# collection free, Level 10 view free by the lift from Level 1 (official); Royal Festival Hall foyers free,
+# Tue-Sun 10:00-23:00, closed Mon (Southbank Centre, search). Walking minutes are GUESSES.
 stops:
-  - title: "Trafalgar Square"
+  - title: "The National Gallery"
     arrive: "12:10"
-    depart: "12:50"
+    depart: "13:10"
     travel_min: 5
     travel_mode: walk
     from: "your start station"
-    what: "Nelson's Column, the fountains and the National Gallery's steps."
-    approach: "From Charing Cross station, walk up to the square."
-    best: "Any time"
+    approach: "Walk to Trafalgar Square and go in through the Sainsbury Wing entrance."
+    what: "Wander the free collection of paintings at your own pace."
     cost_gbp: 0
-  - title: "St James's Park to Buckingham Palace"
-    arrive: "13:00"
-    depart: "14:00"
-    travel_min: 10
+  - title: "A late lunch at Borough Market"
+    arrive: "13:35"
+    depart: "14:30"
+    travel_min: 20
+    travel_mode: transit
+    from: "the National Gallery"
+    approach: "Take the Jubilee line from Westminster to London Bridge; the market is right beside the station."
+    what: "Graze the food stalls: pick a few things and eat as you wander."
+    cost_gbp: 15
+    cost_kind: food
+  - title: "Tate Modern: the Turbine Hall and the view from Level 10"
+    arrive: "14:45"
+    depart: "15:40"
+    travel_min: 12
     travel_mode: walk
-    from: "Trafalgar Square"
-    what: "Walk through the park, past the lake, to the palace gates."
-    approach: "From Trafalgar Square, go through Admiralty Arch into the park."
-    best: "Early afternoon"
-    cost_gbp: 0
-  - title: "Big Ben and Parliament Square"
-    arrive: "14:15"
-    depart: "15:00"
-    travel_min: 15
-    travel_mode: walk
-    from: "Buckingham Palace"
-    what: "The clock tower and the Houses of Parliament from the square."
-    approach: "From the palace, walk along Birdcage Walk to Parliament Square."
-    best: "Afternoon"
+    from: "Borough Market"
+    approach: "Walk west along Bankside, past Shakespeare's Globe."
+    what: "Walk into the vast Turbine Hall, look round the free collection, then take the lift from Level 1 up to Level 10 for a view over the Thames to St Paul's."
     cost_gbp: 0
   - title: "Along the South Bank to the London Eye at sunset"
-    arrive: "15:10"
-    depart: "16:30"
-    travel_min: 10
+    arrive: "15:50"
+    depart: "16:50"
+    travel_min: 3
     travel_mode: walk
-    from: "Parliament Square"
-    what: "Cross Westminster Bridge and walk the river path as the lights come on."
-    approach: "From Parliament Square, cross Westminster Bridge."
+    from: "Tate Modern"
+    approach: "Start on the river path outside Tate Modern."
+    what: "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre as the light goes and the lights come on. You walk past the London Eye; a ride isn't part of this plan."
     best: "Sunset"
+    best_window: ["16:00-17:00"]
+    rain_swap: "The Royal Festival Hall's free foyers, on the way (closed on Mondays)."
     cost_gbp: 0

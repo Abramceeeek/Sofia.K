@@ -124,3 +124,18 @@ def test_spread_to_end_moves_stops_later_inside_their_windows():
     assert sb.depart_min >= 840 and sb.depart_min <= 900
     # nothing to do when the plan already ends late enough
     assert spread_to_end(plan, {"a": a, "b": b}, min_end=700, day_end=900)
+
+
+
+def test_buffer_leaves_breathing_space_between_stops():
+    """D100: a few minutes between stops; the travel minutes shown stay the estimate."""
+    from brain.moments import Point
+    from brain.planner import Candidate, LegWeights, plan_day
+    from brain.travel import WalkingEstimate
+    a, b = Point(lat=51.5081, lon=-0.1281), Point(lat=51.5095, lon=-0.1281)
+    cands = [Candidate("x", a, a, 30, ((600, 900),), 1.0), Candidate("y", b, b, 30, ((600, 900),), 1.0)]
+    plain = plan_day(cands, a, 600, 900, WalkingEstimate(), LegWeights(0, 0), max_stops=2, min_stops=2, time_limit_s=0.3)
+    buf = plan_day(cands, a, 600, 900, WalkingEstimate(), LegWeights(0, 0), max_stops=2, min_stops=2, time_limit_s=0.3,
+                   buffer_walk_min=5, buffer_transit_min=10)
+    gap = lambda p: p.stops[1].arrive_min - p.stops[0].depart_min
+    assert gap(buf) >= gap(plain) + 5 and buf.stops[1].travel_min == plain.stops[1].travel_min
