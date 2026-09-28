@@ -183,3 +183,15 @@ def test_draft_moments_stay_out_of_real_plans(tmp_path, data_dir, capsys):
     assert "Skipping" in capsys.readouterr().err
     assert testb.main(args + ["--include-drafts"]) == 0
     assert "DRY RUN" in capsys.readouterr().err
+
+
+def test_plan_text_drops_internal_notes_and_names_the_last_place():
+    assert testb.clean("Any time; at dusk the dome is lit (GUESS)") == "Any time; at dusk the dome is lit"
+    assert testb.clean("Sunset; late autumn skies are best (CHECKED)") == "Sunset; late autumn skies are best"
+    assert testb.clean("A walk (CHECKED: official page) here") == "A walk here"
+    assert testb.clean("Pelicans (since 1664)") == "Pelicans (since 1664)"      # ordinary brackets stay
+    from brain.moments import load_moments
+    ms = {m.id: m for m in load_moments(DATA / "moments")}
+    assert ms["m_uber_boat_west_night"].leave_name() == "Westminster Pier"
+    assert ms["m_st_dunstan_garden"].leave_name() == "St Dunstan-in-the-East"
+    assert ms["m_park_break_olympic"].leave_name() == "Queen Elizabeth Olympic Park"

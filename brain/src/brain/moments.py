@@ -48,6 +48,7 @@ class Experience(BaseModel):
     # One number, or [min, max]; the planner uses the midpoint.
     duration_min: float | list[float] | None = None
     end_point: Point | None = None
+    end_name: str | None = None   # where you are when it ends, e.g. "Westminster Pier" (the plan's "from" line)
 
 
 class BestTime(BaseModel):
@@ -122,6 +123,12 @@ class Moment(BaseModel):
 
     def end(self) -> Point | None:
         return self.experience.end_point or self.approach.start_point
+
+    def leave_name(self) -> str:
+        """A short name for where you are when the moment ends ("from X" in the next stop's directions)."""
+        if self.experience.end_name:
+            return self.experience.end_name
+        return re.split(r"[:,(]", self.place.name)[0].strip()
 
     def windows(self) -> list[tuple[int, int]]:
         """Allowed time windows in minutes from midnight, from best_time.time_of_day."""

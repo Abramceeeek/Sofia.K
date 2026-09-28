@@ -30,6 +30,7 @@ experience:
   why_it_works: "A different moment from the day trip: the building lighting."   # FOUNDER
   duration_min: 48       # CHECKED: evening boats Greenwich -> Westminster take 46-51 min
   end_point: {lat: 51.50225, lon: -0.12317}   # CHECKED: Westminster Pier, OpenStreetMap
+  end_name: "Westminster Pier"
 best_time:
   # CHECKED (timetables, 2026-09-26): evening boats reach Westminster every day; last departures from
   # Greenwich 21:55 on weekdays (arrive 22:41) and 22:32 at weekends (arrive 23:19).

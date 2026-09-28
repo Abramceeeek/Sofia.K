@@ -27,6 +27,7 @@ experience:
   why_it_works: "Sitting outside, watching the street, and good food."   # FOUNDER
   duration_min: [60, 90] # GUESS
   end_point: null
+  end_name: "Oxford Circus"
 best_time:
   time_of_day: ["12:00-21:30"]   # inside both restaurants' hours (OshPaz 11:00-22:00; Angus hours not found)
   light: null

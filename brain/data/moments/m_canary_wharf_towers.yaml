@@ -27,6 +27,7 @@ experience:
   why_it_works: "A New York feeling. Inspiring if you're into finance or tech: something important is happening here."   # FOUNDER
   duration_min: [20, 40] # GUESS
   end_point: {lat: 51.5061, lon: -0.0175}      # CHECKED: Crossrail Place, Wikipedia coordinates, 2026-09-27
+  end_name: "Crossrail Place Roof Garden"
 best_time:
   time_of_day: ["10:00-18:00"]   # the roof garden's winter hours; Abram accepted the times
   days: [mon, tue, wed, thu, fri]   # FOUNDER: weekdays only, for the work energy

@@ -1,0 +1,13 @@
+start_name: London Bridge station
+start:
+  lat: 51.5049
+  lon: -0.0863
+start_time: '10:00'
+end_time: '18:00'
+stops: 4
+budget_gbp: 40
+day_label: A Saturday out in London
+weekday: sat
+temp_c: null
+rain_prob: null
+time_limit_s: 5.0

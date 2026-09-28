@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -217,19 +218,27 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
         stops.append({
             "title": m.title, "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min),
             "travel_min": st.travel_min, "travel_mode": mode, "from": prev_name,
-            "approach": " ".join(x for x in (m.approach.from_ and f"From {m.approach.from_}.", m.approach.path) if x),
-            "what": m.experience.what_happens or "", "best": m.best_time.light or "",
+            "approach": approach_text(m),
+            "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
             "cost_gbp": m.cost_gbp or 0.0,
             # review only, never sent:
             "moment_id": m.id, "predicted": st.utility,
             "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
         })
-        prev_point, prev_name = m.end(), m.title
+        prev_point, prev_name = m.end(), m.leave_name()
     utilities = sorted(((c.utility, c.moment_id) for c in cands), reverse=True)
     visited = {s["moment_id"] for s in stops}
     left_out = [{"moment_id": mid, "title": by_id[mid].title, "predicted": round(u, 3)}
                 for u, mid in utilities if mid not in visited][:3]
     return plan, stops, left_out
+
+
+def approach_text(m: Moment) -> str:
+    """How to arrive, in one line. If the path already says where from, don't repeat "From X."."""
+    path = clean(m.approach.path)
+    if m.approach.from_ and not path.lower().startswith("from "):
+        return clean(f"From {m.approach.from_}. {path}")
+    return path or clean(m.approach.from_ and f"From {m.approach.from_}.")
 
 
 def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
@@ -246,12 +255,19 @@ def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
                  **s}
         out.append({"title": s["title"], "arrive": s["arrive"], "travel_min": s.get("travel_min"),
                     "travel_mode": s.get("travel_mode", "walk"), "from": s.get("from", ""),
-                    "approach": s.get("approach", ""), "what": s.get("what", ""), "best": s.get("best", ""),
+                    "approach": clean(s.get("approach")), "what": clean(s.get("what")), "best": clean(s.get("best")),
                     "cost_gbp": s.get("cost_gbp") or 0.0})
     return out
 
 
 # ---- rendering (identical for both plans) ------------------------------------------
+
+_MARKER = re.compile(r"\s*\((?:GUESS|CHECKED|FOUNDER|UNVERIFIED)\b[^)]*\)")
+
+
+def clean(text: str | None) -> str:
+    """Participant-facing text: drop the cards' internal notes, e.g. "(GUESS)" or "(CHECKED: ...)"."""
+    return _MARKER.sub("", text or "").strip()
 
 def _travel_line(s: dict) -> str:
     if s.get("travel_min") is None:

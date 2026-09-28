@@ -2,6 +2,19 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — government contract; Test B dry run prepared
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D96 | **The government contract is confirmed: it has no IP clause covering Abram's own projects.** **The conjoint keeps 10 tasks** | m50's assumption; m51 | Founder confirmation |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m53 | **Fixes to participant-facing plan text:**<br>- internal notes ("(GUESS)", "(CHECKED…)") are stripped;<br>- "from X" names the place you left: cards can carry `experience.end_name` (e.g. "Westminster Pier");<br>- the arrival line doesn't repeat "From …" | `brain/src/brain/testb.py`, `moments.py`, 8 cards |
+| m54 | **The Test B dry run is prepared** from two made-up people (not participants), so Abram's hour is reading, not setting up. It raised two questions for him: plans that finish early, and the strength of the aspiration prior | `validation/testb-dry-run/` |
+
 ## 2026-09-28 — employment checks; the weather factor
 
 | # | Decision | Replaces | Why |

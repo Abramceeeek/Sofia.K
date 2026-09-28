@@ -13,7 +13,7 @@ This file is the standing context for this project. Read it fully before any tas
   - **Before taking any money:**
     1. Apple's outside-activities policy — check it and disclose if required. All project work stays on personal time and personal devices. *Abram expects it to be fine and is double-checking (28 Sep).*
     2. ~~Written secondary-employment approval from Abram's government agency employer.~~ **Done (D94):** the government job is in Uzbekistan and doesn't conflict (Abram, 28 Sep).
-    3. IP/invention clauses checked in **both** employment contracts. **Government contract: done (D94). Apple contract: with the Apple double-check.**
+    3. IP/invention clauses checked in **both** employment contracts. **Government contract: done; it has no IP clause covering his own projects (confirmed 28 Sep, D96). Apple contract: with the Apple double-check.**
   - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
   - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company. This includes the safety backup helper and any future contributor (D55).
     - **Abram designs v0 himself (D81)**, so no designer agreement is needed unless an outside designer is brought in.
