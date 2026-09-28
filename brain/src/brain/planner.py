@@ -99,6 +99,12 @@ def _start_ranges(c: Candidate, day_start: int, day_end: int) -> list[tuple[int,
     return out
 
 
+def fits_day(c: Candidate, day_start: int, day_end: int) -> bool:
+    """Whether the moment can be done at all between `day_start` and `day_end` (e.g. not an evening card in a day
+    that ends at 17:00)."""
+    return bool(_start_ranges(c, day_start, day_end))
+
+
 def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
            travel: TravelTimes, legs: LegWeights, floor: float, max_stops: int,
            forced_last: int | None, time_limit_s: float, max_wait_min: int,

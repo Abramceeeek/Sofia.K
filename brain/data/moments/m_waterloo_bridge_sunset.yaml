@@ -2,8 +2,8 @@
 # Written in Claude's own words from open sources; Abram checks it, then sets status: ready.
 # Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
 # Source: https://southbank.london/guides/south-banks-best-sunset-views (search).
-# Sunset times are GUESSES: about 18:00 before the clocks go back on 25 Oct, about 16:30 after. The planner has no
-# sunset rule yet (after-9-nov #6), so the window spans both.
+# Sunset: 17:51 on 24 Oct; the clocks go back on 25 Oct; 16:47 on 26 Oct, 16:24 on 8 Nov (CHECKED: sunrise-sunset.org API for central London, 2026-09-28).
+# The planner has no sunset rule yet (after-9-nov #6), so the window spans both.
 # VERIFIED by Claude from official sources and marked ready, 2026-09-27 (D91). Tags are Claude's judgement:
 # Abram flags any he disagrees with from the one-line list.
 # A public bridge, open at all hours; no opening times or price to check.

@@ -34,7 +34,8 @@ experience:
 best_time:
   # CHECKED (timetables, 2026-09-26): evening boats reach Westminster every day; last departures from
   # Greenwich 21:55 on weekdays (arrive 22:41) and 22:32 at weekends (arrive 23:19).
-  # GUESS: "after dark" starts about 18:30 in late October (clocks go back 25 Oct). The planner has no
+  # "After dark": civil twilight ends 18:24 on 24 Oct, 17:20 on 26 Oct after the clocks go back, and 16:58 on
+  # 8 Nov (CHECKED: sunrise-sunset.org, 2026-09-28). 18:30 is safe on every Test B day. The planner has no
   # sunset rule yet, so this window is set for the Test B weeks (Oct-Nov) only.
   time_of_day: ["18:30-23:20"]
   light: "After dark"

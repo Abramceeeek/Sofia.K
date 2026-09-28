@@ -2,42 +2,47 @@
 # Abram writes the real one (validation/raw/testb/generic.yaml). Check every time, price and
 # opening hour before use. Stops can be a moment_id from data/moments, or free text with the
 # same fields as a moment. Times and walking minutes here are rough examples.
-# D97: the brief runs about 10:00-15:00, and each stop has `depart` so the planner can make the personal
-# plan end within 30 min of this one.
+# D99: the brief runs 12:00-17:00. Each stop has `depart`, so the planner can make the personal plan end within
+# 30 min of this one (D97), and a `best` line, so both plans look alike. A good generic day would also use the
+# sunset, so this one ends on the river around it (sunset 16:47 on 26 Oct, 16:24 on 8 Nov).
 stops:
-  - title: "Big Ben and Parliament Square"
-    arrive: "10:30"
-    depart: "11:00"
-    travel_min: 15
+  - title: "Trafalgar Square"
+    arrive: "12:10"
+    depart: "12:50"
+    travel_min: 5
     travel_mode: walk
     from: "your start station"
-    what: "The clock tower and the Houses of Parliament from the square."
-    approach: "From Westminster station, walk to the square."
-    cost_gbp: 0
-  - title: "Along the South Bank to the London Eye"
-    arrive: "11:15"
-    depart: "12:15"
-    travel_min: 10
-    travel_mode: walk
-    from: "Parliament Square"
-    what: "Cross Westminster Bridge and walk the river path."
-    approach: "From Parliament Square, cross Westminster Bridge."
-    cost_gbp: 0
-  - title: "Trafalgar Square"
-    arrive: "12:40"
-    depart: "13:20"
-    travel_min: 20
-    travel_mode: walk
-    from: "the London Eye"
-    what: "Nelson's Column and the fountains."
-    approach: "From the London Eye, cross Hungerford Bridge and walk up to the square."
+    what: "Nelson's Column, the fountains and the National Gallery's steps."
+    approach: "From Charing Cross station, walk up to the square."
+    best: "Any time"
     cost_gbp: 0
   - title: "St James's Park to Buckingham Palace"
-    arrive: "13:35"
-    depart: "14:30"
+    arrive: "13:00"
+    depart: "14:00"
     travel_min: 10
     travel_mode: walk
     from: "Trafalgar Square"
-    what: "Walk through the park to the palace gates."
+    what: "Walk through the park, past the lake, to the palace gates."
     approach: "From Trafalgar Square, go through Admiralty Arch into the park."
+    best: "Early afternoon"
+    cost_gbp: 0
+  - title: "Big Ben and Parliament Square"
+    arrive: "14:15"
+    depart: "15:00"
+    travel_min: 15
+    travel_mode: walk
+    from: "Buckingham Palace"
+    what: "The clock tower and the Houses of Parliament from the square."
+    approach: "From the palace, walk along Birdcage Walk to Parliament Square."
+    best: "Afternoon"
+    cost_gbp: 0
+  - title: "Along the South Bank to the London Eye at sunset"
+    arrive: "15:10"
+    depart: "16:30"
+    travel_min: 10
+    travel_mode: walk
+    from: "Parliament Square"
+    what: "Cross Westminster Bridge and walk the river path as the lights come on."
+    approach: "From Parliament Square, cross Westminster Bridge."
+    best: "Sunset"
     cost_gbp: 0

@@ -37,7 +37,7 @@ from .features import Conditions, conjoint_plan_features, moment_features
 from .aspiration import AspirationMap, load_aspiration
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior
-from .planner import DayPlan, LegWeights, candidate_for, hhmm, parse_hhmm, plan_day, spread_to_end
+from .planner import DayPlan, LegWeights, candidate_for, fits_day, hhmm, parse_hhmm, plan_day, spread_to_end
 from .population import PopulationModel, load_population
 from .scoring import conjoint_observation, contributions, named_weights, swipe_observation, update_person
 from .travel import LondonEstimate
@@ -242,7 +242,8 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
             "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
         })
         prev_point, prev_name = m.end(), m.leave_name()
-    utilities = sorted(((c.utility, c.moment_id) for c in cands), reverse=True)
+    # Only moments that fit the day's hours count as "left out" (D99: no evening cards in a 12:00-17:00 day)
+    utilities = sorted(((c.utility, c.moment_id) for c in cands if fits_day(c, day_start, day_end)), reverse=True)
     visited = {s["moment_id"] for s in stops}
     left_out = [{"moment_id": mid, "title": by_id[mid].title, "predicted": round(u, 3)}
                 for u, mid in utilities if mid not in visited][:3]

@@ -12,6 +12,8 @@
   - every arrival line ends with a full stop;
   - "A late bagel" is now "A salt beef bagel", because "late" read oddly at lunchtime.
 
+**The real Test B runs 12:00–17:00 (D99),** so its day ends around sunset. This dry run stays at 10:00–15:00, as shared.
+
 ## Folders
 - **`share/`: safe to send to friends.** It holds the four plans (.txt is the WhatsApp message; the PDF matches) and `people.md`, with a one-line description of each made-up person.
 - **`for-abram/`: don't share.** It holds the reviews (why each stop was chosen), the key, the brief and the generic plan used.

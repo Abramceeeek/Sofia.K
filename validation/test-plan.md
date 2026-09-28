@@ -46,13 +46,15 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 ## Test B — plan quality (blind)
 
 - **Same brief for both plans:** same city, same day length, same budget, same number of stops, same format and length.
+  - **The day runs 12:00–17:00 (D99)**, so it ends around sunset (16:47 on 26 Oct, 16:24 on 8 Nov) and the river, sunset and evening-light moments can appear.
+  - **Both plans end within 30 min of each other (D97).**
   - **Personalised:** written by the Brain (`python -m brain.testb plans`, `brain/README.md`).
     - It fits the person's weights from their Swipes and Choices rows, then plans the day from the moment database with the same brief: start, times, number of stops and budget.
     - Abram checks it with the review sheet (legs over 20 min, opening hours, prices) and sends it as a WhatsApp message or PDF.
     - **The sent plan never says why a stop was chosen**, so it stays blind.
     - About 25 complete moments are needed in `brain/data/moments/` before the first plan.
   - **Generic:** a top-attractions plan written once and reused (`validation/raw/testb/generic.yaml`). It uses the same fields as the personalised plan, including how to arrive, so the format gives nothing away.
-- **Labels A/B come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed).
+- **Labels come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed). The sheet says A or B; the plans are sent as **Plan 1 and Plan 2** (A → 1, B → 2; D97, D99).
 - **Measures:** which they prefer and why; "This plan fits me" (1–5) for each.
 - **Trip intent** (Area 15) is asked just before: "recharge or explore?", "who's coming?", "one must-do?". It is stored with the plan (D27).
 

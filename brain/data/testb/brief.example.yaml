@@ -2,8 +2,8 @@
 # Both plans use this same brief (test-plan.md): same day length, number of stops and budget.
 start_name: "Your start station"          # EXAMPLE: replace with the real start
 start: {lat: 51.5081, lon: -0.1281}       # EXAMPLE coordinates: replace with the real start point
-start_time: "10:00"
-end_time: "15:00"                         # D97: both plans run about 10:00-15:00
+start_time: "12:00"                       # D99: the real Test B runs 12:00-17:00, ending around sunset
+end_time: "17:00"                         # (16:47 on 26 Oct, 16:24 on 8 Nov), so river, sunset and evening-light cards can appear
 stops: 4                                  # the generic plan must have the same number
 budget_gbp: 40                            # per person; null for no limit
 day_label: "A day out in London"

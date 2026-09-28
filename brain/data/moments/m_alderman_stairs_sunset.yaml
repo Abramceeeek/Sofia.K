@@ -26,7 +26,7 @@ experience:
   duration_min: [20, 40] # GUESS
   end_point: null
 best_time:
-  time_of_day: ["15:45-18:30"]   # FRIEND: sunset; about 16:30 after 25 Oct, about 18:00 before (GUESS)
+  time_of_day: ["15:45-18:30"]   # FRIEND: sunset. 16:47 on 26 Oct, 16:24 on 8 Nov; 17:51 on 24 Oct, before the clocks go back (CHECKED: sunrise-sunset.org)
   light: "Sunset"   # FRIEND
   weather: ["any"]
   company: null

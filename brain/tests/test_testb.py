@@ -203,3 +203,23 @@ def test_plan_text_drops_internal_notes_and_names_the_last_place():
     assert testb.approach_text(sd).startswith("From Monument or Tower Hill station.")
     walked = testb.approach_text(sd, walked_from_stop=True)
     assert not walked.startswith("From Monument") and walked.endswith(".")
+
+
+def test_real_brief_lets_sunset_and_river_cards_in():
+    """D99: the real Test B day runs 12:00-17:00, so the river and sunset cards can be planned; evening-only ones can't."""
+    import yaml
+    from brain.moments import load_moments
+    from brain.planner import candidate_for, fits_day, parse_hhmm
+    brief = yaml.safe_load((DATA / "testb" / "brief.example.yaml").read_text())
+    lo, hi = parse_hhmm(brief["start_time"]), parse_hhmm(brief["end_time"])
+    assert (brief["start_time"], brief["end_time"]) == ("12:00", "17:00")
+    ms = {m.id: m for m in load_moments(DATA / "moments")}
+    fits = {mid: fits_day(candidate_for(ms[mid], 0.0), lo, hi) for mid in
+            ("m_to_river_villiers", "m_to_river_somerset", "m_alderman_stairs_sunset", "m_waterloo_bridge_sunset",
+             "a_soho_chinatown_evening", "m_uber_boat_west_night")}
+    assert all(fits[m] for m in ("m_to_river_villiers", "m_to_river_somerset", "m_alderman_stairs_sunset",
+                                 "m_waterloo_bridge_sunset"))
+    assert not fits["a_soho_chinatown_evening"] and not fits["m_uber_boat_west_night"]
+    generic = yaml.safe_load((DATA / "testb" / "generic.example.yaml").read_text())
+    ends = [parse_hhmm(s["depart"]) for s in generic["stops"]]
+    assert all(lo <= parse_hhmm(s["arrive"]) for s in generic["stops"]) and max(ends) <= hi

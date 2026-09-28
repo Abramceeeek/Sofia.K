@@ -2,7 +2,28 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
-## 2026-09-28 — dry-run changes; friends' moments
+## 2026-09-28 — the real Test B day: 12:00–17:00
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D99 | **The real Test B brief runs 12:00–17:00**, so the day ends around sunset in late October and November, and the river, sunset and evening-light cards can appear. **"Plan 1 / Plan 2" is kept for the real Test B** (confirms m56). The dry run stays at 10:00–15:00, as shared | D97's 10:00–15:00 (now the dry run only) | Founder decision |
+
+**Checked with the new window (28 Sep):**
+- **The 30-minute end rule holds.** The two made-up people were run on a Saturday, a Sunday and a Wednesday from Charing Cross, against the example generic plan (ends 16:30). Personal plans ended at 16:00–16:57, so all six pairs were within 30 min.
+- **Sunset (sunrise-sunset.org, central London):** 17:51 on 24 Oct; the clocks go back on 25 Oct; 16:47 on 26 Oct, 16:24 on 8 Nov. A 17:00 end is 15–35 min after sunset from 26 Oct, but about an hour before it on 24 Oct.
+- **31 of the 35 ready cards fit the day.** They include both river routes, Alderman Stairs and Waterloo Bridge at sunset.
+- **Four evening-only cards can't fit:** Soho and Chinatown after dark (from 17:30), evensong (17:00), the steak dinner (from 18:00) and the night boat (from 18:30).
+- **Neither made-up person got a river or sunset card.** P01's plan ends on the Greenwich hill in the late-afternoon light, which scores higher, and Somerset House is the next strongest card left out. P02's weights don't favour views. Whether they appear depends on the person, which is the point.
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m62 | **The example generic plan is reordered for 12:00–17:00** so it ends on the South Bank at sunset: Trafalgar Square → St James's Park → Big Ben → the South Bank to the London Eye (12:10–16:30). A good generic day would use the sunset too, so the personal plan doesn't win on timing alone. Each stop has a `best` line, as the personal plan does. Abram still writes the real one (0.5 h, week of 19 Oct) | `brain/data/testb/generic.example.yaml` |
+| m63 | **Sunset GUESSES on four cards are replaced by checked times** (Waterloo Bridge, Alderman Stairs, St Dunstan, the night boat). No window changed | 4 cards; `research/sources.csv` |
+| m64 | **The review's "strong moments left out" lists only cards that fit the day's hours**, so an evening card no longer appears as "left out" of a 17:00 day | `brain/src/brain/testb.py`, `planner.py` (`fits_day`) |
+
+
 
 | # | Decision | Replaces | Why |
 |---|---|---|---|
