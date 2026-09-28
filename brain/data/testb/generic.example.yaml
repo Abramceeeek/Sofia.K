@@ -4,6 +4,8 @@
 # Stops can be a moment_id from data/moments, or free text with the same fields as a moment.
 # - D99: the brief runs 12:00-17:00, and the day ends on the river around sunset (16:47 on 26 Oct, 16:24 on 8 Nov).
 # - D97: every stop has `depart`, so the personal plan can end within 30 min of this one.
+# - D102: one stop is lunch (`lunch: true`) around midday; the river is crossed once (by Tube); a transit leg starts
+#   with the walk to a station; `queue_min` for a busy food stop.
 # - D100: full sentences; `best` shows only inside `best_window`; `cost_kind` (food/entry/ticket/hire);
 #   `rain_swap` on each outdoor stop; a few minutes of slack between stops; the first `from` is the brief's start.
 # Sources (research/sources.csv, 28 Sep): National Gallery daily 10:00-18:00, free (official); Borough Market
@@ -13,34 +15,36 @@
 stops:
   - title: "The National Gallery"
     arrive: "12:10"
-    depart: "13:10"
+    depart: "13:00"
     travel_min: 5
     travel_mode: walk
     from: "your start station"
     approach: "Walk to Trafalgar Square and go in through the Sainsbury Wing entrance."
     what: "Wander the free collection of paintings at your own pace."
     cost_gbp: 0
-  - title: "A late lunch at Borough Market"
-    arrive: "13:35"
-    depart: "14:30"
+  - title: "Lunch at Borough Market"
+    arrive: "13:20"
+    depart: "14:15"
     travel_min: 20
     travel_mode: transit
     from: "the National Gallery"
-    approach: "Take the Jubilee line from Westminster to London Bridge; the market is right beside the station."
+    approach: "Walk to Westminster station and take the Jubilee line to London Bridge; the market is right beside the station."
     what: "Graze the food stalls: pick a few things and eat as you wander."
+    lunch: true
+    queue_min: 10
     cost_gbp: 15
     cost_kind: food
   - title: "Tate Modern: the Turbine Hall and the view from Level 10"
-    arrive: "14:45"
-    depart: "15:40"
-    travel_min: 12
+    arrive: "14:30"
+    depart: "15:30"
+    travel_min: 15
     travel_mode: walk
     from: "Borough Market"
     approach: "Walk west along Bankside, past Shakespeare's Globe."
     what: "Walk into the vast Turbine Hall, look round the free collection, then take the lift from Level 1 up to Level 10 for a view over the Thames to St Paul's."
     cost_gbp: 0
-  - title: "Along the South Bank to the London Eye at sunset"
-    arrive: "15:50"
+  - title: "The South Bank at sunset, past the London Eye"
+    arrive: "15:40"
     depart: "16:50"
     travel_min: 3
     travel_mode: walk

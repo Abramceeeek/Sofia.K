@@ -5,9 +5,11 @@
 - Planner status: ok.
 - Trip intent: {'company': 'partner', 'mode': 'recharge', 'must_do': None}. Must-do: none.
 - Inspiring fields (Test A 5.7): History & culture, Nature.
-- Familiar favourite (D100, on): A park break: the Serpentine in Hyde Park
+- Pace (D102): relaxed (longer stays where the day has room).
+- Lunch (D102): Lunch near Cutty Sark DLR station at 12:53.
+- Familiar favourite (D100, on): The whole of London from General Wolfe's hill, Greenwich Park
 
-- Ends: personalised 14:10, generic 14:40 (within 30 min, D97).
+- Ends: personalised 15:00, generic 14:40 (within 30 min, D97).
 
 ## Read-back lines (confident weights only)
 
@@ -18,21 +20,21 @@
 
 ## Personalised plan: why each stop
 
-- 10:23–10:58 A rooftop garden among the City towers (predicted +2.25): places tied to a field that inspires them +0.51; green spaces and nature +0.50; reveals and contrast +0.24. Travel 15 min (walk).
-- 11:16–11:41 A ruined church garden hidden in the City (predicted +2.53): places tied to a field that inspires them +0.51; green spaces and nature +0.50; history and culture +0.47. Travel 5 min (walk).
-- 12:14–12:30 Across the Millennium Bridge towards St Paul's dome (predicted +1.89): places tied to a field that inspires them +0.51; history and culture +0.47; crowds -0.46. Travel 20 min (walk).
-- 13:24–14:10 A park break: the Serpentine in Hyde Park (predicted +1.79): places tied to a field that inspires them +0.51; green spaces and nature +0.50; transfers of 15-30 min -0.49. Travel 37 min (transit) **check this leg**. **Familiar favourite.**
+- 10:11–11:01 St Dunstan-in-the-East: a ruined church garden hidden in the City (predicted +2.53): places tied to a field that inspires them +0.51; green spaces and nature +0.50; history and culture +0.47. Travel 11 min (walk).
+- 11:12–12:02 The Garden at 120: a rooftop garden among the City towers (predicted +2.25): places tied to a field that inspires them +0.51; green spaces and nature +0.50; reveals and contrast +0.24. Travel 6 min (walk).
+- 12:53–13:38 Lunch near Cutty Sark DLR station (flexible lunch slot, D102). Travel 41 min (transit) **check this leg**.
+- 13:43–15:00 The whole of London from General Wolfe's hill, Greenwich Park (predicted +2.86): places tied to a field that inspires them +0.51; green spaces and nature +0.50; crowds -0.46. Travel 0 min (walk). **Familiar favourite.**
 
-Food and entry: free against a budget of £40; transport about £3.
+Food and entry: £15 against a budget of £40; transport about £3.
 
 ## Places they loved: in the plan or why not (D100)
 
-- British Museum: only one familiar favourite per plan, and a park break: the Serpentine in Hyde Park fitted the day better; about 24 min from the nearest stop
-- The view from the top of Greenwich Park: only one familiar favourite per plan, and a park break: the Serpentine in Hyde Park fitted the day better; about 40 min from the nearest stop
+- British Museum: only one familiar favourite per plan, and the whole of London from General Wolfe's hill, Greenwich Park fitted the day better; about 29 min from the nearest stop
+- The view from the top of Greenwich Park: in the plan, as the familiar favourite
 - Primrose Hill at sunset: no moment card yet
-- Walking from South Kensington tube to the Natural History Museum: only one familiar favourite per plan, and a park break: the Serpentine in Hyde Park fitted the day better; about 17 min from the nearest stop
-- Hyde Park: in the plan, as the familiar favourite
-- Uber Boat on the Thames: only one familiar favourite per plan, and a park break: the Serpentine in Hyde Park fitted the day better; about 40 min from the nearest stop
+- Walking from South Kensington tube to the Natural History Museum: only one familiar favourite per plan, and the whole of London from General Wolfe's hill, Greenwich Park fitted the day better; about 44 min from the nearest stop
+- Hyde Park: only one familiar favourite per plan, and the whole of London from General Wolfe's hill, Greenwich Park fitted the day better; about 41 min from the nearest stop
+- Uber Boat on the Thames: only one familiar favourite per plan, and the whole of London from General Wolfe's hill, Greenwich Park fitted the day better; about 5 min from the nearest stop
 - Regent's Canal walk from Little Venice: no moment card yet
 
 ## Places they didn't enjoy
@@ -43,8 +45,8 @@ Food and entry: free against a budget of £40; transport about £3.
 ## Strong moments left out
 
 - Deer, forest and the long view in Richmond Park (predicted +3.16)
-- The whole of London from General Wolfe's hill, Greenwich Park (predicted +2.86)
-- A park break: St James's Park and its pelicans (predicted +1.79)
+- Across the Millennium Bridge towards St Paul's dome (predicted +1.89)
+- A park break in Battersea Park (predicted +1.79)
 
 ## Text checks (D100)
 
@@ -57,4 +59,5 @@ Food and entry: free against a budget of £40; transport about £3.
 - [ ] Same number of stops and same format as the generic plan
 - [ ] Both plans end within 30 min of each other (D97)
 - [ ] Each outdoor stop has a rain swap in both plans, or the plan has an indoor stop (D100)
+- [ ] Both plans have a lunch stop around midday (D102)
 - [ ] Nothing in the text says why a stop was chosen (keeps the test blind)

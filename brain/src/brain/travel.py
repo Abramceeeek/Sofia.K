@@ -30,7 +30,9 @@ def haversine_m(a: Point, b: Point) -> float:
 class WalkingEstimate:
     """Straight-line distance × a detour factor at walking pace. A placeholder, not a router."""
 
-    def __init__(self, speed_kmh: float = 4.8, detour: float = 1.3):
+    # D102 (GUESS): 4.5 km/h with a 1.35 detour factor, so the Serpentine to the Natural History Museum comes out at
+    # about 20 min, as friends who know the walk said (it was 4.8 km/h and 1.3, about 17 min).
+    def __init__(self, speed_kmh: float = 4.5, detour: float = 1.35):
         self.speed_m_per_min = speed_kmh * 1000.0 / 60.0
         self.detour = detour
 

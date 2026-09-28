@@ -26,6 +26,7 @@ experience:
   why_it_works: "A framed reveal: from new London to old London in a few minutes."
   duration_min: [10, 15] # GUESS
   end_point: {lat: 51.5138, lon: -0.0983}      # CHECKED: St Paul's Cathedral, Wikipedia coordinates
+  end_station: "St Paul's station"   # * D102: where to walk to for the Tube onwards
   end_name: "St Paul's Cathedral"
 best_time:
   time_of_day: ["07:00-23:00"]   # always open; the window keeps it to sensible hours

@@ -28,6 +28,7 @@ experience:
   why_it_works: "Out of the busy streets until the river suddenly opens up."   # FRIEND
   duration_min: [15, 30] # GUESS, including time on the bridge
   end_point: {lat: 51.50611, lon: -0.12}
+  end_station: "Embankment station"   # * D102: where to walk to for the Tube onwards
   end_name: "the Golden Jubilee footbridge"
 best_time:
   time_of_day: ["15:30-20:30"]   # FRIEND: sunset or evening

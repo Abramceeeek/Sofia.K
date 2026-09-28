@@ -1,45 +1,46 @@
-# Dry run only (D100): a strong "best of London" day from London Bridge, 10:00-15:00 (a market, a museum and a
-# view, a walk), written to the same standard as brain/data/testb/generic.example.yaml. Sources in
-# research/sources.csv (28 Sep): Borough Market Sat 9-17 (official); Tate Modern 10:00-18:00, free collection,
-# free Level 10 view (official); One New Change roof terrace free (official; lift and hours from search);
-# Royal Festival Hall foyers free, closed Mondays (Southbank Centre, search). Walking minutes are GUESSES.
+# Dry run only (D100, D102): a strong "best of London" day from London Bridge, 10:00-15:00, on the south bank
+# all the way (no river crossings): a market, a museum with a view, lunch, then the river walk. Written to the same
+# standard as brain/data/testb/generic.example.yaml. Sources in research/sources.csv (28 Sep): Borough Market
+# Sat 9-17 (official); Tate Modern 10:00-18:00, free collection, free Level 10 view (official); Royal Festival Hall
+# foyers free, closed Mondays (Southbank Centre, search). Walking minutes and food costs are GUESSES.
 stops:
-  - title: "Breakfast at Borough Market"
+  - title: "Borough Market"
     arrive: "10:05"
-    depart: "11:00"
+    depart: "10:45"
     travel_min: 5
     travel_mode: walk
     from: "London Bridge station"
     approach: "Walk into the market; it sits right beside the station."
-    what: "Graze the food stalls: pick a few things and eat as you wander."
-    cost_gbp: 15
+    what: "Browse the food stalls and pick up a coffee and something small to eat."
+    cost_gbp: 5
     cost_kind: food
   - title: "Tate Modern: the Turbine Hall and the view from Level 10"
-    arrive: "11:15"
-    depart: "12:25"
-    travel_min: 12
+    arrive: "11:00"
+    depart: "12:15"
+    travel_min: 15
     travel_mode: walk
     from: "Borough Market"
     approach: "Walk west along Bankside, past Shakespeare's Globe."
     what: "Walk into the vast Turbine Hall, look round the free collection, then take the lift from Level 1 up to Level 10 for a view over the Thames to St Paul's."
     cost_gbp: 0
-  - title: "Over the Millennium Bridge to St Paul's and a free roof terrace"
-    arrive: "12:35"
-    depart: "13:25"
-    travel_min: 3
+  - title: "Lunch by the river on the South Bank"
+    arrive: "12:25"
+    depart: "13:15"
+    travel_min: 10
     travel_mode: walk
     from: "Tate Modern"
-    approach: "Cross the Millennium Bridge towards the dome."
-    what: "Walk round St Paul's Cathedral, then go up to the free roof terrace of One New Change, just east of it, for a close view of the dome."
-    rain_swap: "Stay longer inside Tate Modern instead, and cross the bridge later."
-    cost_gbp: 0
-  - title: "Along the South Bank to the London Eye"
-    arrive: "13:40"
+    approach: "Walk west along the river path towards the Oxo Tower."
+    what: "Pick a café or restaurant along the river for lunch."
+    lunch: true
+    cost_gbp: 15
+    cost_kind: food
+  - title: "The South Bank, past the London Eye"
+    arrive: "13:25"
     depart: "14:40"
-    travel_min: 12
+    travel_min: 5
     travel_mode: walk
-    from: "One New Change"
-    approach: "Cross Blackfriars Bridge to the South Bank."
-    what: "Walk west along the river past the Oxo Tower, the National Theatre and the Southbank Centre. You walk past the London Eye; a ride isn't part of this plan."
+    from: "the Oxo Tower"
+    approach: "Carry on west along the river path."
+    what: "Walk past the National Theatre and the Southbank Centre to the London Eye, with the river and the Houses of Parliament across the water. You walk past the London Eye; a ride isn't part of this plan."
     rain_swap: "The Royal Festival Hall's free foyers, on the way (closed on Mondays)."
     cost_gbp: 0

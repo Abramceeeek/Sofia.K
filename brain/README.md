@@ -76,6 +76,14 @@ cd brain
   - outdoor stops get an "If it rains: …" swap;
   - there are 5 min of slack after each walk and 10 after each Tube or bus leg.
 - **Places they didn't enjoy are never planned (D100).** Swipe places link to their cards in `data/swipe_items.yaml` (`cards`).
+- **Round-2 fixes (D102):**
+  - one of the brief's stops is lunch when the day spans midday: a food card the person likes, or a flexible "Lunch near X" slot (`lunch_gbp`, default £15);
+  - rain swaps respect the person's weights;
+  - a relaxed person gets longer stays where the day has room;
+  - Tube or bus legs read "walk to [station], then take the Tube or bus to [station]";
+  - titles name the place, and busy food stops add queue time.
+  - Card fields: `end_station`, `queue_min`, `plan_title`.
+  - Generic fields: `lunch: true`, `queue_min`.
 - **`--familiar` (D100, proposed):** the personal plan holds exactly one place the person loved, if one fits the day. The review says, for each loved place, why it is in the plan or not.
 - **Both plans in a pair end within 30 min of each other (D97).** The personal plan is first planned to finish by the generic end + 30 min; then its stops move later inside their opening windows until it ends no earlier than the generic end − 30 min. If that can't be done, the status says "fix by hand", and the review shows both end times.
 - It refuses to run until there are enough complete moments in `data/moments/`.

@@ -28,6 +28,7 @@ experience:
   why_it_works: "The same aspiration feeling as Canary Wharf, in the City."   # FOUNDER
   duration_min: [20, 35] # GUESS
   end_point: {lat: 51.51802, lon: -0.0828}      # CHECKED: Liverpool Street Station, OSM
+  end_station: "Liverpool Street station"   # * D102: where to walk to for the Tube onwards
   end_name: "Liverpool Street station"
 best_time:
   time_of_day: ["08:00-19:00"]   # GUESS, accepted by Abram 2026-09-27

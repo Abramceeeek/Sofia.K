@@ -28,6 +28,7 @@ experience:
   why_it_works: "Out of the busy streets until the river suddenly opens up."   # FRIEND
   duration_min: [15, 30] # GUESS
   end_point: null
+  end_station: "Temple station"   # * D102: where to walk to for the Tube onwards
   end_name: "the Somerset House River Terrace"
 best_time:
   time_of_day: ["15:30-20:30"]   # FRIEND: sunset or evening; open 08:00-23:00

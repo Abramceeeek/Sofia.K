@@ -9,6 +9,7 @@
 # For later (after 9 Nov, D75): time variants by season (sunset); light and colour.
 id: m_uber_boat_west_night
 title: "The river at night, from Greenwich to Westminster"
+plan_title: "The Uber Boat at night, from Greenwich to Westminster"   # D102: the place named in the plan
 status: ready
 swipe: false
 kind: moment
@@ -30,6 +31,7 @@ experience:
   why_it_works: "A different moment from the day trip: the building lighting."   # FOUNDER
   duration_min: 48       # CHECKED: evening boats Greenwich -> Westminster take 46-51 min
   end_point: {lat: 51.50225, lon: -0.12317}   # CHECKED: Westminster Pier, OpenStreetMap
+  end_station: "Westminster station"   # * D102: where to walk to for the Tube onwards
   end_name: "Westminster Pier"
 best_time:
   # CHECKED (timetables, 2026-09-26): evening boats reach Westminster every day; last departures from

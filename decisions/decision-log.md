@@ -2,6 +2,25 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — dry-run feedback round 2
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D102 | **Round 2 of the dry run (friends; fixes only, not test data):** 6 of 6 preferred the personal plan again, now against a generic plan several called "solid". One answer (person 1.3) seems to have read P02's description with P01's plans, so it is discounted: 5 of 5 valid.<br>**The fixes:**<br>1. Every plan has a meal stop around midday.<br>2. Rain swaps respect the person's weights.<br>3. Pace sets how long people stay, not just the number of stops.<br>4. Travel legs start with "walk to [station]", and the Serpentine → Natural History Museum walk is about 20 min.<br>5. The generic plan doesn't cross the river twice.<br>6. Titles name the place.<br>7. Busy food stops add queue time | D100's plan text | Founder decisions from the friends' feedback |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m74 | **How lunch works (GUESSES):**<br>- **Lunch counts as one of the brief's stops** (4 stops, including lunch), so a 5-hour day stays doable and both plans have the same number of stops.<br>- It starts 11:30–13:30 and lasts 45 min when flexible, at about £15 (`lunch_gbp` in the brief).<br>- A food card becomes the lunch only if the person is predicted to like it (+0.5 or more). Otherwise it's a flexible "Lunch near X" slot, scored as neutral, placed beside a place in the plan.<br>- A strong bonus makes the solver keep a lunch over an extra sight.<br>- The generic plan marks its lunch with `lunch: true`, and a warning fires if it has none | `testb.py`, `planner.py`, `generic.example.yaml` |
+| m75 | **Rain swaps:** a swap must be predicted at least "fine" (the 2/3 rating threshold) and must not have, at full strength, a feature the person clearly dislikes (e.g. crowds) | `testb.py` |
+| m76 | **Pace:**<br>- "relaxed" means a confident dislike of packed days; relaxed people get longer stays where the day has room (the top of each card's range, at least 45 min in a garden and 60 in a park), moving later stops back but never out of their windows or past the end rule;<br>- "packed" and "even" keep the usual stays;<br>- extra time goes into stays before it goes into gaps | `planner.py` (`extend_dwell`), `testb.py` |
+| m77 | **Walking speed 4.5 km/h and a 1.35 detour factor** (was 4.8 and 1.3, both GUESSES), calibrated to friends' "about 20 min" from the Serpentine to the Natural History Museum. Every walking estimate gets about 12% longer | `travel.py` |
+| m78 | **Leaving a stop by Tube or bus:**<br>- cards can name `end_station` (10 cards now do; station names are Claude's knowledge);<br>- otherwise the card's arrival station is used, or "the nearest station";<br>- the arrival line then names no station, because the travel line already does | 10 cards; `moments.py`, `testb.py` |
+| m79 | **Titles:** "Place: title" when the title doesn't already name the place. Five cards have a hand-written `plan_title` where that read badly (outdoor dining, karting, the whale hall, both boats) | 5 cards; `moments.py` |
+| m80 | **Queue time:** `queue_min` of 10 min (GUESS) on Beigel Bake and Borough Market, added to the time there and shown as "Allow about 10 min to queue." | 2 cards |
+| m81 | **Actual hours:** 1.0 h for round 2 (sending, collecting, reading), logged 28 Sep (D82) | `LOG.md` |
+
 ## 2026-09-28 — dry-run feedback round 1; visitor mode parked
 
 | # | Decision | Replaces | Why |

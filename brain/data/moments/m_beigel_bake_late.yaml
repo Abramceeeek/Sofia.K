@@ -25,6 +25,7 @@ experience:
   why_it_works: "A cheap, local food ritual that suits the end of a day or a late night."
   duration_min: [15, 30] # GUESS
   end_point: null
+  queue_min: 10          # D102 (GUESS): a queue at the counter or stalls, especially at weekends
 best_time:
   time_of_day: ["08:00-23:30"]   # open 24 hours; the window keeps it inside a day plan
   light: null

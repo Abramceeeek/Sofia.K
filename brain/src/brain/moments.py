@@ -16,6 +16,7 @@ PLACE_TAGS = [
 ]
 MOMENT_TAGS = ["contrast_reveal", "absorption", "awe", "social_pull"]
 
+_GENERIC_WORDS = {"Park", "Street", "Road", "Gate", "Square", "London", "City", "Station"}
 _WINDOW = re.compile(r"^\s*(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\s*$")
 WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
@@ -49,6 +50,8 @@ class Experience(BaseModel):
     duration_min: float | list[float] | None = None
     end_point: Point | None = None
     end_name: str | None = None   # where you are when it ends, e.g. "Westminster Pier" (the plan's "from" line)
+    end_station: str | None = None   # D102: the station to walk to when leaving (default: approach.from if a station)
+    queue_min: float | None = None   # D102: usual queue at a popular stop, added to the time there and told to people
 
 
 class BestTime(BaseModel):
@@ -88,6 +91,7 @@ class ShotCard(BaseModel):
 class Moment(BaseModel):
     id: str
     title: str
+    plan_title: str | None = None  # D102: the title shown in plans, when the automatic "Place: title" reads badly
     status: str = "draft"          # draft | ready
     swipe: bool = False            # part of the onboarding swipe set
     # D72: "moment" is one specific experience; "area" is an area vibe (a wander, a street scene)
@@ -121,7 +125,28 @@ class Moment(BaseModel):
             exp = sum(exp) / len(exp) if exp else None
         if exp is None or self.approach.duration_min is None:
             return None
-        return float(self.approach.duration_min) + float(exp)
+        return float(self.approach.duration_min) + float(exp) + float(self.experience.queue_min or 0)
+
+    def exit_station(self) -> str | None:
+        """Where to walk to catch the Tube or bus onwards (D102)."""
+        if self.experience.end_station:
+            return self.experience.end_station
+        if self.experience.end_point is None and self.approach.from_ and "station" in self.approach.from_.lower():
+            return self.approach.from_
+        return None
+
+    def display_title(self) -> str:
+        """The title with the place's name in front when the title doesn't already name it (D102), e.g.
+        "The Garden at 120: a rooftop garden among the City towers"."""
+        if self.plan_title:
+            return self.plan_title
+        place = re.split(r"[:,()]", self.place.name)[0].strip()
+        words = {w for w in re.findall(r"[A-Z][\w'-]{3,}", place) if w not in _GENERIC_WORDS}
+        if not words or any(w in self.title for w in words):
+            return self.title
+        first, _, rest = self.title.partition(" ")
+        title = f"{first.lower()} {rest}" if first in ("A", "An", "The") else self.title
+        return f"{place}: {title}"
 
     def start(self) -> Point | None:
         return self.approach.start_point

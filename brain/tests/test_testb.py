@@ -134,7 +134,7 @@ def test_plans_command_writes_blind_identical_plans_and_a_review(tmp_path, data_
         assert a.startswith("*Plan A:") and b.startswith("*Plan B:")
         for text in (a, b):   # blind: same shape, no reasons, no model words
             assert len(re.findall(r"^(?:Cost|Food|Entry|Ticket|Hire): ", text, re.M)) == 3
-            assert re.search(r"^Start: .+ at 12:00 · 3 stops$", text, re.M)          # D100: same start line
+            assert re.search(r"^Start: .+ at 12:00 · 3 stops, including lunch$", text, re.M)   # D100, D102
             assert re.search(r"^\*1\. \d\d:\d\d–\d\d:\d\d  ", text, re.M)          # D100: time ranges
             assert "entry costs" not in text
             assert "predicted" not in text and "weight" not in text and "Chosen" not in text
@@ -302,3 +302,90 @@ def test_approach_text_is_full_sentences():
     for m in ms.values():
         if m.status == "ready":
             assert testb.approach_text(m).endswith("."), m.id
+
+
+def _dry_brief(**kw):
+    base = dict(start_name="London Bridge station", start=Point(lat=51.5049, lon=-0.0863), start_time="10:00",
+                end_time="15:00", stops=4, budget_gbp=40, weekday="sat", time_limit_s=1.0)
+    base.update(kw)
+    return testb.Brief(**base)
+
+
+def _posterior(pop, **deltas):
+    """A made-up, confident posterior: δ on the named personal features, sd 0.1."""
+    import numpy as np
+    from brain.personal import DeltaPosterior
+    names = list(pop.personal_names)
+    mean = np.zeros(len(names))
+    for k, v in deltas.items():
+        mean[names.index(k)] = v
+    return DeltaPosterior(mean, np.eye(len(names)) * 100.0, 0, 30)
+
+
+def test_every_plan_spanning_midday_has_one_lunch_stop():
+    """D102: a food card the person likes, or a flexible "lunch near X" slot, starting 11:30-13:30."""
+    from brain.moments import load_moments
+    from brain.population import load_population
+    from brain.scoring import update_person
+    pop = load_population(DATA / "priors.yaml")
+    moments = [m for m in load_moments(DATA / "moments") if m.status == "ready"]
+    plan, stops, _, notes = testb.personal_plan(pop, update_person(pop, []), moments, _dry_brief(), LondonEstimate())
+    lunches = [s for s in stops if s["lunch"]]
+    assert len(stops) == 4 and len(lunches) == 1
+    assert "11:30" <= lunches[0]["arrive"] <= "13:30" and lunches[0]["cost_kind"] == "food"
+    head = testb._header("1", _dry_brief(), stops)
+    assert head[1].endswith("4 stops, including lunch")
+    # a day that doesn't span lunch gets none
+    _, stops, _, notes = testb.personal_plan(pop, update_person(pop, []), moments,
+                                            _dry_brief(start_time="15:00", end_time="20:00", stops=2), LondonEstimate())
+    assert not any(s["lunch"] for s in stops) and notes.lunch == "the day doesn't span lunch"
+
+
+def test_rain_swaps_respect_a_clear_dislike_of_crowds():
+    """D102: someone who clearly dislikes crowds is never sent to a crowded market when it rains."""
+    from brain.moments import load_moments
+    from brain.population import load_population
+    pop = load_population(DATA / "priors.yaml")
+    moments = [m for m in load_moments(DATA / "moments") if m.status == "ready"]
+    post = _posterior(pop, crowds=-2.0)
+    assert any(w.name == "crowds" and w.direction == "dislikes" and w.confident
+               for w in __import__("brain.scoring", fromlist=["x"]).named_weights(pop, post))
+    _, stops, _, _ = testb.personal_plan(pop, post, moments, _dry_brief(), LondonEstimate())
+    swaps = " ".join(s["rain_swap"] for s in stops)
+    assert "Borough Market" not in swaps
+
+
+def test_relaxed_people_stay_longer_at_gardens():
+    """D102: pace sets dwell time: a relaxed person gets at least 45 min in a garden where the day allows."""
+    from brain.moments import load_moments
+    from brain.population import load_population
+    from brain.planner import parse_hhmm
+    pop = load_population(DATA / "priors.yaml")
+    moments = [m for m in load_moments(DATA / "moments") if m.status == "ready"]
+    relaxed = _posterior(pop, packed_pace=-3.0)
+    assert testb.pace_of(pop, relaxed) == "relaxed"
+    by_id = {m.id: m for m in moments}
+    targets = testb.dwell_targets(by_id, ["m_st_dunstan_garden", "m_park_break_hyde", "m_horizon_22"])
+    assert targets["m_st_dunstan_garden"] >= 45 + 5 and targets["m_park_break_hyde"] >= 60 + 8
+    assert targets["m_horizon_22"] == 10 + 45          # not green: the top of its own range
+
+
+def test_travel_legs_start_with_the_walk_to_a_station():
+    """D102: "walk to X station, then take the Tube or bus to Y" when a leg starts at a stop."""
+    t = testb.leg_text(22, "transit", "The Garden at 120", "Bank station", "Liverpool Street station", first=False)
+    assert t == "Getting there: about 22 min: walk to Bank station, then take the Tube or bus to Liverpool Street station."
+    assert testb.leg_text(20, "transit", "London Bridge station", "London Bridge station", "Cutty Sark DLR station",
+                          first=True) == ("Getting there: about 20 min by Tube or bus from London Bridge station "
+                                          "to Cutty Sark DLR station.")
+    assert testb.leg_text(0, "walk", "X", None, None, first=False) == ""     # a lunch slot right where you are
+
+
+def test_titles_name_the_place_and_queues_are_told():
+    """D102: the place's name is in each title; a popular food stop says how long to allow for the queue."""
+    from brain.moments import load_moments
+    ms = {m.id: m for m in load_moments(DATA / "moments")}
+    assert ms["m_garden_at_120"].display_title() == "The Garden at 120: a rooftop garden among the City towers"
+    assert ms["m_beigel_bake_late"].display_title() == "Beigel Bake: a salt beef bagel on Brick Lane"
+    assert ms["a_soho_chinatown_evening"].display_title() == ms["a_soho_chinatown_evening"].title   # already named
+    assert ms["m_beigel_bake_late"].duration_min() == 10 + 22.5 + 10     # approach + experience + queue
+    assert "Allow about 10 min to queue." in testb._stop_lines(_stop(queue=10))

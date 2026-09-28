@@ -6,6 +6,7 @@
 # the next time he taps in. Marked ready.
 id: m_uber_boat_west_day
 title: "Up the river from Greenwich to Battersea, by day"
+plan_title: "The Uber Boat up the river from Greenwich to Battersea, by day"   # D102: the place named in the plan
 status: ready
 swipe: false
 kind: moment
@@ -27,6 +28,7 @@ experience:
   why_it_works: "Green, colour and buildings, and the major landmarks in a short time. At Battersea: relaxed, well-dressed people enjoying life, a contrast with Canary Wharf's work energy."   # FOUNDER
   duration_min: 62       # CHECKED: through boats take 58-65 min (weekday westbound timetable)
   end_point: {lat: 51.48392, lon: -0.14595}   # CHECKED: Battersea Power Station Pier, OpenStreetMap
+  end_station: "Battersea Power Station station"   # * D102: where to walk to for the Tube onwards
   end_name: "Battersea Power Station Pier"
 best_time:
   # CHECKED (thamesclippers.com timetables, 2026-09-26): through boats Greenwich -> Battersea Power Station

@@ -6,6 +6,7 @@
 # For later (after 9 Nov, D75): scale 2 ("you feel tiny").
 id: m_nhm_whale_hall
 title: "Into the whale hall"
+plan_title: "The Natural History Museum: into the whale hall"   # D102: the place named in the plan
 status: ready
 swipe: false
 kind: moment

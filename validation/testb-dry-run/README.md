@@ -1,12 +1,29 @@
-# Test B dry run (D86, D97, D100): read these as a participant would
+# Test B dry run (D86, D97, D100, D102): read these as a participant would
 
-*Round 2, regenerated 28 Sep after the friends' feedback (D100). **Two made-up people, not participants**, built from the real results-sheet template. Brief: a Saturday, from London Bridge station, **10:00–15:00**, 4 stops, £40 (`for-abram/brief.used.yaml`). The personal plans come from the ready cards, with the familiar-favourite rule switched on (`--familiar`, proposed in D100). The generic plan is the new "best of London" dry-run copy (`for-abram/generic.used.yaml`); the real one is yours to write to the same standard (0.5 h, week of 19 Oct).*
+*Round 3, regenerated 28 Sep after the second round of friends' feedback (D102). **Two made-up people, not participants**, built from the real results-sheet template. Brief: a Saturday, from London Bridge station, **10:00–15:00**, 4 stops, £40 (`for-abram/brief.used.yaml`). The personal plans come from the ready cards, with the familiar-favourite rule switched on (`--familiar`, proposed in D100). The generic plan is the "best of London" dry-run copy (`for-abram/generic.used.yaml`), now on the south bank all the way with lunch by the river; the real one is yours to write to the same standard (0.5 h, week of 19 Oct).*
 
 ## Round 1 feedback (6 friends, 3 per person; for fixes only, not test data)
 - **6 of 6 preferred the personal plan, and 6 of 6 spotted it**, all from how well the places fitted the person, none from the format. Read this as "blindness held, personalisation visible".
 - **Caveats:**
   - The persona lines listed likes and dislikes openly, which makes the personal plan easier to spot than it will be for a real participant.
   - The generic plan read as a weak "crowded tourist checklist", and P02's started with Big Ben, a stated dislike. A strong generic plan is the fair comparison, so it was rewritten.
+
+## Round 2 feedback (6 friends; fixes only, not test data)
+- **6 of 6 preferred the personal plan again**, now against a stronger generic plan that several called "solid".
+- **One answer (person 1.3) seems to have read P02's description with P01's plans,** so it is discounted: 5 of 5 valid answers preferred the personal plan.
+
+## What changed for round 3 (D102)
+1. **Lunch:** every plan that spans midday has one meal stop starting 11:30–13:30. It is either a food card the person is predicted to like, or a flexible "Lunch near X" slot (45 min, about £15). The header says "4 stops, including lunch". P01 lunches near Cutty Sark DLR before the Greenwich hill; P02 lunches at Beigel Bake.
+2. **Rain swaps respect the person's weights:** a swap must be predicted at least "fine" for them, and must not have a feature they clearly dislike (P01 is no longer sent to crowded Borough Market).
+3. **Pace sets how long you stay:** a relaxed person gets the top of each card's range where the day has room: at least 45 min in a garden and 60 in a park (P01's gardens are now 50 min each). A packed person keeps the usual stays.
+4. **Travel legs:**
+   - a Tube or bus leg from a stop now reads "walk to [station], then take the Tube or bus to [station]";
+   - walking is estimated more slowly (4.5 km/h, 1.35 × the straight line), so the Serpentine to the Natural History Museum comes out at about 20 min, as friends said.
+5. **Generic plan:** no river crossings. Borough Market for a coffee, Tate Modern and its view, lunch by the river, then the South Bank past the London Eye.
+6. **Titles name the place,** e.g. "The Garden at 120: a rooftop garden among the City towers".
+7. **Queues:** busy food stops (Beigel Bake, Borough Market) add 10 min and say "Allow about 10 min to queue."
+
+**Ends:** P01 at 15:00 and P02 at 14:26, against the generic plan's 14:40 (both within 30 min).
 
 ## What changed for round 2 (D100)
 1. **Generic plan:** a strong "best of London" day: Borough Market, Tate Modern with its free Level 10 view, over the Millennium Bridge to a free roof terrace by St Paul's, then the South Bank past the London Eye.

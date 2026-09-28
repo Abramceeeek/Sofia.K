@@ -24,6 +24,7 @@ experience:
   why_it_works: "Not one moment: the feeling of being in London."   # FOUNDER
   duration_min: [45, 90] # GUESS
   end_point: {lat: 51.51497, lon: -0.1326}      # CHECKED: Soho Square, OSM (a GUESS as the end)
+  end_station: "Tottenham Court Road station"   # * D102: where to walk to for the Tube onwards
   end_name: "Soho Square"
 best_time:
   time_of_day: ["11:00-22:00"]   # GUESS

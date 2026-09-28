@@ -139,3 +139,17 @@ def test_buffer_leaves_breathing_space_between_stops():
                    buffer_walk_min=5, buffer_transit_min=10)
     gap = lambda p: p.stops[1].arrive_min - p.stops[0].depart_min
     assert gap(buf) >= gap(plain) + 5 and buf.stops[1].travel_min == plain.stops[1].travel_min
+
+
+def test_extend_dwell_lengthens_stays_where_the_day_has_room():
+    """D102: longer stays for a relaxed person, moving later stops back, never past a window or the day's end."""
+    from brain.moments import Point
+    from brain.planner import Candidate, DayPlan, PlannedStop, extend_dwell
+    p = Point(lat=51.5, lon=-0.1)
+    cands = {"a": Candidate("a", p, p, 30, ((600, 700),), 1.0), "b": Candidate("b", p, p, 30, ((600, 760),), 1.0)}
+    plan = DayPlan([PlannedStop("a", 600, 630, 0, 1.0, 0.0), PlannedStop("b", 640, 670, 5, 1.0, 0.0)], 2.0, "a", False)
+    extend_dwell(plan, cands, {"a": 50, "b": 60}, latest_end=720)
+    a, b = plan.stops
+    assert a.depart_min - a.arrive_min == 50                     # 20 more minutes at a
+    assert b.arrive_min == 660 and b.depart_min <= 720           # b moved back by 20, then lengthened to the end
+    assert b.depart_min - b.arrive_min == 60

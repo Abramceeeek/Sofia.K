@@ -3,6 +3,7 @@
 # (`missing_for_planning()` lists anything still empty). The rest improve the card.
 id: m_short_name                      # NEEDED: unique, lower case, e.g. m_southken_nhm_reveal
 title: "Out of the tunnel, into the Natural History Museum"
+plan_title: null                      # D102: optional; the title shown in plans if "Place: title" reads badly
 status: draft                         # draft | ready
 swipe: false                          # true only for the onboarding swipe set
 kind: moment                          # moment | area ("area vibe": a wander or street scene; one a day, never the peak)
@@ -25,6 +26,8 @@ experience:
   why_it_works: "Why it feels good"
   duration_min: [30, 60]              # NEEDED: one number or [min, max]
   end_point: null                     # where you leave from, if not the start point
+  end_station: null                   # D102: the station to walk to when leaving, if not the arrival station
+  queue_min: null                     # D102: usual queue at a busy stop (added to the time there, told to people)
 best_time:
   time_of_day: ["10:00-17:30"]        # NEEDED: one or more "hh:mm-hh:mm" windows (opening hours, light, quiet)
   light: "When it looks best"

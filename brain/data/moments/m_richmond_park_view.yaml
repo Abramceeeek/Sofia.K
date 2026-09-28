@@ -30,6 +30,7 @@ experience:
   why_it_works: "Nature meeting people: deer, water, forest and small buildings inside the park. A safari feeling, and time slows down."   # FOUNDER + FRIEND (2026-09-28)
   duration_min: [45, 90] # GUESS
   end_point: null
+  end_station: "Richmond station"   # * D102: where to walk to for the Tube onwards
 best_time:
   time_of_day: ["09:00-16:00"]   # GUESS: inside Pembroke Lodge hours and daylight in the Test B weeks
   light: "Best in late spring (FRIEND, 2026-09-28)"

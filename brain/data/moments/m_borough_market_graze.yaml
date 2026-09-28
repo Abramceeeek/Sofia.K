@@ -27,6 +27,7 @@ experience:
   why_it_works: "Food as the experience itself, not a stop between sights."
   duration_min: [45, 75] # GUESS
   end_point: null
+  queue_min: 10          # D102 (GUESS): a queue at the counter or stalls, especially at weekends
 best_time:
   time_of_day: ["10:00-16:00"]
   days: [tue, wed, thu, fri, sat, sun]

@@ -25,6 +25,7 @@ experience:
   why_it_works: "Easy movement with green and water all round: enough action to switch your head off, with no booking and no kit."
   duration_min: [30, 45] # GUESS
   end_point: {lat: 51.50278, lon: -0.15125}
+  end_station: "Hyde Park Corner station"   # * D102: where to walk to for the Tube onwards
   end_name: "Hyde Park Corner"
 best_time:
   time_of_day: ["10:00-16:00"]   # daylight in the Test B weeks

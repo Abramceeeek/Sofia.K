@@ -19,7 +19,7 @@ Two rules for the seed moments (D72):
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
@@ -41,6 +41,7 @@ class Candidate:
     cost_gbp: float = 0.0                   # per person, for the budget constraint
     group: str | None = None                # variants of one moment: at most one per plan
     kind: str = "moment"                    # "moment" or "area" (area vibe)
+    lunch: bool = False                     # D102: a meal stop; a plan holds at most one, and `lunch_bonus` pulls one in
 
 
 def candidate_for(m: Moment, utility: float) -> Candidate:
@@ -110,7 +111,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            forced_last: int | None, time_limit_s: float, max_wait_min: int,
            min_stops: int | None = None, budget_gbp: float | None = None,
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
-           max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0) -> DayPlan | None:
+           max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
+           lunch_bonus: float = 0.0) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -180,7 +182,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
             continue  # mandatory: no disjunction
         if cands[j - 1].moment_id in must_include:
             continue  # a must-do stop (trip intent): mandatory
-        prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus
+        prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus + (lunch_bonus if cands[j - 1].lunch else 0.0)
         routing.AddDisjunction([idx], int(round(SCALE * max(0.0, prize))))
 
     solver = routing.solver()
@@ -191,6 +193,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     for members in groups.values():
         if len(members) > 1:
             solver.Add(solver.Sum([routing.ActiveVar(i) for i in members]) <= 1)
+    meals = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.lunch]
+    if len(meals) > 1:
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in meals]) <= 1)
     areas = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.kind == "area"]
     if len(areas) > max_areas:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in areas]) <= max_areas)
@@ -230,7 +235,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              must_include: set[str] | frozenset[str] = frozenset(),
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
-             buffer_walk_min: int = 0, buffer_transit_min: int = 0) -> DayPlan:
+             buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -239,7 +244,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
     solves again without it and says so in `status`.
     """
     must = frozenset(must_include)
-    usable = [c for c in cands if (c.utility > floor or c.moment_id in must)
+    usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch)
               and _start_ranges(c, day_start, day_end)]
     skipped = [c.moment_id for c in cands if c not in usable]
     missing_must = sorted(must - {c.moment_id for c in usable})
@@ -250,7 +255,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 legs=legs, floor=floor, max_stops=max_stops, time_limit_s=time_limit_s,
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
                 min_stops=min_stops, max_areas=max_areas,
-                buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min)
+                buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:
@@ -318,12 +323,37 @@ def spread_to_end(plan: DayPlan, cands: dict[str, Candidate], min_end: int, day_
         gap = st.arrive_min - plan.stops[k - 1].depart_min if k else 0
         earliest = st.arrive_min if prev_depart is None else max(st.arrive_min, prev_depart + max(gap, st.travel_min))
         want = earliest + share[k] + carry
-        latest = max((hi - c.duration_min for lo, hi in c.windows if lo <= earliest <= hi - c.duration_min),
-                     default=earliest)
-        latest = min(latest, day_end - c.duration_min)
+        dur = st.depart_min - st.arrive_min   # the stop's own length (extend_dwell may have lengthened it)
+        latest = max((hi - dur for lo, hi in c.windows if lo <= earliest <= hi - dur), default=earliest)
+        latest = min(latest, day_end - dur)
         arrive = max(earliest, min(want, latest))
         carry = want - arrive
-        new.append(PlannedStop(st.moment_id, arrive, arrive + c.duration_min, st.travel_min, st.utility, st.leg_penalty))
-        prev_depart = arrive + c.duration_min
+        new.append(PlannedStop(st.moment_id, arrive, arrive + dur, st.travel_min, st.utility, st.leg_penalty))
+        prev_depart = arrive + dur
     plan.stops = new
     return plan.stops[-1].depart_min >= min_end
+
+
+def extend_dwell(plan: DayPlan, cands: dict[str, Candidate], targets: dict[str, int], latest_end: int) -> None:
+    """D102: for a relaxed person, lengthen stays toward `targets` (total minutes at the stop), in plan order, where
+    the day has room. Later stops move back by the same amount; nothing leaves its time window or ends after
+    `latest_end`. Changes `plan.stops` in place."""
+    stops = list(plan.stops)
+
+    def window_end(st: PlannedStop) -> int:
+        c = cands[st.moment_id]
+        return max((hi for lo, hi in c.windows if lo <= st.arrive_min <= hi), default=st.depart_min)
+
+    for k, st in enumerate(stops):
+        want = targets.get(st.moment_id, 0) - (st.depart_min - st.arrive_min)
+        if want <= 0:
+            continue
+        room = min([latest_end - stops[-1].depart_min, window_end(st) - st.depart_min]
+                   + [window_end(x) - x.depart_min for x in stops[k + 1:]])
+        extra = max(0, min(want, room))
+        if extra:
+            stops[k] = replace(st, depart_min=st.depart_min + extra)
+            for j in range(k + 1, len(stops)):
+                stops[j] = replace(stops[j], arrive_min=stops[j].arrive_min + extra,
+                                   depart_min=stops[j].depart_min + extra)
+    plan.stops = stops

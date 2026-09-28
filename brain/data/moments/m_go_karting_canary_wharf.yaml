@@ -11,6 +11,7 @@
 # Pairs with card 6 (Canary Wharf towers): the two are in different groups, so a plan could hold both.
 id: m_go_karting_canary_wharf
 title: "Race electric karts at Canary Wharf"
+plan_title: "K1 Speed: race electric karts at Canary Wharf"   # D102: the place named in the plan
 status: ready
 swipe: false
 kind: moment

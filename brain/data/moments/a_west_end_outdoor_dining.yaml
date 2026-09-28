@@ -9,6 +9,7 @@
 # Marked ready (D91: founder answers + checked facts).
 id: a_west_end_outdoor_dining
 title: "Eating outside in the West End, watching the street"
+plan_title: "Eating outside around Oxford Circus and Regent Street"   # D102: the place named in the plan
 status: ready
 swipe: false
 kind: area
