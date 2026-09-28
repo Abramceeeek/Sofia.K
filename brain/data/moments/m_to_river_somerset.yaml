@@ -1,0 +1,46 @@
+# From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
+# and marked ready under the research rule (D91, D98). Tags are Claude's judgement: Abram can flag any.
+# A flexible "to the river" moment (D98): the cards share variant_of to_the_river, so a plan holds one route,
+# and the planner picks the one that fits the day's route. FRIEND: walking out of busy streets until the river opens up;
+# best at sunset or in the evening.
+# Sources (search, 2026-09-28; somersethouse.org.uk): the Strand entrance and the River Terrace are open 08:00-23:00; the
+# courtyard and common spaces are free (exhibitions are ticketed).
+id: m_to_river_somerset
+title: "Through Somerset House to the river terrace"
+status: ready
+swipe: false
+kind: moment
+variant_of: to_the_river
+variant: somerset_house
+direction: "The Strand -> the courtyard -> the River Terrace"
+place:
+  name: "Somerset House: the courtyard and River Terrace"
+  lat: 51.5111           # CHECKED: Somerset House, Wikipedia coordinates
+  lon: -0.1178
+approach:
+  from: "the Strand entrance (Temple or Covent Garden station)"   # * for the stations
+  start_point: {lat: 51.5111, lon: -0.1178}
+  path: "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace"
+  duration_min: 3        # GUESS
+  step_free: null
+experience:
+  what_happens: "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you."
+  why_it_works: "Out of the busy streets until the river suddenly opens up."   # FRIEND
+  duration_min: [15, 30] # GUESS
+  end_point: null
+  end_name: "the Somerset House River Terrace"
+best_time:
+  time_of_day: ["15:30-20:30"]   # FRIEND: sunset or evening; open 08:00-23:00
+  light: "Sunset and evening"    # FRIEND
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Strand entrance and River Terrace 08:00-23:00; courtyard free. Somerset House via search, 2026-09-28"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: friend
+last_checked: "2026-09-28"

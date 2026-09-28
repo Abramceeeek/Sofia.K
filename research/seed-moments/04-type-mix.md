@@ -2,6 +2,14 @@
 
 *2026-09-27. 20 ready cards (8 of yours, 12 verified research cards). A card can count under more than one type; the main type is in bold. Tags are from the cards (2 = the defining trait).*
 
+## Update, 28 Sep (D98): friends' moments
+
+- **Now 35 ready cards** (26 once each variant group counts as one), after five cards from friends' suggestions. Winter Wonderland is a draft, because it opens after Test B.
+- **Area vibes: 4 cards in 3 groups.** Soho and Chinatown after dark is the evening version of Covent Garden and Soho, and a plan holds one of the two.
+- **Reveals: +2,** in one group: two routes from the Strand to the river (Villiers Street; Somerset House). A plan holds one. These are evening cards (15:30–20:30).
+- **Nature and calm: +2:** the Greenwich Peninsula walk, and Tower Bridge at sunset from Alderman Stairs (stillness while the city rushes, after-9-nov #16).
+- **Still thin:** quiet and rest as a type of its own, social, learning by doing, and music and nightlife (after-9-nov #15 and #17).
+
 ## Update, 27 Sep (D93): the two gaps are filled
 
 - **Now 30 ready cards,** after cards 9–11, a park-break group of six parks (one per plan), King's Cross and the bike loop.

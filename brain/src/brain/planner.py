@@ -276,3 +276,34 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         status = f"must-do not available that day: {', '.join(missing_must)}"
     best.status = status
     return best
+
+
+def spread_to_end(plan: DayPlan, cands: dict[str, Candidate], min_end: int, day_end: int) -> bool:
+    """Move the stops later, keeping their order, until the last one ends at `min_end` or later (D97).
+
+    The extra time is shared out as longer breaks before each stop (the first break is a later start),
+    and no stop is moved outside its time windows or past `day_end`. Changes `plan.stops` in place and
+    returns whether the plan now ends at `min_end` or later.
+    """
+    if not plan.stops:
+        return False
+    end = plan.stops[-1].depart_min
+    extra = min(min_end, day_end) - end
+    if extra <= 0:
+        return end >= min_end
+    n = len(plan.stops)
+    share = [extra // n + (1 if k < extra % n else 0) for k in range(n)]
+    carry, prev_depart, new = 0, None, []
+    for k, st in enumerate(plan.stops):
+        c = cands[st.moment_id]
+        earliest = st.arrive_min if prev_depart is None else max(st.arrive_min, prev_depart + st.travel_min)
+        want = earliest + share[k] + carry
+        latest = max((hi - c.duration_min for lo, hi in c.windows if lo <= earliest <= hi - c.duration_min),
+                     default=earliest)
+        latest = min(latest, day_end - c.duration_min)
+        arrive = max(earliest, min(want, latest))
+        carry = want - arrive
+        new.append(PlannedStop(st.moment_id, arrive, arrive + c.duration_min, st.travel_min, st.utility, st.leg_penalty))
+        prev_depart = arrive + c.duration_min
+    plan.stops = new
+    return plan.stops[-1].depart_min >= min_end

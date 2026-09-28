@@ -1,29 +1,30 @@
-# Test B dry run (D86): read these as a participant would
+# Test B dry run (D86, D97): read these as a participant would
 
-*Prepared 28 Sep. **Two made-up people, not participants**, built from the real results-sheet template. Brief: a Saturday, from London Bridge station, 10:00–18:00, 4 stops, £40 (`brief.used.yaml`). Plans come from the 30 ready cards. The generic plan is the **example** in `brain/data/testb/generic.example.yaml`; the real one is yours to write (0.5 h, week of 19 Oct).*
+*Regenerated 28 Sep with D97 applied. **Two made-up people, not participants**, built from the real results-sheet template. Brief: a Saturday, from London Bridge station, **10:00–15:00**, 4 stops, £40 (`for-abram/brief.used.yaml`). The personal plans come from the ready cards. The generic plan is a dry-run copy of the example (`for-abram/generic.used.yaml`); the real one is yours to write (0.5 h, week of 19 Oct).*
 
-| Person | Swipes and choices (made up) | Fields | Personal plan | Generic plan |
-|---|---|---|---|---|
-| **P01, "calm and culture"** | Loved museums, views, parks; didn't enjoy Camden or the cable car; chose relaxed, quiet, dry days | History & culture, nature | **A** | B |
-| **P02, "active and food"** | Loved markets, Brick Lane, the ponds, Sky Garden; didn't enjoy museums or Big Ben; chose packed days and long walks | Food, finance & tech | **A** | B |
+## What changed since the first dry run (D97)
+- **Both briefs are 10:00–15:00.**
+- **The two plans in a pair end within 30 min of each other.** The planner moves the personal stops later inside their opening windows when needed. P01 ends at 14:00 against 14:30, and P02 at 14:36 against 14:30.
+- **The aspiration starting weight is +0.25** (was +0.5), so swipes and choices do more of the work.
+- **Plans are "Plan 1" and "Plan 2"**, not A and B. Which one is personal is randomised per person (the results sheet's fixed seed). The key is in `for-abram/key.md`.
+- **Text fixes:**
+  - after a walk from the previous stop, the arrival line no longer names a station you didn't come from;
+  - every arrival line ends with a full stop;
+  - "A late bagel" is now "A salt beef bagel", because "late" read oddly at lunchtime.
 
-**How to spend your hour (≈ 1 h):**
-1. **Read `P01_plan_A.txt` and `P01_plan_B.txt` as P01 would** (they are the WhatsApp messages; the PDFs match). Ask yourself: would I follow this? Is anything confusing? Does anything give away which plan is the personal one? Then do the same for P02.
-2. **Skim `P01_review.md` and `P02_review.md`** (for you only). They show why each stop was chosen, the strong moments left out, the read-back lines, and the checklist.
-3. **Answer two questions (below) and note anything else** to change: tone, length, arrival text, times, prices.
+## Folders
+- **`share/`: safe to send to friends.** It holds the four plans (.txt is the WhatsApp message; the PDF matches) and `people.md`, with a one-line description of each made-up person.
+- **`for-abram/`: don't share.** It holds the reviews (why each stop was chosen), the key, the brief and the generic plan used.
 
-## Two things I noticed: your call
+## Sharing with friends
+- **Give each friend one person's pair,** P01 or P02. Both people get the same generic plan, so a friend who reads all four can tell which plan is generic.
+- **Friends' feedback is for catching problems only, not test data.** It is never entered in the results sheet, and friends don't count towards Test B's numbers.
+- **Useful questions:**
+  - What is confusing?
+  - What is wrong (a time, a route, a price, an opening time)?
+  - What would you change?
 
-1. **The personal plans finish early.** P01's last stop starts at 12:38 and ends at about 13:15. The generic plan runs to about 15:30, though both briefs say 10:00–18:00. A participant could notice that and guess which plan is the personal one.
-   - **(a) Spread the stops across the day:** the planner would aim for the last stop to start in the afternoon, with slower gaps (Claude, about 1 h; recommended).
-   - **(b) Shorten the brief** to about 10:00–15:00 for both plans.
-2. **"A field that inspires them" is the top reason for every stop** for both people, at +0.73 each time. The prior (+0.5) is a GUESS, and it may be pushing aside what their swipes and choices said.
-   - **(a) Keep it.**
-   - **(b) Lower the prior to +0.25**, so swipes and choices do more of the work (recommended; 5 minutes).
-
-## Already fixed (28 Sep)
-- Internal notes such as "(GUESS)" no longer appear in plan text.
-- "Getting there … from X" now names the place you left (e.g. "from St Paul's Cathedral"), not the previous stop's title.
-- The arrival line no longer repeats "From …" twice.
-
-**Legs marked "check this leg"** use rough transit estimates. You check them by hand before sending, as the review checklist says.
+## Your own read (≈ 1 h, this week)
+1. **Read each pair as that person would.** Would you follow it? Does anything give away which plan is personal?
+2. **Skim the two reviews** in `for-abram/`.
+3. **Send your reactions.** Legs marked "check this leg" in the reviews use rough transit estimates. You check them by hand before sending real plans, as the review checklist says.

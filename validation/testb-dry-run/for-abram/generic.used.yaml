@@ -1,0 +1,43 @@
+# Dry run only: the example generic plan, with its first leg from London Bridge and a 'best' line per stop.
+stops:
+- title: Big Ben and Parliament Square
+  arrive: '10:30'
+  depart: '11:00'
+  travel_min: 20
+  travel_mode: transit
+  from: London Bridge station
+  what: The clock tower and the Houses of Parliament from the square.
+  approach: Take the Jubilee line from London Bridge to Westminster, then walk to
+    the square.
+  cost_gbp: 0
+  best: Morning, before the tour groups
+- title: Along the South Bank to the London Eye
+  arrive: '11:15'
+  depart: '12:15'
+  travel_min: 10
+  travel_mode: walk
+  from: Parliament Square
+  what: Cross Westminster Bridge and walk the river path.
+  approach: From Parliament Square, cross Westminster Bridge.
+  cost_gbp: 0
+  best: Late morning, with the river busy
+- title: Trafalgar Square
+  arrive: '12:40'
+  depart: '13:20'
+  travel_min: 20
+  travel_mode: walk
+  from: the London Eye
+  what: Nelson's Column and the fountains.
+  approach: From the London Eye, cross Hungerford Bridge and walk up to the square.
+  cost_gbp: 0
+  best: Any time
+- title: St James's Park to Buckingham Palace
+  arrive: '13:35'
+  depart: '14:30'
+  travel_min: 10
+  travel_mode: walk
+  from: Trafalgar Square
+  what: Walk through the park to the palace gates.
+  approach: From Trafalgar Square, go through Admiralty Arch into the park.
+  cost_gbp: 0
+  best: Early afternoon

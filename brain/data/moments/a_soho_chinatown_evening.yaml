@@ -1,0 +1,43 @@
+# From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
+# and marked ready under the research rule (D91, D98). Tags are Claude's judgement: Abram can flag any.
+# Complements card 8 (a_covent_garden_soho, the daytime wander): the two share a variant group, so a plan holds one.
+# Sources (search, 2026-09-28): Chinatown runs mainly along Gerrard Street, Lisle Street and Wardour Street; its red
+# lanterns are lit and the restaurants' neon glows at dusk (Visit London; chinatown.co.uk "Chinatown at night").
+id: a_soho_chinatown_evening
+title: "Soho and Chinatown after dark"
+status: ready
+swipe: false
+kind: area
+variant_of: soho_wander
+variant: evening
+place:
+  name: "Chinatown and Soho"
+  lat: 51.5117           # CHECKED: Gerrard Street, Wikipedia coordinates
+  lon: -0.1311
+approach:
+  from: "Leicester Square station"   # *
+  start_point: {lat: 51.5117, lon: -0.1311}
+  path: "No set route: start under the lanterns on Gerrard Street and wander on into Soho"
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "An unplanned evening wander with friends under Chinatown's red lanterns and on into Soho, stopping for food wherever looks good."   # FRIEND + CHECKED (lanterns)
+  why_it_works: "Decorations and lights, food, and busy streets in the evening, with no plan."   # FRIEND
+  duration_min: [60, 120] # GUESS
+  end_point: null
+  end_name: "Soho"
+best_time:
+  time_of_day: ["17:30-22:30"]   # FRIEND: best in the evening when it's busy
+  light: "Dusk and after, when the lanterns and signs are lit (CHECKED)"
+  weather: ["dry"]
+  company: "Friends (FRIEND)"
+  crowd_window: "Busy is the point"   # FRIEND
+  opening_hours: "Public streets; restaurants' own hours"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 2}
+cost_gbp: 15             # GUESS: something to eat on the way
+shot_card: null
+source: friend
+last_checked: "2026-09-28"

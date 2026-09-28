@@ -1,0 +1,46 @@
+# From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
+# and marked ready under the research rule (D91, D98). Tags are Claude's judgement: Abram can flag any.
+# A flexible "to the river" moment (D98): the cards share variant_of to_the_river, so a plan holds one route,
+# and the planner picks the one that fits the day's route. FRIEND: walking out of busy streets until the river opens up;
+# best at sunset or in the evening.
+# Sources (search, 2026-09-28): Villiers Street connects the Strand with the Embankment (Wikipedia); steps just outside
+# Embankment station lead up to the Golden Jubilee Bridges, wide pedestrian-only bridges beside Hungerford Bridge (2002).
+id: m_to_river_villiers
+title: "Down Villiers Street until the river opens up"
+status: ready
+swipe: false
+kind: moment
+variant_of: to_the_river
+variant: villiers_street
+direction: "The Strand -> Villiers Street -> Embankment -> up onto the Golden Jubilee footbridge"
+place:
+  name: "Villiers Street and the Golden Jubilee Bridges"
+  lat: 51.50611          # CHECKED: Hungerford and Golden Jubilee Bridges, Wikipedia coordinates
+  lon: -0.12
+approach:
+  from: "Charing Cross station, on the Strand"
+  start_point: {lat: 51.508, lon: -0.125}      # CHECKED: Charing Cross station, Wikipedia coordinates
+  path: "From the Strand, walk down Villiers Street to Embankment station"   # CHECKED
+  duration_min: 3        # GUESS
+  step_free: null
+experience:
+  what_happens: "You leave the busy Strand, walk down the narrow slope of Villiers Street, then climb the steps onto the footbridge as the Thames opens up wide on both sides."   # CHECKED (route)
+  why_it_works: "Out of the busy streets until the river suddenly opens up."   # FRIEND
+  duration_min: [15, 30] # GUESS, including time on the bridge
+  end_point: {lat: 51.50611, lon: -0.12}
+  end_name: "the Golden Jubilee footbridge"
+best_time:
+  time_of_day: ["15:30-20:30"]   # FRIEND: sunset or evening
+  light: "Sunset and evening"    # FRIEND
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Public street and footbridge; always open"
+features:
+  place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: friend
+last_checked: "2026-09-28"

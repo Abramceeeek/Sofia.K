@@ -48,7 +48,7 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 
 **Once per test,** copy the three example files to `validation/raw/testb/` and edit them:
 - `brief.yaml`: the shared start, times, number of stops and budget. An optional `weekday: sat` (mon..sun) leaves out cards closed that day (`best_time.days`, e.g. weekday-only museums);
-- `generic.yaml`: your "top sights" plan, with the same number of stops, and `approach` and `what` for each stop;
+- `generic.yaml`: your "top sights" plan, with the same number of stops, and `approach`, `what`, `arrive` and `depart` for each stop (the last `depart` sets the pair's end time, D97);
 - `intent.yaml` (optional): each person's must-do and mode.
 
 **After each person's Test A chat**, fill in their rows on the Swipes and Choices tabs of `validation/raw/results.xlsx`, then:
@@ -58,17 +58,18 @@ cd brain
 .venv/bin/python -m brain.testb weights --results ../validation/raw/results.xlsx --ids P07     # read-back lines
 .venv/bin/python -m brain.testb plans --results ../validation/raw/results.xlsx --ids P07 \
     --brief ../validation/raw/testb/brief.yaml --generic ../validation/raw/testb/generic.yaml \
-    --intent ../validation/raw/testb/intent.yaml --out ../validation/raw/testb/out
+    --intent ../validation/raw/testb/intent.yaml --out ../validation/raw/testb/out --numbered
 ```
 
 **For each person it writes:**
-- `P07_plan_A.txt` and `P07_plan_B.txt`: WhatsApp-ready, labelled by the TestB tab;
+- `P07_plan_1.txt` and `P07_plan_2.txt` with `--numbered` (D97), or `_A`/`_B` without it: WhatsApp-ready, labelled by the TestB tab (A → 1, B → 2);
 - the matching PDFs;
 - `P07_review.md`: for you only. It covers why each stop was chosen, strong moments left out, legs to check, and the read-back lines.
 
 **How the plans are kept fair:**
 - **The sent plans never give reasons**, which keeps the test blind.
 - **The planner fills exactly the brief's number of stops** within the budget, and includes the must-do stop if it fits.
+- **Both plans in a pair end within 30 min of each other (D97).** The personal plan is first planned to finish by the generic end + 30 min; then its stops move later inside their opening windows until it ends no earlier than the generic end − 30 min. If that can't be done, the status says "fix by hand", and the review shows both end times.
 - It refuses to run until there are enough complete moments in `data/moments/`.
 
 ## Swipe calibration page (D70)

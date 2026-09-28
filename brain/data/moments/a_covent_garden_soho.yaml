@@ -7,6 +7,8 @@ title: "A wander through Covent Garden and Soho"
 status: ready
 swipe: false
 kind: area
+variant_of: soho_wander   # D98: the evening version is a_soho_chinatown_evening; a plan holds one
+variant: day
 place:
   name: "Covent Garden and Soho"
   lat: 51.51201          # CHECKED: Covent Garden Piazza, OpenStreetMap

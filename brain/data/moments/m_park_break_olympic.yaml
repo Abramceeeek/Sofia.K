@@ -5,6 +5,7 @@
 # so the planner picks the park that fits the rest of the day's route best (usually the nearest). kind: moment, not
 # area, so a park break can sit alongside an area vibe. Window 10:00-16:00: daylight in the Test B weeks (some parks
 # close at dusk). Marked ready (D91: founder answers + checked facts).
+# FRIEND (2026-09-28): open space, water and buildings; slow down and hang out; best on a sunny afternoon.
 id: m_park_break_olympic
 title: "A park break in Queen Elizabeth Olympic Park"
 status: ready
@@ -23,13 +24,13 @@ approach:
   duration_min: 8        # GUESS
   step_free: null
 experience:
-  what_happens: "Walk from Stratford into the park along the river paths among the Olympic venues, and slow down."
+  what_happens: "Walk from Stratford into the park: open space, water and the Olympic buildings. Slow down and hang out."   # + FRIEND
   why_it_works: "Green, water and birds: a calm break in the day."   # FOUNDER (card 10)
   duration_min: [30, 45] # GUESS
   end_point: null
 best_time:
   time_of_day: ["10:00-16:00"]
-  light: "Daylight; spring and summer are best (FOUNDER)"
+  light: "A sunny afternoon (FRIEND); spring and summer are best (FOUNDER)"
   weather: ["dry"]
   company: null
   crowd_window: null

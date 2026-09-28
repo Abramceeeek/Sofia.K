@@ -27,7 +27,7 @@ import argparse
 import csv
 import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import yaml
@@ -37,7 +37,7 @@ from .features import Conditions, conjoint_plan_features, moment_features
 from .aspiration import AspirationMap, load_aspiration
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior
-from .planner import DayPlan, LegWeights, candidate_for, hhmm, parse_hhmm, plan_day
+from .planner import DayPlan, LegWeights, candidate_for, hhmm, parse_hhmm, plan_day, spread_to_end
 from .population import PopulationModel, load_population
 from .scoring import conjoint_observation, contributions, named_weights, swipe_observation, update_person
 from .travel import LondonEstimate
@@ -195,7 +195,10 @@ def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6,
 
 def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], brief: Brief,
                   travel: LondonEstimate, must_do: str | None = None, amap: AspirationMap | None = None,
-                  fields: frozenset[str] = frozenset()) -> tuple[DayPlan, list[dict], list[dict]]:
+                  fields: frozenset[str] = frozenset(),
+                  end_window: tuple[int, int] | None = None) -> tuple[DayPlan, list[dict], list[dict]]:
+    """The personalised plan. `end_window` (earliest, latest end in minutes) keeps it ending within
+    30 min of the generic plan (D97); if that can't be met, it plans without it and says so in `status`."""
     b = pop.b_person(post.mean)
     cond = Conditions(brief.temp_c, brief.rain_prob)
     usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)]
@@ -207,10 +210,23 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
              for m in usable]
     idx = {n: i for i, n in enumerate(pop.names)}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
-    plan = plan_day(cands, brief.start, parse_hhmm(brief.start_time), parse_hhmm(brief.end_time), travel, legs,
-                    floor=pop.cutpoints["rating"][1], max_stops=brief.stops, min_stops=brief.stops,
-                    budget_gbp=brief.budget_gbp, must_include={must_do} if must_do else set(),
-                    time_limit_s=brief.time_limit_s)
+    day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
+    common = dict(floor=pop.cutpoints["rating"][1], max_stops=brief.stops, min_stops=brief.stops,
+                  budget_gbp=brief.budget_gbp, must_include={must_do} if must_do else set(),
+                  time_limit_s=brief.time_limit_s)
+    plan = None
+    if end_window:   # D97: end within 30 min of the generic plan
+        lo, hi = end_window
+        plan = plan_day(cands, brief.start, day_start, min(day_end, hi), travel, legs, **common)
+        if plan.status != "ok" or not plan.stops:
+            plan = None
+    if plan is None:
+        plan = plan_day(cands, brief.start, day_start, day_end, travel, legs, **common)
+    if end_window and plan.stops:
+        by_cand = {c.moment_id: c for c in cands}
+        ok = spread_to_end(plan, by_cand, end_window[0], min(day_end, end_window[1]))
+        if (not ok or plan.stops[-1].depart_min > end_window[1]) and plan.status == "ok":
+            plan.status = "could not end within 30 min of the generic plan: fix by hand"
     stops, prev_point, prev_name = [], brief.start, brief.start_name
     for st in plan.stops:
         m = by_id[st.moment_id]
@@ -218,7 +234,7 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
         stops.append({
             "title": m.title, "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min),
             "travel_min": st.travel_min, "travel_mode": mode, "from": prev_name,
-            "approach": approach_text(m),
+            "approach": approach_text(m, walked_from_stop=bool(stops) and mode == "walk"),
             "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
             "cost_gbp": m.cost_gbp or 0.0,
             # review only, never sent:
@@ -233,12 +249,32 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     return plan, stops, left_out
 
 
-def approach_text(m: Moment) -> str:
-    """How to arrive, in one line. If the path already says where from, don't repeat "From X."."""
-    path = clean(m.approach.path)
-    if m.approach.from_ and not path.lower().startswith("from "):
+GENERIC_STOP_MIN = 45   # GUESS: used when a generic stop has no `depart` time
+OTHER_LABEL = {"A": "B", "B": "A", "1": "2", "2": "1"}
+NUMBERED = {"A": "1", "B": "2"}   # --numbered: "Plan 1" / "Plan 2" instead of A / B
+
+
+def plan_end(stops: list[dict]) -> int | None:
+    """When a plan finishes, in minutes: the last stop's departure (or arrival + 45 min for a generic stop)."""
+    if not stops:
+        return None
+    last = stops[-1]
+    if last.get("depart"):
+        return parse_hhmm(last["depart"])
+    return parse_hhmm(last["arrive"]) + GENERIC_STOP_MIN
+
+
+def approach_text(m: Moment, walked_from_stop: bool = False) -> str:
+    """How to arrive, in one line. If the path already says where from, don't repeat "From X.".
+    After a walk from the previous stop, the card's "from" station is dropped: you aren't coming from it."""
+    path = _sentence(clean(m.approach.path))
+    if m.approach.from_ and not walked_from_stop and not path.lower().startswith("from "):
         return clean(f"From {m.approach.from_}. {path}")
-    return path or clean(m.approach.from_ and f"From {m.approach.from_}.")
+    return path or ("" if walked_from_stop else clean(m.approach.from_ and f"From {m.approach.from_}."))
+
+
+def _sentence(text: str) -> str:
+    return text + "." if text and text[-1] not in ".!?" else text
 
 
 def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
@@ -253,7 +289,7 @@ def generic_stops(path: Path, moments: dict[str, Moment]) -> list[dict]:
                  "cost_gbp": m.cost_gbp or 0.0,
                  "approach": " ".join(x for x in (m.approach.from_ and f"From {m.approach.from_}.", m.approach.path) if x),
                  **s}
-        out.append({"title": s["title"], "arrive": s["arrive"], "travel_min": s.get("travel_min"),
+        out.append({"title": s["title"], "arrive": s["arrive"], "depart": s.get("depart"), "travel_min": s.get("travel_min"),
                     "travel_mode": s.get("travel_mode", "walk"), "from": s.get("from", ""),
                     "approach": clean(s.get("approach")), "what": clean(s.get("what")), "best": clean(s.get("best")),
                     "cost_gbp": s.get("cost_gbp") or 0.0})
@@ -325,7 +361,7 @@ def plan_pdf(label: str, brief: Brief, stops: list[dict], path: Path) -> None:
 def review_text(p: Participant, post: DeltaPosterior, plan: DayPlan, stops: list[dict], left_out: list[dict],
                 pop: PopulationModel, brief: Brief, must_do: str | None, intent: dict,
                 field_labels: list[str] | None = None) -> str:
-    personal, generic = (p.personal_label or "?"), ("B" if p.personal_label == "A" else "A")
+    personal, generic = (p.personal_label or "?"), OTHER_LABEL.get(p.personal_label or "", "?")
     out = [f"# {p.pid}: review before sending (for Abram only)", "",
            f"- Channel: {p.channel or 'unknown'}. Personalised plan is **{personal}**, generic is **{generic}** (TestB tab).",
            f"- Data used: {len(p.swipes)} swipes, {len(p.choices)} choices ({post.n_obs} informative).",
@@ -349,6 +385,7 @@ def review_text(p: Participant, post: DeltaPosterior, plan: DayPlan, stops: list
             "- [ ] Every Tube/bus leg checked (the times are rough estimates)",
             "- [ ] Opening hours and prices still right on the day",
             "- [ ] Same number of stops and same format as the generic plan",
+            "- [ ] Both plans end within 30 min of each other (D97)",
             "- [ ] Nothing in the text says why a stop was chosen (keeps the test blind)", ""]
     return "\n".join(out)
 
@@ -433,6 +470,11 @@ def cmd_plans(args) -> int:
         with open(args.intent, encoding="utf-8") as f:
             intents = yaml.safe_load(f) or {}
     gen = generic_stops(Path(args.generic), {m.id: m for m in moments})
+    gen_end = plan_end(gen)
+    if gen and not gen[-1].get("depart"):
+        print(f"Warning: the generic plan's last stop has no 'depart'; assuming {GENERIC_STOP_MIN} min there.",
+              file=sys.stderr)
+    end_window = (gen_end - 30, gen_end + 30) if gen_end is not None else None   # D97: end within 30 min
     if len(gen) != brief.stops:
         print(f"Warning: the generic plan has {len(gen)} stops and the brief asks for {brief.stops}.", file=sys.stderr)
     for field_ in ("approach", "what"):
@@ -455,15 +497,23 @@ def cmd_plans(args) -> int:
         post = fit_participant(pop, p, items, tasks, amap)
         fields = person_fields(amap, p)
         labels = amap.labels(fields) if amap else []
-        plan, stops, left_out = personal_plan(pop, post, moments, brief, travel, must_do, amap, fields)
-        generic_label = "B" if p.personal_label == "A" else "A"
+        plan, stops, left_out = personal_plan(pop, post, moments, brief, travel, must_do, amap, fields, end_window)
+        if args.numbered:
+            p = replace(p, personal_label=NUMBERED[p.personal_label])
+        generic_label = OTHER_LABEL[p.personal_label]
         for label, st in ((p.personal_label, stops), (generic_label, gen)):
             (out / f"{pid}_plan_{label}.txt").write_text(plan_text(label, brief, st), encoding="utf-8")
             if not args.no_pdf:
                 plan_pdf(label, brief, st, out / f"{pid}_plan_{label}.pdf")
-        (out / f"{pid}_review.md").write_text(
-            review_text(p, post, plan, stops, left_out, pop, brief, must_do, intent, labels), encoding="utf-8")
-        print(f"{pid}: plans A and B written ({plan.status})")
+        review = review_text(p, post, plan, stops, left_out, pop, brief, must_do, intent, labels)
+        p_end = plan_end(stops)
+        if p_end is not None and gen_end is not None:
+            ok = abs(p_end - gen_end) <= 30
+            review = review.replace("## Read-back lines", f"- Ends: personalised {hhmm(p_end)}, generic {hhmm(gen_end)} "
+                                    f"({'within 30 min' if ok else '**more than 30 min apart: fix by hand**'}, D97).\n\n"
+                                    "## Read-back lines", 1)
+        (out / f"{pid}_review.md").write_text(review, encoding="utf-8")
+        print(f"{pid}: plans {min(p.personal_label, generic_label)} and {max(p.personal_label, generic_label)} written ({plan.status})")
     return 0
 
 
@@ -483,6 +533,7 @@ def main(argv: list[str] | None = None) -> int:
     pl.add_argument("--out", required=True)
     pl.add_argument("--ids", type=lambda s: set(s.split(",")))
     pl.add_argument("--no-pdf", action="store_true")
+    pl.add_argument("--numbered", action="store_true", help='label the plans "Plan 1" / "Plan 2" instead of A / B')
     pl.add_argument("--include-drafts", action="store_true",
                     help="dry run: also plan with draft moments (unchecked GUESS values); never send these")
     args = ap.parse_args(argv)

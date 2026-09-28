@@ -1,0 +1,41 @@
+# From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
+# (D98), but it stays a DRAFT. Tags are Claude's judgement: Abram can flag any.
+# SEASONAL: Hyde Park Winter Wonderland runs 19 Nov 2026 - 3 Jan 2027 (closed 25 Dec); standard hours 10:00-22:00
+# (from 12:00 on 19-20 Nov); you pre-book a date and arrival hour (official FAQ and site, via search, 2026-09-28).
+# It is NOT open in the Test B weeks (19 Oct - 9 Nov), so it stays a draft and out of plans until the planner has
+# dates (after-9-nov #6). Entry and ride prices: UNVERIFIED.
+id: m_winter_wonderland
+title: "Winter Wonderland in Hyde Park with friends"
+status: draft
+swipe: false
+kind: moment
+place:
+  name: "Hyde Park Winter Wonderland"
+  lat: 51.50278          # GUESS: the Hyde Park Corner end of the park (Wikipedia coordinates for Hyde Park Corner)
+  lon: -0.15125
+approach:
+  from: "Hyde Park Corner station"
+  start_point: {lat: 51.50278, lon: -0.15125}
+  path: null
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "An evening with friends among the lights, food stalls and fairground rides."   # FRIEND
+  why_it_works: "Lights, food and rides with friends."   # FRIEND
+  duration_min: [90, 180] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["16:00-22:00"]   # FRIEND: evenings; inside the standard hours
+  light: "Evening lights"
+  weather: ["dry"]
+  company: "Friends (FRIEND)"
+  crowd_window: null
+  opening_hours: "19 Nov 2026 - 3 Jan 2027 (closed 25 Dec), 10:00-22:00; pre-book an arrival hour. Official site via search, 2026-09-28"
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
+          crowds: 2, walking_effort: 1, active: 1, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 2}
+cost_gbp: null           # UNVERIFIED: entry and ride prices
+shot_card: null
+source: friend
+last_checked: "2026-09-28"

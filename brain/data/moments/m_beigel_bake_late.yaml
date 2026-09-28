@@ -6,7 +6,7 @@
 # Abram flags any he disagrees with from the one-line list.
 # Official (beigelbake.co.uk, read): "London's 24/7 Bagel Shop"; salt beef beigel £7.50 (hand-carved salt beef, mustard, pickles).
 id: m_beigel_bake_late
-title: "A late bagel on Brick Lane"
+title: "A salt beef bagel on Brick Lane"   # D98 minor: "late" read oddly in a daytime plan
 status: ready
 swipe: false
 kind: moment

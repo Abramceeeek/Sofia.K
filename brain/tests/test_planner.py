@@ -108,3 +108,19 @@ def test_one_area_vibe_a_day_and_never_the_peak(pop, test_moments):
     planned = {s.moment_id for s in plan.stops}
     assert len(planned & areas) == 1
     assert plan.peak_moment_id not in areas
+
+
+def test_spread_to_end_moves_stops_later_inside_their_windows():
+    # D97: a pair of Test B plans must end within 30 min of each other
+    from brain.planner import DayPlan, PlannedStop, spread_to_end
+    p = Point(lat=51.5, lon=-0.1)
+    a = Candidate("a", p, p, 60, ((600, 720),), 1.0)            # 10:00-12:00 only
+    b = Candidate("b", p, p, 60, ((600, 1080),), 1.0)           # 10:00-18:00
+    plan = DayPlan([PlannedStop("a", 600, 660, 10, 1.0, 0.0), PlannedStop("b", 680, 740, 20, 1.0, 0.0)], 2.0, "a", False)
+    assert spread_to_end(plan, {"a": a, "b": b}, min_end=840, day_end=900)   # must end by 14:00 or later
+    sa, sb = plan.stops
+    assert sa.arrive_min <= 720 - 60                      # "a" still fits its window
+    assert sb.arrive_min >= sa.depart_min + 20            # travel time kept
+    assert sb.depart_min >= 840 and sb.depart_min <= 900
+    # nothing to do when the plan already ends late enough
+    assert spread_to_end(plan, {"a": a, "b": b}, min_end=700, day_end=900)

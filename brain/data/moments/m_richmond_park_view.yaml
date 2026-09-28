@@ -27,12 +27,12 @@ approach:
   step_free: null
 experience:
   what_happens: "A walk past deer, water and forest to a high point with a long view over the Thames Valley, and to St Paul's far off to the east."   # FOUNDER + CHECKED
-  why_it_works: "Nature meeting people: deer, water, forest and small buildings inside the park. A safari feeling."   # FOUNDER
+  why_it_works: "Nature meeting people: deer, water, forest and small buildings inside the park. A safari feeling, and time slows down."   # FOUNDER + FRIEND (2026-09-28)
   duration_min: [45, 90] # GUESS
   end_point: null
 best_time:
   time_of_day: ["09:00-16:00"]   # GUESS: inside Pembroke Lodge hours and daylight in the Test B weeks
-  light: null
+  light: "Best in late spring (FRIEND, 2026-09-28)"
   weather: ["dry"]
   company: null
   crowd_window: null

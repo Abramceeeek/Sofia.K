@@ -144,6 +144,9 @@ def test_plans_command_writes_blind_identical_plans_and_a_review(tmp_path, data_
     assert "Said these fields inspire them: Food, Nature" in review
     assert "Inspiring fields (Test A 5.7): none given." in (out / "P02_review.md").read_text()
     assert "Big Ben and Parliament Square" in (out / "P02_plan_A.txt").read_text()   # P02's generic plan is A
+    review = (out / "P01_review.md").read_text()
+    assert "- Ends: personalised" in review and "(within 30 min" in review          # D97 pair rule
+    assert "Both plans end within 30 min" in review
 
 
 def test_plans_command_refuses_without_enough_moments(tmp_path):
@@ -195,3 +198,8 @@ def test_plan_text_drops_internal_notes_and_names_the_last_place():
     assert ms["m_uber_boat_west_night"].leave_name() == "Westminster Pier"
     assert ms["m_st_dunstan_garden"].leave_name() == "St Dunstan-in-the-East"
     assert ms["m_park_break_olympic"].leave_name() == "Queen Elizabeth Olympic Park"
+    # After a walk from the previous stop, the card's station isn't where you come from
+    sd = ms["m_st_dunstan_garden"]
+    assert testb.approach_text(sd).startswith("From Monument or Tower Hill station.")
+    walked = testb.approach_text(sd, walked_from_stop=True)
+    assert not walked.startswith("From Monument") and walked.endswith(".")

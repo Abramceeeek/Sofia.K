@@ -3,7 +3,7 @@ start:
   lat: 51.5049
   lon: -0.0863
 start_time: '10:00'
-end_time: '18:00'
+end_time: '15:00'
 stops: 4
 budget_gbp: 40
 day_label: A Saturday out in London

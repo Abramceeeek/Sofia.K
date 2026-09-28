@@ -1,0 +1,40 @@
+# From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
+# and marked ready under the research rule (D91, D98). Tags are Claude's judgement: Abram can flag any.
+# Sources (search, 2026-09-27/28): greenwichpeninsula.co.uk/the-tide: The Tide, an elevated riverside linear park, open
+# daily 07:00-22:00, free; steps and a lift at Tide Square (riverside) and Peninsula Square; up to 9 m above ground,
+# with native trees, grasses and wildflowers. The Thames Path runs round the peninsula from North Greenwich (Jubilee).
+id: m_greenwich_peninsula_walk
+title: "A calm walk round the Greenwich Peninsula"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Greenwich Peninsula: the riverside and The Tide"
+  lat: 51.50278          # CHECKED: The O2, Wikipedia coordinates
+  lon: 0.00306
+approach:
+  from: "North Greenwich station (Jubilee line)"
+  start_point: {lat: 51.50056, lon: 0.00361}   # CHECKED: North Greenwich station, Wikipedia coordinates
+  path: "Walk down to the river and follow the Thames Path round the peninsula, going up onto The Tide's raised walkway where you can"
+  duration_min: 8        # GUESS
+  step_free: true        # CHECKED: a lift at each end of The Tide
+experience:
+  what_happens: "A slow walk round the peninsula among the new buildings, with the river on three sides and The Tide's raised path of trees and grasses above the ground."   # CHECKED (The Tide)
+  why_it_works: "Modern architecture, sun and the river: a calm, relaxed walk."   # FRIEND
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-16:30"]   # daylight in the Test B weeks; The Tide is open 07:00-22:00
+  light: "A sunny day"   # FRIEND
+  weather: ["dry"]
+  company: null
+  crowd_window: "Quiet away from O2 event nights (GUESS)"
+  opening_hours: "Riverside path always open; The Tide daily 07:00-22:00, free. greenwichpeninsula.co.uk via search, 2026-09-28"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 2,
+          crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: friend
+last_checked: "2026-09-28"

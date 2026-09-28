@@ -2,6 +2,25 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-28 — dry-run changes; friends' moments
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D97 | **Test B dry run:**<br>- **Both briefs run 10:00–15:00.**<br>- **The two plans in a pair end within 30 min of each other.**<br>- **The aspiration starting weight drops to +0.25** (was +0.5).<br>- **Plans are labelled "Plan 1" and "Plan 2"**, not A and B, and which one is personal is randomised per person.<br>- **The regenerated plans can go to a few friends. Their feedback is for catching problems only, not test data:** it is never entered in the results sheet | 10:00–18:00 briefs; the +0.5 prior (a GUESS); A/B labels | Founder decisions on m54's two questions. The personal plans finished hours before the generic one, which could give them away, and the aspiration prior topped every stop's reasons |
+| D98 | **Friends' moments become cards where they fit.** Claude verifies the facts and marks complete cards ready (research rule, D91). No names are stored.<br>- **Ready:** the Greenwich Peninsula walk; Soho and Chinatown after dark (the evening version of card 8); two routes from the Strand to the river (Villiers Street; Somerset House); Tower Bridge at sunset from Alderman Stairs.<br>- **Notes added** to the Olympic Park break and card 11 (Richmond: time slows down; best in late spring).<br>- **Winter Wonderland stays a draft:** it runs 19 Nov – 3 Jan, after Test B.<br>- **Not cards:** the Tower of London dance event (one-off) and the Trocadero dance spot (closed).<br>- **Parked (D75):** stillness amid busyness (#16) and community hubs (#17).<br>- **Founder briefing:** friends described transitions, slow against fast, and evening lights unprompted; early qualitative support only | — | Founder request. Mapping: `research/seed-moments/05-friends-batch.md` |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m55 | **How the end rule works:** the personal plan is planned to finish by the generic end + 30 min, then its stops move later inside their windows until it ends no earlier than the generic end − 30 min. A constraint inside the solver was tried and dropped: it stopped the solver finding a first route, and it could be met by idling after the last stop. If the rule can't be met, the status says "fix by hand". Dry run: P01 ends 14:00 against 14:30; P02 14:36 against 14:30 | `brain/src/brain/planner.py` (`spread_to_end`), `testb.py` |
+| m56 | **Numbering is an option (`--numbered`), mapping the sheet's A → 1 and B → 2,** so the balanced, seeded split stays. The README's command uses it, so real Test B plans are numbered too, and the script asks "Plan 1 or Plan 2", which keeps them apart from Test A's A/B choices. The generic plan now needs `depart` times, because they set the pair's end | `brain/README.md`, `validation/interview-script.md`, `generic.example.yaml` |
+| m57 | **The dry run's generic plan is a copy of the example with its first leg from London Bridge, and a "best" line on each stop**, so both plans in a pair look alike | `validation/testb-dry-run/for-abram/generic.used.yaml` |
+| m58 | **Plan text fixes:**<br>- after a walk from the previous stop, the arrival line drops the card's station ("From Monument or Tower Hill station" right after "20 min on foot from St Paul's" read as a contradiction);<br>- every arrival line ends with a full stop (the generic plan's did, which could give the personal plan away);<br>- "A late bagel on Brick Lane" is renamed "A salt beef bagel on Brick Lane";<br>- Borough Market's arrival line is reworded | `testb.py`, two cards |
+| m59 | **Variant groups:** the two river routes share `to_the_river`; Soho by day (card 8) and Soho and Chinatown after dark share `soho_wander`. A plan holds one of each | 4 cards |
+| m60 | **Alderman Stairs:** the card keeps you on the raised terrace beside the stairs, never on the tidal foreshore. Coordinates are the E1W 1UE postcode centroid, because OpenStreetMap was blocked from here | `m_alderman_stairs_sunset.yaml` |
+| m61 | **The dry-run folder is split:** `share/` (the four plans and a one-line description of each made-up person) and `for-abram/` (reviews, the key, brief and generic). Give each friend one person's pair, because both people get the same generic plan | `validation/testb-dry-run/` |
+
 ## 2026-09-28 — government contract; Test B dry run prepared
 
 | # | Decision | Replaces | Why |

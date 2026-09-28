@@ -1,0 +1,42 @@
+# From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
+# and marked ready under the research rule (D91, D98). Tags are Claude's judgement: Abram can flag any.
+# Sources (search and ianVisits, read 2026-09-28): Alderman Stairs is a narrow passage just east of the Tower, between
+# Millers Wharf (78 St Katharine's Way, E1W 1UE) and Tower View, leading down to the river through an unlocked gate.
+# Next to it, a signposted Thames Path turn leads between the buildings to a raised terrace with a view back up the
+# river to Tower Bridge and across to Butler's Wharf. Tower Hill and Tower Gateway are about 0.6 miles away.
+# SAFETY: the stairs go down to the tidal foreshore. The card keeps you on the terrace, not on the foreshore.
+id: m_alderman_stairs_sunset
+title: "Tower Bridge at sunset from Alderman Stairs"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Alderman Stairs, St Katharine's Way, Wapping"
+  lat: 51.50526          # CHECKED: E1W 1UE postcode centroid (postcodes.io, 2026-09-28)
+  lon: -0.07008
+approach:
+  from: "Tower Hill station"
+  start_point: {lat: 51.50526, lon: -0.07008}
+  path: "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace"   # CHECKED
+  duration_min: 12       # GUESS: about 0.6 miles
+  step_free: null
+experience:
+  what_happens: "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads."   # CHECKED (the view)
+  why_it_works: "The city rushing while you're still."   # FRIEND
+  duration_min: [20, 40] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["15:45-18:30"]   # FRIEND: sunset; about 16:30 after 25 Oct, about 18:00 before (GUESS)
+  light: "Sunset"   # FRIEND
+  weather: ["any"]
+  company: null
+  crowd_window: "Usually quiet (GUESS)"
+  opening_hours: "Public riverside path. Stay on the terrace: the stairs lead down to the tidal foreshore"
+features:
+  place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 2,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: friend
+last_checked: "2026-09-28"

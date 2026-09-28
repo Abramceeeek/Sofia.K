@@ -127,9 +127,9 @@ Their corrections count as data. **Completion = they reply to the read-back.**
 **Trip intent first (Area 15; stored with the plan, D27):**
 > For the plan: is this day more about recharging or exploring? Who might come? Anything you'd want in it for sure?
 
-Then send the two plans, labelled from the results sheet (never say which is personalised):
+Then send the two plans, labelled **Plan 1 and Plan 2** from the results sheet (A → 1, B → 2; never say which is personalised). Numbers keep them apart from the A/B choices in Test A (D97):
 
-> Here are two plans for the same kind of day. **Which would you rather do, A or B? Why?**
+> Here are two plans for the same kind of day. **Which would you rather do, Plan 1 or Plan 2? Why?**
 > Then for each: "This plan fits me" 1–5.
 
 ## Test C — the real day

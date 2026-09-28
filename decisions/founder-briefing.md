@@ -1,6 +1,6 @@
 # Founder briefing: where we are, what's true, and what I'd do
 
-*For Abram. Written 2026-09-26, after decisions D1–D64. **Updated 2026-09-27 for D86 (Test E postponed; see the box below).** Plain English on purpose. Anything marked **(my judgement)** is my opinion, not something a source showed. Everything else comes from the research notes (`research/notes/`, 311 sources) or the model (`economics/unit-economics.xlsx`).*
+*For Abram. Written 2026-09-26, after decisions D1–D64. **Updated 2026-09-27 for D86 (Test E postponed; see the box below), and 2026-09-28 for an early signal from friends (§2c, D98).** Plain English on purpose. Anything marked **(my judgement)** is my opinion, not something a source showed. Everything else comes from the research notes (`research/notes/`, 311 sources) or the model (`economics/unit-economics.xlsx`).*
 
 ---
 
@@ -123,6 +123,11 @@ Your idea had five parts. Here is each one, honestly.
 - **Something better:**
   - Score reveals automatically from street maps (how suddenly the view opens as you walk), and use your ratings to check it (Area 14, later).
   - Find candidate moments in open-licence text such as Wikivoyage and Geograph. **Reddit and Tripadvisor terms forbid this** for a commercial product.
+- **An early signal from friends (28 Sep, D98).** Asked for their favourite London moments, several friends described the moment features **without being prompted**:
+  - **transitions:** walking out of busy streets until the river opens up;
+  - **slow against fast:** standing still while the city rushes past;
+  - **evening lights:** Chinatown's lanterns, and Tower Bridge at sunset.
+  - **How much it counts:** these are friends, not strangers, a handful of people, and one message each. It is early qualitative support that the features match how people describe good moments, **not evidence that a personal plan wins.** Test B still decides that.
 
 ### d) "Every person gets trips that make them feel different"
 
