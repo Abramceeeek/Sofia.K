@@ -44,7 +44,7 @@ SCREENS = [
      "Every question is optional, including \"What interests you most?\""),
     ("photos", "12", "Improve my plans (optional, after the first plan)", "Photos", "One question, 1 to 5."),
     ("shotcards", "13", "Improve my plans (optional, after the first plan)", "Shot cards",
-     "One question, with an example shot card: where to stand for the best photo."),
+     "One question, with an example shot card: where to stand for the best photo. The 1 to 5 answer is below it."),
     ("safety", "14", "Help, safety and your data", "Help & safety",
      "Emergency: call 999, kept separate from \"I feel unsafe / something's wrong\"."),
     ("safetysend", "14", "Help, safety and your data", "Help & safety: telling a person",
