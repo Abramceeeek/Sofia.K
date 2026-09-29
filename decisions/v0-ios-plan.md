@@ -1,12 +1,18 @@
 # v0 as a native iOS app: plan, hours, cuts and TestFlight (D50–D54, D59–D64)
 
+> **Updated by D110 (2026-09-29 evening): Build 1 feedback from three people.** The first plan now comes after four
+> steps (best hour, why, 10 places, 10 this-or-that); "about you" and photos are an optional "Improve my plans" step after
+> it. Plus: a short consent, a plan summary, a list view, "Swap this stop", rating only after the visit, a separate
+> Emergency section, and DELETE typed to delete. Screens are numbered 1–15 for Build 1 (`design/v0-screens.md`).
+> The dates below are unchanged.
+>
 > **Updated by D109 (2026-09-29): app first. This block supersedes the D107 block and the build timing below.**
 > - **No posting or advertising until the app is ready.** The WhatsApp version of Tests A–C is paused (kept as a fallback).
 > - **Three stages:**
 >   1. **A build on Abram's own iPhone** as fast as possible: internal TestFlight, with no App Review for internal testers.
 >   2. **Friends**, through external TestFlight. The first external build goes through Beta App Review.
 >   3. **Strangers**, through external TestFlight, **with Tests A–C inside the app:**
->      - in-app onboarding with the 16 swipes and the 10 "this or that" choices;
+>      - in-app onboarding with the swipes (10 of the 16, D110) and the 10 "this or that" choices;
 >      - a blind Plan 1 / Plan 2 comparison against the generic plan;
 >      - one-tap ratings on a real day.
 > - **Dates (estimates; they depend on Abram's Apple set-up):**
@@ -36,7 +42,7 @@
 >     - safety alerts reaching Abram, with the backup helper's Part A signed (D55);
 >   - **before strangers:** the ICO re-check (D108), and a paid database (money). Render allows one free Postgres per workspace, and the shared one expires about 27 Oct.
 >
-> - **Build 1 status (29 Sep):** the SwiftUI app compiled on its first CI run. It covers screens 1–8, 14–17, 19 and 20, plus "plan a day". CI takes a screenshot of each screen with demo data. What's left for Build 1 is Abram's Apple set-up and the Brain on Render (`app/README.md`), then one round of fixes on his phone.
+> - **Build 1 status (29 Sep):** the SwiftUI app compiled on its first CI run. It covers screens 1–15 (renumbered by D110; they were 1–8, 14–17, 19 and 20, plus "plan a day"). CI takes a screenshot of each screen with demo data. What's left for Build 1 is Abram's Apple set-up and the Brain on Render (`app/README.md`), then one round of fixes on his phone.
 > - **Build 2 scope (Tests A–C inside the app, ~14 Oct):**
 >   - **Brain:**
 >     - the Test B pair: the personal plan on the fixed Test B brief, with the familiar favourite off and ending within 30 min of the generic plan, which is served from the real `generic.yaml`;

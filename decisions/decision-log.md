@@ -2,6 +2,28 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-29 (evening) — Build 1 feedback from three people
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D110 | **Build 1 fixes** (main theme: too much questionnaire before the payoff; everyone liked the plan, the map, and the moment and shot cards):<br>1. **Faster to the first plan:**<br>- the app shows **10 of the 16 locked swipe places**, the most informative ones, with "Not sure, skip", Back and a progress bar;<br>- the 10 "this or that" tasks stay, with "No preference";<br>- "about you" and photos move to an optional **"Improve my plans"** step after the first plan.<br>2. **Consent:** a short plain-English summary, the required choices prominent, the details folded; the 999 advice moves to Help & safety.<br>3. **Interests:** "What interests you most?" with one line on why we ask; "or none" wherever "pick up to two" appears.<br>4. **Best hour:** three short example answers and a skip option.<br>5. **Plan screen:** a summary at the top (cost per person, walking, finish time), a list view and "Swap this stop".<br>6. **Photos:** two separate questions; the shot card is labelled "Example of what you'll get" and not repeated.<br>7. **Rating:** only after the visit, with clear 1–5 buttons.<br>8. **Help & safety:** "Emergency: call 999" and "I feel unsafe / something's wrong" are separate.<br>9. **Delete my data:** type DELETE to confirm.<br>10. **One screen numbering** in the brief, the review page and the PDF.<br>**The model cost of 10 swipes instead of 16** (`python -m brain.swipeinfo`; 600 simulated people drawn from the prior, 75% "have been" (GUESS), the 10 choices included):<br>- the top-4 cards picked from the fitted weights match the true top 4 for 34.0% of cards, against 37.3% with 16 (−3.3 points ± 0.8);<br>- the shortfall in true utility of those 4 cards is 0.79 against 0.70 (+0.09 ± 0.02; one rating step is about 1.25–1.5), and 1.33 with no swipes, so **10 swipes keep about 85% of what 16 give**;<br>- the taste weights' posterior sd is 0.687 against 0.670 (the prior is 0.75). | m107 (the app uses all 16); the design brief's onboarding order (screens 3–10); D16's photos questions inside onboarding | Founder decision after Build 1 feedback from three people. Friends' feedback catches problems; it is not test data |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m123 | **Which 10 places:** every subset of 10 was scored by the average posterior variance of the person's predicted enjoyment over the 44 ready cards (V-optimal design), keeping each taste tag on at least two places. Among subsets within 1% of the best, the one keeping most places with moment cards won (so a loved place can be the familiar favourite). **Kept:** 1 Big Ben, 2 Uber Boat, 3 Borough Market, 4 British Museum, 10 Columbia Road, 11 Greenwich Park view, 12 South Kensington walk, 13 Primrose Hill, 14 Brick Lane, 15 Hampstead Heath ponds. **Dropped:** 5 cable car, 6 Hyde Park, 7 Camden, 8 Tate Modern, 9 Sky Garden, 16 Regent's Canal. The item numbers stay, so all 16 remain valid answers. **If most people haven't been to 15 or 10, Hyde Park (6) swaps in** (1–2% of the information) | `brain/data/swipe_items.yaml` `app_items`, `brain/src/brain/swipeinfo.py` |
+| m124 | **"Not sure, skip" and "No preference" are stored but carry no information** (left out of the fit). "No preference" is stored as `N`, one letter, so the table doesn't change. How often people use it tells us if a task is too close | `schemas.py`, `api.py` |
+| m125 | **Swap this stop:** the other stops stay; the swapped-out card, and its day/night variant, are left out for the rest of that plan. If the rest can't stay, the whole day is replanned. Not offered on "lunch near X" slots. One confirmation, because the old stop doesn't come back. Each swap is logged as an event. **Swap stays off for the blind Test B pair in Build 2**, so the comparison stays blind | `dayplan.py`, `api.py`, the app |
+| m126 | **The rating opens at the stop's planned arrival time** on the plan's date. Before that, the stop says when it opens | the app |
+| m127 | **The plan summary's walking is the legs planned on foot,** at the planner's walking pace (a GUESS), so it says "walking between stops". Cost per person is food and entry plus the TfL estimate | `dayplan.plan_totals` |
+| m128 | **The consent summary says "about 5 minutes"** for the questions before the first plan (GUESS; check with friends). The details fold away and link to the privacy notice | the app |
+| m129 | **The three best-hour examples are written by Claude,** as illustrations, not quotes from people | `onboarding.yaml` |
+| m130 | **Screen numbers:** Build 1 is screens 1–15 in the order a person meets them, the same in the brief, the review page and the PDF. Build 2's screens are 16–23. The shot card is not its own screen: it opens from a stop, and its example is screen 13, so it is shown once | `design/v0-screens.md`, the review page, `design/make_screens_pdf.py` |
+| m131 | **"Improve my plans" saves each page as it finishes,** then offers "Plan this day again" | the app |
+| m132 | **Ratings now carry the aspiration match,** as plans do. Before, a rating was fitted without it, which was inconsistent | `api.py` |
+| m133 | **The interests question:** "What interests you most? Pick any, or none." with "We ask so we can add a place tied to what interests you. Optional." The paused WhatsApp Test A keeps its old wording | `aspiration.yaml` |
+
 ## 2026-09-29 — app first
 
 | # | Decision | Replaces | Why |

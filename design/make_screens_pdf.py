@@ -17,24 +17,42 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-# In the order a person sees them. Captions are written for people outside the project.
+# In the order a person sees them. Numbers match design/v0-screens.md and the review page (D110): Build 1 is screens
+# 1-15; a second picture of the same screen (a list view, a later step) keeps its number.
+# (key, number, group, name, caption). Captions are written for people outside the project.
 SCREENS = [
-    ("welcome", "Welcome", "Who runs this, and why."),
-    ("consent", "Before we start", "What's kept and why, before you begin."),
-    ("besthour", "The best hour", "One open question. Type, or tap the keyboard mic to speak."),
-    ("why", "Why you go out", "Pick up to two."),
-    ("places", "Places you've been", "16 London places, one at a time, with four reactions."),
-    ("thisorthat", "This or that", "Two made-up days: pick the one you'd rather have. There are 10 of these."),
-    ("aboutyou", "A bit about you", "Every question is optional."),
-    ("photos", "Photos", "Includes an example \"shot card\": where to stand for the best photo."),
-    ("planform", "Plan a day", "Choose the day and the times."),
-    ("plan", "Your day", "The plan: a map and the stops in order."),
-    ("stop", "A stop", "How to get there, what happens, the cost and a rain option."),
-    ("shotcard", "Shot card", "Where to stand, which way to face, what to frame and when."),
-    ("rating", "Rating", "One tap after each stop: how did it feel?"),
-    ("safety", "Help & safety", "One button reaches a person. In an emergency, call 999."),
-    ("settings", "Your data", "What's stored, and deleting everything in one tap."),
+    ("welcome", "1", "First run", "Welcome", "Who runs this, and why."),
+    ("consent", "2", "First run", "Before we start",
+     "A short summary, the two required choices in a box, and the details folded away."),
+    ("besthour", "3", "Onboarding, up to the first plan", "The best hour",
+     "One open question, with three example answers. Type, speak with the keyboard mic, or skip."),
+    ("why", "4", "Onboarding, up to the first plan", "Why you go out", "Pick up to two, or none."),
+    ("places", "5", "Onboarding, up to the first plan", "Places you've been",
+     "10 London places, one at a time: four reactions, \"Not sure, skip\", Back and a progress bar."),
+    ("thisorthat", "6", "Onboarding, up to the first plan", "This or that",
+     "Two made-up days: pick the one you'd rather have, or \"No preference\". There are 10 of these."),
+    ("planform", "7", "The plan and the day out", "Plan a day", "Choose the day and the times."),
+    ("plan", "8", "The plan and the day out", "Your day",
+     "Cost per person, walking and the finish time at the top, then the map and the stops in order."),
+    ("planlist", "8", "The plan and the day out", "Your day, as a list",
+     "The same plan without the map, with the travel between stops."),
+    ("stop", "9", "The plan and the day out", "A stop",
+     "How to get there, what happens, the cost, a rain option, Swap this stop. Rating opens after the visit."),
+    ("rating", "10", "The plan and the day out", "Rating",
+     "After the visit: five large buttons, 1 to 5, each with a word."),
+    ("aboutyou", "11", "Improve my plans (optional, after the first plan)", "A bit about you",
+     "Every question is optional, including \"What interests you most?\""),
+    ("photos", "12", "Improve my plans (optional, after the first plan)", "Photos", "One question, 1 to 5."),
+    ("shotcards", "13", "Improve my plans (optional, after the first plan)", "Shot cards",
+     "One question, with an example shot card: where to stand for the best photo."),
+    ("safety", "14", "Help, safety and your data", "Help & safety",
+     "Emergency: call 999, kept separate from \"I feel unsafe / something's wrong\"."),
+    ("safetysend", "14", "Help, safety and your data", "Help & safety: telling a person",
+     "An optional message to a person on the team, who replies within a few hours. 999 stays on screen."),
+    ("settings", "15", "Help, safety and your data", "Your data", "What's stored, where and for how long."),
+    ("delete", "15", "Help, safety and your data", "Delete my data", "Type DELETE to confirm. It can't be undone."),
 ]
+N_SCREENS = len({s[1] for s in SCREENS})
 
 INK = colors.HexColor("#1c2230")
 MUTED = colors.HexColor("#5b6475")
@@ -42,11 +60,11 @@ ACCENT = colors.HexColor("#b4532f")
 RULE = colors.HexColor("#d9dce3")
 
 COVER_LINES = [
-    ("title", "Days out: the first version of the app"),
-    ("sub", "15 screens, in the order you'd see them"),
+    ("title", "Days out: the test app, updated after the first feedback"),
+    ("sub", f"{N_SCREENS} screens, in the order you'd see them"),
     ("gap", ""),
     ("body", "An iPhone app that plans a day out in London around how you want it to feel, not a list of famous sights."),
-    ("body", "You answer a few questions and react to some places you know. It plans a day with a map, and you rate each stop."),
+    ("body", "You answer a few quick questions and react to some places you know. It plans a day with a map, and you rate each stop after you've been. More questions, all optional, come after the first plan."),
     ("body", "These are screenshots from a test build with sample data. Nothing is live yet."),
     ("gap", ""),
     ("head", "Your feedback (about 10 minutes)"),
@@ -100,7 +118,7 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
         png = shots / f"{key}.png"
         return png if png.exists() else shots / f"{key}.jpg"
 
-    present = [(i, s) for i, s in enumerate(SCREENS, 1) if img_path(s[0]).exists()]
+    present = [(s[1], s) for s in SCREENS if img_path(s[0]).exists()]
     for start in range(0, len(present), per_page):
         c.showPage()
         group = present[start:start + per_page]
@@ -109,7 +127,7 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
         img_w = img_h * iw / ih
         total = per_page * img_w + (per_page - 1) * gap
         x0 = (w - total) / 2
-        for k, (num, (key, name, what)) in enumerate(group):
+        for k, (num, (key, _, _, name, what)) in enumerate(group):
             x = x0 + k * (img_w + gap)
             y = margin + caption_h
             c.drawImage(ImageReader(str(img_path(key))), x, y, img_w, img_h, preserveAspectRatio=True)
@@ -120,7 +138,7 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
             c.setFillColor(ACCENT)
             c.drawString(x, y - 6 * mm, f"{num}")
             c.setFillColor(INK)
-            c.drawString(x + 7 * mm, y - 6 * mm, name)
+            c.drawString(x + 3 * mm + c.stringWidth(num, "Helvetica-Bold", 11), y - 6 * mm, name)
             c.setFont("Helvetica", 9)
             c.setFillColor(MUTED)
             ty = y - 11 * mm
@@ -129,13 +147,15 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
                 ty -= 4.2 * mm
         c.setFont("Helvetica", 8)
         c.setFillColor(MUTED)
-        c.drawRightString(w - margin, 8 * mm, f"Days out · screens {group[0][0]}–{group[-1][0]} of {len(SCREENS)}")
+        first, last = group[0][0], group[-1][0]
+        span = first if first == last else f"{first}–{last}"
+        c.drawRightString(w - margin, 8 * mm, f"Days out · screens {span} of {N_SCREENS}")
 
 
 def main(shots: str, out: str) -> None:
     w, h = landscape(A4)
     c = canvas.Canvas(out, pagesize=(w, h))
-    c.setTitle("Days out: the first version of the app")
+    c.setTitle("Days out: the test app")
     c.setAuthor("Abram")
     cover(c, w, h)
     screens_pages(c, w, h, Path(shots))

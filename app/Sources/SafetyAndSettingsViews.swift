@@ -70,6 +70,7 @@ struct SafetyView: View {
             } label: {
                 Label("Call 999", systemImage: "phone.fill")
                     .font(.headline)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.borderedProminent)

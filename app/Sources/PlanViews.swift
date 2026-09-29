@@ -204,7 +204,11 @@ struct Stat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value).font(.title3.bold().monospacedDigit())
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
