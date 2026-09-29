@@ -2,7 +2,11 @@
 # of the results sheet's Swipes tab.
 #
 # STATUS: LOCKED 28 Sep (D107). These 16 are the provisional list; the swipe-page results (D70c) are no longer
-# waited for. Never change the items mid-test. The app's swipe screen uses the same 16.
+# waited for. Never change the items mid-test.
+# D110 (Build 1 feedback): the app shows the 10 in `app_items`, chosen by `python -m brain.swipeinfo` to keep the
+# most information about the ready cards (V-optimal design; 10 keep about 85% of what 16 give). Item numbers stay the
+# same, so all 16 remain valid answers. If most people answer "Haven't been" to 15 or 10, Hyde Park (6) is the
+# swap-in (it costs 1-2% of the information).
 # The tags are Claude's first draft from each name (Area 2 process: the LLM drafts, Abram corrects).
 # They are judgements, not facts. Cost is left out (null) until prices are checked, so swipes do
 # not inform the cost weight.
@@ -15,6 +19,7 @@
 # familiar favourite (testb --familiar); cards at a place they didn't enjoy are never planned for them.
 
 version: "0.1-draft"
+app_items: [1, 2, 3, 4, 10, 11, 12, 13, 14, 15]   # D110
 items:
   1:
     name: "Big Ben and Parliament Square"

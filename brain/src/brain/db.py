@@ -48,7 +48,7 @@ class Swipe(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     item: Mapped[int] = mapped_column(Integer)                  # a locked swipe place, 1-16 (D107)
-    reaction: Mapped[str] = mapped_column(String(16))           # loved | fine | didnt_enjoy | havent_been
+    reaction: Mapped[str] = mapped_column(String(16))           # loved | fine | didnt_enjoy | havent_been | skip
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
@@ -57,7 +57,7 @@ class ConjointChoice(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     task: Mapped[int] = mapped_column(Integer)
-    choice: Mapped[str] = mapped_column(String(1))              # A | B
+    choice: Mapped[str] = mapped_column(String(1))              # A | B | N (no preference, D110)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 

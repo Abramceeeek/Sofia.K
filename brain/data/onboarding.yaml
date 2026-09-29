@@ -1,19 +1,27 @@
 # Onboarding content served to the app. Wording follows validation/interview-script.md (Test A).
-# The swipe places are the 16 locked items in swipe_items.yaml (D107), served as `swipe_places`; the "this or that"
-# tasks come from conjoint_design.csv (a copy of validation/conjoint/design.csv).
+# The swipe places are the app's 10 of the 16 locked items in swipe_items.yaml (D107, D110), served as `swipe_places`;
+# the "this or that" tasks come from conjoint_design.csv (a copy of validation/conjoint/design.csv).
+# D110 (Build 1 feedback): the first plan comes after best hour, why, places and this-or-that; `about_you` and
+# `photos` move to an optional "Improve my plans" step after it.
 version: "0.1"
 open_questions:
   - key: best_hour
     text: "Tell me about the best hour of your last trip or day out. Where were you, what was happening, how did it feel?"
     follow_up: "Is there anything else you'd like to add about that?"
+    # D110: short examples, so people know what kind of answer helps; the question can be skipped
+    examples:
+      - "Sitting on the top deck of a bus over Waterloo Bridge at dusk. Tired, but happy."
+      - "Eating street food by the river with friends. No plan, lots of laughing."
+      - "Swimming in a cold lake, then a hot drink. I felt completely awake."
 why_travel:
-  prompt: "Which of these is most often why you go out or travel? Pick up to two."
+  prompt: "Which of these is most often why you go out or travel? Pick up to two, or none."
   options: [switch_off, people, discover, nature, culture, food]
 swipe:
   prompt: "Have you been? How did it feel?"
-  reactions: [loved, fine, didnt_enjoy, havent_been]
+  reactions: [loved, fine, didnt_enjoy, havent_been, skip]   # skip: "Not sure" (D110)
 conjoint:
   prompt: "Two made-up day plans. Which day would you rather have?"
+  no_preference: "No preference"   # D110: stored, left out of the fit
 about_you:
   - {key: budget_band, text: "Roughly what do you like to spend on a day out, per person?"}
   - {key: company, text: "Who do you usually go with?"}
@@ -21,6 +29,7 @@ about_you:
   - {key: activity, text: "How active do you like a day to be?"}
   - {key: grew_up, text: "What kind of place did you grow up in?", note: "Optional. Only used to guess what will feel new to you."}
   - {key: foods_avoided, text: "Any foods or drinks you avoid?", note: "Optional. Only used to choose food stops, and you can skip it."}
+# D110: two separate questions; the example shot card sits with the second, labelled as an example, and isn't shown again
 photos:
   - {key: photos_matter, text: "How much do photos and sharing matter on your trips?", scale: "1 (not at all) - 5 (a lot)"}
-  - {key: shot_card_appeal, text: "If a plan came with a card like this, would it make you more likely to go?", scale: "1 (no) - 5 (definitely)"}
+  - {key: shot_card_appeal, text: "Some stops come with a shot card: where to stand for the best photo. Would that make you more likely to go?", scale: "1 (no) - 5 (definitely)", example_label: "Example of what you'll get"}

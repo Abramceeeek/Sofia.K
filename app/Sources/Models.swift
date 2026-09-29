@@ -29,6 +29,7 @@ struct OpenQuestion: Codable, Hashable {
     let key: String
     let text: String
     let followUp: String?
+    let examples: [String]?        // D110: two or three short example answers
 }
 
 struct Choices: Codable, Hashable {
@@ -38,6 +39,7 @@ struct Choices: Codable, Hashable {
 
 struct Prompt: Codable, Hashable {
     let prompt: String
+    let noPreference: String?      // "this or that" only (D110)
 }
 
 struct SwipePlace: Codable, Hashable, Identifiable {
@@ -69,6 +71,7 @@ struct ScaleQuestion: Codable, Hashable {
     let key: String
     let text: String
     let scale: String?
+    let exampleLabel: String?      // "Example of what you'll get" (D110)
 }
 
 struct Fields: Codable, Hashable {
@@ -125,12 +128,24 @@ struct Plan: Codable, Hashable, Identifiable {
     let id: Int
     let title: String?
     let summary: [String]?
+    let totals: Totals?            // the summary at the top (D110)
     let date: String?
     let stops: [Stop]
 }
 
+/// Cost per person, walking between stops and the finish time (brain.dayplan.plan_totals).
+struct Totals: Codable, Hashable {
+    let costGbp: Double
+    let spendGbp: Double
+    let transportGbp: Double
+    let walkMin: Double
+    let walkKm: Double
+    let finish: String?
+}
+
 struct Stop: Codable, Hashable, Identifiable {
     let momentId: String
+    let key: String?               // the planner's id, sent back in `keep` when swapping another stop (D110)
     let title: String
     let arrive: String
     let depart: String
@@ -207,7 +222,8 @@ struct Profile: Codable, Equatable {
     var fields: [String] = []
 }
 
-struct PlanRequest: Encodable {
+/// Kept on the phone with the plan, so "Swap this stop" can ask again with `keep` and `exclude` (D110).
+struct PlanRequest: Codable, Hashable {
     let start: Point
     let startName: String
     let startTime: String
@@ -215,6 +231,8 @@ struct PlanRequest: Encodable {
     let date: String?
     let stops: Int
     let familiar: Bool
+    var keep: [String] = []
+    var exclude: [String] = []
 }
 
 struct RatingRequest: Encodable {

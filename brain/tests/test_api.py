@@ -56,7 +56,11 @@ def test_onboarding_serves_swipes_tasks_and_questions(client):
     r = client.get("/v1/onboarding", headers=h).json()
     assert len(r["conjoint_tasks"]) == 10
     places = r["swipe_places"]
-    assert len(places) == 16 and places[0] == {"item": 1, "name": "Big Ben and Parliament Square"}   # locked, D107
+    assert [p["item"] for p in places] == [1, 2, 3, 4, 10, 11, 12, 13, 14, 15]   # the app's 10 of the locked 16 (D110)
+    assert places[0] == {"item": 1, "name": "Big Ben and Parliament Square"}
+    assert "skip" in r["swipe"]["reactions"] and r["conjoint"]["no_preference"]
+    assert len(r["open_questions"][0]["examples"]) == 3
+    assert r["fields"]["question"].startswith("What interests you most?")
     assert r["open_questions"][0]["key"] == "best_hour"
     assert {o["key"] for o in r["fields"]["options"]} >= {"food", "nature", "none"}
     assert r["example_shot_card"]["id"] == "m_waterloo_bridge_sunset" and r["example_shot_card"]["shot_card"]
@@ -95,6 +99,9 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
     assert "m_borough_market_graze" not in ids                            # a place they didn't enjoy (D100)
     assert sum(st["lunch"] for st in plan["stops"]) == 1                  # one lunch stop (D102)
     assert plan["summary"][0].startswith("Start: Charing Cross station at 10:00 · 4 stops, including lunch")
+    tot = plan["totals"]   # the summary at the top of the plan (D110)
+    assert tot["finish"] == plan["stops"][-1]["depart"] and tot["walk_km"] >= 0
+    assert tot["cost_gbp"] == round(sum(st["cost_gbp"] for st in plan["stops"]) + tot["transport_gbp"], 2)
     for st in plan["stops"]:
         assert st["pin"] and st["lines"] and st["cost_text"] and st["arrive"] >= "10:00"
     first = next(st for st in plan["stops"] if st["rateable"])
@@ -192,3 +199,31 @@ def test_privacy_notice_is_public_and_says_what_the_app_holds(client):
     r = client.get("/privacy")
     assert r.status_code == 200 and "text/html" in r.headers["content-type"]
     assert "Delete my data" in r.text and "999" in r.text and "No AI service" in r.text
+
+
+def test_skip_and_no_preference_are_stored_but_carry_no_information(client):
+    """D110: "Not sure" on a place and "No preference" on a this-or-that task are allowed and left out of the fit."""
+    h, _ = install(client)
+    assert client.post("/v1/me/swipes", headers=h, json={"items": [
+        {"item": 1, "reaction": "skip"}, {"item": 5, "reaction": "loved"}]}).status_code == 204   # 5: not shown, still valid
+    assert client.post("/v1/me/conjoint", headers=h, json={"items": [
+        {"task": 1, "choice": "N"}, {"task": 2, "choice": "A"}]}).status_code == 204
+    assert client.get("/v1/me/weights", headers=h).json()["n_observations"] == 2
+    assert client.post("/v1/me/conjoint", headers=h, json={"items": [{"task": 3, "choice": "C"}]}).status_code == 422
+
+
+def test_swap_this_stop_keeps_the_rest_and_brings_something_new(client):
+    """D110: the app sends the same request with the other stops in `keep` and the swapped-out card in `exclude`."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "13:30", "end_time": "18:00", "stops": 3,
+            "familiar": False}
+    first = client.post("/v1/me/plans", headers=h, json=body).json()
+    out = next(st for st in first["stops"] if st["rateable"])
+    kept = [st["key"] for st in first["stops"] if st["key"] != out["key"]]
+    r = client.post("/v1/me/plans", headers=h, json={**body, "keep": kept, "exclude": [out["moment_id"]]})
+    assert r.status_code == 201, r.text
+    second = r.json()
+    ids = [st["moment_id"] for st in second["stops"]]
+    assert out["moment_id"] not in ids and len(ids) == 3
+    assert {k.split("#")[0] for k in kept} <= set(ids)   # the other stops stay
+    assert second["id"] != first["id"]

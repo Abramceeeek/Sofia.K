@@ -46,36 +46,53 @@ struct WakingBanner: View {
     }
 }
 
-/// A 1–5 scale as five equal buttons, with the ends labelled.
+/// A 1–5 scale as five large, equal buttons (D110: clear 1–5 buttons). With `labels`, each number carries a word;
+/// without, the two ends are labelled underneath.
 struct ScaleRow: View {
     let low: String
     let high: String
+    var labels: [String]? = nil
     @Binding var value: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 ForEach(1...5, id: \.self) { n in
+                    let on = value == n
+                    let word: String? = labels.flatMap { $0.count == 5 ? $0[n - 1] : nil }
                     Button {
                         value = n
                     } label: {
-                        Text("\(n)")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, minHeight: 44)
+                        VStack(spacing: 2) {
+                            Text("\(n)").font(.title2.bold())
+                            if let word {
+                                Text(word)
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 60)
+                        .foregroundStyle(on ? Color.white : Color.primary)
+                        .background(on ? Theme.accent : Color(.secondarySystemBackground),
+                                    in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12)
+                            .stroke(on ? Theme.accent : Color(.separator), lineWidth: 1))
                     }
-                    .buttonStyle(.bordered)
-                    .tint(value == n ? Theme.accent : .secondary)
-                    .accessibilityLabel("\(n) of 5")
-                    .accessibilityAddTraits(value == n ? .isSelected : [])
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel(word.map { "\(n) of 5, \($0)" } ?? "\(n) of 5")
+                    .accessibilityAddTraits(on ? .isSelected : [])
                 }
             }
-            HStack {
-                Text(low)
-                Spacer()
-                Text(high)
+            if labels == nil {
+                HStack {
+                    Text("1 = \(low)")
+                    Spacer()
+                    Text("5 = \(high)")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
-            .font(.caption)
-            .foregroundStyle(.secondary)
         }
     }
 }

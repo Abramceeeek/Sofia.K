@@ -43,6 +43,17 @@ def load_swipe_items(path: Path) -> dict[int, Moment]:
     return out
 
 
+def load_app_items(path: Path) -> list[int]:
+    """The swipe places the app shows (D110): `app_items`, or all of them if the list is missing."""
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f)
+    items = [int(i) for i in d.get("app_items") or d["items"]]
+    unknown = set(items) - {int(i) for i in d["items"]}
+    if unknown:
+        raise ValueError(f"app_items not in items: {sorted(unknown)}")
+    return items
+
+
 def load_swipe_cards(path: Path) -> dict[int, tuple[str, list[str]]]:
     """Each swipe place's name and the moment cards at the same place (D100)."""
     with open(path, encoding="utf-8") as f:
@@ -183,7 +194,8 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
                   travel: LondonEstimate, must_do: str | None = None, amap: AspirationMap | None = None,
                   fields: frozenset[str] = frozenset(), end_window: tuple[int, int] | None = None,
                   loved: list[tuple[str, list[str]]] = (), disliked: list[tuple[str, list[str]]] = (),
-                  familiar: bool = False) -> tuple[DayPlan, list[dict], list[dict], PlanNotes]:
+                  familiar: bool = False, keep: set[str] | frozenset[str] = frozenset(),
+                  exclude: set[str] | frozenset[str] = frozenset()) -> tuple[DayPlan, list[dict], list[dict], PlanNotes]:
     """The personalised plan. `end_window` (earliest, latest end in minutes) keeps it ending within
     30 min of the generic plan (D97); if that can't be met, it plans without it and says so in `status`.
 
@@ -191,11 +203,15 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     card at a place they loved (the best combination of the top three that fit the day), and the other stops are
     places they haven't marked as loved. `loved` and `disliked` are (swipe place, its card ids).
     D102: one of the stops is lunch when the day spans midday; a relaxed person gets longer stays where the day
-    has room; rain swaps respect the person's weights."""
+    has room; rain swaps respect the person's weights.
+    D110 ("swap this stop"): `keep` holds the other stops of the plan being changed, and `exclude` the cards swapped
+    out so far; their day/night variants are left out too, so the swap brings something different."""
     b = pop.b_person(post.mean)
     cond = Conditions(brief.temp_c, brief.rain_prob)
     rain = brief.rain_prob is not None and brief.rain_prob >= 0.5
-    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)]
+    gone = {m.variant_of for m in moments if m.id in exclude and m.variant_of}
+    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)
+              and m.id not in exclude and not (m.variant_of and m.variant_of in gone)]
     if rain:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
     by_id = {m.id: m for m in usable}
@@ -213,7 +229,8 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
                   buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS)
-    base_must = {must_do} if must_do else set()
+    base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
+    kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))
     targets = dwell_targets(by_id, [c.moment_id for c in real]) if notes.pace == "relaxed" else {}
 
@@ -236,7 +253,9 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
 
     loved_all = {c.moment_id for c in cands if _base(c.moment_id) in loved_ids}
     if familiar and loved_ids:
+        # when swapping, a kept stop at a loved place stays the one familiar favourite
         options = sorted((c for c in real if c.moment_id in loved_ids and fits_day(c, day_start, day_end)
+                          and (not kept_loved or c.moment_id in {_base(k) for k in kept_loved})
                           and (brief.budget_gbp is None or c.cost_gbp <= brief.budget_gbp)),
                          key=lambda c: c.utility, reverse=True)[:3]
         best = None
@@ -284,7 +303,8 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops)}
             nxt = (m.end(), m.leave_name(), m.exit_station())
-        stop.update({"arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min), "travel_min": st.travel_min,
+        stop.update({"key": st.moment_id,   # the planner's id ("<card>#lunch" when a food card is the lunch), for `keep`
+                     "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min), "travel_min": st.travel_min,
                      "travel_mode": mode, "from": prev_name, "cost_gbp": c.cost_gbp,
                      "cost_kind": "food" if c.lunch else by_id[_base(st.moment_id)].price_kind(),
                      "rain_swap": "", "lunch": c.lunch, "familiar": _base(st.moment_id) == notes.favourite})
@@ -523,6 +543,18 @@ def summary_lines(brief: Brief, stops: list[dict]) -> list[str]:
     return [f"Start: {brief.start_name} at {brief.start_time} · {len(stops)} stops{lunch}", f"Costs: {money}"]
 
 
+def plan_totals(stops: list[dict], travel: LondonEstimate) -> dict:
+    """The app's summary line (D110): cost per person, walking between stops and the finish time.
+
+    Walking counts the legs planned on foot, at the planner's walking pace (a GUESS, travel.py); walking inside a
+    stop and to and from stations is not included, so the app says "between stops"."""
+    spend, fare = sum(s["cost_gbp"] for s in stops), transport_gbp(stops)
+    walk_min = sum(s["travel_min"] or 0 for s in stops if s.get("travel_mode") == "walk")
+    return {"cost_gbp": round(spend + fare, 2), "spend_gbp": round(spend, 2), "transport_gbp": fare,
+            "walk_min": round(walk_min), "walk_km": round(walk_min * travel.walking.speed_m_per_min / 1000, 1),
+            "finish": stops[-1]["depart"] if stops else None}
+
+
 def _header(label: str, brief: Brief, stops: list[dict]) -> list[str]:
     return [f"Plan {label}: {brief.day_label}", *summary_lines(brief, stops)]
 
@@ -537,7 +569,7 @@ def _stop_lines(s: dict) -> list[str]:
 # ---- the app's view of a plan (D107) --------------------------------------------------
 
 # The priors' labels are written for Abram's review ("... inspires them"); the app speaks to the person
-APP_LABELS = {"aspiration_match": "a field that inspires you"}
+APP_LABELS = {"aspiration_match": "one of your interests"}   # D110: plain words, not "fields that inspire you"
 
 
 def stop_point(stop_id: str, by_id: dict[str, Moment], brief: Brief) -> Point | None:
@@ -553,7 +585,8 @@ def stop_point(stop_id: str, by_id: dict[str, Moment], brief: Brief) -> Point | 
 
 def app_stop(s: dict, point: Point | None) -> dict:
     """One stop as the app shows it: the same wording as the Test B plans, plus a map pin and "chosen for"."""
-    return {"moment_id": s["moment_id"], "title": s["title"], "arrive": s["arrive"], "depart": s["depart"],
+    return {"moment_id": s["moment_id"], "key": s.get("key", s["moment_id"]), "title": s["title"],
+            "arrive": s["arrive"], "depart": s["depart"],
             "travel_min": s["travel_min"], "travel_mode": s["travel_mode"], "travel_text": s.get("travel_text", ""),
             "approach": s["approach"], "what": s["what"], "queue_min": s.get("queue") or 0,
             "best_text": _best_line(s), "cost_gbp": s["cost_gbp"], "cost_kind": s["cost_kind"],

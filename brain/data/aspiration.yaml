@@ -7,8 +7,9 @@
 # `python -m brain.testb fields` flags any field with fewer than `min_ready_moments` checked
 # (status: ready) moments.
 
-question: "Which of these fields inspire you? Pick any, or none."
-note: "Optional. We only use it to add places tied to what inspires you."
+# D110: plain words in the app. Test A's hand-run wording (validation/interview-script.md 5.7) is paused with it.
+question: "What interests you most? Pick any, or none."
+note: "We ask so we can add a place tied to what interests you. Optional."
 min_ready_moments: 2
 fields:
   finance_tech:

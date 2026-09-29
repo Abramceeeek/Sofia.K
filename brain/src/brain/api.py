@@ -58,6 +58,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # the 16 locked swipe places (D107): their tags for the δ update, and the cards at each place for planning
         app.state.swipe_items = dayplan.load_swipe_items(settings.data_dir / "swipe_items.yaml")
         app.state.swipe_cards = dayplan.load_swipe_cards(settings.data_dir / "swipe_items.yaml")
+        app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # the 10 shown (D110)
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
@@ -114,13 +115,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 obs.append(o)
         for ch in user.choices:
             t = app.state.tasks.get(ch.task)
-            if t:
+            if t and ch.choice in ("A", "B"):   # "N", no preference (D110), carries no A/B information
                 obs.append(conjoint_observation(p, conjoint_plan_features(t["A"]),
                                                 conjoint_plan_features(t["B"]), chose_a=ch.choice == "A"))
         for r in user.ratings:
             if r.moment_id in ms:
-                obs.append(rating_observation(p, ms[r.moment_id], r.rating,
-                                              Conditions(r.temp_c, r.rain_prob), r.travel_min))
+                m = ms[r.moment_id]
+                obs.append(rating_observation(p, m, r.rating, Conditions(r.temp_c, r.rain_prob), r.travel_min,
+                                              amap.match(m, fields) if amap else 0.0))
         post = update_person(p, obs)
         user.delta, user.population_version = post.to_json(), p.version
         return post
@@ -173,7 +175,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "options": [{"key": f.code, "label": f.label} for f in amap.fields.values()]}
         example = ms.get(EXAMPLE_SHOT_CARD)
         return {**app.state.onboarding,
-                "swipe_places": [{"item": n, "name": name} for n, (name, _) in sorted(app.state.swipe_cards.items())],
+                "swipe_places": [{"item": n, "name": app.state.swipe_cards[n][0]} for n in app.state.app_items],
                 "conjoint_tasks": tasks, "fields": fields,
                 "example_shot_card": card(example) if example and example.shot_card else None}
 
@@ -260,20 +262,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         loved = [cards_at[sw.item] for sw in user.swipes if sw.reaction == "loved" and sw.item in cards_at]
         disliked = [cards_at[sw.item] for sw in user.swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in by_id else None
-        plan, stops, _, notes = dayplan.personal_plan(
-            p, posterior(user, p), ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
-            fields=person_fields(user), loved=loved, disliked=disliked, familiar=body.familiar)
+        post = posterior(user, p)
+
+        def run(keep: set[str]):
+            return dayplan.personal_plan(
+                p, post, ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
+                fields=person_fields(user), loved=loved, disliked=disliked, familiar=body.familiar,
+                keep=keep, exclude=set(body.exclude))
+
+        plan, stops, _, notes = run(set(body.keep))
+        if body.keep and (plan.status != "ok" or not plan.stops):   # a swap that can't keep the rest: replan the day
+            plan, stops, _, notes = run(set())
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
         for st in out:
             if st["rateable"] and st["moment_id"] in by_id:
                 st["card"] = card(by_id[st["moment_id"]])
-        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=body.intent, stops=out,
-                      value=plan.value)
+        intent = {**body.intent, **({"swapped_out": body.exclude} if body.exclude else {})}
+        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
         s.add(row)
         s.commit()
         return {**plan_out(row), "title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
-                "pace": notes.pace, "solver_status": plan.status}
+                "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
+                "solver_status": plan.status}
 
     @app.get("/v1/me/plans")
     def my_plans(user: db.User = Depends(current_user)):

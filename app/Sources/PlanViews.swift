@@ -6,12 +6,13 @@ struct HomeView: View {
     @State private var showSafety = false
     @State private var showSettings = false
     @Environment(AppModel.self) private var model
+    var layout: String?          // CI screenshots only: "list"
 
     var body: some View {
         NavigationStack {
             Group {
                 if let plan = model.plan {
-                    PlanView(plan: plan)
+                    PlanView(plan: plan, forcedLayout: layout)
                 } else {
                     PlanFormView()
                 }
@@ -34,7 +35,7 @@ struct HomeView: View {
     }
 }
 
-/// Build 1 plans from Charing Cross (the Test B start, D104), on a date and between times you choose.
+/// Screen 7. Build 1 plans from Charing Cross (the Test B start, D104), on a date and between times you choose.
 struct PlanFormView: View {
     @Environment(AppModel.self) private var model
     var onDone: (() -> Void)?
@@ -73,30 +74,76 @@ struct PlanFormView: View {
     }
 }
 
-/// Screen 14: the map and the stops are one object; the numbers match.
+/// Screen 8: the summary first (D110), then the map and the stops (the numbers match), or the stops as a list.
 struct PlanView: View {
     @Environment(AppModel.self) private var model
     let plan: Plan
+    var forcedLayout: String?
+    @AppStorage("planLayout") private var savedLayout = "map"
     @State private var showNewPlan = false
+    @State private var showImprove = false
 
     var body: some View {
+        let layout = Binding(get: { forcedLayout ?? savedLayout }, set: { savedLayout = $0 })
+        let asList = layout.wrappedValue == "list"
         List {
             Section {
-                PlanMap(stops: plan.stops)
-                    .frame(height: 240)
-                    .listRowInsets(EdgeInsets())
-            }
-            Section {
-                ForEach(plan.summary ?? [], id: \.self) { line in
-                    Text(line).font(.subheadline)
+                PlanSummary(plan: plan)
+                Picker("Show", selection: layout) {
+                    Text("Map").tag("map")
+                    Text("List").tag("list")
                 }
+                .pickerStyle(.segmented)
             } header: {
                 Text(plan.title ?? "Your day")
             }
-            Section("Stops") {
+            if !asList {
+                Section {
+                    PlanMap(stops: plan.stops)
+                        .frame(height: 240)
+                        .listRowInsets(EdgeInsets())
+                }
+            }
+            Section {
                 ForEach(plan.stops.indices, id: \.self) { i in
-                    NavigationLink(value: plan.stops[i]) {
-                        StopRow(number: i + 1, stop: plan.stops[i], rated: model.rated.contains(plan.stops[i].id))
+                    let stop = plan.stops[i]
+                    if asList, !stop.travelText.isEmpty {
+                        Label(stop.travelText, systemImage: stop.travelMode == "walk" ? "figure.walk" : "tram")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    NavigationLink(value: stop) {
+                        StopRow(number: i + 1, stop: stop, showTravel: !asList,
+                                rated: model.rated.contains(stop.momentId), swapped: model.swappedIn == stop.momentId)
+                    }
+                    .swipeActions {
+                        if stop.rateable {
+                            Button("Swap") { Task { await model.swap(stop) } }
+                                .tint(Theme.accent)
+                        }
+                    }
+                }
+            } header: {
+                Text("Stops")
+            } footer: {
+                Text("Open a stop to swap it for something else.")
+            }
+            Section {
+                if model.improved {
+                    Text("Thanks. Your next plans use what you told us.")
+                    Button("Plan this day again") { Task { await model.replan() } }
+                        .disabled(model.busy)
+                    Button("Change what you told us") { showImprove = true }
+                } else {
+                    Button {
+                        showImprove = true
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Improve my plans").font(.headline)
+                            Text("Optional, about 2 minutes: your budget, pace, interests and photos.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -116,6 +163,58 @@ struct PlanView: View {
                 PlanFormView(onDone: { showNewPlan = false })
             }
         }
+        .sheet(isPresented: $showImprove) { ImproveView() }
+    }
+}
+
+/// Cost per person, walking between stops and the finish time, at the top of the plan (D110).
+struct PlanSummary: View {
+    let plan: Plan
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let t = plan.totals {
+                HStack(alignment: .top, spacing: 12) {
+                    Stat(value: Money.text(t.costGbp), label: "per person")
+                    Stat(value: String(format: "%.1f km", t.walkKm), label: "walking between stops")
+                    Stat(value: t.finish ?? plan.stops.last?.depart ?? "–", label: "finish")
+                }
+                Text(breakdown(t))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            if let start = plan.summary?.first {
+                Text(start).font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func breakdown(_ t: Totals) -> String {
+        let spend = t.spendGbp > 0 ? "\(Money.text(t.spendGbp)) food and entry" : "Free entry"
+        let fare = t.transportGbp > 0 ? "\(Money.text(t.transportGbp)) Tube or bus" : "all on foot"
+        return "\(spend), \(fare)."
+    }
+}
+
+struct Stat: View {
+    let value: String
+    let label: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value).font(.title3.bold().monospacedDigit())
+            Text(label).font(.caption).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+enum Money {
+    /// £21, or £21.50
+    static func text(_ gbp: Double) -> String {
+        gbp.rounded() == gbp ? "£\(Int(gbp))" : String(format: "£%.2f", gbp)
     }
 }
 
@@ -151,7 +250,9 @@ struct PlanMap: View {
 struct StopRow: View {
     let number: Int
     let stop: Stop
+    var showTravel = true
     let rated: Bool
+    var swapped = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -165,8 +266,11 @@ struct StopRow: View {
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
                 Text(stop.title).font(.headline)
-                if !stop.travelText.isEmpty {
+                if showTravel, !stop.travelText.isEmpty {
                     Text(stop.travelText).font(.footnote).foregroundStyle(.secondary)
+                }
+                if swapped {
+                    Label("Swapped in", systemImage: "arrow.triangle.2.circlepath").font(.footnote)
                 }
                 if stop.familiar {
                     Label("A place you loved", systemImage: "heart").font(.footnote)
@@ -183,13 +287,23 @@ struct StopRow: View {
     }
 }
 
-/// Screen 15: the moment card. The arrival comes first, because the approach is the moment.
+extension Stop {
+    /// Rating opens at the planned arrival (D110: only after the visit). Nil when the plan has no date.
+    func ratingOpens(on day: String?) -> Date? {
+        guard let day else { return nil }
+        return Dates.stamp.date(from: "\(day) \(arrive)")
+    }
+}
+
+/// Screen 9: the moment card. The arrival comes first, because the approach is the moment.
 struct StopView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
     let stop: Stop
     @State private var showShot = false
     @State private var showRating = false
+    @State private var confirmSwap = false
 
     var body: some View {
         ScrollView {
@@ -222,16 +336,33 @@ struct StopView: View {
                     }
                 }
                 if stop.rateable {
-                    let done = model.rated.contains(stop.id)
-                    PrimaryButton(title: done ? "Rated. Thank you" : "Done here: how did it feel?", disabled: done) {
-                        showRating = true
+                    Button {
+                        confirmSwap = true
+                    } label: {
+                        Label("Swap this stop", systemImage: "arrow.triangle.2.circlepath")
+                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
+                    .buttonStyle(.bordered)
+                    .disabled(model.busy)
+                    rating
                 }
             }
             .padding(20)
         }
         .navigationTitle(stop.title)
         .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog("Swap \(stop.title) for something else?", isPresented: $confirmSwap,
+                            titleVisibility: .visible) {
+            Button("Swap it") {
+                Task {
+                    await model.swap(stop)
+                    if model.errorMessage == nil { dismiss() }
+                }
+            }
+            Button("Keep it", role: .cancel) {}
+        } message: {
+            Text("The other stops stay. This one won't come back in this plan.")
+        }
         .sheet(isPresented: $showShot) {
             if let card = stop.card {
                 NavigationStack {
@@ -242,9 +373,22 @@ struct StopView: View {
         }
         .sheet(isPresented: $showRating) { RatingView(stop: stop) }
     }
+
+    /// Only after the visit (D110): before the planned arrival, say when the rating opens.
+    @ViewBuilder private var rating: some View {
+        let done = model.rated.contains(stop.momentId)
+        if let opens = stop.ratingOpens(on: model.plan?.date), opens > .now, !done {
+            InfoBlock(label: "Rating",
+                      text: "You can rate this stop after your visit, from \(stop.arrive) on \(Dates.dayName.string(from: opens)).")
+        } else {
+            PrimaryButton(title: done ? "Rated. Thank you" : "Been here? Rate it 1–5", disabled: done) {
+                showRating = true
+            }
+        }
+    }
 }
 
-/// Screen 16: read in one glance while standing on the spot.
+/// Opened from a stop that has one. The layout is the example on screen 13.
 struct ShotCardView: View {
     let card: Card
 
@@ -272,7 +416,7 @@ struct ShotCardView: View {
     }
 }
 
-/// Screen 17: one tap, 1–5.
+/// Screen 10: after the visit, one tap 1–5 on large labelled buttons (D110).
 struct RatingView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -282,20 +426,23 @@ struct RatingView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("How did that feel?") {
-                    ScaleRow(low: "Not good", high: "Wonderful", value: $rating)
-                }
-                Section("Would you bring someone here? (optional)") {
-                    Picker("Bring someone", selection: $bring) {
-                        Text("Skip").tag("")
-                        Text("Yes").tag("yes")
-                        Text("No").tag("no")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("How did that feel?")
+                        .font(.title2.bold())
+                    ScaleRow(low: "Poor", high: "Wonderful", labels: Labels.feel, value: $rating)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Would you bring someone here? (optional)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        Picker("Bring someone", selection: $bring) {
+                            Text("Skip").tag("")
+                            Text("Yes").tag("yes")
+                            Text("No").tag("no")
+                        }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
-                }
-                Section {
-                    PrimaryButton(title: "Save", disabled: rating == nil || model.busy) {
+                    PrimaryButton(title: model.busy ? "Saving…" : "Save", disabled: rating == nil || model.busy) {
                         guard let rating else { return }
                         Task {
                             await model.rate(stop, rating: rating, wouldBring: bring.isEmpty ? nil : bring == "yes")
@@ -303,6 +450,7 @@ struct RatingView: View {
                         }
                     }
                 }
+                .padding(20)
             }
             .navigationTitle(stop.title)
             .navigationBarTitleDisplayMode(.inline)

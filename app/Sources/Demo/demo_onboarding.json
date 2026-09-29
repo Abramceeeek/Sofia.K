@@ -4,11 +4,16 @@
   {
    "key": "best_hour",
    "text": "Tell me about the best hour of your last trip or day out. Where were you, what was happening, how did it feel?",
-   "follow_up": "Is there anything else you'd like to add about that?"
+   "follow_up": "Is there anything else you'd like to add about that?",
+   "examples": [
+    "Sitting on the top deck of a bus over Waterloo Bridge at dusk. Tired, but happy.",
+    "Eating street food by the river with friends. No plan, lots of laughing.",
+    "Swimming in a cold lake, then a hot drink. I felt completely awake."
+   ]
   }
  ],
  "why_travel": {
-  "prompt": "Which of these is most often why you go out or travel? Pick up to two.",
+  "prompt": "Which of these is most often why you go out or travel? Pick up to two, or none.",
   "options": [
    "switch_off",
    "people",
@@ -24,11 +29,13 @@
    "loved",
    "fine",
    "didnt_enjoy",
-   "havent_been"
+   "havent_been",
+   "skip"
   ]
  },
  "conjoint": {
-  "prompt": "Two made-up day plans. Which day would you rather have?"
+  "prompt": "Two made-up day plans. Which day would you rather have?",
+  "no_preference": "No preference"
  },
  "about_you": [
   {
@@ -66,8 +73,9 @@
   },
   {
    "key": "shot_card_appeal",
-   "text": "If a plan came with a card like this, would it make you more likely to go?",
-   "scale": "1 (no) - 5 (definitely)"
+   "text": "Some stops come with a shot card: where to stand for the best photo. Would that make you more likely to go?",
+   "scale": "1 (no) - 5 (definitely)",
+   "example_label": "Example of what you'll get"
   }
  ],
  "swipe_places": [
@@ -86,26 +94,6 @@
   {
    "item": 4,
    "name": "British Museum"
-  },
-  {
-   "item": 5,
-   "name": "IFS Cloud Cable Car"
-  },
-  {
-   "item": 6,
-   "name": "Hyde Park"
-  },
-  {
-   "item": 7,
-   "name": "Camden Market"
-  },
-  {
-   "item": 8,
-   "name": "Tate Modern Turbine Hall"
-  },
-  {
-   "item": 9,
-   "name": "Sky Garden"
   },
   {
    "item": 10,
@@ -130,10 +118,6 @@
   {
    "item": 15,
    "name": "Hampstead Heath ponds (swimming)"
-  },
-  {
-   "item": 16,
-   "name": "Regent's Canal walk from Little Venice"
   }
  ],
  "conjoint_tasks": [
@@ -189,8 +173,8 @@
   }
  ],
  "fields": {
-  "question": "Which of these fields inspire you? Pick any, or none.",
-  "note": "Optional. We only use it to add places tied to what inspires you.",
+  "question": "What interests you most? Pick any, or none.",
+  "note": "We ask so we can add a place tied to what interests you. Optional.",
   "options": [
    {
     "key": "finance_tech",

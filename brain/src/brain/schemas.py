@@ -28,7 +28,7 @@ class InstallOut(BaseModel):
 
 class SwipeItem(BaseModel):
     item: int = Field(ge=1)          # one of the 16 locked swipe places (data/swipe_items.yaml, D107), as in Test A
-    reaction: Literal["loved", "fine", "didnt_enjoy", "havent_been"]
+    reaction: Literal["loved", "fine", "didnt_enjoy", "havent_been", "skip"]   # skip: "Not sure" (D110), no information
 
 
 class SwipesIn(BaseModel):
@@ -37,7 +37,7 @@ class SwipesIn(BaseModel):
 
 class ChoiceItem(BaseModel):
     task: int
-    choice: Literal["A", "B"]
+    choice: Literal["A", "B", "N"]   # N: no preference (D110); stored, and left out of the fit
 
 
 class ChoicesIn(BaseModel):
@@ -85,6 +85,10 @@ class PlanRequest(BaseModel):
     conditions: ConditionsIn | None = None
     familiar: bool = True             # D103: one place they loved plus new places; on by default in the app
     intent: dict = Field(default_factory=dict)   # recharge/explore, who might come, must_do (D27)
+    # D110, "swap this stop": the app sends the same request again with the other stops in `keep` and the
+    # swapped-out cards (this one and any before it) in `exclude`
+    keep: list[str] = Field(default_factory=list, max_length=6)
+    exclude: list[str] = Field(default_factory=list, max_length=40)
 
 
 class CuratedStop(BaseModel):

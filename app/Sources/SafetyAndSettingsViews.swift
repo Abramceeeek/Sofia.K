@@ -1,44 +1,53 @@
 import SwiftUI
 
-/// Screen 19. Safety always goes to a person (D46). The reply never promises anything faster than "a few hours".
+/// Screen 14. Safety always goes to a person (D46). The reply never promises anything faster than "a few hours".
+/// D110: "Emergency: call 999" and "I feel unsafe / something's wrong" are two separate sections, so nobody
+/// mistakes telling us for calling for help.
 struct SafetyView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-    @State private var confirming = false
+    @State private var confirming: Bool
     @State private var message = ""
     @State private var reply: String?
+
+    init(confirming: Bool = false) {
+        _confirming = State(initialValue: confirming)
+    }
 
     var body: some View {
         NavigationStack {
             Form {
                 if let reply {
                     Section { Text(reply) }
-                    Section { call999 }
+                    emergency
                 } else if confirming {
                     Section {
-                        Text("If you or someone else is in danger or hurt, call 999 now.")
-                            .font(.headline)
-                    }
-                    Section { call999 }
-                    Section("Tell a person on our team (the message is optional)") {
-                        TextField("What's happening?", text: $message, axis: .vertical)
+                        Text("Tell a person on our team what's happening. They'll reply within a few hours.")
+                        TextField("What's happening? (optional)", text: $message, axis: .vertical)
                             .lineLimit(3...6)
-                    }
-                    Section {
                         PrimaryButton(title: model.busy ? "Sending…" : "Tell a person", disabled: model.busy) {
                             Task { reply = await model.sendSafety(message) }
                         }
+                    } header: {
+                        Text("Something's wrong")
                     }
+                    emergency
                 } else {
+                    emergency
                     Section {
-                        Button(role: .destructive) {
+                        Text("You feel unsafe, or something has gone wrong on your day out, and it isn't an emergency. A person on our team replies within a few hours.")
+                        Button {
                             confirming = true
                         } label: {
-                            Label("I feel unsafe / something's wrong", systemImage: "exclamationmark.triangle.fill")
+                            Label("I feel unsafe / something's wrong", systemImage: "hand.raised.fill")
                                 .font(.headline)
-                                .frame(minHeight: 44)
+                                .frame(maxWidth: .infinity, minHeight: 44)
                         }
+                        .buttonStyle(.bordered)
+                        .tint(.orange)
+                    } header: {
+                        Text("Not an emergency")
                     }
                     Section("Something else?") {
                         Text("Email \(AppConfig.contactEmail)")
@@ -53,17 +62,25 @@ struct SafetyView: View {
         }
     }
 
-    private var call999: some View {
-        Button {
-            if let url = URL(string: "tel:999") { openURL(url) }
-        } label: {
-            Label("Call 999", systemImage: "phone.fill")
-                .frame(minHeight: 44)
+    private var emergency: some View {
+        Section {
+            Text("If you or someone else is in danger or hurt, call 999 now.")
+            Button {
+                if let url = URL(string: "tel:999") { openURL(url) }
+            } label: {
+                Label("Call 999", systemImage: "phone.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+        } header: {
+            Text("Emergency")
         }
     }
 }
 
-/// Screen 20: what we store, and Delete my data (App Review 5.1.1(v); UK GDPR erasure).
+/// Screen 15: what we store, and Delete my data (App Review 5.1.1(v); UK GDPR erasure).
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -73,13 +90,14 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("What we store") {
-                    Text("Your answers, your reactions to the 16 places, your this-or-that choices, your \"about you\" answers, your plans and your ratings. No name, email or phone number: the app knows this phone only by a random code.")
+                    Text("Your answers, your reactions to 10 places, your this-or-that choices, anything you add under \"Improve my plans\", your plans and your ratings. No name, email or phone number: the app knows this phone only by a random code.")
                 }
                 Section("Where, and for how long") {
                     Text("On our server in Frankfurt, in the EU, until 31 March 2027.")
                 }
                 Section("About this test") {
                     Text("A person, Abram, runs this test in London. No AI service reads your answers in this version. Contact: \(AppConfig.contactEmail)")
+                    Link("Full privacy notice", destination: AppConfig.baseURL.appendingPathComponent("privacy"))
                 }
                 Section {
                     Button("Delete my data", role: .destructive) { confirmDelete = true }
@@ -96,15 +114,8 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
             }
-            .confirmationDialog("Delete everything we hold about this phone?", isPresented: $confirmDelete,
-                                titleVisibility: .visible) {
-                Button("Delete my data", role: .destructive) {
-                    Task {
-                        await model.deleteMyData()
-                        dismiss()
-                    }
-                }
-                Button("Cancel", role: .cancel) {}
+            .sheet(isPresented: $confirmDelete) {
+                DeleteConfirmView { dismiss() }
             }
         }
     }
@@ -115,31 +126,81 @@ struct SettingsView: View {
     }
 }
 
+/// D110: deleting needs a deliberate step: type DELETE.
+struct DeleteConfirmView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    var onDeleted: () -> Void = {}
+    @State private var typed = ""
+
+    private var confirmed: Bool {
+        typed.trimmingCharacters(in: .whitespaces).uppercased() == "DELETE"
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("This removes everything we hold about this phone: your answers, reactions, choices, plans and ratings. It happens straight away and can't be undone.")
+                }
+                Section {
+                    TextField("DELETE", text: $typed)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("To confirm, type DELETE")
+                }
+                Section {
+                    Button(role: .destructive) {
+                        Task {
+                            await model.deleteMyData()
+                            if model.errorMessage == nil {
+                                dismiss()
+                                onDeleted()
+                            }
+                        }
+                    } label: {
+                        Text(model.busy ? "Deleting…" : "Delete my data")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .disabled(!confirmed || model.busy)
+                }
+            }
+            .navigationTitle("Delete my data")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) { Button("Cancel") { dismiss() } }
+            }
+        }
+    }
+}
+
 /// CI screenshots only (`-demo YES -screen <name>`): each screen with the bundled demo data, no network.
+/// Names and numbers match design/v0-screens.md and the review page (D110).
 struct DemoScreen: View {
     @Environment(AppModel.self) private var model
     let name: String
 
     var body: some View {
         switch name {
-        case "welcome": WelcomeView()
-        case "consent": ConsentView()
-        case "besthour", "why", "places", "thisorthat", "aboutyou", "photos": OnboardingView()
-        case "planform": NavigationStack { PlanFormView() }
-        case "stop", "rating":
+        case "welcome": WelcomeView()                                           // 1
+        case "consent": ConsentView()                                           // 2
+        case "besthour", "why", "places", "thisorthat": OnboardingView()       // 3-6
+        case "planform": NavigationStack { PlanFormView() }                     // 7
+        case "planlist": HomeView(layout: "list")                               // 8, list view
+        case "stop", "rating":                                                  // 9, 10
             if let stop = model.plan?.stops.first(where: { $0.rateable }) {
                 if name == "stop" { NavigationStack { StopView(stop: stop) } } else { RatingView(stop: stop) }
             }
-        case "shotcard":
-            if let card = model.onboarding?.exampleShotCard {
-                NavigationStack {
-                    ScrollView { ShotCardView(card: card).padding(20) }
-                        .navigationTitle("Shot card")
-                }
-            }
-        case "safety": SafetyView()
-        case "settings": SettingsView()
-        default: HomeView()
+        case "aboutyou": ImproveView(page: .aboutYou)                           // 11
+        case "photos": ImproveView(page: .photos)                               // 12
+        case "shotcards": ImproveView(page: .shotCards)                         // 13
+        case "safety": SafetyView()                                             // 14
+        case "safetysend": SafetyView(confirming: true)                         // 14, after the button
+        case "settings": SettingsView()                                         // 15
+        case "delete": DeleteConfirmView()                                      // 15, delete
+        default: HomeView()                                                     // 8 ("plan")
         }
     }
 }

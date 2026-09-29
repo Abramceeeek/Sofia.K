@@ -21,13 +21,13 @@ enum Route: Hashable {
     case welcome, consent, onboarding, home
 }
 
+/// Onboarding up to the first plan (screens 3–6). D110: "about you" and photos moved after the first plan.
 enum Step: Int, CaseIterable {
-    case bestHour, why, places, thisOrThat, aboutYou, photos
+    case bestHour, why, places, thisOrThat
 
     /// CI screenshots: `-screen places` opens that onboarding step.
     static func forScreen(_ name: String?) -> Step? {
-        ["besthour": .bestHour, "why": .why, "places": .places, "thisorthat": .thisOrThat,
-         "aboutyou": .aboutYou, "photos": .photos][name ?? ""]
+        ["besthour": .bestHour, "why": .why, "places": .places, "thisorthat": .thisOrThat][name ?? ""]
     }
 
     var title: String {
@@ -36,8 +36,19 @@ enum Step: Int, CaseIterable {
         case .why: return "Why you go out"
         case .places: return "Places you've been"
         case .thisOrThat: return "This or that"
+        }
+    }
+}
+
+/// "Improve my plans" (screens 11–13): optional, after the first plan (D110).
+enum ImprovePage: Int, CaseIterable {
+    case aboutYou, photos, shotCards
+
+    var title: String {
+        switch self {
         case .aboutYou: return "A bit about you"
         case .photos: return "Photos"
+        case .shotCards: return "Shot cards"
         }
     }
 }
@@ -60,7 +71,10 @@ final class AppModel {
     var reactions: [Int: String] = [:]
     var choices: [Int: String] = [:]
     var profile = Profile()
-    var rated: Set<String> = []
+    var rated: Set<String> = []            // moment ids rated in this plan
+    var improved = UserDefaults.standard.bool(forKey: "improved")
+    var swappedIn: String?                 // the stop the last swap brought in, marked on the plan
+    var lastRequest: PlanRequest?
 
     let client: BrainClient
     let screen: String?
@@ -74,14 +88,17 @@ final class AppModel {
         if demo {
             route = .home
             onboarding = try? BrainClient.bundled("demo_onboarding")
-            plan = try? BrainClient.bundled("demo_plan")
+            let demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
+            plan = demoPlan
             step = Step.forScreen(screen) ?? .bestHour
+            lastRequest = PlanRequest(start: AppConfig.start, startName: AppConfig.startName, startTime: "12:00",
+                                      endTime: "17:00", date: demoPlan?.date, stops: 4, familiar: true)
         } else if brain.token == nil {
             route = .welcome
-            plan = AppModel.loadCachedPlan()
         } else {
             route = UserDefaults.standard.bool(forKey: "onboardingDone") ? .home : .onboarding
-            plan = AppModel.loadCachedPlan()
+            plan = AppModel.loadCached(Plan.self, "plan.json")
+            lastRequest = AppModel.loadCached(PlanRequest.self, "request.json")
         }
     }
 
@@ -145,29 +162,29 @@ final class AppModel {
         }
     }
 
+    /// The last onboarding step: straight on to the first plan (D110).
     func finishThisOrThat() async {
+        profile.whyTravel = why
         await run {
             let items = self.choices.sorted { $0.key < $1.key }.map { ChoiceItem(task: $0.key, choice: $0.value) }
             try await self.client.sendChoices(items)
-            self.next()
-        }
-    }
-
-    func finishAboutYou() async {
-        profile.whyTravel = why
-        await run {
-            try await self.client.sendProfile(self.profile)
-            self.next()
-        }
-    }
-
-    func finishOnboarding() async {
-        profile.whyTravel = why
-        await run {
             try await self.client.sendProfile(self.profile)
             UserDefaults.standard.set(true, forKey: "onboardingDone")
             await self.client.event("onboarding_done")
             self.route = .home
+        }
+    }
+
+    /// "Improve my plans": each page is sent as it finishes; `done` marks the whole step as finished.
+    func saveImprovements(done: Bool) async {
+        profile.whyTravel = why
+        await run {
+            try await self.client.sendProfile(self.profile)
+            if done {
+                self.improved = true
+                UserDefaults.standard.set(true, forKey: "improved")
+                await self.client.event("improve_done")
+            }
         }
     }
 
@@ -178,11 +195,41 @@ final class AppModel {
         let request = PlanRequest(start: AppConfig.start, startName: AppConfig.startName,
                                   startTime: Dates.hhmm.string(from: start), endTime: Dates.hhmm.string(from: end),
                                   date: day, stops: stops, familiar: true)
+        await fetchPlan(request)
+    }
+
+    /// The same day again, e.g. after "Improve my plans": no stops kept, nothing left out.
+    func replan() async {
+        guard var request = lastRequest else { return }
+        request.keep = []
+        request.exclude = []
+        await fetchPlan(request)
+    }
+
+    /// "Swap this stop" (D110): the other stops stay; this card, and any swapped out before, are left out.
+    func swap(_ stop: Stop) async {
+        guard var request = lastRequest, let current = plan else { return }
+        request.keep = current.stops.filter { $0.id != stop.id }.map { $0.key ?? $0.momentId }
+        request.exclude.append(stop.momentId)
+        let before = Set(current.stops.map(\.momentId))
+        await fetchPlan(request, swap: true)
+        if let now = plan, now.id != current.id {
+            swappedIn = now.stops.first { !before.contains($0.momentId) }?.momentId
+            await client.event("swap_stop", ["out": stop.momentId, "in": swappedIn ?? ""])
+        }
+    }
+
+    private func fetchPlan(_ request: PlanRequest, swap: Bool = false) async {
         await run {
             let plan = try await self.client.makePlan(request)
             self.plan = plan
-            self.rated = []
-            AppModel.cache(plan)
+            self.lastRequest = request
+            if !swap {
+                self.rated = []
+                self.swappedIn = nil
+            }
+            AppModel.cache(plan, "plan.json")
+            AppModel.cache(request, "request.json")
         }
     }
 
@@ -190,7 +237,7 @@ final class AppModel {
         await run {
             try await self.client.rate(RatingRequest(momentId: stop.momentId, rating: rating, planId: self.plan?.id,
                                                      wouldBring: wouldBring))
-            self.rated.insert(stop.id)
+            self.rated.insert(stop.momentId)
         }
     }
 
@@ -208,8 +255,14 @@ final class AppModel {
         await run {
             try await self.client.deleteMe()
             UserDefaults.standard.removeObject(forKey: "onboardingDone")
-            AppModel.cache(nil)
+            UserDefaults.standard.removeObject(forKey: "improved")
+            AppModel.cache(nil as Plan?, "plan.json")
+            AppModel.cache(nil as PlanRequest?, "request.json")
             self.plan = nil
+            self.lastRequest = nil
+            self.improved = false
+            self.swappedIn = nil
+            self.rated = []
             self.onboarding = nil
             self.reactions = [:]
             self.choices = [:]
@@ -222,22 +275,20 @@ final class AppModel {
         }
     }
 
-    // ---- the current plan stays on the phone ("Your plan is saved on this phone") -------------------
+    // ---- the current plan and its request stay on the phone ("Your plan is saved on this phone") -------
 
-    private static var planFile: URL {
-        URL.applicationSupportDirectory.appendingPathComponent("plan.json")
-    }
-
-    static func cache(_ plan: Plan?) {
+    static func cache<T: Codable>(_ value: T?, _ name: String) {
         let fm = FileManager.default
-        guard let plan else { try? fm.removeItem(at: planFile); return }
+        let file = URL.applicationSupportDirectory.appendingPathComponent(name)
+        guard let value else { try? fm.removeItem(at: file); return }
         try? fm.createDirectory(at: URL.applicationSupportDirectory, withIntermediateDirectories: true)
-        if let data = try? BrainClient.encode(plan) { try? data.write(to: planFile, options: .atomic) }
+        if let data = try? BrainClient.encode(value) { try? data.write(to: file, options: .atomic) }
     }
 
-    static func loadCachedPlan() -> Plan? {
-        guard let data = try? Data(contentsOf: planFile) else { return nil }
-        return try? BrainClient.decode(Plan.self, from: data)
+    static func loadCached<T: Codable>(_ type: T.Type, _ name: String) -> T? {
+        let file = URL.applicationSupportDirectory.appendingPathComponent(name)
+        guard let data = try? Data(contentsOf: file) else { return nil }
+        return try? BrainClient.decode(type, from: data)
     }
 
 }
@@ -267,6 +318,24 @@ enum Dates {
         let weekday = cal.component(.weekday, from: now)   // Sunday = 1 ... Saturday = 7
         return cal.date(byAdding: .day, value: (7 - weekday + 7) % 7, to: now) ?? now
     }
+
+    /// "2026-10-31 13:33" in London time, for "rate it after your visit" (D110).
+    static let stamp: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_GB_POSIX")
+        f.timeZone = TimeZone(identifier: "Europe/London")
+        f.dateFormat = "yyyy-MM-dd HH:mm"
+        return f
+    }()
+
+    /// "Saturday 31 October"
+    static let dayName: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_GB")
+        f.timeZone = TimeZone(identifier: "Europe/London")
+        f.dateFormat = "EEEE d MMMM"
+        return f
+    }()
 
     static func time(_ hour: Int, _ minute: Int = 0) -> Date {
         var cal = Calendar(identifier: .gregorian)
