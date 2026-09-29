@@ -315,5 +315,5 @@ struct RatingView: View {
 
 extension String {
     /// "free" → "Free", for lines shown under their own label.
-    var capitalizedFirst: String { prefix(1).uppercased() + dropFirst() }
+    var capitalizedFirst: String { prefix(1).uppercased() + String(dropFirst()) }
 }
