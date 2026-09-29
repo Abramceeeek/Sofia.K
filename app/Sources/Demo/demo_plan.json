@@ -62,14 +62,13 @@
     "lon": -0.08272
    },
    "chosen_for": [
-    "photo spots",
     "one of your interests"
    ],
    "why": [
     {
-     "feature": "photo_potential",
-     "label": "photo spots",
-     "contribution": 0.308
+     "feature": "local_novel",
+     "label": "local, new-to-you places",
+     "contribution": -0.33
     },
     {
      "feature": "aspiration_match",
@@ -77,9 +76,9 @@
      "contribution": 0.25
     },
     {
-     "feature": "contrast_reveal",
-     "label": "reveals and contrast",
-     "contribution": 0.238
+     "feature": "transfer_15_30",
+     "label": "transfers of 15-30 min",
+     "contribution": -0.22
     }
    ],
    "lines": [
@@ -154,23 +153,23 @@
    },
    "chosen_for": [
     "movement and views",
-    "photo spots"
+    "reveals and contrast"
    ],
    "why": [
     {
      "feature": "movement_views",
      "label": "movement and views",
-     "contribution": 0.476
+     "contribution": 0.408
     },
     {
-     "feature": "photo_potential",
-     "label": "photo spots",
-     "contribution": 0.308
+     "feature": "local_novel",
+     "label": "local, new-to-you places",
+     "contribution": -0.33
     },
     {
      "feature": "contrast_reveal",
      "label": "reveals and contrast",
-     "contribution": 0.238
+     "contribution": 0.204
     }
    ],
    "lines": [
@@ -249,14 +248,13 @@
     "lon": -0.010802
    },
    "chosen_for": [
-    "movement and views",
-    "awe"
+    "movement and views"
    ],
    "why": [
     {
      "feature": "movement_views",
      "label": "movement and views",
-     "contribution": 0.476
+     "contribution": 0.408
     },
     {
      "feature": "transfer_30_plus",
@@ -264,9 +262,9 @@
      "contribution": -0.385
     },
     {
-     "feature": "awe",
-     "label": "awe",
-     "contribution": 0.336
+     "feature": "crowds",
+     "label": "crowds",
+     "contribution": -0.365
     }
    ],
    "lines": [
@@ -323,10 +321,10 @@
    }
   }
  ],
- "value": 6.8,
+ "value": 4.102,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-09-29T18:20:49.419108+00:00",
+ "created_at": "2026-09-29T18:57:29.952746+00:00",
  "title": "Saturday 31 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",

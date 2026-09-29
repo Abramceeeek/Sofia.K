@@ -7,7 +7,7 @@
 # `personal: true` means the feature gets its own δ for each person; the rest stay at the
 # population level (interactions cannot be identified per person from 10 choices, Area 3).
 
-version: "0.1"
+version: "0.2"   # m134, m135: swipe cutpoints fitted from the swipe page, and a personal swiping level
 
 # Source-specific scale (Train §7.2): stated choices, swipes and ratings share the same βs
 # but differ in the variance of unobserved utility.
@@ -18,7 +18,9 @@ scales:
 
 # Ordered-logit thresholds on the latent utility, held fixed in the per-person update.
 cutpoints:
-  swipe: [-1.0, 1.0]                 # didn't enjoy | it was fine | loved it
+  # m134: fitted by `python -m brain.swipecal` on the swipe page (12 people, 235 answers, 27-28 Sep; se 0.72 and 0.60).
+  # The GUESS [-1, 1] implied 33% "didn't enjoy"; people answered 4% didn't / 41% fine / 55% loved.
+  swipe: [-5.15, -0.67]              # didn't enjoy | it was fine | loved it
   rating: [-2.0, -0.75, 0.75, 2.0]   # 1 | 2 | 3 | 4 | 5
 
 features:
@@ -58,3 +60,6 @@ features:
   # (data/aspiration.yaml). GUESS: +0.5 is about a third of one rating step; swipes can move it.
   # D97: starting weight lowered from +0.5 to +0.25 after the Test B dry run, so swipes and choices do more of the work
   - {name: aspiration_match, label: "places tied to a field that inspires them", group: person, mean: 0.25, delta_sd: 0.5, personal: true}
+  # m135: how positively a person swipes overall (some love every place, others call every place fine). It is 1 on
+  # every swipe and 0 everywhere else, so it soaks up that style without ever entering a plan's scores.
+  - {name: swipe_level,      label: "how positively they swipe",   group: response, mean: 0.0, delta_sd: 1.5, personal: true, source: "brain.swipecal on the swipe page, 29 Sep: sd 1.51 (se 0.71), 12 people"}

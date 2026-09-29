@@ -42,11 +42,22 @@ def conjoint_observation(pop: PopulationModel, x_a: dict[str, float], x_b: dict[
     return Observation(x=x, y=1 if chose_a else 0, scale=pop.scales["conjoint"])
 
 
+SWIPE_LEVEL = "swipe_level"   # m135: the person's overall swiping level, 1 on every swipe and 0 on everything else
+
+
+def swipe_vector(pop: PopulationModel, features: dict[str, float]) -> np.ndarray:
+    """x for one swipe: the place's features plus the person's swiping level."""
+    x = pop.vector(features)
+    if SWIPE_LEVEL in pop.names:
+        x[pop.names.index(SWIPE_LEVEL)] = 1.0
+    return x
+
+
 def swipe_observation(pop: PopulationModel, moment: Moment, reaction: str,
                       aspiration_match: float = 0.0) -> Observation | None:
     if reaction not in SWIPE_LEVELS:
         return None
-    x = pop.vector(moment_features(moment, aspiration_match=aspiration_match))
+    x = swipe_vector(pop, moment_features(moment, aspiration_match=aspiration_match))
     return Observation(x=x, y=SWIPE_LEVELS[reaction], scale=pop.scales["swipe"],
                        cutpoints=pop.cutpoints["swipe"])
 

@@ -149,9 +149,11 @@ def readback_lines(pop: PopulationModel, post: DeltaPosterior, top: int = 6,
     """Confident weights only, as plain lines Abram can turn into the read-back message.
 
     The aspiration weight is left out of that list: its prior alone looks "confident", and it only
-    matters for people who picked a field, so it is read back from their answer instead (D77).
+    matters for people who picked a field, so it is read back from their answer instead (D77). So is the
+    swiping level (m135): it is how someone answers, not what they like.
     """
-    ws = [w for w in named_weights(pop, post) if w.confident and w.name != "aspiration_match"]
+    ws = [w for w in named_weights(pop, post) if w.confident and w.name != "aspiration_match"
+          and pop.spec(w.name).group != "response"]
     ws.sort(key=lambda w: abs(w.weight), reverse=True)
     lines = []
     if field_labels:

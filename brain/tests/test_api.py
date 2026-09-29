@@ -56,7 +56,7 @@ def test_onboarding_serves_swipes_tasks_and_questions(client):
     r = client.get("/v1/onboarding", headers=h).json()
     assert len(r["conjoint_tasks"]) == 10
     places = r["swipe_places"]
-    assert [p["item"] for p in places] == [1, 2, 3, 4, 10, 11, 12, 13, 14, 15]   # the app's 10 of the locked 16 (D110)
+    assert [p["item"] for p in places] == [1, 2, 3, 4, 6, 11, 12, 13, 14, 15]   # the app's 10 of the locked 16 (D110, m136)
     assert places[0] == {"item": 1, "name": "Big Ben and Parliament Square"}
     assert "skip" in r["swipe"]["reactions"] and r["conjoint"]["no_preference"]
     assert len(r["open_questions"][0]["examples"]) == 3

@@ -2,6 +2,17 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-29 (night) — the swipe page results
+
+**Minor decisions made by Claude under D69 (for the checkpoint list).** Data: 12 people on the anonymous swipe page, 27–28 Sep. Note: `validation/swipe-page-results.md`; the raw file stays in `validation/raw/`.
+
+| # | What | Where |
+|---|---|---|
+| m134 | **The swipe cutpoints are fitted, not guessed.** The GUESS [−1, 1] implied 33% "didn't enjoy"; people answered 4% didn't, 41% fine and 55% loved. Fitted by marginal maximum likelihood in the Brain's own model: **−5.15 and −0.67** (se 0.72 and 0.60). The population version goes to 0.2, so any stored δ is refitted | `brain/data/priors.yaml`, `brain/src/brain/swipecal.py` |
+| m135 | **Each person gets a swiping level:** two of 12 loved every place they'd been to, and one called every place fine. The level soaks up that style, so it isn't read as taste for every tag. Its sd is fitted too: **1.51** (se 0.71). It is 0 on every moment, so it never enters a plan's scores, and it's left out of the read-back. The same idea for 1–5 ratings waits for real ratings (`after-9-nov.md` #20) | `priors.yaml`, `scoring.py`, `testb.py` |
+| m136 | **Hyde Park replaces Columbia Road among the app's 10**, as m123 planned: only 4 of 12 had been to Columbia Road, against 11 of 12 for Hyde Park. The choice was rerun with each place's familiarity and the new cutpoints. **10 swipes now keep about 89% of what 16 give** (it was 85%) | `swipe_items.yaml` `app_items`, `swipeinfo.py --answers` |
+| m137 | **The demo data is regenerated.** The demo plan keeps its stops and times; only its "chosen for" reasons change | `app/Sources/Demo/` |
+
 ## 2026-09-29 (evening) — Build 1 feedback from three people
 
 | # | Decision | Replaces | Why |

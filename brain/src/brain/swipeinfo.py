@@ -33,7 +33,7 @@ from .features import conjoint_plan_features, moment_features
 from .moments import MOMENT_TAGS, PLACE_TAGS, Moment, load_moments
 from .personal import _F, _f
 from .population import PopulationModel, load_population
-from .scoring import conjoint_observation, swipe_observation, update_person
+from .scoring import conjoint_observation, swipe_observation, swipe_vector, update_person
 
 TASTE = PLACE_TAGS + MOMENT_TAGS
 
@@ -59,7 +59,7 @@ def _personal_x(pop: PopulationModel, x: np.ndarray) -> np.ndarray:
 
 
 def swipe_info(pop: PopulationModel, m: Moment) -> np.ndarray:
-    x = pop.vector(moment_features(m))
+    x = swipe_vector(pop, moment_features(m))   # with the person's swiping level (m135)
     lam = pop.scales["swipe"]
     xt = _personal_x(pop, x)
     return lam ** 2 * ordered_info(lam * float(x @ pop.b_pop), pop.cutpoints["swipe"]) * np.outer(xt, xt)
@@ -88,9 +88,16 @@ class SubsetScore:
     logdet: float     # log det of the expected posterior precision (D-optimality)
 
 
+PBeen = float | dict[int, float]   # one rate for every place, or each place's own (swipecal.familiarity, m136)
+
+
+def _p(p_been: PBeen, item: int) -> float:
+    return p_been[item] if isinstance(p_been, dict) else p_been
+
+
 def score_subset(base: np.ndarray, infos: dict[int, np.ndarray], items: tuple[int, ...], C: np.ndarray,
-                 p_been: float) -> SubsetScore:
-    prec = base + p_been * sum((infos[i] for i in items), np.zeros_like(base))
+                 p_been: PBeen) -> SubsetScore:
+    prec = base + sum((_p(p_been, i) * infos[i] for i in items), np.zeros_like(base))
     cov = np.linalg.inv(prec)
     v = float(np.mean(np.einsum("ij,jk,ik->i", C, cov, C)))
     return SubsetScore(items, v, float(np.linalg.slogdet(prec)[1]))
@@ -101,7 +108,7 @@ def covers(items: tuple[int, ...], swipe: dict[int, Moment], min_per_tag: int) -
 
 
 def best_subsets(pop: PopulationModel, swipe: dict[int, Moment], tasks: dict, cards: list[Moment], k: int,
-                 p_been: float = 1.0, min_per_tag: int = 2) -> list[SubsetScore]:
+                 p_been: PBeen = 1.0, min_per_tag: int = 2) -> list[SubsetScore]:
     base = np.diag(1.0 / pop.delta_prior_sd ** 2) + conjoint_info(pop, tasks)
     infos = {i: swipe_info(pop, m) for i, m in swipe.items()}
     C = card_matrix(pop, cards)
@@ -121,7 +128,7 @@ def choose(ranked: list[SubsetScore], with_cards: set[int], tolerance: float = 0
 # ---- simulation -----------------------------------------------------------------------
 
 def simulate(pop: PopulationModel, swipe: dict[int, Moment], tasks: dict, cards: list[Moment],
-             sets: dict[str, tuple[int, ...]], n: int = 400, p_been: float = 0.75, top: int = 4,
+             sets: dict[str, tuple[int, ...]], n: int = 400, p_been: PBeen = 0.75, top: int = 4,
              seed: int = 7) -> dict[str, dict[str, np.ndarray]]:
     """Per-person results for each swipe set, on the same simulated people (so differences are paired)."""
     rng = np.random.default_rng(seed)
@@ -135,9 +142,9 @@ def simulate(pop: PopulationModel, swipe: dict[int, Moment], tasks: dict, cards:
         b = pop.b_person(delta)
         reactions = {}
         for i, m in swipe.items():
-            if rng.random() > p_been:
+            if rng.random() > _p(p_been, i):
                 continue
-            eta = lam_s * float(pop.vector(moment_features(m)) @ b)
+            eta = lam_s * float(swipe_vector(pop, moment_features(m)) @ b)
             u = eta + rng.logistic()
             reactions[i] = ("didnt_enjoy", "fine", "loved")[int(np.searchsorted(cut, u))]
         choices = []
@@ -172,6 +179,7 @@ def main() -> None:
     ap.add_argument("--min-per-tag", type=int, default=2)
     ap.add_argument("--n", type=int, default=400)
     ap.add_argument("--p-been", type=float, default=0.75)
+    ap.add_argument("--answers", help="the swipe page's answers CSV: each place's own P(been) (m136)")
     args = ap.parse_args()
     data = Path(args.data)
     pop = load_population(data / "priors.yaml")
@@ -179,8 +187,15 @@ def main() -> None:
     with_cards = {i for i, (_, c) in load_swipe_cards(data / "swipe_items.yaml").items() if c}
     tasks = load_tasks(data / "conjoint_design.csv")
     cards = [m for m in load_moments(data / "moments") if m.status == "ready"]
+    p_been: PBeen = args.p_been
+    if args.answers:
+        from .calibration import load_places
+        from .swipecal import familiarity, load_answers
+        fam = familiarity(load_answers(Path(args.answers)), load_places(data / "calibration" / "places.yaml"))
+        p_been = {i: fam[i][0] if i in fam else args.p_been for i in swipe}
+        print("P(been) by item:", p_been)
 
-    ranked = best_subsets(pop, swipe, tasks, cards, args.keep, min_per_tag=args.min_per_tag)
+    ranked = best_subsets(pop, swipe, tasks, cards, args.keep, p_been=p_been, min_per_tag=args.min_per_tag)
     pick = choose(ranked, with_cards)
     by_d = max(ranked, key=lambda r: r.logdet)
     print(f"{len(cards)} ready cards; {len(ranked)} subsets of {args.keep} pass the tag rule")
@@ -197,12 +212,13 @@ def main() -> None:
         elif k >= len(swipe):
             sets[k] = tuple(sorted(swipe))
         else:
-            sets[k] = best_subsets(pop, swipe, tasks, cards, k, min_per_tag=0)[0].items
+            sets[k] = best_subsets(pop, swipe, tasks, cards, k, p_been=p_been, min_per_tag=0)[0].items
         v = best_subsets(pop, swipe, tasks, cards, 0, min_per_tag=0)[0] if k == 0 else None
         print(f"  {k:>2} swipes: {sets[k]}" + (f"  (V {v.v:.3f})" if v else ""))
-    res = simulate(pop, swipe, tasks, cards, {str(k): v for k, v in sets.items()}, n=args.n, p_been=args.p_been)
+    res = simulate(pop, swipe, tasks, cards, {str(k): v for k, v in sets.items()}, n=args.n, p_been=p_been)
     full = res[str(max(sets))]
-    print(f"\n{args.n} simulated people, P(been) {args.p_been}; paired difference against {max(sets)} swipes (± 1 se)")
+    been = "each place's own P(been)" if isinstance(p_been, dict) else f"P(been) {p_been}"
+    print(f"\n{args.n} simulated people, {been}; paired difference against {max(sets)} swipes (± 1 se)")
     for k in sets:
         r = res[str(k)]
         d = r["regret"] - full["regret"]
