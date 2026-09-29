@@ -25,7 +25,7 @@ from .personal import DeltaPosterior
 from .planner import (Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
                       plan_day, spread_to_end)
 from .population import PopulationModel
-from .scoring import contributions, named_weights
+from .scoring import contributions, named_weights, value_gbp
 from .travel import LondonEstimate
 
 
@@ -43,11 +43,12 @@ def load_swipe_items(path: Path) -> dict[int, Moment]:
     return out
 
 
-def load_app_items(path: Path) -> list[int]:
-    """The swipe places the app shows (D110): `app_items`, or all of them if the list is missing."""
+def load_app_items(path: Path, later: bool = False) -> list[int]:
+    """The swipe places the app shows before the first plan (D110, D112): `app_items`, or all of them if the list is
+    missing. With `later`, the ones asked in "Improve future plans" (`app_items_later`)."""
     with open(path, encoding="utf-8") as f:
         d = yaml.safe_load(f)
-    items = [int(i) for i in d.get("app_items") or d["items"]]
+    items = [int(i) for i in (d.get("app_items_later") or [] if later else d.get("app_items") or d["items"])]
     unknown = set(items) - {int(i) for i in d["items"]}
     if unknown:
         raise ValueError(f"app_items not in items: {sorted(unknown)}")
@@ -296,7 +297,13 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
             nxt = (c.end, place, host.exit_station())
         else:
             m = by_id[_base(st.moment_id)]
-            stop = {"title": m.display_title(), "approach": approach_text(m, walked_from_stop=True),
+            worth = value_gbp(pop, b, m, cond, aspiration_match=asp[m.id])   # "worth about £V to you" (D88, D112)
+            stop = {"worth_gbp": round(worth) if worth >= 1 else None,
+                    # the moment card's approach line (D112): from where, the path, where you arrive; card text only
+                    "approach_steps": [{"label": k, "text": v} for k, v in
+                                       (("From", clean(m.approach.from_)), ("The way in", clean(m.approach.path)),
+                                        ("You arrive", clean(m.place.name))) if v],
+                    "title": m.display_title(), "approach": approach_text(m, walked_from_stop=True),
                     "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
                     "best_windows": m.best_windows(_sunset(brief)), "queue": m.experience.queue_min or 0,
                     "moment_id": m.id, "predicted": st.utility,
@@ -592,6 +599,10 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "best_text": _best_line(s), "cost_gbp": s["cost_gbp"], "cost_kind": s["cost_kind"],
             "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "lunch": s["lunch"],
             "familiar": s.get("familiar", False), "rateable": not s["moment_id"].startswith("lunch@"),
+            "worth_gbp": s.get("worth_gbp"),
+            "approach_steps": s.get("approach_steps") or [],
+            "best_light": s.get("best") or "",     # the card's light line, whatever the stop's time (D112)
+            "best_window": next((f"{hhmm(a)}–{hhmm(b)}" for a, b in s.get("best_windows") or []), ""),
             "pin": point.model_dump() if point else None,
             "chosen_for": [APP_LABELS.get(w["feature"], w["label"]) for w in s.get("why") or []
                            if w["contribution"] > 0][:2],

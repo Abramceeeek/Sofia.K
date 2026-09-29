@@ -25,6 +25,10 @@
    "lunch": true,
    "familiar": false,
    "rateable": false,
+   "worth_gbp": null,
+   "approach_steps": [],
+   "best_light": "",
+   "best_window": "",
    "pin": {
     "lat": 51.50861,
     "lon": -0.11694
@@ -57,6 +61,23 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
+   "worth_gbp": 23,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Monument or Tower Hill station"
+    },
+    {
+     "label": "The way in",
+     "text": "Walk down St Dunstan's Hill towards the river"
+    },
+    {
+     "label": "You arrive",
+     "text": "St Dunstan-in-the-East"
+    }
+   ],
+   "best_light": "Daylight",
+   "best_window": "",
    "pin": {
     "lat": 51.50967,
     "lon": -0.08272
@@ -147,6 +168,23 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
+   "worth_gbp": 31,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Bank, Monument or Fenchurch Street station"
+    },
+    {
+     "label": "The way in",
+     "text": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15"
+    },
+    {
+     "label": "You arrive",
+     "text": "The Garden at 120, Fen Court, 120 Fenchurch Street"
+    }
+   ],
+   "best_light": "At dusk, when the towers light up",
+   "best_window": "16:12–17:12",
    "pin": {
     "lat": 51.5121,
     "lon": -0.0815
@@ -243,6 +281,23 @@
    "lunch": false,
    "familiar": true,
    "rateable": true,
+   "worth_gbp": 26,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Cutty Sark DLR station"
+    },
+    {
+     "label": "The way in",
+     "text": "Walk into the park and up the steep hill to the statue beside the Royal Observatory: about 15-20 min, the last part uphill"
+    },
+    {
+     "label": "You arrive",
+     "text": "General Wolfe statue, Greenwich Park (by the Royal Observatory)"
+    }
+   ],
+   "best_light": "Late afternoon on a clear day",
+   "best_window": "14:37–16:52",
    "pin": {
     "lat": 51.481675,
     "lon": -0.010802
@@ -324,7 +379,7 @@
  "value": 4.102,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-09-29T18:57:29.952746+00:00",
+ "created_at": "2026-09-29T19:27:42.658584+00:00",
  "title": "Saturday 31 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",

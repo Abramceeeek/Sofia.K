@@ -18,7 +18,7 @@ enum AppConfig {
 }
 
 enum Route: Hashable {
-    case welcome, consent, onboarding, home
+    case welcome, example, consent, onboarding, home   // D112: an example day before consent
 }
 
 /// Onboarding up to the first plan (screens 3–6). D110: "about you" and photos moved after the first plan.
@@ -32,7 +32,7 @@ enum Step: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .bestHour: return "The best hour"
+        case .bestHour: return "A great moment"
         case .why: return "Why you go out"
         case .places: return "Places you've been"
         case .thisOrThat: return "This or that"
@@ -40,17 +40,9 @@ enum Step: Int, CaseIterable {
     }
 }
 
-/// "Improve my plans" (screens 11–13): optional, after the first plan (D110).
-enum ImprovePage: Int, CaseIterable {
-    case aboutYou, photos, shotCards
-
-    var title: String {
-        switch self {
-        case .aboutYou: return "A bit about you"
-        case .photos: return "Photos"
-        case .shotCards: return "Shot cards"
-        }
-    }
+/// The non-personal example day shown before consent (D112), bundled so it needs no network.
+enum ExampleDay {
+    static let plan: Plan? = try? BrainClient.bundled("example_day")
 }
 
 @MainActor
@@ -73,6 +65,8 @@ final class AppModel {
     var profile = Profile()
     var rated: Set<String> = []            // moment ids rated in this plan
     var improved = UserDefaults.standard.bool(forKey: "improved")
+    var morePlacesDone = UserDefaults.standard.bool(forKey: "morePlacesDone")   // D112: the 4 later places
+    var moreTasksDone = UserDefaults.standard.bool(forKey: "moreTasksDone")     // and the 5 later tasks
     var swappedIn: String?                 // the stop the last swap brought in, marked on the plan
     var lastRequest: PlanRequest?
 
@@ -154,11 +148,38 @@ final class AppModel {
         }
     }
 
+    /// Sends the reactions to these places (unanswered ones, after "Skip the rest", are simply not sent).
+    private func sendReactions(_ places: [SwipePlace]) async throws {
+        let items = places.compactMap { p in reactions[p.item].map { SwipeItem(item: p.item, reaction: $0) } }
+        if !items.isEmpty { try await client.sendSwipes(items) }
+    }
+
+    private func sendChoices(_ tasks: [ConjointTask]) async throws {
+        let items = tasks.compactMap { t in choices[t.task].map { ChoiceItem(task: t.task, choice: $0) } }
+        if !items.isEmpty { try await client.sendChoices(items) }
+    }
+
     func finishPlaces() async {
         await run {
-            let items = self.reactions.sorted { $0.key < $1.key }.map { SwipeItem(item: $0.key, reaction: $0.value) }
-            try await self.client.sendSwipes(items)
+            try await self.sendReactions(self.onboarding?.swipePlaces ?? [])
             self.next()
+        }
+    }
+
+    /// "Improve future plans": the places and tasks not asked before the first plan (D112).
+    func finishMorePlaces() async {
+        await run {
+            try await self.sendReactions(self.onboarding?.swipePlacesLater ?? [])
+            self.morePlacesDone = true
+            UserDefaults.standard.set(true, forKey: "morePlacesDone")
+        }
+    }
+
+    func finishMoreTasks() async {
+        await run {
+            try await self.sendChoices(self.onboarding?.conjointTasksLater ?? [])
+            self.moreTasksDone = true
+            UserDefaults.standard.set(true, forKey: "moreTasksDone")
         }
     }
 
@@ -166,8 +187,7 @@ final class AppModel {
     func finishThisOrThat() async {
         profile.whyTravel = why
         await run {
-            let items = self.choices.sorted { $0.key < $1.key }.map { ChoiceItem(task: $0.key, choice: $0.value) }
-            try await self.client.sendChoices(items)
+            try await self.sendChoices(self.onboarding?.conjointTasks ?? [])
             try await self.client.sendProfile(self.profile)
             UserDefaults.standard.set(true, forKey: "onboardingDone")
             await self.client.event("onboarding_done")
@@ -175,7 +195,7 @@ final class AppModel {
         }
     }
 
-    /// "Improve my plans": each page is sent as it finishes; `done` marks the whole step as finished.
+    /// "Improve future plans": saved when the person taps Save; `done` marks the step as finished.
     func saveImprovements(done: Bool) async {
         profile.whyTravel = why
         await run {
@@ -198,12 +218,22 @@ final class AppModel {
         await fetchPlan(request)
     }
 
-    /// The same day again, e.g. after "Improve my plans": no stops kept, nothing left out.
+    /// The same day again, e.g. after "Improve future plans": no stops kept, nothing left out.
     func replan() async {
         guard var request = lastRequest else { return }
         request.keep = []
         request.exclude = []
         await fetchPlan(request)
+    }
+
+    /// "Regenerate plan" (D112): the same day with none of the current stops; the Brain falls back to the best day
+    /// if nothing new fits. Off in the blind Test B comparison (Build 2).
+    func regenerate() async {
+        guard var request = lastRequest, let current = plan else { return }
+        request.keep = []
+        request.exclude = Array(Set(request.exclude + current.stops.filter(\.rateable).map(\.momentId))).sorted()
+        await fetchPlan(request)
+        await client.event("regenerate_plan")
     }
 
     /// "Swap this stop" (D110): the other stops stay; this card, and any swapped out before, are left out.
@@ -256,11 +286,15 @@ final class AppModel {
             try await self.client.deleteMe()
             UserDefaults.standard.removeObject(forKey: "onboardingDone")
             UserDefaults.standard.removeObject(forKey: "improved")
+            UserDefaults.standard.removeObject(forKey: "morePlacesDone")
+            UserDefaults.standard.removeObject(forKey: "moreTasksDone")
             AppModel.cache(nil as Plan?, "plan.json")
             AppModel.cache(nil as PlanRequest?, "request.json")
             self.plan = nil
             self.lastRequest = nil
             self.improved = false
+            self.morePlacesDone = false
+            self.moreTasksDone = false
             self.swappedIn = nil
             self.rated = []
             self.onboarding = nil

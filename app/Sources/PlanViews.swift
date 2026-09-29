@@ -1,3 +1,4 @@
+import Charts
 import MapKit
 import SwiftUI
 
@@ -35,7 +36,7 @@ struct HomeView: View {
     }
 }
 
-/// Screen 7. Build 1 plans from Charing Cross (the Test B start, D104), on a date and between times you choose.
+/// Screen 8. Build 1 plans from Charing Cross (the Test B start, D104), on a date and between times you choose.
 struct PlanFormView: View {
     @Environment(AppModel.self) private var model
     var onDone: (() -> Void)?
@@ -68,13 +69,17 @@ struct PlanFormView: View {
                         if model.errorMessage == nil { onDone?() }
                     }
                 }
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
         }
+        .themedList()
         .navigationTitle("Plan a day")
     }
 }
 
-/// Screen 8: the summary first (D110), then the map and the stops (the numbers match), or the stops as a list.
+/// Screen 9: the summary first and prominent (D110, D112), the day's shape, then the map and the stops (the
+/// numbers match), or the stops as a list. Regenerate, improve and plan another day at the end.
 struct PlanView: View {
     @Environment(AppModel.self) private var model
     let plan: Plan
@@ -82,20 +87,28 @@ struct PlanView: View {
     @AppStorage("planLayout") private var savedLayout = "map"
     @State private var showNewPlan = false
     @State private var showImprove = false
+    @State private var confirmRegenerate = false
 
     var body: some View {
         let layout = Binding(get: { forcedLayout ?? savedLayout }, set: { savedLayout = $0 })
         let asList = layout.wrappedValue == "list"
         List {
             Section {
-                PlanSummary(plan: plan)
+                PlanSummaryCard(plan: plan)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+            } header: {
+                Text(plan.title ?? "Your day")
+            }
+            Section {
+                DayShapeChart(stops: plan.stops, personal: true)
+                    .listRowBackground(Theme.surface)
                 Picker("Show", selection: layout) {
                     Text("Map").tag("map")
                     Text("List").tag("list")
                 }
                 .pickerStyle(.segmented)
-            } header: {
-                Text(plan.title ?? "Your day")
+                .listRowBackground(Theme.surface)
             }
             if !asList {
                 Section {
@@ -110,12 +123,14 @@ struct PlanView: View {
                     if asList, !stop.travelText.isEmpty {
                         Label(stop.travelText, systemImage: stop.travelMode == "walk" ? "figure.walk" : "tram")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.inkSoft)
+                            .listRowBackground(Theme.background)
                     }
                     NavigationLink(value: stop) {
                         StopRow(number: i + 1, stop: stop, showTravel: !asList,
                                 rated: model.rated.contains(stop.momentId), swapped: model.swappedIn == stop.momentId)
                     }
+                    .listRowBackground(Theme.surface)
                     .swipeActions {
                         if stop.rateable {
                             Button("Swap") { Task { await model.swap(stop) } }
@@ -129,34 +144,46 @@ struct PlanView: View {
                 Text("Open a stop to swap it for something else.")
             }
             Section {
+                Button {
+                    confirmRegenerate = true
+                } label: {
+                    Label("Regenerate plan", systemImage: "arrow.clockwise")
+                }
+                .disabled(model.busy)
+                .listRowBackground(Theme.surface)
                 if model.improved {
-                    Text("Thanks. Your next plans use what you told us.")
-                    Button("Plan this day again") { Task { await model.replan() } }
+                    Button("Plan this day again with your new answers") { Task { await model.replan() } }
                         .disabled(model.busy)
-                    Button("Change what you told us") { showImprove = true }
-                } else {
-                    Button {
-                        showImprove = true
-                    } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Improve my plans").font(.headline)
-                            Text("Optional, about 2 minutes: your budget, pace, interests and photos.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
+                        .listRowBackground(Theme.surface)
+                }
+                Button {
+                    showImprove = true
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.improved ? "Change your answers" : "Improve future plans").font(.headline)
+                        Text("Optional, about 2 minutes: a few more places and example days, your budget, pace and interests.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkSoft)
                     }
                 }
-            }
-            Section {
+                .listRowBackground(Theme.surface)
                 Button("Plan another day") {
                     model.planAnotherDay()
                     showNewPlan = true
                 }
+                .listRowBackground(Theme.surface)
             }
         }
+        .themedList()
         .navigationTitle("Your day")
         .navigationDestination(for: Stop.self) { stop in
             StopView(stop: stop)
+        }
+        .confirmationDialog("Make a new plan for this day?", isPresented: $confirmRegenerate, titleVisibility: .visible) {
+            Button("Regenerate plan") { Task { await model.regenerate() } }
+            Button("Keep this plan", role: .cancel) {}
+        } message: {
+            Text("You'll get different stops for the same times. This plan will be replaced.")
         }
         .sheet(isPresented: $showNewPlan) {
             NavigationStack {
@@ -167,12 +194,12 @@ struct PlanView: View {
     }
 }
 
-/// Cost per person, walking between stops and the finish time, at the top of the plan (D110).
-struct PlanSummary: View {
+/// Cost per person, walking between stops and the finish time, large and first (D110, D112).
+struct PlanSummaryCard: View {
     let plan: Plan
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             if let t = plan.totals {
                 HStack(alignment: .top, spacing: 12) {
                     Stat(value: Money.text(t.costGbp), label: "per person")
@@ -181,13 +208,16 @@ struct PlanSummary: View {
                 }
                 Text(breakdown(t))
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.inkSoft)
             }
             if let start = plan.summary?.first {
-                Text(start).font(.footnote).foregroundStyle(.secondary)
+                Text(start).font(.footnote).foregroundStyle(Theme.inkSoft)
             }
         }
-        .padding(.vertical, 4)
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.accent.opacity(0.7), lineWidth: 1))
     }
 
     private func breakdown(_ t: Totals) -> String {
@@ -203,10 +233,14 @@ struct Stat: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.title3.bold().monospacedDigit())
+            Text(value)
+                .font(Theme.title.monospacedDigit())
+                .foregroundStyle(Theme.accent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.footnote)
+                .foregroundStyle(Theme.inkSoft)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -219,6 +253,75 @@ enum Money {
     /// £21, or £21.50
     static func text(_ gbp: Double) -> String {
         gbp.rounded() == gbp ? "£\(Int(gbp))" : String(format: "£%.2f", gbp)
+    }
+}
+
+/// The day's shape (D112): each stop as a block across the day, taller where we expect you to enjoy it more.
+/// No numbers on the height: it's a picture of the day, not a score. The example day's blocks are all the same height.
+struct DayShapeChart: View {
+    let stops: [Stop]
+    let personal: Bool
+
+    private struct Block: Identifiable {
+        let id: Int
+        let start: Double
+        let end: Double
+        let height: Double
+    }
+
+    private static func minutes(_ hhmm: String) -> Double {
+        let parts = hhmm.split(separator: ":").compactMap { Double($0) }
+        return parts.count == 2 ? parts[0] * 60 + parts[1] : 0
+    }
+
+    private var blocks: [Block] {
+        let top = stops.compactMap(\.worthGbp).max() ?? 0
+        return stops.indices.map { i in
+            let s = stops[i]
+            let h = (personal && top > 0) ? max(0.35, (s.worthGbp ?? 0) / top) : 0.7
+            return Block(id: i + 1, start: Self.minutes(s.arrive), end: Self.minutes(s.depart), height: h)
+        }
+    }
+
+    var body: some View {
+        let bs = blocks
+        let lo = (bs.map(\.start).min() ?? 600) - 20
+        let hi = (bs.map(\.end).max() ?? 1020) + 20
+        let ticks = stride(from: (lo / 60).rounded(.up) * 60, through: hi, by: 60).map { $0 }
+        VStack(alignment: .leading, spacing: 8) {
+            Text("The shape of the day")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.inkSoft)
+            Chart(bs) { b in
+                RectangleMark(xStart: .value("Arrive", b.start), xEnd: .value("Leave", b.end),
+                              yStart: .value("Base", 0.0), yEnd: .value("Height", b.height))
+                    .foregroundStyle(Theme.accentFill)
+                    .cornerRadius(5)
+                    .annotation(position: .top) {
+                        Text("\(b.id)").font(.footnote.weight(.semibold)).foregroundStyle(Theme.ink)
+                    }
+            }
+            .chartYAxis(.hidden)
+            .chartYScale(domain: 0.0...1.3)
+            .chartXScale(domain: lo...hi)
+            .chartXAxis {
+                AxisMarks(values: ticks) { v in
+                    AxisGridLine().foregroundStyle(Theme.outline)
+                    AxisValueLabel {
+                        if let m = v.as(Double.self) {
+                            Text(String(format: "%02d:00", Int(m / 60))).font(.footnote).foregroundStyle(Theme.inkSoft)
+                        }
+                    }
+                }
+            }
+            .frame(height: 130)
+            .accessibilityLabel("The day's \(bs.count) stops from \(stops.first?.arrive ?? "") to \(stops.last?.depart ?? "")")
+            Text(personal ? "Taller blocks are the stops we expect you to enjoy most."
+                          : "Each block is a stop, from arrival to leaving.")
+                .font(.footnote)
+                .foregroundStyle(Theme.inkSoft)
+        }
+        .padding(.vertical, 6)
     }
 }
 
@@ -241,10 +344,10 @@ struct PlanMap: View {
     var body: some View {
         Map(initialPosition: .automatic) {
             MapPolyline(coordinates: pins.map(\.coordinate))
-                .stroke(Theme.accent, lineWidth: 3)
+                .stroke(Theme.accentFill, lineWidth: 3)
             ForEach(pins) { pin in
                 Marker(pin.title, monogram: Text("\(pin.id)"), coordinate: pin.coordinate)
-                    .tint(Theme.accent)
+                    .tint(Theme.accentFill)
             }
         }
         .accessibilityLabel("Map of the day's \(pins.count) stops")
@@ -262,16 +365,16 @@ struct StopRow: View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(number)")
                 .font(.headline)
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(Circle().fill(Theme.accent))
+                .foregroundStyle(Theme.onAccent)
+                .frame(width: 30, height: 30)
+                .background(Circle().fill(Theme.accentFill))
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(stop.arrive)–\(stop.depart)")
                     .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                Text(stop.title).font(.headline)
+                    .foregroundStyle(Theme.inkSoft)
+                Text(stop.title).font(Theme.title3).foregroundStyle(Theme.ink)
                 if showTravel, !stop.travelText.isEmpty {
-                    Text(stop.travelText).font(.footnote).foregroundStyle(.secondary)
+                    Text(stop.travelText).font(.footnote).foregroundStyle(Theme.inkSoft)
                 }
                 if swapped {
                     Label("Swapped in", systemImage: "arrow.triangle.2.circlepath").font(.footnote)
@@ -281,9 +384,10 @@ struct StopRow: View {
                 }
                 if !stop.chosenFor.isEmpty {
                     Text("Chosen for: " + stop.chosenFor.joined(separator: ", ")).font(.footnote)
+                        .foregroundStyle(Theme.ink)
                 }
                 if rated {
-                    Label("Rated", systemImage: "checkmark").font(.footnote).foregroundStyle(.secondary)
+                    Label("Rated", systemImage: "checkmark").font(.footnote).foregroundStyle(Theme.inkSoft)
                 }
             }
         }
@@ -299,7 +403,8 @@ extension Stop {
     }
 }
 
-/// Screen 9: the moment card. The arrival comes first, because the approach is the moment.
+/// Screen 10: the moment card in the new style (D112). Everything on it comes from the verified card or the plan:
+/// the approach line, the best-light window, the cost and "worth about £V to you".
 struct StopView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
@@ -311,19 +416,43 @@ struct StopView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("\(stop.arrive)–\(stop.depart)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                Text(stop.title).font(.title2.bold())
-                InfoBlock(label: "How to arrive",
-                          text: [stop.travelText, stop.approach].filter { !$0.isEmpty }.joined(separator: "\n"))
+            VStack(alignment: .leading, spacing: 18) {
+                MomentHero(stop: stop)
+                Text(stop.title)
+                    .font(Theme.title)
+                    .foregroundStyle(Theme.ink)
+                if stop.familiar {
+                    Label("A place you loved", systemImage: "heart").font(.subheadline).foregroundStyle(Theme.accent)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    InfoBlock(label: "Cost", text: stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst)
+                    if let worth = stop.worthGbp {
+                        Text("Worth about \(Money.text(worth)) to you: our estimate from your answers so far.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkSoft)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("How to arrive")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.inkSoft)
+                    if !stop.travelText.isEmpty {
+                        Text(stop.travelText).foregroundStyle(Theme.ink)
+                    }
+                    if let steps = stop.approachSteps, !steps.isEmpty {
+                        ApproachLine(steps: steps)
+                    } else if !stop.approach.isEmpty {
+                        Text(stop.approach).foregroundStyle(Theme.ink)
+                    }
+                }
+                .surfaceCard()
+                if let light = stop.bestLight, !light.isEmpty {
+                    BestLightBox(light: light, window: stop.bestWindow ?? "")
+                }
                 InfoBlock(label: "What happens", text: stop.what)
                 if let queue = stop.queueMin, queue > 0 {
                     InfoBlock(label: "Queue", text: "Allow about \(Int(queue)) min to queue.")
                 }
-                InfoBlock(label: "When it's best", text: stop.bestText.replacingOccurrences(of: "Best: ", with: ""))
-                InfoBlock(label: "Cost", text: stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst)
                 InfoBlock(label: "If it rains", text: stop.rainSwap)
                 HStack {
                     if let pin = stop.pin {
@@ -353,6 +482,7 @@ struct StopView: View {
             }
             .padding(20)
         }
+        .background(Theme.background)
         .navigationTitle(stop.title)
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog("Swap \(stop.title) for something else?", isPresented: $confirmSwap,
@@ -371,6 +501,7 @@ struct StopView: View {
             if let card = stop.card {
                 NavigationStack {
                     ScrollView { ShotCardView(card: card).padding(20) }
+                        .background(Theme.background)
                         .navigationTitle("Shot card")
                 }
             }
@@ -385,26 +516,130 @@ struct StopView: View {
             InfoBlock(label: "Rating",
                       text: "You can rate this stop after your visit, from \(stop.arrive) on \(Dates.dayName.string(from: opens)).")
         } else {
-            PrimaryButton(title: done ? "Rated. Thank you" : "Been here? Rate it 1–5", disabled: done) {
+            PrimaryButton(title: done ? "Rated. Thank you" : "Been here? How did it feel?", disabled: done) {
                 showRating = true
             }
         }
     }
 }
 
-/// Opened from a stop that has one. The layout is the example on screen 13.
+/// The big picture at the top of a moment card. Until the cards have photos (Abram's own, or Wikimedia Commons with
+/// a credit), it shows the satellite view of the place: real, not invented.
+struct MomentHero: View {
+    let stop: Stop
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            if let pin = stop.pin {
+                Map(initialPosition: .camera(MapCamera(centerCoordinate: pin.coordinate, distance: 900,
+                                                       heading: 0, pitch: 50))) {
+                    Marker(stop.title, coordinate: pin.coordinate).tint(Theme.accentFill)
+                }
+                .mapStyle(.imagery(elevation: .realistic))
+                .allowsHitTesting(false)
+            } else {
+                Theme.surfaceHigh
+            }
+            LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .center, endPoint: .bottom)
+                .allowsHitTesting(false)
+            VStack(alignment: .leading, spacing: 8) {
+                if let worth = stop.worthGbp {
+                    Text("Worth about \(Money.text(worth)) to you")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.onAccent)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Theme.accentFill, in: Capsule())
+                }
+                Text("\(stop.arrive)–\(stop.depart)")
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.white)
+            }
+            .padding(14)
+        }
+        .frame(height: 260)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(alignment: .topTrailing) {
+            Text("Photo to come")
+                .font(.footnote)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(.ultraThinMaterial, in: Capsule())
+                .padding(10)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The approach as one vertical line: from where, the way in, where you arrive (the card's own words).
+struct ApproachLine: View {
+    let steps: [ApproachStep]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(steps.indices, id: \.self) { i in
+                let last = i == steps.count - 1
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(spacing: 0) {
+                        Circle()
+                            .fill(last ? Theme.accentFill : Theme.surface)
+                            .overlay(Circle().stroke(Theme.accentFill, lineWidth: 2))
+                            .frame(width: 14, height: 14)
+                            .padding(.top, 3)
+                        if !last {
+                            Rectangle()
+                                .fill(Theme.accentFill.opacity(0.6))
+                                .frame(width: 2)
+                                .frame(maxHeight: .infinity)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(steps[i].label)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.inkSoft)
+                        Text(steps[i].text)
+                            .foregroundStyle(Theme.ink)
+                    }
+                    .padding(.bottom, last ? 0 : 14)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// The best-light window from the card, with the time on the plan's day when there is one.
+struct BestLightBox: View {
+    let light: String
+    let window: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label("Best light", systemImage: "sun.horizon")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.accent)
+            if !window.isEmpty {
+                Text(window).font(Theme.title2.monospacedDigit()).foregroundStyle(Theme.ink)
+            }
+            Text(light).foregroundStyle(Theme.inkSoft)
+        }
+        .surfaceCard()
+    }
+}
+
+/// Opened from a stop that has one.
 struct ShotCardView: View {
     let card: Card
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(card.title, systemImage: "camera").font(.headline)
+            Label(card.title, systemImage: "camera").font(Theme.title3).foregroundStyle(Theme.ink)
             if let shot = card.shotCard {
                 if let lat = shot.standAt?.lat, let lon = shot.standAt?.lon {
                     let here = CLLocationCoordinate2D(latitude: lat, longitude: lon)
                     Map(initialPosition: .region(MKCoordinateRegion(center: here, latitudinalMeters: 500,
                                                                     longitudinalMeters: 500))) {
-                        Marker("Stand here", coordinate: here).tint(Theme.accent)
+                        Marker("Stand here", coordinate: here).tint(Theme.accentFill)
                     }
                     .frame(height: 150)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -420,7 +655,7 @@ struct ShotCardView: View {
     }
 }
 
-/// Screen 10: after the visit, one tap 1–5 on large labelled buttons (D110).
+/// Screen 11: after the visit, one tap on a worded 1–5 scale (D110, D112).
 struct RatingView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -433,12 +668,13 @@ struct RatingView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("How did that feel?")
-                        .font(.title2.bold())
-                    ScaleRow(low: "Poor", high: "Wonderful", labels: Labels.feel, value: $rating)
+                        .font(Theme.title)
+                        .foregroundStyle(Theme.ink)
+                    ScaleRow(low: "Flat", high: "Unforgettable", labels: Labels.feel, value: $rating)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Would you bring someone here? (optional)")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.inkSoft)
                         Picker("Bring someone", selection: $bring) {
                             Text("Skip").tag("")
                             Text("Yes").tag("yes")
@@ -456,6 +692,7 @@ struct RatingView: View {
                 }
                 .padding(20)
             }
+            .background(Theme.background)
             .navigationTitle(stop.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

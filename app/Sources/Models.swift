@@ -17,8 +17,10 @@ struct Onboarding: Codable {
     let whyTravel: Choices
     let conjoint: Prompt?
     let swipe: Prompt?
-    let swipePlaces: [SwipePlace]
-    let conjointTasks: [ConjointTask]
+    let swipePlaces: [SwipePlace]                 // D112: before the first plan (6)
+    let swipePlacesLater: [SwipePlace]?           // in "Improve future plans" (4)
+    let conjointTasks: [ConjointTask]             // before the first plan (5)
+    let conjointTasksLater: [ConjointTask]?       // in "Improve future plans" (5)
     let aboutYou: [Question]
     let photos: [ScaleQuestion]
     let fields: Fields?
@@ -27,6 +29,7 @@ struct Onboarding: Codable {
 
 struct OpenQuestion: Codable, Hashable {
     let key: String
+    let title: String?             // D112: "A great moment"
     let text: String
     let followUp: String?
     let examples: [String]?        // D110: two or three short example answers
@@ -40,6 +43,7 @@ struct Choices: Codable, Hashable {
 struct Prompt: Codable, Hashable {
     let prompt: String
     let noPreference: String?      // "this or that" only (D110)
+    let optionLabel: String?       // "Example day" (D112)
 }
 
 struct SwipePlace: Codable, Hashable, Identifiable {
@@ -143,6 +147,11 @@ struct Totals: Codable, Hashable {
     let finish: String?
 }
 
+struct ApproachStep: Codable, Hashable {
+    let label: String              // "From", "The way in", "You arrive"
+    let text: String
+}
+
 struct Stop: Codable, Hashable, Identifiable {
     let momentId: String
     let key: String?               // the planner's id, sent back in `keep` when swapping another stop (D110)
@@ -165,6 +174,10 @@ struct Stop: Codable, Hashable, Identifiable {
     let pin: Point?
     let chosenFor: [String]
     let card: Card?
+    let worthGbp: Double?          // "Worth about £V to you" (D88, D112); nil for lunch slots and the example day
+    let approachSteps: [ApproachStep]?   // from where, the way in, where you arrive: the card's own text (D112)
+    let bestLight: String?         // the card's light line
+    let bestWindow: String?        // "16:12–17:12" on the plan's date
 
     var id: String { momentId + "@" + arrive }
 }

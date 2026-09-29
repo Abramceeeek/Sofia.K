@@ -139,13 +139,13 @@ def fit_cutpoints(rows: list[tuple[str, str, str]], places: list[Place], pop: Po
 
 
 def familiarity(rows: list[tuple[str, str, str]], places: list[Place], prior_n: float = 4.0,
-                exclude: set[str] = frozenset()) -> dict[int, tuple[float, int, int]]:
-    """P(been) for each locked swipe item: (shrunk estimate, people who have been, people who answered)."""
-    item_of = {p.id: p.swipe_item for p in places if p.swipe_item}
-    counts: dict[int, Counter] = defaultdict(Counter)
+                exclude: set[str] = frozenset()) -> dict[str, tuple[float, int, int]]:
+    """P(been) for each candidate, by place id: (shrunk estimate, people who have been, people who answered)."""
+    known = {p.id for p in places}
+    counts: dict[str, Counter] = defaultdict(Counter)
     for b, pid, a in rows:
-        if b not in exclude and pid in item_of and a in (*LEVELS, "not_been"):
-            counts[item_of[pid]]["been" if a in LEVELS else "not"] += 1
+        if b not in exclude and pid in known and a in (*LEVELS, "not_been"):
+            counts[pid]["been" if a in LEVELS else "not"] += 1
     been = sum(c["been"] for c in counts.values())
     total = sum(c["been"] + c["not"] for c in counts.values())
     pooled = been / total if total else 0.5
@@ -169,9 +169,10 @@ def main() -> None:
           f"implied {fit.implied_old}")
     print(f"fitted cutpoints {fit.cutpoints} (se {fit.se[0]}, {fit.se[1]}); swiping-level sd σ = {fit.sigma} "
           f"(se {fit.se[2]}); log-likelihood {fit.loglik}")
-    names = {p.swipe_item: p.name for p in places if p.swipe_item}
-    for i, (p, b, n) in familiarity(rows, places).items():
-        print(f"  item {i:>2}  {names[i]:<45} been {b:>2}/{n:<2}  P(been) {p}")
+    by_id = {p.id: p for p in places}
+    for pid, (p, b, n) in sorted(familiarity(rows, places).items(), key=lambda kv: -kv[1][0]):
+        item = by_id[pid].swipe_item
+        print(f"  {('item ' + str(item)) if item else 'new':>7}  {by_id[pid].name:<50} been {b:>2}/{n:<2}  P(been) {p}")
 
 
 if __name__ == "__main__":

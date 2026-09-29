@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Screen 14. Safety always goes to a person (D46). The reply never promises anything faster than "a few hours".
+/// Screen 13. Safety always goes to a person (D46). The reply never promises anything faster than "a few hours".
 /// D110: "Emergency: call 999" and "I feel unsafe / something's wrong" are two separate sections, so nobody
 /// mistakes telling us for calling for help.
 struct SafetyView: View {
@@ -45,7 +45,7 @@ struct SafetyView: View {
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
                         .buttonStyle(.bordered)
-                        .tint(.orange)
+                        .tint(Theme.accent)
                     } header: {
                         Text("Not an emergency")
                     }
@@ -55,6 +55,7 @@ struct SafetyView: View {
                     }
                 }
             }
+            .themedList()
             .navigationTitle("Help & safety")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
@@ -74,14 +75,14 @@ struct SafetyView: View {
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.borderedProminent)
-            .tint(.red)
+            .tint(Theme.danger)
         } header: {
             Text("Emergency")
         }
     }
 }
 
-/// Screen 15: what we store, and Delete my data (App Review 5.1.1(v); UK GDPR erasure).
+/// Screen 14: what we store, and Delete my data (App Review 5.1.1(v); UK GDPR erasure).
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -91,7 +92,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("What we store") {
-                    Text("Your answers, your reactions to 10 places, your this-or-that choices, anything you add under \"Improve my plans\", your plans and your ratings. No name, email or phone number: the app knows this phone only by a random code.")
+                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", your plans and your ratings. No name, email or phone number: the app knows this phone only by a random code.")
                 }
                 Section("Where, and for how long") {
                     Text("On our server in Frankfurt, in the EU, until 31 March 2027.")
@@ -111,6 +112,7 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .themedList()
             .navigationTitle("Your data")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
@@ -168,6 +170,7 @@ struct DeleteConfirmView: View {
                     .disabled(!confirmed || model.busy)
                 }
             }
+            .themedList()
             .navigationTitle("Delete my data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -178,7 +181,7 @@ struct DeleteConfirmView: View {
 }
 
 /// CI screenshots only (`-demo YES -screen <name>`): each screen with the bundled demo data, no network.
-/// Names and numbers match design/v0-screens.md and the review page (D110).
+/// Names and numbers match design/v0-screens.md and the review page (D110, D112).
 struct DemoScreen: View {
     @Environment(AppModel.self) private var model
     let name: String
@@ -186,22 +189,23 @@ struct DemoScreen: View {
     var body: some View {
         switch name {
         case "welcome": WelcomeView()                                           // 1
-        case "consent": ConsentView()                                           // 2
-        case "besthour", "why", "places", "thisorthat": OnboardingView()       // 3-6
-        case "planform": NavigationStack { PlanFormView() }                     // 7
-        case "planlist": HomeView(layout: "list")                               // 8, list view
-        case "stop", "rating":                                                  // 9, 10
-            if let stop = model.plan?.stops.first(where: { $0.rateable }) {
+        case "example": ExampleDayView()                                        // 2
+        case "consent": ConsentView()                                           // 3
+        case "besthour", "why", "places", "thisorthat": OnboardingView()       // 4-7
+        case "planform": NavigationStack { PlanFormView() }                     // 8
+        case "planlist": HomeView(layout: "list")                               // 9b
+        case "stop", "rating":                                                  // 10, 11
+            // the stop with the most on its card: a best-light window, then any stop that can be rated
+            if let stop = model.plan?.stops.first(where: { !($0.bestWindow ?? "").isEmpty })
+                ?? model.plan?.stops.first(where: { $0.rateable }) {
                 if name == "stop" { NavigationStack { StopView(stop: stop) } } else { RatingView(stop: stop) }
             }
-        case "aboutyou": ImproveView(page: .aboutYou)                           // 11
-        case "photos": ImproveView(page: .photos)                               // 12
-        case "shotcards": ImproveView(page: .shotCards)                         // 13
-        case "safety": SafetyView()                                             // 14
-        case "safetysend": SafetyView(confirming: true)                         // 14, after the button
-        case "settings": SettingsView()                                         // 15
-        case "delete": DeleteConfirmView()                                      // 15, delete
-        default: HomeView()                                                     // 8 ("plan")
+        case "improve": ImproveView()                                           // 12
+        case "safety": SafetyView()                                             // 13a
+        case "safetysend": SafetyView(confirming: true)                         // 13b
+        case "settings": SettingsView()                                         // 14a
+        case "delete": DeleteConfirmView()                                      // 14b
+        default: HomeView()                                                     // 9a ("plan")
         }
     }
 }

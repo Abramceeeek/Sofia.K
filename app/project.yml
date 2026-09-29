@@ -29,6 +29,7 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false   # no custom encryption, so no export-compliance question per build
+        UIAppFonts: [Newsreader.ttf]           # D112: serif titles (SIL Open Font License 1.1, Sources/Fonts)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.face.placeholder

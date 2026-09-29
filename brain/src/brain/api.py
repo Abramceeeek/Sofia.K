@@ -22,7 +22,7 @@ from . import dayplan, db, notify
 from .aspiration import NONE, load_aspiration
 from .config import Settings, get_settings
 from .features import Conditions, conjoint_plan_features
-from .moments import Moment, load_moments
+from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
@@ -34,6 +34,10 @@ from .travel import LondonEstimate
 # D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
 BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}
 EXAMPLE_SHOT_CARD = "m_waterloo_bridge_sunset"   # the Test A example (D106), shown on the photos screen
+# D112: the example day shown before consent. Not personal (population weights only), and a Sunday morning, so it
+# overlaps little with the Test B pair (a Saturday afternoon) and never shows the generic plan
+EXAMPLE_DAY = dict(start_name="Charing Cross station", start=(51.507819, -0.126137), start_time="10:00",
+                   end_time="14:00", stops=3, weekday="sun", day_label="An example Sunday morning")
 
 
 def _hash(token: str) -> str:
@@ -58,7 +62,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # the 16 locked swipe places (D107): their tags for the δ update, and the cards at each place for planning
         app.state.swipe_items = dayplan.load_swipe_items(settings.data_dir / "swipe_items.yaml")
         app.state.swipe_cards = dayplan.load_swipe_cards(settings.data_dir / "swipe_items.yaml")
-        app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # the 10 shown (D110)
+        app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # before the plan (D112)
+        app.state.app_items_later = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml", later=True)
+        app.state.example_day = None   # built on first request, then kept (D112)
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
@@ -174,9 +180,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "question": amap.question, "note": amap.note,
             "options": [{"key": f.code, "label": f.label} for f in amap.fields.values()]}
         example = ms.get(EXAMPLE_SHOT_CARD)
+        conj = app.state.onboarding.get("conjoint") or {}
+        upfront = conj.get("upfront") or [t["task"] for t in tasks]
+        later = conj.get("later") or []
+        by_task = {t["task"]: t for t in tasks}
+        place = lambda n: {"item": n, "name": app.state.swipe_cards[n][0]}
         return {**app.state.onboarding,
-                "swipe_places": [{"item": n, "name": app.state.swipe_cards[n][0]} for n in app.state.app_items],
-                "conjoint_tasks": tasks, "fields": fields,
+                # D112: asked before the first plan, and the rest in "Improve future plans"
+                "swipe_places": [place(n) for n in app.state.app_items],
+                "swipe_places_later": [place(n) for n in app.state.app_items_later],
+                "conjoint_tasks": [by_task[k] for k in upfront if k in by_task],
+                "conjoint_tasks_later": [by_task[k] for k in later if k in by_task],
+                "fields": fields,
                 "example_shot_card": card(example) if example and example.shot_card else None}
 
     @app.post("/v1/me/swipes", status_code=204)
@@ -264,15 +279,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in by_id else None
         post = posterior(user, p)
 
-        def run(keep: set[str]):
+        def run(keep: set[str], exclude: set[str]):
             return dayplan.personal_plan(
                 p, post, ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
                 fields=person_fields(user), loved=loved, disliked=disliked, familiar=body.familiar,
-                keep=keep, exclude=set(body.exclude))
+                keep=keep, exclude=exclude)
 
-        plan, stops, _, notes = run(set(body.keep))
-        if body.keep and (plan.status != "ok" or not plan.stops):   # a swap that can't keep the rest: replan the day
-            plan, stops, _, notes = run(set())
+        failed = lambda pl: pl.status != "ok" or not pl.stops
+        plan, stops, _, notes = run(set(body.keep), set(body.exclude))
+        if body.keep and failed(plan):      # a swap that can't keep the rest: replan the day without the old stop
+            plan, stops, _, notes = run(set(), set(body.exclude))
+        if body.exclude and failed(plan):   # "Regenerate plan" with nothing new left (D112): the best day again
+            plan, stops, _, notes = run(set(), set())
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
         for st in out:
@@ -285,6 +303,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {**plan_out(row), "title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
                 "solver_status": plan.status}
+
+    @app.get("/v1/example-day")
+    def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
+        """A non-personal example day, shown before consent (D112). No install token: nothing about the person is
+        used or stored. Built once from the population weights, then kept; the app ships a copy of it."""
+        if app.state.example_day is None:
+            e = EXAMPLE_DAY
+            brief = dayplan.Brief(start_name=e["start_name"], start=Point(lat=e["start"][0], lon=e["start"][1]),
+                                  start_time=e["start_time"], end_time=e["end_time"], stops=e["stops"],
+                                  budget_gbp=None, day_label=e["day_label"], weekday=e["weekday"],
+                                  temp_c=None, rain_prob=None, time_limit_s=settings.planner_time_limit_s)
+            ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+            by_id = {m.id: m for m in ready}
+            plan, stops, _, _ = dayplan.personal_plan(p, prior_only(p.delta_prior_sd), ready, brief, app.state.travel,
+                                                      familiar=False)
+            out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
+                   for pst, st in zip(plan.stops, stops)]
+            for st in out:
+                st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None   # nothing personal to explain
+                if st["rateable"] and st["moment_id"] in by_id:
+                    st["card"] = card(by_id[st["moment_id"]])
+            app.state.example_day = {"id": 0, "title": brief.day_label, "date": None, "stops": out,
+                                     "summary": dayplan.summary_lines(brief, stops),
+                                     "totals": dayplan.plan_totals(stops, app.state.travel)}
+        return app.state.example_day
 
     @app.get("/v1/me/plans")
     def my_plans(user: db.User = Depends(current_user)):

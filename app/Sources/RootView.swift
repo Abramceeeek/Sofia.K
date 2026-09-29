@@ -10,12 +10,14 @@ struct RootView: View {
             } else {
                 switch model.route {
                 case .welcome: WelcomeView()
+                case .example: ExampleDayView()
                 case .consent: ConsentView()
                 case .onboarding: OnboardingView()
                 case .home: HomeView()
                 }
             }
         }
+        .background(Theme.background)
         .overlay(alignment: .top) {
             if model.waking { WakingBanner() }
         }
@@ -46,8 +48,8 @@ struct WakingBanner: View {
     }
 }
 
-/// A 1–5 scale as five large, equal buttons (D110: clear 1–5 buttons). With `labels`, each number carries a word;
-/// without, the two ends are labelled underneath.
+/// A 1–5 scale as five large, equal buttons. With `labels`, each number carries a word (the rating: Flat …
+/// Unforgettable, D112); without, the two ends are labelled underneath. Text never goes below footnote size.
 struct ScaleRow: View {
     let low: String
     let high: String
@@ -55,49 +57,67 @@ struct ScaleRow: View {
     @Binding var value: Int?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            if let labels, labels.count == 5 {
+                // Worded scale: one full-width row per step, so the words never shrink
                 ForEach(1...5, id: \.self) { n in
                     let on = value == n
-                    let word: String? = labels.flatMap { $0.count == 5 ? $0[n - 1] : nil }
                     Button {
                         value = n
                     } label: {
-                        VStack(spacing: 2) {
-                            Text("\(n)").font(.title2.bold())
-                            if let word {
-                                Text(word)
-                                    .font(.caption2)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
-                            }
+                        HStack(spacing: 14) {
+                            Text("\(n)")
+                                .font(Theme.title3)
+                                .frame(width: 28)
+                            Text(labels[n - 1])
+                                .font(.body)
+                            Spacer()
+                            if on { Image(systemName: "checkmark") }
                         }
-                        .frame(maxWidth: .infinity, minHeight: 60)
-                        .foregroundStyle(on ? Color.white : Color.primary)
-                        .background(on ? Theme.accent : Color(.secondarySystemBackground),
-                                    in: RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(on ? Theme.onAccent : Theme.ink)
+                        .padding(.horizontal, 16)
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .background(on ? Theme.accentFill : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
                         .overlay(RoundedRectangle(cornerRadius: 12)
-                            .stroke(on ? Theme.accent : Color(.separator), lineWidth: 1))
+                            .stroke(on ? Theme.accentFill : Theme.outline, lineWidth: 1))
                     }
                     .buttonStyle(.borderless)
-                    .accessibilityLabel(word.map { "\(n) of 5, \($0)" } ?? "\(n) of 5")
+                    .accessibilityLabel("\(n) of 5, \(labels[n - 1])")
                     .accessibilityAddTraits(on ? .isSelected : [])
                 }
-            }
-            if labels == nil {
+            } else {
+                HStack(spacing: 8) {
+                    ForEach(1...5, id: \.self) { n in
+                        let on = value == n
+                        Button {
+                            value = n
+                        } label: {
+                            Text("\(n)")
+                                .font(Theme.title3)
+                                .frame(maxWidth: .infinity, minHeight: 56)
+                                .foregroundStyle(on ? Theme.onAccent : Theme.ink)
+                                .background(on ? Theme.accentFill : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
+                                .overlay(RoundedRectangle(cornerRadius: 12)
+                                    .stroke(on ? Theme.accentFill : Theme.outline, lineWidth: 1))
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("\(n) of 5")
+                        .accessibilityAddTraits(on ? .isSelected : [])
+                    }
+                }
                 HStack {
                     Text("1 = \(low)")
                     Spacer()
                     Text("5 = \(high)")
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.footnote)
+                .foregroundStyle(Theme.inkSoft)
             }
         }
     }
 }
 
-/// The main action at the bottom of a screen.
+/// The main action at the bottom of a screen: amber, with dark text in both modes.
 struct PrimaryButton: View {
     let title: String
     var disabled = false
@@ -107,9 +127,11 @@ struct PrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 44)
+                .foregroundStyle(disabled ? Theme.inkSoft : Theme.onAccent)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(disabled ? Theme.surfaceHigh : Theme.accentFill, in: RoundedRectangle(cornerRadius: 14))
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.plain)
         .disabled(disabled)
     }
 }
@@ -124,8 +146,9 @@ struct InfoBlock: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(label)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.inkSoft)
                 Text(text)
+                    .foregroundStyle(Theme.ink)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

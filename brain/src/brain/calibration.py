@@ -118,6 +118,7 @@ class Place:
     line: str
     tags: dict[str, int]
     swipe_item: int | None = None
+    cards: tuple[str, ...] = ()   # ready moment cards at the same place (D111; the locked 16 keep theirs in swipe_items)
 
 
 def load_places(path: Path) -> list[Place]:
@@ -127,7 +128,7 @@ def load_places(path: Path) -> list[Place]:
         tags = {**p.get("place", {}), **p.get("moment", {})}
         places.append(Place(id=p["id"], name=p["name"], area=p.get("area", ""), icon=p.get("icon", ""),
                             line=p.get("line", ""), tags={t: int(tags.get(t, 0)) for t in TAGS},
-                            swipe_item=p.get("swipe_item")))
+                            swipe_item=p.get("swipe_item"), cards=tuple(p.get("cards") or ())))
     ids = [p.id for p in places]
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate place ids in " + str(path))

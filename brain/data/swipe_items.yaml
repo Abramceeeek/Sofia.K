@@ -20,7 +20,10 @@
 # familiar favourite (testb --familiar); cards at a place they didn't enjoy are never planned for them.
 
 version: "0.1-draft"
-app_items: [1, 2, 3, 4, 6, 11, 12, 13, 14, 15]   # D110, m136
+# D112: 6 before the first plan, the other 4 in "Improve future plans"; chosen together with the 5 upfront
+# "this or that" tasks (onboarding.yaml) by expected regret (`python -m brain.swipeinfo --upfront 6,5`)
+app_items: [4, 6, 11, 12, 13, 14]
+app_items_later: [1, 2, 3, 15]
 items:
   1:
     name: "Big Ben and Parliament Square"

@@ -32,8 +32,8 @@ def test_familiarity_is_shrunk_toward_the_pooled_rate():
     places = [_place(1, {}, 1), _place(2, {}, 2)]
     rows = [(f"b{k}", "p1", "loved") for k in range(4)] + [(f"b{k}", "p2", "not_been") for k in range(4)]
     fam = familiarity(rows, places, prior_n=4)
-    assert fam[1] == (round((4 + 4 * 0.5) / 8, 3), 4, 4)    # pooled rate 0.5: 4/4 been becomes 0.75
-    assert fam[2] == (round((0 + 4 * 0.5) / 8, 3), 0, 4)
+    assert fam["p1"] == (round((4 + 4 * 0.5) / 8, 3), 4, 4)    # pooled rate 0.5: 4/4 been becomes 0.75
+    assert fam["p2"] == (round((0 + 4 * 0.5) / 8, 3), 0, 4)
 
 
 def test_fit_recovers_cutpoints_and_the_level_spread_from_simulated_swipes():

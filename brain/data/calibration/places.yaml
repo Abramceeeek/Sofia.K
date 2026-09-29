@@ -5,6 +5,9 @@
 # `swipe_item` links a candidate to the current draft list (data/swipe_items.yaml); a test checks
 # that its tags match that file. The other 14 are new candidates.
 #
+# D111: the app's final 10 are chosen from all 30 (`python -m brain.swipeinfo --candidates all`). `cards` lists the
+# ready moment cards at the same place for the new candidates (the locked 16 keep theirs in swipe_items.yaml).
+#
 # STATUS: DRAFT. Tags are Claude's first draft from each name (the LLM drafts, Abram corrects).
 # They are judgements, not facts, and are used here only to check that the chosen 16 cover every
 # taste feature. `line` is what people see under the name: plain, neutral, no praise.
@@ -159,6 +162,7 @@ places:
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}
   - id: covent_garden
+    cards: [a_covent_garden_soho]   # D111: ready cards at the same place
     name: "Covent Garden"
     area: "West End"
     icon: "🎭"
@@ -180,6 +184,7 @@ places:
     place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
   - id: richmond_park
+    cards: [m_richmond_park_view]   # D111: ready cards at the same place
     name: "Richmond Park"
     area: "Richmond"
     icon: "🦌"
@@ -194,6 +199,7 @@ places:
     place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   - id: st_pauls
+    cards: [m_evensong_st_pauls]   # D111: ready cards at the same place
     name: "St Paul's Cathedral"
     area: "City of London"
     icon: "⛪"
@@ -230,6 +236,7 @@ places:
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
   # Added by Abram 2026-09-27 (D85), replacing Oxford Street and Piccadilly Circus / Leicester Square
   - id: go_karting
+    cards: [m_go_karting_canary_wharf]   # D111: ready cards at the same place
     name: "Go-karting"
     area: "Indoor tracks around London"
     icon: "🏎️"
@@ -237,6 +244,7 @@ places:
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 0, photo_potential: 0}
     moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 2}
   - id: canary_wharf_towers
+    cards: [m_canary_wharf_towers]   # D111: ready cards at the same place
     name: "Canary Wharf among the towers"
     area: "Canary Wharf"
     icon: "🏙️"

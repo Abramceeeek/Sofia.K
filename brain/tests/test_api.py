@@ -54,10 +54,14 @@ def test_unknown_token_is_rejected(client):
 def test_onboarding_serves_swipes_tasks_and_questions(client):
     h, _ = install(client)
     r = client.get("/v1/onboarding", headers=h).json()
-    assert len(r["conjoint_tasks"]) == 10
+    # D112: 6 places and 5 tasks before the first plan, the rest in "Improve future plans"
+    assert [t["task"] for t in r["conjoint_tasks"]] == [2, 4, 6, 8, 9]
+    assert [t["task"] for t in r["conjoint_tasks_later"]] == [1, 3, 5, 7, 10]
     places = r["swipe_places"]
-    assert [p["item"] for p in places] == [1, 2, 3, 4, 6, 11, 12, 13, 14, 15]   # the app's 10 of the locked 16 (D110, m136)
-    assert places[0] == {"item": 1, "name": "Big Ben and Parliament Square"}
+    assert [p["item"] for p in places] == [4, 6, 11, 12, 13, 14]
+    assert [p["item"] for p in r["swipe_places_later"]] == [1, 2, 3, 15]
+    assert places[0] == {"item": 4, "name": "British Museum"}
+    assert r["open_questions"][0]["text"].startswith("Tell us about a great moment")
     assert "skip" in r["swipe"]["reactions"] and r["conjoint"]["no_preference"]
     assert len(r["open_questions"][0]["examples"]) == 3
     assert r["fields"]["question"].startswith("What interests you most?")
@@ -84,7 +88,7 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
                       ).status_code == 204
 
     w = client.get("/v1/me/weights", headers=h).json()
-    assert w["n_observations"] == 12          # 2 informative swipes + 10 choices
+    assert w["n_observations"] == 7           # 2 informative swipes + the 5 upfront choices (D112)
     rain = next(x for x in w["weights"] if x["name"] == "rain_outdoor")
     assert rain["weight"] < -1.0 and rain["direction"] == "dislikes"
 
@@ -106,13 +110,15 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
         assert st["pin"] and st["lines"] and st["cost_text"] and st["arrive"] >= "10:00"
     first = next(st for st in plan["stops"] if st["rateable"])
     assert first["why"] and first["card"]["id"] == first["moment_id"]
+    assert all(st["worth_gbp"] is None or st["worth_gbp"] >= 1 for st in plan["stops"])   # "worth about £V" (D112)
+    assert any(st["worth_gbp"] for st in plan["stops"] if st["rateable"])
 
     assert client.post(f"/v1/me/plans/{plan['id']}/feedback", headers=h,
                        json={"chosen": True, "fit_rating": 4, "reason": "short walks"}).status_code == 204
     r = client.post("/v1/me/ratings", headers=h, json={
         "moment_id": first["moment_id"], "rating": 5, "plan_id": plan["id"], "would_bring": True,
         "conditions": {"temp_c": 20}, "travel_min": first["travel_min"]})
-    assert r.status_code == 201 and r.json()["n_observations"] == 13
+    assert r.status_code == 201 and r.json()["n_observations"] == 8
     assert client.post("/v1/me/events", headers=h, json={"name": "onboarding_done", "props": {"seconds": 900}}
                        ).status_code == 204
 
@@ -227,3 +233,28 @@ def test_swap_this_stop_keeps_the_rest_and_brings_something_new(client):
     assert out["moment_id"] not in ids and len(ids) == 3
     assert {k.split("#")[0] for k in kept} <= set(ids)   # the other stops stay
     assert second["id"] != first["id"]
+
+
+def test_example_day_needs_no_install_and_holds_nothing_personal(client):
+    """D112: shown before consent, so no token; population weights only; no reasons or worth."""
+    r = client.get("/v1/example-day")
+    assert r.status_code == 200
+    day = r.json()
+    assert day["title"] == "An example Sunday morning" and 2 <= len(day["stops"]) <= 3
+    assert all(st["chosen_for"] == [] and st["worth_gbp"] is None for st in day["stops"])
+    assert day["totals"]["finish"] <= "14:00"
+    assert client.get("/v1/example-day").json() == day   # built once, then kept
+
+
+def test_regenerate_leaves_out_the_current_stops_or_falls_back(client):
+    """D112, "Regenerate plan": the app sends the current stops in `exclude`; with nothing new left, the best day."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "13:30", "end_time": "18:00", "stops": 3,
+            "familiar": False}
+    first = client.post("/v1/me/plans", headers=h, json=body).json()
+    old = [st["moment_id"] for st in first["stops"] if st["rateable"]]
+    again = client.post("/v1/me/plans", headers=h, json={**body, "exclude": old}).json()
+    assert again["stops"] and not set(old) & {st["moment_id"] for st in again["stops"]}
+    every = [m["id"] for m in client.get("/v1/moments", headers=h).json()]
+    fallback = client.post("/v1/me/plans", headers=h, json={**body, "exclude": every[:40]}).json()
+    assert fallback["stops"]

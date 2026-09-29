@@ -27,12 +27,31 @@ def test_choose_prefers_places_with_cards_only_within_the_tolerance():
     assert choose(ranked, with_cards={4}).items == (1, 2)          # (3, 4) is 20% worse: information wins
 
 
-def test_the_apps_places_are_locked_items_and_cover_every_taste_tag_twice():
-    """D110: the 10 are a subset of the locked 16 (so Test A answers stay comparable) and keep each tag learnable."""
-    items = load_app_items(DATA / "swipe_items.yaml")
+def test_the_apps_places_are_locked_items_and_cover_every_taste_tag():
+    """D110, D112: 6 before the first plan (each tag on at least one) and 4 later (each tag on two of the 10),
+    all from the locked 16, so Test A answers stay comparable."""
+    upfront = load_app_items(DATA / "swipe_items.yaml")
+    later = load_app_items(DATA / "swipe_items.yaml", later=True)
     swipe = load_swipe_items(DATA / "swipe_items.yaml")
-    assert len(items) == 10 and set(items) <= set(swipe)
+    assert len(upfront) == 6 and len(later) == 4 and not set(upfront) & set(later)
+    assert set(upfront) | set(later) <= set(swipe)
     with open(DATA / "swipe_items.yaml", encoding="utf-8") as f:
         assert len(yaml.safe_load(f)["items"]) == 16
     for tag in PLACE_TAGS + MOMENT_TAGS:
-        assert sum(1 for i in items if (swipe[i].tag(tag) or 0) >= 1) >= 2, tag
+        assert any((swipe[i].tag(tag) or 0) >= 1 for i in upfront), tag
+        assert sum(1 for i in upfront + later if (swipe[i].tag(tag) or 0) >= 1) >= 2, tag
+
+
+def test_exchange_search_finds_the_exhaustive_best_on_the_locked_16():
+    """D111: the all-30 choice uses an exchange search; on the 16, where every subset can be checked, it must agree."""
+    from brain.moments import load_moments
+    from brain.population import load_population
+    from brain.swipeinfo import best_subsets, search_subsets
+    from brain.testb import load_tasks
+    pop = load_population(DATA / "priors.yaml")
+    swipe = load_swipe_items(DATA / "swipe_items.yaml")
+    tasks = load_tasks(DATA / "conjoint_design.csv")
+    cards = [m for m in load_moments(DATA / "moments") if m.status == "ready"]
+    exhaustive = best_subsets(pop, swipe, tasks, cards, 10)[0]
+    best, _ = search_subsets(pop, swipe, tasks, cards, 10, restarts=6)
+    assert best.items == exhaustive.items and abs(best.v - exhaustive.v) < 1e-9

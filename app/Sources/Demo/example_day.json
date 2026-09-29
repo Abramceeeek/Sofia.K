@@ -1,0 +1,240 @@
+{
+ "id": 0,
+ "title": "An example Sunday morning",
+ "date": null,
+ "stops": [
+  {
+   "moment_id": "lunch@start",
+   "key": "lunch@start",
+   "title": "Lunch near Charing Cross station",
+   "arrive": "11:30",
+   "depart": "12:15",
+   "travel_min": 0,
+   "travel_mode": "walk",
+   "travel_text": "",
+   "approach": "",
+   "what": "Pick a café, pub or food stall nearby.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 15.0,
+   "cost_kind": "food",
+   "cost_text": "Food: about £15",
+   "rain_swap": "",
+   "lunch": true,
+   "familiar": false,
+   "rateable": false,
+   "worth_gbp": null,
+   "approach_steps": [],
+   "best_light": "",
+   "best_window": "",
+   "pin": {
+    "lat": 51.507819,
+    "lon": -0.126137
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Pick a café, pub or food stall nearby.",
+    "Food: about £15"
+   ]
+  },
+  {
+   "moment_id": "m_park_break_embankment",
+   "key": "m_park_break_embankment",
+   "title": "A park break in Victoria Embankment Gardens",
+   "arrive": "12:25",
+   "depart": "13:05",
+   "travel_min": 5,
+   "travel_mode": "walk",
+   "travel_text": "Getting there: about 5 min on foot from Charing Cross station.",
+   "approach": "Walk into the gardens beside the station.",
+   "what": "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "From Trafalgar Square into the quiet of the National Gallery, about 10 min away on foot.",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "worth_gbp": null,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Embankment station"
+    },
+    {
+     "label": "The way in",
+     "text": "Walk into the gardens beside the station"
+    },
+    {
+     "label": "You arrive",
+     "text": "Victoria Embankment Gardens, by Embankment station"
+    }
+   ],
+   "best_light": "",
+   "best_window": "",
+   "pin": {
+    "lat": 51.507058,
+    "lon": -0.122666
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Getting there: about 5 min on foot from Charing Cross station.",
+    "Walk into the gardens beside the station.",
+    "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.",
+    "Cost: free",
+    "If it rains: From Trafalgar Square into the quiet of the National Gallery, about 10 min away on foot."
+   ],
+   "card": {
+    "id": "m_park_break_embankment",
+    "title": "A park break in Victoria Embankment Gardens",
+    "status": "ready",
+    "place": {
+     "name": "Victoria Embankment Gardens, by Embankment station",
+     "overture_id": null,
+     "lat": 51.507058,
+     "lon": -0.122666
+    },
+    "approach": {
+     "from": "Embankment station",
+     "path": "Walk into the gardens beside the station",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.507058,
+      "lon": -0.122666
+     }
+    },
+    "what_happens": "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.",
+    "best_time": {
+     "time_of_day": [
+      "10:00-16:00"
+     ],
+     "light": null,
+     "weather": [
+      "dry"
+     ],
+     "company": null,
+     "crowd_window": null,
+     "opening_hours": "07:30 to 18:00 (16 Oct to end of BST), 16:30 after; free. Westminster City Council via search, 2026-09-28",
+     "days": [],
+     "best_window": [],
+     "best_around_sunset": null
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  },
+  {
+   "moment_id": "m_rfh_foyers_rest",
+   "key": "m_rfh_foyers_rest",
+   "title": "A rest in the Royal Festival Hall's free foyers by the river",
+   "arrive": "13:18",
+   "depart": "13:56",
+   "travel_min": 8,
+   "travel_mode": "walk",
+   "travel_text": "Getting there: about 8 min on foot from Victoria Embankment Gardens.",
+   "approach": "Walk to the Southbank Centre by the river and go into the Royal Festival Hall.",
+   "what": "You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "worth_gbp": null,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Waterloo or Embankment station"
+    },
+    {
+     "label": "The way in",
+     "text": "Walk to the Southbank Centre by the river and go into the Royal Festival Hall"
+    },
+    {
+     "label": "You arrive",
+     "text": "Royal Festival Hall, Southbank Centre"
+    }
+   ],
+   "best_light": "",
+   "best_window": "",
+   "pin": {
+    "lat": 51.505768,
+    "lon": -0.1168
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Getting there: about 8 min on foot from Victoria Embankment Gardens.",
+    "Walk to the Southbank Centre by the river and go into the Royal Festival Hall.",
+    "You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.",
+    "Cost: free"
+   ],
+   "card": {
+    "id": "m_rfh_foyers_rest",
+    "title": "A rest in the Royal Festival Hall's free foyers by the river",
+    "status": "ready",
+    "place": {
+     "name": "Royal Festival Hall, Southbank Centre",
+     "overture_id": null,
+     "lat": 51.505768,
+     "lon": -0.1168
+    },
+    "approach": {
+     "from": "Waterloo or Embankment station",
+     "path": "Walk to the Southbank Centre by the river and go into the Royal Festival Hall",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.505768,
+      "lon": -0.1168
+     }
+    },
+    "what_happens": "You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.",
+    "best_time": {
+     "time_of_day": [
+      "10:00-18:00"
+     ],
+     "light": null,
+     "weather": [
+      "any"
+     ],
+     "company": null,
+     "crowd_window": null,
+     "opening_hours": "Tue-Sun 10:00-23:00, closed Monday; foyers free. Southbank Centre via search, 2026-09-28",
+     "days": [
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+     ],
+     "best_window": [],
+     "best_around_sunset": null
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  }
+ ],
+ "summary": [
+  "Start: Charing Cross station at 10:00 · 3 stops, including lunch",
+  "Costs: about £15 for food and entry, all on foot"
+ ],
+ "totals": {
+  "cost_gbp": 15.0,
+  "spend_gbp": 15.0,
+  "transport_gbp": 0.0,
+  "walk_min": 13,
+  "walk_km": 1.0,
+  "finish": "13:56"
+ }
+}
