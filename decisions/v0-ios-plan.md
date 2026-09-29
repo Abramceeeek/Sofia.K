@@ -36,6 +36,24 @@
 >     - safety alerts reaching Abram, with the backup helper's Part A signed (D55);
 >   - **before strangers:** the ICO re-check (D108), and a paid database (money). Render allows one free Postgres per workspace, and the shared one expires about 27 Oct.
 >
+> - **Build 1 status (29 Sep):** the SwiftUI app compiled on its first CI run. It covers screens 1–8, 14–17, 19 and 20, plus "plan a day". CI takes a screenshot of each screen with demo data. What's left for Build 1 is Abram's Apple set-up and the Brain on Render (`app/README.md`), then one round of fixes on his phone.
+> - **Build 2 scope (Tests A–C inside the app, ~14 Oct):**
+>   - **Brain:**
+>     - the Test B pair: the personal plan on the fixed Test B brief, with the familiar favourite off and ending within 30 min of the generic plan, which is served from the real `generic.yaml`;
+>     - a random Plan 1 / Plan 2 order per person, stored on the server;
+>     - pair feedback: the choice, "fits me" 1–5 for each plan, and why;
+>     - participant-facing read-back lines;
+>     - survey keys;
+>     - a safety-alert route to Abram's phone (the service is to be chosen; it may cost money).
+>   - **App:**
+>     - a tester code on the welcome screen (channel and source);
+>     - "What made it that way?" after the first loved place and the first disliked one;
+>     - the read-back screen (Right / Not quite);
+>     - the survey, including "Did you type or speak?";
+>     - plans home with the blind pair, in identical format and with no "chosen for" line;
+>     - local notifications after each stop;
+>     - bring a friend.
+>
 > **Updated by D107 (2026-09-28, lean mode): superseded by D109 for dates and order.**
 > - **The app is built now, in parallel with the tests**, not after Test B:
 >   - **the Brain first.** Step 1 was done on 28 Sep: the app's plans come from the same engine as Test B (`brain/src/brain/dayplan.py`), using the 16 locked swipe places and sunset lines from the date (`sun.py`);
