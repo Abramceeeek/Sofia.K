@@ -1,0 +1,11 @@
+# The Brain's app API on Render (render.yaml, service moments-brain; D109). Only what brain.api needs: the
+# Test B CLI's openpyxl and reportlab stay out. Pinned to the versions the tests ran with on 2026-09-29.
+fastapi==0.141.1
+uvicorn==0.54.0
+sqlalchemy==2.1.1
+pydantic==2.13.5
+ortools==9.15.6755
+numpy==2.5.3
+pyyaml==6.0.3
+psycopg[binary]==3.3.6
+tzdata==2026.4   # sun.py's Europe/London times, in case the host has no system time-zone data

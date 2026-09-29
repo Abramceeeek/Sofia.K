@@ -92,7 +92,13 @@
 
 Login or sign-up, a paywall or payments, an AI support chat, a social feed or profiles, widgets, Live Activities, Watch, iPad, landscape, in-app turn-by-turn routing, or a custom voice recorder (the keyboard mic covers voice in v0).
 
-## Timing (D107)
+## Timing (D109, app first; replaces D107)
+
+- **Build 1 (~7 Oct), on Abram's iPhone through internal TestFlight:** welcome, consent, onboarding (best hour, why, 16 places, 10 this-or-that, about you, photos with the example shot card), his day plan with map, moment and shot cards, rating, help & safety, settings and delete.
+- **Build 2 (~14 Oct): Tests A–C inside the app:** plans home, the blind Plan 1 / Plan 2 pair, read-back, survey, rating reminders, bring a friend.
+- **One screenshot page per batch** for Abram (about 15 min each).
+
+*The D107 timing, for reference:*
 
 - **Now, native-first, in three batches** (Claude builds; Abram looks at one screenshot page per batch, about 15 min):
   1. **First run and safety** (screens 1, 2, 19, 20 and 22): the week of 28 Sep.

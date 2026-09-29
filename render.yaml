@@ -1,5 +1,10 @@
-# Render Blueprint for the anonymous swipe calibration page (D70). Free tier only: £0.
-# How to deploy (about 0.5 h): brain/README.md → "Swipe calibration page".
+# Render Blueprint: the anonymous swipe calibration page (D70) and the Brain's app API (D109). Free tier only: £0.
+# How to deploy: brain/README.md → "Swipe calibration page" and "The app's Brain on Render".
+#
+# D109: Render allows only ONE free Postgres per workspace (render.com/docs/free, read 2026-09-29), so the Brain
+# shares the swipe page's database (its tables have different names). That database was created on 27 Sep and
+# expires about 27 Oct: enough for Abram's own build and the friends' round. Before strangers, it moves to a paid
+# database (a money decision for Abram).
 #
 # Free-tier facts (render.com/docs/free, fetched 2026-09-26):
 # - the web service sleeps after 15 min without visits; the next visit waits about a minute;
@@ -28,6 +33,27 @@ services:
         generateValue: true    # read it in the dashboard; it unlocks /results
       - key: CALIBRATION_CONTACT
         sync: false            # Render asks for it: the email shown in the page's privacy note
+
+  - type: web
+    name: moments-brain
+    runtime: python
+    plan: free                 # sleeps after 15 min idle; the app waits up to ~1 min for it to wake (D109)
+    region: frankfurt
+    rootDir: brain
+    buildCommand: pip install -r requirements-app.txt
+    startCommand: uvicorn brain.api:app --app-dir src --host 0.0.0.0 --port $PORT --no-access-log
+    healthCheckPath: /v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.14"
+      - key: BRAIN_DATABASE_URL
+        fromDatabase:
+          name: london-places-swipe-db
+          property: connectionString
+      - key: BRAIN_ADMIN_TOKEN
+        generateValue: true    # Abram's only; unlocks /v1/admin (safety alerts, export). Never shared
+      - key: BRAIN_PLANNER_TIME_LIMIT_S
+        value: "1.0"
 
 databases:
   - name: london-places-swipe-db

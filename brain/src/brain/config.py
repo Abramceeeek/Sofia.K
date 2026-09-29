@@ -18,9 +18,17 @@ class Settings:
     planner_time_limit_s: float
 
 
+def driver_url(raw: str) -> str:
+    """Render gives `postgresql://…` (older services `postgres://…`); SQLAlchemy needs the psycopg driver."""
+    for prefix in ("postgres://", "postgresql://"):
+        if raw.startswith(prefix):
+            return "postgresql+psycopg://" + raw[len(prefix):]
+    return raw
+
+
 def get_settings() -> Settings:
     return Settings(
-        database_url=os.environ.get("BRAIN_DATABASE_URL", "sqlite:///./brain.db"),
+        database_url=driver_url(os.environ.get("BRAIN_DATABASE_URL", "sqlite:///./brain.db")),
         data_dir=Path(os.environ.get("BRAIN_DATA_DIR", str(DATA_DIR))),
         admin_token=os.environ.get("BRAIN_ADMIN_TOKEN") or None,
         alert_webhook_url=os.environ.get("BRAIN_ALERT_WEBHOOK_URL") or None,

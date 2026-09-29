@@ -66,6 +66,8 @@ Sources now total 329 in `research/sources.csv`: 212 read on the page, 114 throu
 
 ## Phase 3 (validation): founder hours
 
+> **D109 (29 Sep): the hand-run WhatsApp tests are paused.** Tests A–C run inside the app, through TestFlight: your iPhone ~7 Oct, friends 16–25 Oct, strangers from ~27 Oct; Test B reports ~13 Nov; **Checkpoint 3 in the week of 23 Nov**. Plan and gates: `decisions/v0-ios-plan.md` (D109 block). The table below is the hand-run plan, kept for reference.
+
 Plan in `validation/README.md`. **Test E is postponed until v0 exists (D86).** **Tests A–C run by hand (D63)**, with Test A on WhatsApp Business (D66). **Test B follows each Test A within 1–3 days, with plans written by the Brain (D65, D68).** There are 12 stranger participants (D30, D43), and each extra one adds ≈ 0.8 h.
 
 | Item | Est. (hrs) | Week |
@@ -189,19 +191,22 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 
 ## Weekly totals
 
+**D109 (29 Sep): app first.** No posting until the app is ready; Tests A–C run inside the app (your iPhone, then friends, then strangers). The rows below replace the D106–D107 plan. Hours are GUESSES.
+
 | Week of (Mon) | Budget | Est. | Actual |
 |---|---|---|---|
 | 2026-09-21 | 7.5 | 13.25 (kick-off, checkpoints, decision rounds D1–D84 and seed batch 1; all spent, estimated): **5.75 over** | |
 | **26 Sep – 1 Oct (extra, D82)** | outside budget | **6.25** (the five blocking tasks, in your order: seed cards 1.5, moment names 1.0, swipe page 1.25, **friends' moment cards 1.25** (replaces Test E recruiting, D86), Apple and IP checks 1.25) | **2.00 so far** (120 min on 27–28 Sep: the factors and checks, cards 1–11, the research-card list, the swipe candidates, the Render set-up and sharing, the results check, and the candidate picks) |
-| 2026-09-28 | 7.5 | ≈ 4.2 (**lean, D107**: logged 2.17 + the four items in `validation/recruit-now.md` 0.5 + Post 1 1.5). Seeds 2–5 deferred | **2.17 so far** (130 min on 28 Sep: the dry-run decisions and friends' moments 30, round 1 30, round 2 60, start point and cards 10) |
-| 2026-10-05 | 7.5 | ≈ 6.75 *(D107)* (Test A chats 4.0, transcripts and read-backs 1.0, first Test B plans 1.5, the app's first screenshot page 0.25) | |
-| 2026-10-12 | 7.5 | ≈ 4.25 *(D107)* (the last chats 1.0, Test B plans 2.0, Test C follow-ups 1.0, screenshots 0.25; **a second recruitment round 3.0 only if needed**) | |
-| 2026-10-19 | 7.5 | ≈ 2.25 *(D107)* (the last Test B plans 1.0; **Test B reports ~23 Oct**; Test C follow-ups 1.0; screenshots 0.25) | |
-| 2026-10-26 | 7.5 | ≈ 4.5 *(D107)* (Test C follow-ups and data entry 2.0; **Test D landing page and Post 2** 1.5; secrets and the internal TestFlight build 1.0 if Test B passed) | |
-| 2026-11-02 | 7.5 | ≈ 2.25 *(D107)* (**Checkpoint 3**: analysis and `results.md` 1.5 and the trip-cost Stage 1 decision; the app's consent text 0.5; Part A with the backup helper 0.25) | |
-| 2026-11-09 | 7.5 | ≈ 1.5 *(D107)* (**the first external TestFlight build**, if Checkpoint 3 says build: tester notes, App Privacy details, a device check) | |
-| 2026-11-16 to 2026-11-29 | 7.5 | **Phase 5 through TestFlight** (10 h over about 2 weeks, D107; was January). Your optional design pass (7 h, D81) could go after it | |
-| 2027-01-04 | 7.5 | ~~Phase 5~~ moved to mid-November (D107) | |
+| 2026-09-28 | 7.5 | ≈ 3.7 *(**app first, D109**)*: logged 2.17 + the Apple set-up (membership, App Store Connect record, six signing secrets) 1.0 + the Brain on Render 0.25 + the pre-post checklist done 29 Sep. **No posting (D109)** | **2.17 so far** (130 min on 28 Sep: the dry-run decisions and friends' moments 30, round 1 30, round 2 60, start point and cards 10) |
+| 2026-10-05 | 7.5 | ≈ 1.0 *(D109)* (**Build 1 on your iPhone ~7 Oct**: install and try it 0.5; one screenshot page 0.25; any fixes you flag 0.25) | |
+| 2026-10-12 | 7.5 | ≈ 1.25 *(D109)* (**Build 2, Tests A–C in the app, ~14 Oct**: screenshot page 0.25; the app's consent text 0.5; TestFlight test information and friends' invites 0.5) | |
+| 2026-10-19 | 7.5 | ≈ 1.5 *(D109)* (**friends 16–25 Oct**: reading their feedback 1.0; safety cover; the gates for strangers 0.5) | |
+| 2026-10-26 | 7.5 | ≈ 3.0 *(D109)* (**strangers from ~27 Oct**: Post 1 in 4–6 groups 2.0; safety cover and replies 1.0) | |
+| 2026-11-02 | 7.5 | ≈ 2.0 *(D109)* (more posts only if fewer than 12 strangers; safety cover; watching the export) | |
+| 2026-11-09 | 7.5 | ≈ 2.5 *(D109)* (**Test B reports ~13 Nov**; the Test D landing page and Post 2 1.5; Test C follow-ups 1.0) | |
+| 2026-11-16 | 7.5 | ≈ 1.5 *(D109)* (Test C follow-ups; Test D) | |
+| 2026-11-23 | 7.5 | ≈ 2.0 *(D109)* (**Checkpoint 3** (was the week of 2 Nov): analysis and `results.md` 1.5; the trip-cost Stage 1 decision 0.5). Phase 5 now happens inside the stranger tests | |
+| 2027-01-04 | 7.5 | ~~Phase 5~~: now part of the stranger tests in the app (D109) | |
 
 ## Decisions
 
@@ -217,6 +222,8 @@ See [`decisions/decision-log.md`](decisions/decision-log.md).
 - D50–D58: v0 is a native iOS app, tested through TestFlight, replacing the Telegram bot; Brain (FastAPI) and Face (SwiftUI), with the Brain started now; economics paused; a new gate before App Store release (Apple outside-activities policy); the overrun question held until the iOS re-plan; Abram names the backup helper, who signs before support goes live; the Area 4 review moved to the week of 2 Nov; the Test E bar confirmed; the Uzbek payment route accepted, with one adviser call first.
 - D59–D64: the iOS v0 accepted at 53.5 h with the cuts (+3 h for the build loop, so ≈ 56.5); the Apple policy and IP-clause checks this week; an individual developer account for TestFlight and a company before the App Store launch (D-U-N-S lead time added); keyboard dictation for voice; Tests A–C by hand with Checkpoint 3 kept in November and the app built in parallel; iOS builds on GitHub Actions.
 - D65–D68: build the Brain now and use it for the Test B plans; the designer starts; iOS app code waits until Test B reports; Test A on WhatsApp Business with a separate number; the 1.3-week overrun accepted; Test B first and fast after Test E.
+- D109: app first: no posting until the app is ready; the WhatsApp tests paused; Tests A–C inside the app (your iPhone ~7 Oct, friends 16–25 Oct, strangers from ~27 Oct); Test B ~13 Nov; Checkpoint 3 in the week of 23 Nov; the Brain on Render's free tier until strangers.
+- D108: the pre-post checklist done; the ICO fee re-check before spreading to strangers.
 - D107: lean mode: only what's needed to run the stranger tests legally and safely, and to build the product; sign-ups by WhatsApp click-to-chat; the 16 swipe places locked; Test D after Test B; desk reviews, the Tally form, quick replies and labels, and the South Kensington walk deferred; **the app is built now, in parallel** (the Brain first, then native SwiftUI), with your review kept small; first external TestFlight build about the week of 9 Nov; Phase 5 from mid-November.
 - D106: dates confirmed (Test B reports ~23 Oct, Checkpoint 3 in the week of 2 Nov); study contact "Abram", abram@abdurakhmonbek.com; the study's WhatsApp number in the consent form, privacy notice and first message only, never in public posts; the Waterloo Bridge shot card replaces seed 1 as the Test A example; the real brief and generic copied; the ICO self-assessment is Abram's.
 - D105: start point Charing Cross confirmed; Courtauld confirmed open daily; Transport Museum out of Test B; the week-of-12-Oct tasks pulled forward (`validation/recruit-now.md`); sunset-aware "Best" lines; **Checkpoint 3 moved to the week of 2 Nov (confirmed, D106)**.

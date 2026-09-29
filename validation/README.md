@@ -1,5 +1,7 @@
 # Phase 3 — Validation
 
+> **D109 (29 Sep): app first.** No posting or advertising until the app is ready. Tests A–C will run **inside the app**, through TestFlight: Abram's iPhone (~7 Oct), then friends (16–25 Oct), then strangers (from ~27 Oct). Test B reports ~13 Nov; **Checkpoint 3 is in the week of 23 Nov.** The hand-run WhatsApp materials below are paused and kept as a fallback. Plan and gates: `decisions/v0-ios-plan.md` (D109 block).
+
 Will strangers finish the onboarding, prefer a plan built from it, use it, and pay? Decisions D1–D4, D16, D18, D19, D21, D23–D26, D30–D35 and D50–D57 apply.
 
 **D50–D64 in short:**

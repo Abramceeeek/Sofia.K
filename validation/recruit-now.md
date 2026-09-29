@@ -1,5 +1,7 @@
 # Recruiting now: the minimal checklist (D107, lean mode)
 
+> **PAUSED (D109, 29 Sep): no posting or advertising until the app is ready.** Tests A–C will run inside the app: first on Abram's iPhone, then friends, then strangers through external TestFlight (`decisions/v0-ios-plan.md`, D109 block). This page stays for reference. The WhatsApp basics (done 29 Sep) can serve as the support channel.
+
 *28 Sep. Lean mode keeps only what's needed to (a) run the stranger tests legally and safely and (b) build the product. Everything else is deferred (`decisions/after-9-nov.md` #19). Your hours are GUESSES. The fuller D105–D106 version is in git history.*
 
 ## Before the first post (done 29 Sep except the ICO re-check, D108)

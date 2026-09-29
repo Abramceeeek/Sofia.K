@@ -1,6 +1,42 @@
 # v0 as a native iOS app: plan, hours, cuts and TestFlight (D50–D54, D59–D64)
 
-> **Updated by D107 (2026-09-28, lean mode): this block supersedes the build timing below.**
+> **Updated by D109 (2026-09-29): app first. This block supersedes the D107 block and the build timing below.**
+> - **No posting or advertising until the app is ready.** The WhatsApp version of Tests A–C is paused (kept as a fallback).
+> - **Three stages:**
+>   1. **A build on Abram's own iPhone** as fast as possible: internal TestFlight, with no App Review for internal testers.
+>   2. **Friends**, through external TestFlight. The first external build goes through Beta App Review.
+>   3. **Strangers**, through external TestFlight, **with Tests A–C inside the app:**
+>      - in-app onboarding with the 16 swipes and the 10 "this or that" choices;
+>      - a blind Plan 1 / Plan 2 comparison against the generic plan;
+>      - one-tap ratings on a real day.
+> - **Dates (estimates; they depend on Abram's Apple set-up):**
+>
+>   | When | What |
+>   |---|---|
+>   | by Sat 3 Oct | Abram: membership check, App Store Connect record, the six signing secrets, the Brain on Render |
+>   | **~Wed 7 Oct** | **Build 1 on Abram's iPhone:** consent, onboarding, his own day plan with map, moment and shot cards, ratings, help & safety, delete my data |
+>   | ~Wed 14 Oct | **Build 2: Tests A–C inside the app:** the blind Plan 1 / Plan 2 pair with the generic plan, "fits me" ratings, read-back, survey, rating reminders, bring a friend |
+>   | 14–16 Oct | Beta App Review of the first external build (its length is UNVERIFIED) |
+>   | 16–25 Oct | **Friends** (external TestFlight), including one weekend of real days |
+>   | **from ~Tue 27 Oct** | **Strangers** (external TestFlight public link), once the gates are done |
+>   | ~Fri 13 Nov | **Test B reports** |
+>   | **week of 23 Nov** | **Checkpoint 3** (was the week of 2 Nov): Tests A–C, with most Test C follow-ups done; Test D runs from ~13 Nov, after Test B |
+>
+> - **Abram's time:**
+>   - about 1.5 h for stage 1: Apple set-up 1.0, Render 0.25, one screenshot page 0.25;
+>   - about 2 h for stage 2;
+>   - about 6–8 h for stage 3 (posts, safety cover, follow-ups, analysis).
+>
+>   The design pass is not needed. It stays optional (D81).
+> - **Gates** (`validation/recruit-now.md` is paused; the gates list is in the D109 reply and the decision log):
+>   - **before friends (the first external build):**
+>     - the Apple policy and IP-clause double-check (D60, D94);
+>     - the app's consent screen and privacy notice at a URL;
+>     - the beta app description and a feedback email;
+>     - safety alerts reaching Abram, with the backup helper's Part A signed (D55);
+>   - **before strangers:** the ICO re-check (D108), and a paid database (money). Render allows one free Postgres per workspace, and the shared one expires about 27 Oct.
+>
+> **Updated by D107 (2026-09-28, lean mode): superseded by D109 for dates and order.**
 > - **The app is built now, in parallel with the tests**, not after Test B:
 >   - **the Brain first.** Step 1 was done on 28 Sep: the app's plans come from the same engine as Test B (`brain/src/brain/dayplan.py`), using the 16 locked swipe places and sunset lines from the date (`sun.py`);
 >   - **then the SwiftUI screens, in three batches:** first run and safety; onboarding; plans and the day out (`design/v0-screens.md`).

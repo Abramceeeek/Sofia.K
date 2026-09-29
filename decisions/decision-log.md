@@ -2,6 +2,22 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-29 — app first
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D109 | **Finish the app first, see it, and only then recruit. No posting or advertising until the app is ready.** The WhatsApp version of Tests A–C is paused.<br>**New order:**<br>1. a first build on Abram's own iPhone, as fast as possible;<br>2. friends, through TestFlight;<br>3. strangers, through external TestFlight, with Tests A–C inside the app: in-app onboarding with the swipes and the "this or that" choices, a blind Plan 1 / Plan 2 comparison with the generic plan, and one-tap ratings on a real day.<br>**Abram's review stays small:** one screenshot page per batch.<br>**Dates (Claude's estimates):** iPhone build ~7 Oct; Tests A–C in the app ~14 Oct; friends 16–25 Oct; strangers from ~27 Oct; Test B ~13 Nov; **Checkpoint 3 in the week of 23 Nov** (was the week of 2 Nov) | D63 (hand-run Tests A–C), D105–D108's recruiting now, D106's checkpoint date | Founder decision. Plan and gates: `decisions/v0-ios-plan.md` (D109 block) |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m115 | **The Brain's app API goes on Render's free tier** (Frankfurt), sharing the swipe page's database, because Render allows one free Postgres per workspace. That database expires about 27 Oct. Before strangers, it moves to a paid database, which is Abram's money decision | `render.yaml`, `brain/requirements-app.txt` |
+| m116 | **The free server sleeps after 15 min idle,** so the app waits up to about a minute and says "Waking up the planner" instead of failing | the app |
+| m117 | **No AI inside the app for now.** The read-back comes from the Brain's weights, and open answers are only stored. So the app's consent needs no separate AI permission (App Review 5.1.2(i)), and less data leaves us | the app, its consent text |
+| m118 | **In-app Test B:**<br>- plans go straight to the tester without a hand check, after the Brain's automatic text checks (reversible);<br>- the pair uses the fixed Test B brief (Charing Cross, a Saturday, 12:00–17:00, the familiar favourite off, ending within 30 min of the generic plan);<br>- the Plan 1 / Plan 2 order is random per person and stored on the server | Build 2 |
+| m119 | **Friends are external TestFlight testers,** not App Store Connect users, so the external-build gates apply from the friends' round | `decisions/v0-ios-plan.md` |
+
 ## 2026-09-29 — the pre-post checklist done; the ICO fee before strangers
 
 | # | Decision | Replaces | Why |
