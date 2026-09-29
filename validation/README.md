@@ -55,10 +55,10 @@ The short version is `recruit-now.md`. Only what's needed to run the stranger te
 - [x] Consent form and privacy notice filled in (D106), sent as `study-info.pdf` with the first reply.
 - [x] Example shot card: Waterloo Bridge at sunset, text only (D106).
 - [x] Real brief and generic plan copied (`testb-real/`, `raw/testb/`, D106).
-- [ ] ICO data protection fee: the self-assessment, and pay if required, before collecting data. **Abram is doing it.**
-- [ ] **WhatsApp basics** on the study number (a personal phone, never the work one): greeting and away messages with the 999 line, chat backup off, a test message.
-- [ ] Claude's Model Improvement setting off (the privacy notice says so).
-- [ ] Abram reads the generic plan once.
+- [ ] ICO data protection fee: **the fee checker said not required yet (29 Sep, D108).** Re-check, and pay if required, before spreading to strangers, which starts with Post 1.
+- [x] **WhatsApp basics** on the study number: greeting and away messages with the 999 line, chat backup off, a test message. **Done 29 Sep.**
+- [x] Claude's Model Improvement setting off. **Done 29 Sep.**
+- [x] Abram reads the generic plan once. **Done 29 Sep: fine.**
 - [ ] Copy `results-sheet.xlsx` to `validation/raw/results.xlsx` and fill in the copy. `validation/raw/` is git-ignored, and the template in the repo stays empty. **Never commit participant data.**
 - [ ] Safety during Test C: participants message the study number; you reply within a few hours (D46).
 

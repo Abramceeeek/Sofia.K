@@ -18,7 +18,7 @@
 
 > **Looking for 14 Londoners to test a new way of planning a day out (research, nothing to buy)**
 >
-> I'm building something that plans a day out around how you want it to *feel*, not a list of famous sights. Before I build anything, I want to see if the idea works for real people.
+> I'm building something that plans a day out around how you want it to *feel*, not a list of famous sights. Before I build it properly, I want to see if the idea works for real people.
 >
 > What it involves:
 > - a 20–30 minute chat with me on WhatsApp, by voice notes or typing, whichever you like. You can spread it over a day;

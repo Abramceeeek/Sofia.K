@@ -15,6 +15,7 @@ This file is the standing context for this project. Read it fully before any tas
     2. ~~Written secondary-employment approval from Abram's government agency employer.~~ **Done (D94):** the government job is in Uzbekistan and doesn't conflict (Abram, 28 Sep).
     3. IP/invention clauses checked in **both** employment contracts. **Government contract: done; it has no IP clause covering his own projects (confirmed 28 Sep, D96). Apple contract: with the Apple double-check.**
   - **Before the first paid client or trip:** incorporation, the ICO data protection fee, and public liability and professional indemnity insurance.
+    - **ICO fee (D108):** Abram's fee checker said not required yet (29 Sep). He re-checks, and pays if required, **before spreading to strangers**, which starts with Post 1 (the study holds strangers' names, numbers and voice notes).
   - **Before anyone else contributes work:** a written founders/contributors agreement covering roles, hours, equity or compensation, and IP assignment to the company. This includes the safety backup helper and any future contributor (D55).
     - **Abram designs v0 himself (D81)**, so no designer agreement is needed unless an outside designer is brought in.
     - *Split by D73:* **Part A** (IP assignment, confidentiality, personal data) is signed as a deed before anyone's work is used, and before the helper sees any user message. **Part B** (equity) gets a solicitor review before incorporation. Contributions are voluntary and flexible, with no set hours.

@@ -2,6 +2,20 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-29 — the pre-post checklist done; the ICO fee before strangers
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D108 | **Done:**<br>- WhatsApp greeting, away message, backup off and a test message;<br>- Claude's Model Improvement off;<br>- the generic plan checked and fine.<br>**ICO fee:** Abram's fee checker said it isn't required yet. **It goes on the list to re-check, and pay if required, before spreading to strangers.**<br>**Claude's flag:** Post 1 goes to stranger groups, and from the first reply the study holds strangers' names, numbers and voice notes. So the re-check comes before Post 1 | D107's item 1 (the self-assessment before the first post) | Founder decision. Claude's flag is in `validation/recruit-now.md` item 1 |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m112 | **Post 1 now says "Before I build it properly"** instead of "Before I build anything", because the app is being built in parallel (D107) | `recruitment-posts.md` |
+| m113 | **A plain-text copy of Post 1** is given for groups that don't show formatting (Facebook): no asterisks | reply to Abram, 29 Sep |
+| m114 | **Actual hours:** today's time came as "[X] min", so nothing is logged until the number arrives (D82) | `LOG.md` |
+
 ## 2026-09-28 — lean mode; the app is built now
 
 | # | Decision | Replaces | Why |

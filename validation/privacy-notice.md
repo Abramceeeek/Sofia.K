@@ -5,7 +5,7 @@ Status (D63): this version is for the hand-run tests and the Test D waitlist. An
 first external TestFlight build, together with `test-d-landing/privacy.html`. It must name the server host and its
 region and the AI service (only with permission), and cover in-app deletion.
 Not legal advice. Check it against ICO guidance before first use.
-ICO fee: Abram does the self-assessment on ico.org.uk and pays if required, before collecting data (D106).
+ICO fee: the fee checker said not required yet (29 Sep); Abram re-checks and pays if required before spreading to strangers (D108).
 The WhatsApp number is here and in the consent form. Since D107 it is also public (the click-to-chat link in the posts); privacy.html still leaves it out, which is harmless.
 AI row (D106): true for a personal (consumer) Claude account. If Abram moves to the API or a Team plan, Anthropic
 becomes our processor under its DPA: change the row. Sources: research/sources.csv, 28 Sep.
