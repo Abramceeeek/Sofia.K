@@ -96,11 +96,15 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
     per_page, margin, gap = 3, 16 * mm, 14 * mm
     caption_h = 22 * mm
     img_h = h - 2 * margin - caption_h
-    present = [(i, s) for i, s in enumerate(SCREENS, 1) if (shots / f"{s[0]}.png").exists()]
+    def img_path(key: str) -> Path:   # PNG from CI, or a JPEG copy for a smaller file to share
+        png = shots / f"{key}.png"
+        return png if png.exists() else shots / f"{key}.jpg"
+
+    present = [(i, s) for i, s in enumerate(SCREENS, 1) if img_path(s[0]).exists()]
     for start in range(0, len(present), per_page):
         c.showPage()
         group = present[start:start + per_page]
-        img = ImageReader(str(shots / f"{group[0][1][0]}.png"))
+        img = ImageReader(str(img_path(group[0][1][0])))
         iw, ih = img.getSize()
         img_w = img_h * iw / ih
         total = per_page * img_w + (per_page - 1) * gap
@@ -108,7 +112,7 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
         for k, (num, (key, name, what)) in enumerate(group):
             x = x0 + k * (img_w + gap)
             y = margin + caption_h
-            c.drawImage(ImageReader(str(shots / f"{key}.png")), x, y, img_w, img_h, preserveAspectRatio=True)
+            c.drawImage(ImageReader(str(img_path(key))), x, y, img_w, img_h, preserveAspectRatio=True)
             c.setStrokeColor(RULE)
             c.setLineWidth(0.6)
             c.roundRect(x, y, img_w, img_h, 4 * mm, stroke=1, fill=0)
