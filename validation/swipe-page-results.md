@@ -74,4 +74,16 @@
   - better known: Buckingham Palace (12 of 12), Canary Wharf (11), Westfield (10), the London Eye (10) and Richmond Park (9);
   - less known, inside the 16: the Tate Turbine Hall (4), Columbia Road (4) and Regent's Canal (5).
   - Changing the locked 16 is Abram's decision (D107), and the app already avoids most of the less-known ones.
-- **The page is still up.** More answers firm up these numbers; Claude reruns the two commands on a new export.
+- **The page is still up.** More answers firm up these numbers.
+
+## The re-run at 20+ people (D111, D112)
+
+1. **Abram** exports the answers CSV from the swipe page's admin view once 20+ people have answered. **The export has to happen before about 25 Oct in any case:** the free database expires about 27 Oct (m115).
+2. **Claude**, in about an hour:
+   - refits the cutpoints and the swiping level (`python -m brain.swipecal <csv>`), and updates `priors.yaml`;
+   - runs `python -m brain.swipeinfo --answers <csv> --candidates all` to choose from all 30 by expected regret, with each place's familiarity, and checks the pick against the paired simulation (m138);
+   - re-chooses the 6 upfront places and 5 tasks from that set (`--upfront 6,5`).
+3. **Abram** checks the draft tags of any new place (about 10 min).
+4. **Claude** adds the new places to `swipe_items.yaml` (items 17+, printed by the command) and deploys. Only the Brain changes, because the app gets its places from the Brain. So there's no new app build and no App Review.
+5. **The set is locked by about Sat 24 Oct**, before the stranger round (~27 Oct).
+6. **If there are still fewer than 20 people by Fri 23 Oct,** the current set stays and is locked (Claude's default; Abram can overrule).

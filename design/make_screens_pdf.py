@@ -17,42 +17,41 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-# In the order a person sees them. Numbers match design/v0-screens.md and the review page (D110): Build 1 is screens
-# 1-15; a second picture of the same screen (a list view, a later step) keeps its number.
+# In the order a person sees them. Numbers match design/v0-screens.md and the review page (D110, D112): Build 1 is
+# screens 1-14; a second picture of the same screen gets a letter (9a map, 9b list), so no label repeats.
 # (key, number, group, name, caption). Captions are written for people outside the project.
 SCREENS = [
     ("welcome", "1", "First run", "Welcome", "Who runs this, and why."),
-    ("consent", "2", "First run", "Before we start",
+    ("example", "2", "First run", "An example day",
+     "What a plan looks like, before any question. It isn't planned for you."),
+    ("consent", "3", "First run", "Before we start",
      "A short summary, the two required choices in a box, and the details folded away."),
-    ("besthour", "3", "Onboarding, up to the first plan", "The best hour",
+    ("besthour", "4", "Onboarding, up to the first plan", "A great moment",
      "One open question, with three example answers. Type, speak with the keyboard mic, or skip."),
-    ("why", "4", "Onboarding, up to the first plan", "Why you go out", "Pick up to two, or none."),
-    ("places", "5", "Onboarding, up to the first plan", "Places you've been",
-     "10 London places, one at a time: four reactions, \"Not sure, skip\", Back and a progress bar."),
-    ("thisorthat", "6", "Onboarding, up to the first plan", "This or that",
-     "Two made-up days: pick the one you'd rather have, or \"No preference\". There are 10 of these."),
-    ("planform", "7", "The plan and the day out", "Plan a day", "Choose the day and the times."),
-    ("plan", "8", "The plan and the day out", "Your day",
-     "Cost per person, walking and the finish time at the top, then the map and the stops in order."),
-    ("planlist", "8", "The plan and the day out", "Your day, as a list",
-     "The same plan without the map, with the travel between stops."),
-    ("stop", "9", "The plan and the day out", "A stop",
-     "How to get there, what happens, the cost, a rain option, Swap this stop. Rating opens after the visit."),
-    ("rating", "10", "The plan and the day out", "Rating",
-     "After the visit: five large buttons, 1 to 5, each with a word."),
-    ("aboutyou", "11", "Improve my plans (optional, after the first plan)", "A bit about you",
-     "Every question is optional, including \"What interests you most?\""),
-    ("photos", "12", "Improve my plans (optional, after the first plan)", "Photos", "One question, 1 to 5."),
-    ("shotcards", "13", "Improve my plans (optional, after the first plan)", "Shot cards",
-     "One question, with an example shot card: where to stand for the best photo. The 1 to 5 answer is below it."),
-    ("safety", "14", "Help, safety and your data", "Help & safety",
+    ("why", "5", "Onboarding, up to the first plan", "Why you go out", "Pick up to two, or none."),
+    ("places", "6", "Onboarding, up to the first plan", "Places you've been",
+     "6 London places, one at a time: four reactions, \"Not sure, skip\", Back and \"Skip the rest\"."),
+    ("thisorthat", "7", "Onboarding, up to the first plan", "This or that",
+     "Two made-up example days: pick one, or \"No preference\". There are 5 of these."),
+    ("planform", "8", "The plan and the day out", "Plan a day", "Choose the day and the times."),
+    ("plan", "9a", "The plan and the day out", "Your day",
+     "Cost per person, walking and the finish time first, the shape of the day, then the map and the stops."),
+    ("planlist", "9b", "The plan and the day out", "Your day, as a list",
+     "The same plan without the map, with the travel between stops. \"Regenerate plan\" is further down."),
+    ("stop", "10", "The plan and the day out", "A stop",
+     "The moment card: worth to you, cost, the way in, the best light, a rain option and Swap this stop."),
+    ("rating", "11", "The plan and the day out", "Rating",
+     "After the visit: five steps, from Flat to Unforgettable."),
+    ("improve", "12", "Improve future plans (optional, after the first plan)", "Improve future plans",
+     "One screen: 4 more places, 5 more example days, about you, photos and a short shot-card example."),
+    ("safety", "13a", "Help, safety and your data", "Help & safety",
      "Emergency: call 999, kept separate from \"I feel unsafe / something's wrong\"."),
-    ("safetysend", "14", "Help, safety and your data", "Help & safety: telling a person",
+    ("safetysend", "13b", "Help, safety and your data", "Help & safety: telling a person",
      "An optional message to a person on the team, who replies within a few hours. 999 stays on screen."),
-    ("settings", "15", "Help, safety and your data", "Your data", "What's stored, where and for how long."),
-    ("delete", "15", "Help, safety and your data", "Delete my data", "Type DELETE to confirm. It can't be undone."),
+    ("settings", "14a", "Help, safety and your data", "Your data", "What's stored, where and for how long."),
+    ("delete", "14b", "Help, safety and your data", "Delete my data", "Type DELETE to confirm. It can't be undone."),
 ]
-N_SCREENS = len({s[1] for s in SCREENS})
+N_SCREENS = len({s[1].rstrip("ab") for s in SCREENS})
 
 INK = colors.HexColor("#1c2230")
 MUTED = colors.HexColor("#5b6475")

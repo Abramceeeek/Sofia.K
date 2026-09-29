@@ -1,5 +1,9 @@
 # v0 as a native iOS app: plan, hours, cuts and TestFlight (D50–D54, D59–D64)
 
+> **Updated by D112 (2026-09-29 late): feedback round 2 and the Stitch theme.** Before the first plan: an example day,
+> then 6 places and 5 made-up example days (Test B uses this short version); one optional "Improve future plans" screen;
+> Regenerate plan; the "Sensory Cartography" theme on standard SwiftUI parts. Build 1 is screens 1–14. Dates unchanged.
+>
 > **Updated by D110 (2026-09-29 evening): Build 1 feedback from three people.** The first plan now comes after four
 > steps (best hour, why, 10 places, 10 this-or-that); "about you" and photos are an optional "Improve my plans" step after
 > it. Plus: a short consent, a plan summary, a list view, "Swap this stop", rating only after the visit, a separate

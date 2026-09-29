@@ -9,13 +9,13 @@
 | Custom screen | The one thing it must get right | Build | Your design hours (GUESS) |
 |---|---|---|---|
 | **Welcome** (1) | A person, not a brand: your photo, the one line, and "a person runs this test" visible without scrolling | 1 | 1.5 |
-| **Moment card** (9) | **The arrival is the hero.** Show "from → path → the reveal" as one vertical line before the photo gallery, because the approach *is* the moment | 2 | 1.5 |
-| **Shot card** (opens from 9; example on 13) | Read in one glance while standing on the spot: a mini map pin, a facing arrow (compass bearing), what to frame, when | 2 | 1.5 |
-| **Day plan** (8) | The map and the timeline are one object: the same line colour links the numbered pins and the stop list, and travel legs are labelled segments ("12 min walk") | 2 | 1.5 |
+| **Moment card** (10) | **The arrival is the hero.** Show "from → path → the reveal" as one vertical line before the photo gallery, because the approach *is* the moment | 2 | 1.5 |
+| **Shot card** (opens from 10; short example on 12) | Read in one glance while standing on the spot: a mini map pin, a facing arrow (compass bearing), what to frame, when | 2 | 1.5 |
+| **Day plan** (9) | The map and the timeline are one object: the same line colour links the numbered pins and the stop list, and travel legs are labelled segments ("12 min walk") | 2 | 1.5 |
 | Type, colour and hand-off | One shared style for the four screens; frames at 393 × 852 pt, light and dark | 1–2 | 1.0 |
 | **Total** | | | **7.0** |
 
-**Everything else uses native SwiftUI:** consent and onboarding (screens 2–7), rating (10), improve my plans (11–13), help & safety (14), your data (15), and Build 2's screens (16–23).
+**Everything else uses native SwiftUI** with the D112 theme: the example day and consent (2–3), onboarding (4–8), rating (11), improve future plans (12), help & safety (13), your data (14), and Build 2's screens (15–22).
 - That means `Form`, `List`, `NavigationStack`, sheets, `Toggle`, `Picker`, the system share sheet and MapKit, with SF Pro and SF Symbols.
 - No custom styling beyond the accent colour.
 
@@ -40,60 +40,68 @@
 
 **Build 1 and Build 2 now ship together** in the first external TestFlight build, about the week of 9 Nov (D107). The Phase 3 tests run by hand in parallel (D63), and their lessons go in before that build.
 
-**Screen numbers (D110):** Build 1 is screens 1–15, in the order a person meets them. The same numbers are used on the review page and in the screens PDF. Build 2's screens are 16–23.
+**Screen numbers (D110, D112):** Build 1 is screens 1–14, in the order a person meets them. The same numbers are used on the review page and in the screens PDF; a second picture of the same screen gets a letter (9a, 9b). Build 2's screens are 15–22.
+
+## Visual direction (D112): "Sensory Cartography", as a theme
+
+From Abram's Google Stitch explorations, applied as a **theme on standard SwiftUI parts** (colours and fonts, no custom controls), in light and dark.
+- **Keep:** the palette (charcoal #111317 surfaces, amber #FFC665), Newsreader serif titles, a big picture on moment cards, "Worth about £X to you", the approach line, the best-light window, the cost, the numbered day plan with a simple chart of the day's shape, and worded rating labels (Flat / Pleasant / Restorative / Vivid / Unforgettable).
+- **Don't use:** any model internals (β, calibration, convergence, σ, EV, "sensory yield", "surplus NET"), percentages of invented metrics, sensor or heart-rate data, or jargon ("phenomenological", "olfactory").
+- **Every card detail comes from our verified cards**, never invented. Until the cards have photos (Abram's own, or Wikimedia Commons with a credit), the big picture is the satellite view of the place, marked "Photo to come".
+- **Type:** Newsreader for titles only (SIL Open Font License 1.1, bundled with its licence); body text stays SF Pro. Everything scales with Dynamic Type, and no text is smaller than footnote (13 pt at the default size), so no 9–11 px labels.
+- **Light mode:** warm paper (#FAF7F0) with a deeper amber (#7E5700) for text and icons, so contrast holds; the main button is amber with dark brown text in both modes.
 
 ## A. First run
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 1 | **Welcome** | 1 | Abram's photo and one line: "We wanted to bring some of the best experiences we've had to you, so you can have them too." What this is: a research test run by a person. "Get started". (An optional **tester code** field, e.g. `S-fbucl-07`, comes in Build 2) |
-| 2 | **Consent** | 1 | **D110:** a short plain-English summary in four lines (who runs it, what you'll do and how long, what we keep, how to skip, stop or delete). **The two required choices sit in a box where they can't be missed:** "I'm 18 or over" and "I agree to take part". The details are folded under "Read the details", with a link to the full privacy notice. No 999 text here: it lives in Help & safety (14). No AI toggle while no AI service reads answers (m117) |
+| 1 | **Welcome** | 1 | "Days out that fit you", the one line, and who runs the test. **"See an example day"**, or "Skip the example" |
+| 2 | **An example day** | 1 | **D112:** what a plan looks like, before any question: the summary, the day's shape and the stops. Not personal (population weights only, a Sunday morning from Charing Cross) and bundled with the app, so nothing is sent. "Start" leads to consent |
+| 3 | **Consent** | 1 | A four-line plain-English summary; **the two required choices in a box** ("I'm 18 or over", "I agree to take part"); the details folded under "Read the details", with the privacy notice. No 999 text here (it's on 13) and no AI toggle (m117) |
 
-## B. Onboarding, up to the first plan (D110)
+## B. Onboarding, up to the first plan (D112: shorter)
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 3 | **Best hour** | 1 | "Tell me about the best hour of your last trip or day out. Where were you, what was happening, how did it feel?" **Three short example answers.** A large text field, with a hint: "A few words is fine. Tap the mic on your keyboard to speak instead." After the first answer: "Is there anything else you'd like to add about that?" **"Skip this question"** is always there |
-| 4 | **Why you go out** | 1 | "Which of these is most often why you go out or travel? **Pick up to two, or none.**" Six options: switch off and rest · time with people · discover something new · nature and outdoors · culture and history · food. With none picked, the button reads "None of these: next" |
-| 5 | **Places you've been** | 1 | **10 places** (the most informative of the locked 16, D110), one at a time. Four reactions: **Loved it · It was fine · Didn't enjoy it · Haven't been**, plus **"Not sure, skip"** and **Back**. **A progress bar** with "4 of 10" |
-| 6 | **This or that** | 1 | 10 tasks. Two made-up day plans, A and B, each with six attributes **in the same order with the same icons**: longest transfer, weather at the outdoor stops (mild and dry / cold but dry / rainy, D95), pace, crowds, cost per person, walking. Tap one to choose, or **"No preference"**. Back, and a progress bar. The last page: "That's everything. Next: your first plan." |
+| 4 | **A great moment** | 1 | "Tell us about a great moment from a recent day out. Where were you, what was happening, how did it feel?" Three short example answers, a text field (keyboard mic for voice), the follow-up once they type, and "Skip this question" |
+| 5 | **Why you go out** | 1 | "Pick up to two, or none." With none picked, the button reads **"None of these"** |
+| 6 | **Places you've been** | 1 | **6 places**, one at a time: Loved it · It was fine · Didn't enjoy it · Haven't been, plus "Not sure, skip", Back, a progress bar and **"Skip the rest"**. The other 4 are in screen 12 |
+| 7 | **This or that** | 1 | **5 made-up example days**, labelled "Example day A / B" and "Made up", six attributes in the same order with the same icons; "No preference", Back and a progress bar. The other 5 are in screen 12 |
 
 ## C. The plan and the day out
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 7 | **Plan a day** | 1 | Where it starts (Charing Cross in Build 1), the day, start and finish times, and the number of stops. "Make my plan" |
-| 8 | **Your day** | 1 | **D110: a summary at the top:** cost per person, walking between stops and the finish time, with the cost split underneath. **Map / List** switch: the map with numbered pins above the stops, or the stops as a list with the travel legs between them. Each row shows the time, the title, the travel ("12 min walk") and one line on why it's there ("Chosen for: the views, awe"). A place they loved is marked. **Swipe a row to swap it.** Below: **"Improve my plans"** (optional, about 2 minutes) and "Plan another day" |
-| 9 | **A stop** (moment card) | 1 | The time and title, then **how to arrive** first: from where, which exit, the path. Then what happens, the queue, when it's best, the cost and the rain option. **Directions** (Apple Maps) and, where the stop has one, **Shot card**, which opens the card in the layout of the example on 13. **"Swap this stop"**, with one confirmation. **Rating only after the visit:** before the planned arrival it says "You can rate this stop after your visit, from 13:33 on Saturday 31 October" |
-| 10 | **Rating** | 1 | "How did that feel?" **Five large buttons, 1–5, each with a word** (Poor · Not great · OK · Good · Wonderful). An optional "Would you bring someone here?" (yes / no). Save. The same prompt as a notification after each stop comes in Build 2 |
+| 8 | **Plan a day** | 1 | Where it starts (Charing Cross in Build 1), the day, the times and the number of stops |
+| 9 | **Your day** (9a map, 9b list) | 1 | **The summary first and large:** cost per person, walking between stops, finish time. **The shape of the day:** each stop as a block across the day, taller where we expect the person to enjoy it more (no numbers). Map or List, the numbered stops ("Chosen for: …"), swipe to swap. **"Regenerate plan"** (one confirmation; off in the blind Test B comparison), "Improve future plans" and "Plan another day" |
+| 10 | **A stop** (moment card) | 1 | The big picture with **"Worth about £X to you"**, the title, the cost, **the approach line** (From → The way in → You arrive, in the card's words), **the best-light window** on the plan's day, what happens, the queue, the rain option, Directions, Shot card, Swap this stop. **Rating only after the visit** |
+| 11 | **Rating** | 1 | "How did that feel?" **Five worded steps: Flat · Pleasant · Restorative · Vivid · Unforgettable**, an optional "Would you bring someone here?", Save |
 
-## D. Improve my plans: optional, after the first plan (D110)
+## D. Improve future plans: one optional screen after the first plan (D112)
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 11 | **A bit about you** | 1 | All optional: budget per day out (4 bands), who you go with, morning or night person, how active; **"What interests you most? Pick any, or none."** with "We ask so we can add a place tied to what interests you"; where you grew up (with why it's asked); "Any foods or drinks you avoid?" (only used to choose food stops). **No nationality, income, health or allergy questions** |
-| 12 | **Photos** | 1 | One question: "How much do photos and sharing matter on your trips?" 1–5, or Skip |
-| 13 | **Shot cards** | 1 | One question: "Some stops come with a shot card: where to stand for the best photo. Would that make you more likely to go?" 1–5, with the Waterloo Bridge card labelled **"Example of what you'll get"**. It is the only place the example appears. Save |
+| 12 | **Improve future plans** | 1 | One screen: **4 more places** and **5 more made-up example days** (each opens the same step as 6 or 7), then budget, company, morning or night, how active, "What interests you most?", where you grew up, foods avoided, how much photos matter, and the shot-card question with a **short example** (where to stand and when). Save. **No nationality, income, health or allergy questions** |
 
 ## E. Help, safety and your data
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 14 | **Help & safety** | 1 | **Two separate sections (D110).** **Emergency:** "If you or someone else is in danger or hurt, call 999 now", with a red **Call 999** button. **Not an emergency:** "I feel unsafe / something's wrong" (orange, not red) leads to an optional message and "Tell a person"; the reply says a person will reply within a few hours, and the Emergency section stays on screen. "Something else?" shows an email address as text. **Never promise a faster reply** |
-| 15 | **Your data** | 1 | What we store, as a plain list; where and for how long; "About this test"; the privacy notice. **Delete my data** opens a page where the person **types DELETE** to confirm, because it can't be undone. The version number |
+| 13 | **Help & safety** (13a, 13b after the button) | 1 | **Emergency:** "call 999 now", with a red Call 999 button. **Not an emergency:** "I feel unsafe / something's wrong" leads to an optional message and "Tell a person"; a person replies within a few hours, and the Emergency section stays on screen. An email address as text. **Never promise a faster reply** |
+| 14 | **Your data** (14a, 14b delete) | 1 | What we store, where and for how long, "About this test", the privacy notice. **Delete my data**: type DELETE to confirm. The version number |
 
 ## F. Build 2 (not built yet)
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 16 | **Here's what we heard** (read-back) | 2 | 3–6 plain lines from the model, such as "Long transfers put you off" or "You love a reveal". Each has **Right / Not quite**. Where the model is unsure, it says "Not sure yet about crowds". A friendly persona label on top, then "Anything to fix or add?" |
-| 17 | **Quick survey** | 2 | "I felt understood" 1–5; "It felt like talking to a person, not filling in a form" 1–5; "Did you type or speak your answers?" (typed / spoke / both); "Was anything intrusive or tedious?" |
-| 18 | **Plans home** | 2 | An empty state ("Your plans will appear here"). A card for a new pair: "Two plans for your day. Which would you rather do?" The list of plans. **"Plan another day"**: tapping it is a Test C measure |
-| 19 | **Trip intent** | 2 | Three short questions before a plan: recharge or explore? who might come? anything you'd want in it for sure? |
-| 20 | **Plan 1 vs Plan 2** | 2 | Two plans in **identical format** (the screen 8 layout, without Swap, so the test stays blind). Then "Which would you rather do?", "This plan fits me" 1–5 for each, and "Why?" |
-| 21 | **Before the notification permission** | 2 | "We'll ask for one tap after each stop. That's it." **Allow** and **Not now** carry equal weight. Everything works without notifications |
-| 22 | **Bring a friend** | 2 | A button and one line. The system share sheet carries the text and a link with a referral code. After a stop with a shot card: "Got a shot you like? Share it." **We never ask for the photo** |
-| 23 | **States** | 1–2 | Loading ("Waking up the planner" while the free server starts), empty and errors. Example error: "Couldn't reach us. Your plan is saved on this phone." There is no offline mode beyond the current plan |
+| 15 | **Here's what we heard** (read-back) | 2 | 3–6 plain lines, each with **Right / Not quite**; "Not sure yet about crowds" where the model is unsure; "Anything to fix or add?" |
+| 16 | **Quick survey** | 2 | "I felt understood" 1–5; "It felt like talking to a person, not filling in a form" 1–5; typed or spoke; "Was anything intrusive or tedious?" |
+| 17 | **Plans home** | 2 | The list of plans, a card for a new pair, and "Plan another day" (a Test C measure) |
+| 18 | **Trip intent** | 2 | Recharge or explore? Who might come? Anything you'd want in it for sure? |
+| 19 | **Plan 1 vs Plan 2** | 2 | Two plans in the screen 9 layout, **without Swap or Regenerate**, so the test stays blind. The personal plan uses only the answers from screens 4–7 (D112: the short version we'd ship). Then which they'd rather do, "This plan fits me" 1–5 for each, and why |
+| 20 | **Before the notification permission** | 2 | "We'll ask for one tap after each stop." **Allow** and **Not now** carry equal weight |
+| 21 | **Bring a friend** | 2 | The share sheet with a referral link; after a stop with a shot card, "Got a shot you like? Share it." We never ask for the photo |
+| 22 | **States** | 1–2 | Loading ("Waking up the planner"), empty and errors ("Couldn't reach us. Your plan is saved on this phone.") |
 
 ## Also needed
 
@@ -107,8 +115,8 @@ Login or sign-up, a paywall or payments, an AI support chat, a social feed or pr
 
 ## Timing (D109, app first; replaces D107)
 
-- **Build 1 (~7 Oct), on Abram's iPhone through internal TestFlight:** screens 1–15. After the Build 1 feedback (D110): four onboarding steps to the first plan (best hour, why, 10 places, 10 this-or-that), the day plan with its summary, map or list and swap, moment and shot cards, rating after the visit, the optional "Improve my plans" step, help & safety, and your data with a typed DELETE.
-- **Build 2 (~14 Oct): Tests A–C inside the app:** screens 16–23 (read-back, survey, plans home, trip intent, the blind Plan 1 / Plan 2 pair, rating reminders, bring a friend, states).
+- **Build 1 (~7 Oct), on Abram's iPhone through internal TestFlight:** screens 1–14. After feedback rounds 1 and 2 (D110, D112): an example day before consent, four short steps to the first plan (a great moment, why, 6 places, 5 made-up example days), the day plan with its summary, shape, map or list, swap and regenerate, the moment card in the new style, rating after the visit, one optional "Improve future plans" screen, help & safety, and your data with a typed DELETE.
+- **Build 2 (~14 Oct): Tests A–C inside the app:** screens 15–22 (read-back, survey, plans home, trip intent, the blind Plan 1 / Plan 2 pair, rating reminders, bring a friend, states).
 - **One screenshot page per batch** for Abram (about 15 min each).
 
 *The D107 timing, for reference (old screen numbers, before D110):*
