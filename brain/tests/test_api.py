@@ -14,7 +14,8 @@ from conftest import DATA, make_moment
 def client(tmp_path, test_moments):
     data = tmp_path / "data"
     (data / "moments").mkdir(parents=True)
-    for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv", "swipe_items.yaml", "aspiration.yaml"):
+    for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv", "swipe_items.yaml", "aspiration.yaml",
+              "privacy_app.html"):
         shutil.copy(DATA / f, data / f)
     for f in ("m_southken_nhm_reveal.yaml", "m_waterloo_bridge_sunset.yaml"):
         shutil.copy(DATA / "moments" / f, data / "moments")
@@ -185,3 +186,9 @@ def test_budget_band_and_date_shape_the_plan(client):
     assert plan["title"] == "Saturday 31 October"
     assert sum(st["cost_gbp"] for st in plan["stops"]) <= 20
     assert "t_pricey" not in [st["moment_id"] for st in plan["stops"]]
+
+
+def test_privacy_notice_is_public_and_says_what_the_app_holds(client):
+    r = client.get("/privacy")
+    assert r.status_code == 200 and "text/html" in r.headers["content-type"]
+    assert "Delete my data" in r.text and "999" in r.text and "No AI service" in r.text

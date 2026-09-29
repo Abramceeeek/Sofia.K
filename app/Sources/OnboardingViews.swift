@@ -211,17 +211,20 @@ struct DayOption: View {
         let parts = text.components(separatedBy: "; ")
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(label).font(.headline)
+                Text(label).font(.headline).foregroundStyle(Theme.accent)
                 ForEach(parts.indices, id: \.self) { i in
                     Label(parts[i].prefix(1).uppercased() + String(parts[i].dropFirst()),
                           systemImage: i < Labels.attributeIcons.count ? Labels.attributeIcons[i] : "circle")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .padding(14)
+            .foregroundStyle(.primary)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(.separator), lineWidth: 1))
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
         .accessibilityHint("Choose this day")
     }
 }

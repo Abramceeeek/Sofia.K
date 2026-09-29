@@ -205,7 +205,7 @@ struct StopView: View {
                     InfoBlock(label: "Queue", text: "Allow about \(Int(queue)) min to queue.")
                 }
                 InfoBlock(label: "When it's best", text: stop.bestText.replacingOccurrences(of: "Best: ", with: ""))
-                InfoBlock(label: "Cost", text: stop.costText)
+                InfoBlock(label: "Cost", text: stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst)
                 InfoBlock(label: "If it rains", text: stop.rainSwap)
                 HStack {
                     if let pin = stop.pin {
@@ -311,4 +311,9 @@ struct RatingView: View {
             }
         }
     }
+}
+
+extension String {
+    /// "free" → "Free", for lines shown under their own label.
+    var capitalizedFirst: String { prefix(1).uppercased() + dropFirst() }
 }

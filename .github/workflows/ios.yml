@@ -102,6 +102,9 @@ jobs:
           xcrun simctl install "$UDID" "$APP"
           xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 || true
           mkdir -p shots
+          # A warm-up launch, so first-boot system notices are gone before the first screenshot
+          xcrun simctl launch "$UDID" "$BID" -demo YES -screen plan >/dev/null
+          sleep 25
           for s in welcome consent besthour why places thisorthat aboutyou photos plan stop shotcard rating planform safety settings; do
             xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" >/dev/null
             sleep 5

@@ -14,6 +14,7 @@ from datetime import date, datetime, timezone
 
 import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
+from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -144,6 +145,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/v1/health")
     def health():
         return {"ok": True, "population_version": app.state.pop.version}
+
+    @app.get("/privacy", response_class=HTMLResponse)
+    def privacy():
+        """The app's privacy notice (D109), linked from the app and from TestFlight."""
+        return HTMLResponse((settings.data_dir / "privacy_app.html").read_text(encoding="utf-8"))
 
     @app.post("/v1/installs", response_model=InstallOut, status_code=201)
     def register(body: InstallIn, s: Session = Depends(session)):
