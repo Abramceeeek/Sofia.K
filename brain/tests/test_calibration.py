@@ -119,12 +119,22 @@ def test_coverage_warns_when_a_tag_is_missing_from_the_picks():
 def test_render_blueprint_stays_free_and_log_free():
     from conftest import DATA
     bp = yaml.safe_load((DATA.parents[1] / "render.yaml").read_text())
-    web, = bp["services"]
-    db, = bp["databases"]
-    assert web["plan"] == "free" and db["plan"] == "free"      # left out, Render picks paid plans
-    assert "--no-access-log" in web["startCommand"]
-    assert db["ipAllowList"] == []
-    assert (DATA.parent / web["buildCommand"].split()[-1]).exists()
+    db, = bp["databases"]                                        # one free Postgres per workspace (D109)
+    assert db["plan"] == "free" and db["ipAllowList"] == []
+    assert {w["name"] for w in bp["services"]} == {"london-places-swipe", "moments-brain"}
+    for web in bp["services"]:
+        assert web["plan"] == "free"                             # left out, Render picks paid plans
+        assert "--no-access-log" in web["startCommand"]
+        assert (DATA.parent / web["buildCommand"].split()[-1]).exists()
+
+
+def test_app_api_needs_only_its_own_requirements():
+    """The app API on Render installs requirements-app.txt, without the Test B CLI's openpyxl and reportlab."""
+    import subprocess
+    import sys
+    code = "import sys; sys.modules['openpyxl'] = None; sys.modules['reportlab'] = None; import brain.api"
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
 
 
 def test_calibration_app_needs_only_its_own_small_requirements():
