@@ -1,9 +1,9 @@
 # XcodeGen spec for the iOS app (the Face). CI runs `xcodegen generate` to make Face.xcodeproj,
 # so no Xcode project files are committed and no Mac is needed (D64).
 #
-# STATUS: pipeline placeholder only (D70). The screen says "Pipeline check". The real app code
-# waits until Test B reports (D65). The bundle ID, team and signing come from the provisioning
-# profile in GitHub Secrets at build time (.github/workflows/ios.yml), so none are hard-coded here.
+# STATUS: Build 1 in progress (D109, app first): the real screens (design/v0-screens.md). The bundle ID, team and
+# signing come from the provisioning profile in GitHub Secrets at build time (.github/workflows/ios.yml), so none
+# are hard-coded here.
 name: Face
 options:
   deploymentTarget:
@@ -22,7 +22,8 @@ targets:
     info:
       path: Info.plist                  # generated; git-ignored
       properties:
-        CFBundleDisplayName: Planner    # placeholder name under the icon
+        CFBundleDisplayName: Days out   # working name under the icon (Abram decides the real one)
+        BrainBaseURL: https://moments-brain.onrender.com   # the Brain on Render (render.yaml); confirm after deploy
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}

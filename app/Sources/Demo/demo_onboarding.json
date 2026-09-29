@@ -1,0 +1,271 @@
+{
+ "version": "0.1",
+ "open_questions": [
+  {
+   "key": "best_hour",
+   "text": "Tell me about the best hour of your last trip or day out. Where were you, what was happening, how did it feel?",
+   "follow_up": "Is there anything else you'd like to add about that?"
+  }
+ ],
+ "why_travel": {
+  "prompt": "Which of these is most often why you go out or travel? Pick up to two.",
+  "options": [
+   "switch_off",
+   "people",
+   "discover",
+   "nature",
+   "culture",
+   "food"
+  ]
+ },
+ "swipe": {
+  "prompt": "Have you been? How did it feel?",
+  "reactions": [
+   "loved",
+   "fine",
+   "didnt_enjoy",
+   "havent_been"
+  ]
+ },
+ "conjoint": {
+  "prompt": "Two made-up day plans. Which day would you rather have?"
+ },
+ "about_you": [
+  {
+   "key": "budget_band",
+   "text": "Roughly what do you like to spend on a day out, per person?"
+  },
+  {
+   "key": "company",
+   "text": "Who do you usually go with?"
+  },
+  {
+   "key": "chronotype",
+   "text": "Morning person or night person?"
+  },
+  {
+   "key": "activity",
+   "text": "How active do you like a day to be?"
+  },
+  {
+   "key": "grew_up",
+   "text": "What kind of place did you grow up in?",
+   "note": "Optional. Only used to guess what will feel new to you."
+  },
+  {
+   "key": "foods_avoided",
+   "text": "Any foods or drinks you avoid?",
+   "note": "Optional. Only used to choose food stops, and you can skip it."
+  }
+ ],
+ "photos": [
+  {
+   "key": "photos_matter",
+   "text": "How much do photos and sharing matter on your trips?",
+   "scale": "1 (not at all) - 5 (a lot)"
+  },
+  {
+   "key": "shot_card_appeal",
+   "text": "If a plan came with a card like this, would it make you more likely to go?",
+   "scale": "1 (no) - 5 (definitely)"
+  }
+ ],
+ "swipe_places": [
+  {
+   "item": 1,
+   "name": "Big Ben and Parliament Square"
+  },
+  {
+   "item": 2,
+   "name": "Uber Boat on the Thames"
+  },
+  {
+   "item": 3,
+   "name": "Borough Market"
+  },
+  {
+   "item": 4,
+   "name": "British Museum"
+  },
+  {
+   "item": 5,
+   "name": "IFS Cloud Cable Car"
+  },
+  {
+   "item": 6,
+   "name": "Hyde Park"
+  },
+  {
+   "item": 7,
+   "name": "Camden Market"
+  },
+  {
+   "item": 8,
+   "name": "Tate Modern Turbine Hall"
+  },
+  {
+   "item": 9,
+   "name": "Sky Garden"
+  },
+  {
+   "item": 10,
+   "name": "Columbia Road Flower Market (Sunday)"
+  },
+  {
+   "item": 11,
+   "name": "The view from the top of Greenwich Park"
+  },
+  {
+   "item": 12,
+   "name": "Walking from South Kensington tube to the Natural History Museum"
+  },
+  {
+   "item": 13,
+   "name": "Primrose Hill at sunset"
+  },
+  {
+   "item": 14,
+   "name": "Brick Lane for food"
+  },
+  {
+   "item": 15,
+   "name": "Hampstead Heath ponds (swimming)"
+  },
+  {
+   "item": 16,
+   "name": "Regent's Canal walk from Little Venice"
+  }
+ ],
+ "conjoint_tasks": [
+  {
+   "task": 1,
+   "A": "longest transfer 15 min; cold but dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 3 km walking",
+   "B": "longest transfer 30 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking"
+  },
+  {
+   "task": 2,
+   "A": "longest transfer 50 min; mild and dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 8 km walking",
+   "B": "longest transfer 30 min; rainy at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 3 km walking"
+  },
+  {
+   "task": 3,
+   "A": "longest transfer 50 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £60 per person; about 3 km walking",
+   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 8 km walking"
+  },
+  {
+   "task": 4,
+   "A": "longest transfer 50 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 8 km walking",
+   "B": "longest transfer 15 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 3 km walking"
+  },
+  {
+   "task": 5,
+   "A": "longest transfer 15 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
+   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 3 km walking"
+  },
+  {
+   "task": 6,
+   "A": "longest transfer 30 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
+   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking"
+  },
+  {
+   "task": 7,
+   "A": "longest transfer 15 min; cold but dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
+   "B": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 3 km walking"
+  },
+  {
+   "task": 8,
+   "A": "longest transfer 50 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
+   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 3 km walking"
+  },
+  {
+   "task": 9,
+   "A": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 8 km walking",
+   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £20 per person; about 3 km walking"
+  },
+  {
+   "task": 10,
+   "A": "longest transfer 15 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
+   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking"
+  }
+ ],
+ "fields": {
+  "question": "Which of these fields inspire you? Pick any, or none.",
+  "note": "Optional. We only use it to add places tied to what inspires you.",
+  "options": [
+   {
+    "key": "finance_tech",
+    "label": "Finance & tech"
+   },
+   {
+    "key": "food",
+    "label": "Food"
+   },
+   {
+    "key": "history_culture",
+    "label": "History & culture"
+   },
+   {
+    "key": "nature",
+    "label": "Nature"
+   },
+   {
+    "key": "none",
+    "label": "None of these"
+   }
+  ]
+ },
+ "example_shot_card": {
+  "id": "m_waterloo_bridge_sunset",
+  "title": "Waterloo Bridge at sunset, both ways",
+  "status": "ready",
+  "place": {
+   "name": "Waterloo Bridge",
+   "overture_id": null,
+   "lat": 51.50861,
+   "lon": -0.11694
+  },
+  "approach": {
+   "from": "Waterloo station",
+   "path": "Walk to the south end of the bridge by the Southbank Centre and up to the middle",
+   "step_free": null,
+   "start_point": {
+    "lat": 51.50861,
+    "lon": -0.11694
+   }
+  },
+  "what_happens": "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.",
+  "best_time": {
+   "time_of_day": [
+    "15:45-18:30"
+   ],
+   "light": "Sunset; late autumn and winter skies are the best (CHECKED)",
+   "weather": [
+    "any"
+   ],
+   "company": null,
+   "crowd_window": null,
+   "opening_hours": "Always open, free",
+   "days": [],
+   "best_window": [
+    "16:00-17:00"
+   ],
+   "best_around_sunset": [
+    -40,
+    20
+   ]
+  },
+  "cost_gbp": 0.0,
+  "shot_card": {
+   "stand_at": {
+    "lat": 51.50861,
+    "lon": -0.11694,
+    "note": "The middle of the bridge, at the railing; then cross the road to the other side"
+   },
+   "face": "West (upriver) first; then cross over and face east (downriver)",
+   "frame": "West: the river leading to Parliament, with the London Eye in the shot. East: St Paul's dome with the City's towers behind it",
+   "when": "The 20 minutes either side of sunset: around 4:30pm after the clocks go back on 25 Oct, around 6pm in mid-October",
+   "avoid": "Stepping into the road for the shot; stay on the pavement"
+  },
+  "plannable": true
+ }
+}

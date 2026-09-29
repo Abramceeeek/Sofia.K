@@ -1,0 +1,334 @@
+{
+ "id": 1,
+ "kind": "personal",
+ "label": null,
+ "date": "2026-10-31",
+ "intent": {},
+ "stops": [
+  {
+   "moment_id": "lunch@m_park_break_st_james",
+   "title": "Lunch near St James's Park station",
+   "arrive": "12:15",
+   "depart": "13:00",
+   "travel_min": 15,
+   "travel_mode": "walk",
+   "travel_text": "Getting there: about 15 min on foot from Charing Cross station.",
+   "approach": "",
+   "what": "Pick a café, pub or food stall nearby.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 15.0,
+   "cost_kind": "food",
+   "cost_text": "Food: about £15",
+   "rain_swap": "",
+   "lunch": true,
+   "familiar": false,
+   "rateable": false,
+   "pin": {
+    "lat": 51.50246,
+    "lon": -0.13382
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Getting there: about 15 min on foot from Charing Cross station.",
+    "Pick a café, pub or food stall nearby.",
+    "Food: about £15"
+   ]
+  },
+  {
+   "moment_id": "m_park_break_hyde",
+   "title": "A park break: the Serpentine in Hyde Park",
+   "arrive": "13:36",
+   "depart": "14:22",
+   "travel_min": 26,
+   "travel_mode": "transit",
+   "travel_text": "Getting there: about 26 min: walk to St James's Park station, then take the Tube or bus to Hyde Park Corner or Knightsbridge station.",
+   "approach": "Walk into the park.",
+   "what": "Walk into the park to the Serpentine and slow down by the water.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "The Natural History Museum: into the whale hall, about 20 min away on foot.",
+   "lunch": false,
+   "familiar": true,
+   "rateable": true,
+   "pin": {
+    "lat": 51.50528,
+    "lon": -0.16944
+   },
+   "chosen_for": [
+    "green spaces and nature",
+    "photo spots"
+   ],
+   "why": [
+    {
+     "feature": "green_nature",
+     "label": "green spaces and nature",
+     "contribution": 0.301
+    },
+    {
+     "feature": "photo_potential",
+     "label": "photo spots",
+     "contribution": 0.297
+    },
+    {
+     "feature": "outdoor_exposure",
+     "label": "being outdoors",
+     "contribution": 0.288
+    }
+   ],
+   "lines": [
+    "Getting there: about 26 min: walk to St James's Park station, then take the Tube or bus to Hyde Park Corner or Knightsbridge station.",
+    "Walk into the park.",
+    "Walk into the park to the Serpentine and slow down by the water.",
+    "Cost: free",
+    "If it rains: The Natural History Museum: into the whale hall, about 20 min away on foot."
+   ],
+   "card": {
+    "id": "m_park_break_hyde",
+    "title": "A park break: the Serpentine in Hyde Park",
+    "status": "ready",
+    "place": {
+     "name": "Hyde Park, by the Serpentine",
+     "overture_id": null,
+     "lat": 51.50528,
+     "lon": -0.16944
+    },
+    "approach": {
+     "from": "Hyde Park Corner or Knightsbridge station",
+     "path": "Walk into the park",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.50528,
+      "lon": -0.16944
+     }
+    },
+    "what_happens": "Walk into the park to the Serpentine and slow down by the water.",
+    "best_time": {
+     "time_of_day": [
+      "10:00-16:00"
+     ],
+     "light": "Daylight; spring and summer are best (FOUNDER)",
+     "weather": [
+      "dry"
+     ],
+     "company": null,
+     "crowd_window": null,
+     "opening_hours": "Pedestrian gates 05:00-midnight. Royal Parks FAQ, read 2026-09-27",
+     "days": [],
+     "best_window": [],
+     "best_around_sunset": null
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  },
+  {
+   "moment_id": "m_to_river_somerset",
+   "title": "Through Somerset House to the river terrace",
+   "arrive": "15:30",
+   "depart": "15:56",
+   "travel_min": 31,
+   "travel_mode": "transit",
+   "travel_text": "Getting there: about 31 min: walk to Hyde Park Corner or Knightsbridge station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
+   "approach": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
+   "what": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "From Trafalgar Square into the quiet of the National Gallery, about 15 min away on foot.",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "pin": {
+    "lat": 51.5111,
+    "lon": -0.1178
+   },
+   "chosen_for": [
+    "photo spots",
+    "being outdoors"
+   ],
+   "why": [
+    {
+     "feature": "transfer_15_30",
+     "label": "transfers of 15-30 min",
+     "contribution": -0.3
+    },
+    {
+     "feature": "photo_potential",
+     "label": "photo spots",
+     "contribution": 0.297
+    },
+    {
+     "feature": "outdoor_exposure",
+     "label": "being outdoors",
+     "contribution": 0.288
+    }
+   ],
+   "lines": [
+    "Getting there: about 31 min: walk to Hyde Park Corner or Knightsbridge station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
+    "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
+    "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
+    "Cost: free",
+    "If it rains: From Trafalgar Square into the quiet of the National Gallery, about 15 min away on foot."
+   ],
+   "card": {
+    "id": "m_to_river_somerset",
+    "title": "Through Somerset House to the river terrace",
+    "status": "ready",
+    "place": {
+     "name": "Somerset House: the courtyard and River Terrace",
+     "overture_id": null,
+     "lat": 51.5111,
+     "lon": -0.1178
+    },
+    "approach": {
+     "from": "the Strand entrance (Temple or Covent Garden station)",
+     "path": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.5111,
+      "lon": -0.1178
+     }
+    },
+    "what_happens": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
+    "best_time": {
+     "time_of_day": [
+      "15:30-20:30"
+     ],
+     "light": "Sunset and evening",
+     "weather": [
+      "any"
+     ],
+     "company": null,
+     "crowd_window": null,
+     "opening_hours": "Strand entrance and River Terrace 08:00-23:00; courtyard free. Somerset House via search, 2026-09-28",
+     "days": [],
+     "best_window": [
+      "16:00-20:30"
+     ],
+     "best_around_sunset": [
+      -30,
+      240
+     ]
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  },
+  {
+   "moment_id": "m_millennium_bridge_dome",
+   "title": "Across the Millennium Bridge towards St Paul's dome",
+   "arrive": "16:27",
+   "depart": "16:43",
+   "travel_min": 21,
+   "travel_mode": "transit",
+   "travel_text": "Getting there: about 21 min: walk to Temple station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).",
+   "approach": "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
+   "what": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+   "queue_min": 0,
+   "best_text": "Best: At dusk, when the dome is lit",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "pin": {
+    "lat": 51.5078,
+    "lon": -0.0994
+   },
+   "chosen_for": [
+    "photo spots",
+    "being outdoors"
+   ],
+   "why": [
+    {
+     "feature": "photo_potential",
+     "label": "photo spots",
+     "contribution": 0.297
+    },
+    {
+     "feature": "outdoor_exposure",
+     "label": "being outdoors",
+     "contribution": 0.288
+    },
+    {
+     "feature": "aspiration_match",
+     "label": "places tied to a field that inspires them",
+     "contribution": 0.25
+    }
+   ],
+   "lines": [
+    "Getting there: about 21 min: walk to Temple station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).",
+    "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
+    "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+    "Best: At dusk, when the dome is lit",
+    "Cost: free"
+   ],
+   "card": {
+    "id": "m_millennium_bridge_dome",
+    "title": "Across the Millennium Bridge towards St Paul's dome",
+    "status": "ready",
+    "place": {
+     "name": "Millennium Bridge",
+     "overture_id": null,
+     "lat": 51.51017,
+     "lon": -0.09844
+    },
+    "approach": {
+     "from": "Tate Modern, Bankside (Southwark or Blackfriars station)",
+     "path": "From Tate Modern's river side, step onto the south end of the bridge and walk north",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.5078,
+      "lon": -0.0994
+     }
+    },
+    "what_happens": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+    "best_time": {
+     "time_of_day": [
+      "07:00-23:00"
+     ],
+     "light": "At dusk, when the dome is lit (GUESS)",
+     "weather": [
+      "any"
+     ],
+     "company": null,
+     "crowd_window": "Busiest at weekend afternoons (GUESS)",
+     "opening_hours": "Always open, free. Checked 2026-09-27 (Wikivoyage)",
+     "days": [],
+     "best_window": [
+      "16:15-18:00"
+     ],
+     "best_around_sunset": [
+      -15,
+      90
+     ]
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  }
+ ],
+ "value": 5.631,
+ "status": "offered",
+ "fit_rating": null,
+ "created_at": "2026-09-29T14:23:23.659053+00:00",
+ "title": "Saturday 31 October",
+ "summary": [
+  "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
+  "Costs: about £15 for food and entry, plus about £8.90 transport"
+ ],
+ "pace": "even",
+ "solver_status": "ok"
+}

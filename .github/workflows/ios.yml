@@ -86,7 +86,36 @@ jobs:
         if: steps.secrets.outputs.ready != 'true' || env.WANT_UPLOAD != 'true'
         run: |
           xcodebuild build -project Face.xcodeproj -scheme Face -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+
+      # D109: one screenshot page per batch for Abram. Each screen is opened with bundled demo data
+      # (`-demo YES -screen <name>`), so no network or server is needed.
+      - name: Screenshots (simulator, demo data)
+        if: steps.secrets.outputs.ready != 'true' || env.WANT_UPLOAD != 'true'
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
+          echo "Simulator: $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          APP=$(find build/Build/Products -maxdepth 2 -name 'Face.app' | head -1)
+          BID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist")
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 || true
+          mkdir -p shots
+          for s in welcome consent besthour why places thisorthat aboutyou photos plan stop shotcard rating planform safety settings; do
+            xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" >/dev/null
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "shots/$s.png" >/dev/null
+          done
+          ls shots
+
+      - name: Upload the screenshots
+        if: steps.secrets.outputs.ready != 'true' || env.WANT_UPLOAD != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: app/shots
+          retention-days: 14
 
       # The next three steps run only with the secrets, on main or a manual run.
       - name: Install the certificate and provisioning profile
