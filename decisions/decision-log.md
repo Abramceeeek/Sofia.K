@@ -16,6 +16,8 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | m116 | **The free server sleeps after 15 min idle,** so the app waits up to about a minute and says "Waking up the planner" instead of failing | the app |
 | m117 | **No AI inside the app for now.** The read-back comes from the Brain's weights, and open answers are only stored. So the app's consent needs no separate AI permission (App Review 5.1.2(i)), and less data leaves us | the app, its consent text |
 | m118 | **In-app Test B:**<br>- plans go straight to the tester without a hand check, after the Brain's automatic text checks (reversible);<br>- the pair uses the fixed Test B brief (Charing Cross, a Saturday, 12:00–17:00, the familiar favourite off, ending within 30 min of the generic plan);<br>- the Plan 1 / Plan 2 order is random per person and stored on the server | Build 2 |
+| m120 | **Build 1's working name is "Days out"** (under the icon; Abram chooses the real name and the App Store Connect name). **Build 1 plans start from Charing Cross** (the Test B start), on a date and between times the person chooses | `app/project.yml`, the app |
+| m121 | **CI takes one screenshot per screen with bundled demo data** (real Brain output, no network) and uploads them. Claude turns them into one page per batch for Abram | `.github/workflows/ios.yml` |
 | m119 | **Friends are external TestFlight testers,** not App Store Connect users, so the external-build gates apply from the friends' round | `decisions/v0-ios-plan.md` |
 
 ## 2026-09-29 — the pre-post checklist done; the ICO fee before strangers
