@@ -13,6 +13,16 @@
    ]
   }
  ],
+ "based": {
+  "prompt": "Where are you based?",
+  "options": [
+   "london",
+   "uk",
+   "abroad"
+  ],
+  "city_prompt": "Which town or city? (optional)",
+  "note": "So we ask the right questions. We never ask your nationality."
+ },
  "why_travel": {
   "prompt": "How do you most want to feel on a day out? Pick up to two, or none.",
   "options": [
@@ -93,6 +103,69 @@
    "example_label": "Example of what you'll get"
   }
  ],
+ "category_cards": [
+  {
+   "key": "big_museums",
+   "title": "Big museums with famous collections",
+   "line": "Treasures from around the world, under one roof.",
+   "example_id": "m_bm_great_court",
+   "example_title": "British Museum: Egypt galleries, the Great Court, then the King's Library"
+  },
+  {
+   "key": "art_galleries",
+   "title": "Art galleries",
+   "line": "Paintings you've seen in books, in front of you.",
+   "example_id": "m_national_gallery",
+   "example_title": "From Trafalgar Square into the quiet of the National Gallery"
+  },
+  {
+   "key": "old_buildings",
+   "title": "Old buildings and hidden history",
+   "line": "Ruins, courtyards and corners with a story.",
+   "example_id": "m_st_dunstan_garden",
+   "example_title": "St Dunstan-in-the-East: a ruined church garden hidden in the City"
+  },
+  {
+   "key": "parks",
+   "title": "Parks and gardens",
+   "line": "Grass, trees and water in the middle of the city.",
+   "example_id": "m_park_break_st_james",
+   "example_title": "A park break: St James's Park and its pelicans"
+  },
+  {
+   "key": "views_above",
+   "title": "Views from above",
+   "line": "Towers, hills and cable cars, with the whole city below.",
+   "example_id": "m_horizon_22",
+   "example_title": "Level 58: the City from Horizon 22"
+  },
+  {
+   "key": "river",
+   "title": "Boats and the river",
+   "line": "Seeing the city from the water.",
+   "example_id": "m_uber_boat_west_day",
+   "example_title": "The Uber Boat up the river from Greenwich to Battersea, by day"
+  },
+  {
+   "key": "street_food",
+   "title": "Street-food markets",
+   "line": "Busy stalls, food from everywhere, eating as you go.",
+   "example_id": "m_borough_market_graze",
+   "example_title": "Graze your way round Borough Market"
+  },
+  {
+   "key": "hands_on",
+   "title": "Something hands-on",
+   "line": "Swimming outdoors, cycling through a park, doing rather than looking.",
+   "example_id": "m_london_fields_lido",
+   "example_title": "A heated outdoor swim at London Fields Lido"
+  }
+ ],
+ "categories": {
+  "prompt": "What kinds of places do you enjoy?",
+  "note": "Wherever you're from. There are no wrong answers.",
+  "want_prompt": "Would you like to try it in London?"
+ },
  "swipe_places": [
   {
    "item": 4,

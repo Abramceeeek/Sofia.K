@@ -1,0 +1,43 @@
+# D116: a shopping moment (after-9-nov #37), an AREA (a browse, flexible time; one area a day, D72). Research-sourced.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Official (read 2026-09-30): oldspitalfieldsmarket.com — 16 Horner Square, E1 6EW; Mon, Tue, Wed, Fri 10:00-20:00,
+# Thu 08:00-18:00, Sat 10:00-18:00, Sun 10:00-17:00; a Thursday antiques market and a vinyl market; shops and
+# restaurants keep their own hours.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-30 (D91). Tags are Claude's judgement.
+id: a_old_spitalfields_market
+title: "Browsing Old Spitalfields Market"
+status: ready
+swipe: false
+kind: area
+place:
+  name: "Old Spitalfields Market"
+  lat: 51.51960          # CHECKED: OpenStreetMap, 2026-09-30
+  lon: -0.07536
+approach:
+  from: "Liverpool Street station"   # *
+  start_point: {lat: 51.51960, lon: -0.07536}
+  path: "No set route: wander between the stalls and the shops around them"
+  duration_min: 0
+  step_free: null
+experience:
+  what_happens: "You browse the market's stalls, shops and food traders under one roof; on Thursdays there's an antiques market."   # CHECKED (Thursday antiques), roof *
+  why_it_works: "Easy, unhurried browsing, with something to eat when you've had enough."
+  duration_min: [40, 90] # GUESS
+  end_point: {lat: 51.51960, lon: -0.07536}
+  end_station: "Liverpool Street station"   # *
+  end_name: "Old Spitalfields Market"
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: open every day in this window
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekends are busiest (GUESS)"
+  opening_hours: "Mon, Tue, Wed, Fri 10:00-20:00; Thu 08:00-18:00; Sat 10:00-18:00; Sun 10:00-17:00 (oldspitalfieldsmarket.com, 2026-09-30)."
+features:
+  place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 2,
+          crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: 0              # browsing is free; buying is optional
+shot_card: null
+source: research
+last_checked: "2026-09-30"

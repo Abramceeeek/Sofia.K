@@ -1,0 +1,42 @@
+# D116: a shopping moment (after-9-nov #37), research-sourced. Written by Claude, 2026-09-30.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Official (read 2026-09-30): libertylondon.com/uk/information/our-heritage.html — the Great Marlborough Street shop
+# followed in 1924, designed by Edwin T. Hall and Edwin S. Hall, built from the timbers of two 'three-decker' battle
+# ships, HMS Impregnable and HMS Hindustan, their decks now the shop floors, around three atriums.
+# Hours (Liberty's help centre, SEARCH only, 2026-09-30): Mon-Sat 10:00-20:00, Sun 12:00-18:00.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-30 (D91). Tags are Claude's judgement.
+id: m_liberty_timber_galleries
+title: "Liberty's wooden galleries, built from two old warships"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Liberty, Great Marlborough Street"
+  lat: 51.51383          # CHECKED: OpenStreetMap, 2026-09-30
+  lon: -0.14016
+approach:
+  from: "Oxford Circus station"   # *
+  start_point: {lat: 51.51383, lon: -0.14016}
+  path: "Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front"   # *
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors."   # CHECKED
+  why_it_works: "Shopping that feels like exploring an old house: small rooms, fireplaces and a view down each atrium."   # CHECKED (rooms with fireplaces), wording Claude's
+  duration_min: [30, 60] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["12:00-18:00"]   # CHECKED (search): open every day in this window
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekend afternoons are busiest (GUESS)"
+  opening_hours: "Mon-Sat 10:00-20:00, Sun 12:00-18:00 (Liberty help centre, via search, 2026-09-30). Free to browse."
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 1, social_pull: 1}
+cost_gbp: 0              # browsing is free; buying is optional
+shot_card: null
+source: research
+last_checked: "2026-09-30"

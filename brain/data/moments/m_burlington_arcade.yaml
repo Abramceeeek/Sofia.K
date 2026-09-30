@@ -1,0 +1,40 @@
+# D116: a shopping moment (after-9-nov #37), research-sourced. Written by Claude, 2026-09-30.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Official (read 2026-09-30): burlingtonarcade.com — "EST. 1819", between Bond Street and Piccadilly in Mayfair;
+# watches, jewellery, shoes, perfume and an art gallery; Mon-Fri 08:00-19:00, Sat 09:00-19:00, Sun 11:00-18:00.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-30 (D91). Tags are Claude's judgement.
+id: m_burlington_arcade
+title: "Burlington Arcade: a covered shopping street from 1819"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Burlington Arcade"
+  lat: 51.50901          # CHECKED: OpenStreetMap, 2026-09-30
+  lon: -0.14020
+approach:
+  from: "Green Park or Piccadilly Circus station"   # *
+  start_point: {lat: 51.50901, lon: -0.14020}
+  path: "Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy"   # *
+  duration_min: 6        # GUESS
+  step_free: null
+experience:
+  what_happens: "You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume."   # CHECKED
+  why_it_works: "A quiet, old-fashioned street under one roof, a step away from the traffic of Piccadilly."
+  duration_min: [10, 25] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["11:00-18:00"]   # CHECKED: open every day in this window
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Mon-Fri 08:00-19:00, Sat 09:00-19:00, Sun 11:00-18:00 (burlingtonarcade.com, 2026-09-30). Free to walk through."
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 0, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-30"

@@ -47,7 +47,10 @@ EXAMPLE_DAY = dict(start_name="Charing Cross station", start=(51.507819, -0.1261
                             "m_bm_great_court", "m_garden_at_120", "m_to_river_somerset", "m_waterloo_bridge_sunset",
                             "m_st_dunstan_garden", "m_national_portrait_gallery", "m_greenwich_wolfe_view",
                             "m_millennium_bridge_dome", "m_alderman_stairs_sunset", "m_park_break_embankment",
-                            "m_beigel_bake_late"))
+                            "m_beigel_bake_late",
+                            # D116: the shopping moments, so the first thing people see isn't two shops
+                            "m_burlington_arcade", "m_liberty_timber_galleries", "m_leadenhall_market",
+                            "a_old_spitalfields_market", "a_portobello_saturday"))
 
 
 def _hash(token: str) -> str:

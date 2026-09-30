@@ -1,0 +1,47 @@
+# D116: a shopping moment (after-9-nov #37), an AREA (a browse along a street; one area a day, D72). Research-sourced.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Read 2026-09-30: visitportobello.com/where/ (the market is managed by Kensington & Chelsea Council with the Portobello
+# and Golborne Management Committee; site made by Red Hills Lab) — Portobello Road from Westbourne Grove up to and
+# along Golborne Road; Ladbroke Grove station 5 min walk, Notting Hill Gate 10 min; traders usually 08:30-18:00;
+# Saturday is the busiest day, with a full street market; the antique arcades between Chepstow Villas and Westbourne
+# Grove open only on Saturdays, most from 07:00 till about 16:00.
+# Official (rbkc.gov.uk, SEARCH only, 2026-09-30): the market operates mainly on Saturdays, antiques especially.
+# VERIFIED by Claude and marked ready, 2026-09-30 (D91). Tags are Claude's judgement.
+id: a_portobello_saturday
+title: "Portobello Road on a Saturday: antiques, stalls and colour"
+status: ready
+swipe: false
+kind: area
+place:
+  name: "Portobello Road Market"
+  lat: 51.51609          # CHECKED: OpenStreetMap (Portobello Market), 2026-09-30
+  lon: -0.20512
+approach:
+  from: "Notting Hill Gate station"   # CHECKED (10 min walk)
+  start_point: {lat: 51.50893, lon: -0.19620}   # CHECKED: Notting Hill Gate station, OpenStreetMap
+  path: "Walk up Pembridge Road into Portobello Road, then follow the market north through the antique arcades"   # *
+  duration_min: 10       # CHECKED
+  step_free: null
+experience:
+  what_happens: "You follow Portobello Road north through the Saturday market: antique arcades first, then stalls and shops towards Golborne Road."   # CHECKED
+  why_it_works: "One of London's best-known markets at its busiest: something new every few steps."
+  duration_min: [45, 90] # GUESS
+  end_point: {lat: 51.51783, lon: -0.21041}   # CHECKED: Ladbroke Grove station, OpenStreetMap
+  end_station: "Ladbroke Grove station"      # CHECKED (5 min walk)
+  end_name: "Ladbroke Grove station"
+best_time:
+  time_of_day: ["09:00-16:00"]   # CHECKED: while the antique arcades are open
+  light: null
+  weather: ["dry"]       # GUESS: an outdoor street market is worse in the rain
+  company: null
+  crowd_window: "Saturday is the busiest day (CHECKED)"
+  opening_hours: "Antique arcades Saturdays only, most 07:00 to about 16:00; traders usually 08:30-18:00 (visitportobello.com, 2026-09-30)."
+  days: [sat]            # CHECKED: the antiques market is Saturday only
+features:
+  place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,
+          crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: 0              # browsing is free; buying is optional
+shot_card: null
+source: research
+last_checked: "2026-09-30"

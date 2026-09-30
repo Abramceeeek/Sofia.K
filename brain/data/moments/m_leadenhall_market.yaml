@@ -1,0 +1,42 @@
+# D116: a shopping moment (after-9-nov #37), research-sourced. Written by Claude, 2026-09-30.
+# Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Official (read 2026-09-30): leadenhallmarket.co.uk — Gracechurch Street, EC3V 1LT; a market on the site since the
+# 14th century; it began life as a forum in the centre of Roman London; Victorian-built arches; restaurants, bars,
+# boutiques and shops; public areas open 24/7, shop, bar and restaurant hours vary.
+# VERIFIED by Claude from official sources and marked ready, 2026-09-30 (D91). Tags are Claude's judgement.
+id: m_leadenhall_market
+title: "Leadenhall Market: Victorian arches on the site of Roman London"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Leadenhall Market"
+  lat: 51.51273          # CHECKED: OpenStreetMap, 2026-09-30
+  lon: -0.08340
+approach:
+  from: "Bank or Monument station"   # *
+  start_point: {lat: 51.51273, lon: -0.08340}
+  path: "Walk along Gracechurch Street and turn in under the market's arches"   # CHECKED (Gracechurch Street), path *
+  duration_min: 5        # GUESS
+  step_free: null
+experience:
+  what_happens: "You walk in under painted Victorian arches to a covered market street of shops, pubs and restaurants, on the spot that was the centre of Roman London."   # CHECKED
+  why_it_works: "Two thousand years of London in one short walk, tucked between the City's towers."
+  duration_min: [15, 30] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-18:00"]   # GUESS: the public areas are always open; shops keep their own hours
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Busiest at weekday lunchtimes with City workers; many shops close at weekends (GUESS)"
+  opening_hours: "Public areas open 24/7; shops, bars and restaurants set their own hours (leadenhallmarket.co.uk, 2026-09-30)."
+  days: [mon, tue, wed, thu, fri]   # GUESS: most shops are open on weekdays; recheck before weekend plans
+features:
+  place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-09-30"

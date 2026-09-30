@@ -6,24 +6,27 @@ people: 200
 seed: 20260930
 brief: Charing Cross station, sat 12:00-17:00, 4 stops, ending near the generic plan
 shares:
-  m_rfh_foyers_rest: 0.405
-  m_bm_great_court: 0.33
-  m_garden_at_120: 0.28
-  m_to_river_somerset: 0.2
-  m_greenwich_wolfe_view: 0.19
-  m_st_dunstan_garden: 0.185
-  m_waterloo_bridge_sunset: 0.18
-  m_beigel_bake_late: 0.13
-  m_national_portrait_gallery: 0.125
-  m_park_break_hyde: 0.115
-  m_soane_museum: 0.095
+  m_rfh_foyers_rest: 0.4
+  m_bm_great_court: 0.32
+  m_garden_at_120: 0.275
+  m_to_river_somerset: 0.185
+  m_greenwich_wolfe_view: 0.185
+  m_st_dunstan_garden: 0.175
+  m_waterloo_bridge_sunset: 0.17
+  m_beigel_bake_late: 0.135
+  m_park_break_hyde: 0.12
+  m_national_portrait_gallery: 0.11
   m_park_bike_loop_hyde: 0.095
-  m_national_gallery: 0.08
-  m_millennium_bridge_dome: 0.07
-  m_nhm_whale_hall: 0.07
-  a_covent_garden_soho: 0.055
+  m_soane_museum: 0.085
+  m_nhm_whale_hall: 0.08
+  m_national_gallery: 0.075
+  m_millennium_bridge_dome: 0.075
+  m_burlington_arcade: 0.07
+  a_old_spitalfields_market: 0.065
   m_park_break_embankment: 0.045
-  m_alderman_stairs_sunset: 0.04
-  m_borough_market_graze: 0.03
+  m_borough_market_graze: 0.035
+  m_alderman_stairs_sunset: 0.035
   m_courtauld_gallery: 0.015
-  m_park_break_st_james: 0.015
+  a_covent_garden_soho: 0.015
+  m_park_break_st_james: 0.005
+  m_liberty_timber_galleries: 0.005
