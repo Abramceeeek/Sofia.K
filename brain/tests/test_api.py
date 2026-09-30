@@ -4,7 +4,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from brain.api import create_app
+from brain.api import EXAMPLE_DAY, create_app
 from brain.config import Settings
 
 from conftest import DATA, make_moment
@@ -236,13 +236,14 @@ def test_swap_this_stop_keeps_the_rest_and_brings_something_new(client):
 
 
 def test_example_day_needs_no_install_and_holds_nothing_personal(client):
-    """D112: shown before consent, so no token; population weights only; no reasons or worth."""
+    """D112: shown before consent, so no token; population weights only; no reasons or worth. m150: no Test B place."""
     r = client.get("/v1/example-day")
     assert r.status_code == 200
     day = r.json()
-    assert day["title"] == "An example Sunday morning" and 2 <= len(day["stops"]) <= 3
+    assert day["title"] == "An example Sunday" and 2 <= len(day["stops"]) <= 3
     assert all(st["chosen_for"] == [] and st["worth_gbp"] is None for st in day["stops"])
-    assert day["totals"]["finish"] <= "14:00"
+    assert not {st["moment_id"].split("@")[-1] for st in day["stops"]} & set(EXAMPLE_DAY["exclude"])
+    assert day["totals"]["finish"] <= "14:30"
     assert client.get("/v1/example-day").json() == day   # built once, then kept
 
 

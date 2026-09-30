@@ -34,10 +34,16 @@ from .travel import LondonEstimate
 # D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
 BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}
 EXAMPLE_SHOT_CARD = "m_waterloo_bridge_sunset"   # the Test A example (D106), shown on the photos screen
-# D112: the example day shown before consent. Not personal (population weights only), and a Sunday morning, so it
-# overlaps little with the Test B pair (a Saturday afternoon) and never shows the generic plan
-EXAMPLE_DAY = dict(start_name="Charing Cross station", start=(51.507819, -0.126137), start_time="10:00",
-                   end_time="14:00", stops=3, weekday="sun", day_label="An example Sunday morning")
+# D112: the example day shown before consent. Not personal (population weights only), and a Sunday, so it overlaps
+# little with the Test B pair (a Saturday afternoon). m150: it leaves out the generic plan's places (National Gallery,
+# Borough Market, the Royal Festival Hall as its rain swap) and the moments in 15% or more of 40 simulated Test B
+# personal plans, so nobody meets a Test B stop here first and can tell which plan is which
+EXAMPLE_DAY = dict(start_name="Charing Cross station", start=(51.507819, -0.126137), start_time="10:30",
+                   end_time="14:30", stops=3, weekday="sun", day_label="An example Sunday",
+                   exclude=("m_national_gallery", "m_borough_market_graze", "m_rfh_foyers_rest",
+                            "m_garden_at_120", "m_st_dunstan_garden", "m_millennium_bridge_dome",
+                            "m_waterloo_bridge_sunset", "m_alderman_stairs_sunset", "m_park_break_embankment",
+                            "m_to_river_somerset", "m_beigel_bake_late"))
 
 
 def _hash(token: str) -> str:
@@ -317,7 +323,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
             by_id = {m.id: m for m in ready}
             plan, stops, _, _ = dayplan.personal_plan(p, prior_only(p.delta_prior_sd), ready, brief, app.state.travel,
-                                                      familiar=False)
+                                                      familiar=False, exclude=frozenset(e["exclude"]))
             out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                    for pst, st in zip(plan.stops, stops)]
             for st in out:

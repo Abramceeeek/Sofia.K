@@ -35,18 +35,15 @@ enum Theme {
     static let title2 = serif(23, relativeTo: .title2)
     static let title3 = serif(20, relativeTo: .title3)
 
-    /// Navigation bars: serif titles on the page colour. Called once at launch.
+    /// Navigation bars on the page colour. Called once at launch. Titles are set per screen with `serifTitle` (m150):
+    /// in CI on iOS 26, bar titles styled here came out blank or in the system font.
     static func applyAppearance() {
         let bar = UINavigationBarAppearance()
         bar.configureWithOpaqueBackground()
         bar.backgroundColor = uiBackground
         bar.shadowColor = .clear
-        let large = UIFont(name: serifName, size: 34) ?? .preferredFont(forTextStyle: .largeTitle)
-        let small = UIFont(name: serifName, size: 19) ?? .preferredFont(forTextStyle: .headline)
-        bar.largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large),
-                                        .foregroundColor: uiInk]
-        bar.titleTextAttributes = [.font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: small),
-                                   .foregroundColor: uiInk]
+        bar.largeTitleTextAttributes = [.foregroundColor: uiInk]
+        bar.titleTextAttributes = [.foregroundColor: uiInk]
         UINavigationBar.appearance().standardAppearance = bar
         UINavigationBar.appearance().scrollEdgeAppearance = bar
         UINavigationBar.appearance().compactAppearance = bar
@@ -64,7 +61,36 @@ extension UIColor {
     }
 }
 
+/// A big serif title at the top of a page's content (screens 2 and 3), in place of a large navigation title.
+struct PageTitle: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(Theme.display)
+            .foregroundStyle(Theme.ink)
+            .accessibilityAddTraits(.isHeader)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 extension View {
+    /// The screen's title, inline in the navigation bar and in the serif (m150). `navigationTitle` is still set, for
+    /// VoiceOver and the back button.
+    func serifTitle(_ title: String) -> some View {
+        navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(title)
+                        .font(Theme.serif(19, relativeTo: .headline))
+                        .foregroundStyle(Theme.ink)
+                        .lineLimit(1)
+                        .accessibilityAddTraits(.isHeader)
+                }
+            }
+    }
+
     /// Lists and forms on the page colour instead of the system grey.
     func themedList() -> some View {
         scrollContentBackground(.hidden).background(Theme.background)

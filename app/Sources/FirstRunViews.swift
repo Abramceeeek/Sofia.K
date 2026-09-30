@@ -31,39 +31,38 @@ struct ExampleDayView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        NavigationStack {
-            List {
+        List {
+            Section {
+                PageTitle(text: ExampleDay.plan?.title ?? "An example day")
+                Text("This is what a plan looks like. It isn't planned for you: yours is built from your answers, and from how you rate each stop.")
+                    .foregroundStyle(Theme.inkSoft)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            if let plan = ExampleDay.plan {
                 Section {
-                    Text("This is what a plan looks like. It isn't planned for you: yours is built from your answers, and from how you rate each stop.")
-                        .foregroundStyle(Theme.inkSoft)
-                        .listRowBackground(Color.clear)
-                }
-                if let plan = ExampleDay.plan {
-                    Section {
-                        PlanSummaryCard(plan: plan)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                    }
-                    Section {
-                        DayShapeChart(stops: plan.stops, personal: false)
-                            .listRowBackground(Theme.surface)
-                    }
-                    Section("Stops") {
-                        ForEach(plan.stops.indices, id: \.self) { i in
-                            StopRow(number: i + 1, stop: plan.stops[i], rated: false)
-                                .listRowBackground(Theme.surface)
-                        }
-                    }
-                }
-                Section {
-                    PrimaryButton(title: "Start") { model.route = .consent }
+                    PlanSummaryCard(plan: plan)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                 }
+                Section {
+                    DayShapeChart(stops: plan.stops, personal: false)
+                        .listRowBackground(Theme.surface)
+                }
+                Section("Stops") {
+                    ForEach(plan.stops.indices, id: \.self) { i in
+                        StopRow(number: i + 1, stop: plan.stops[i], rated: false)
+                            .listRowBackground(Theme.surface)
+                    }
+                }
             }
-            .themedList()
-            .navigationTitle(ExampleDay.plan?.title ?? "An example day")
+            Section {
+                PrimaryButton(title: "Start") { model.route = .consent }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+            }
         }
+        .themedList()
     }
 }
 
@@ -84,50 +83,48 @@ struct ConsentView: View {
     ]
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    ForEach(summary, id: \.1) { item in
-                        Label {
-                            Text(item.1).foregroundStyle(Theme.ink)
-                        } icon: {
-                            Image(systemName: item.0).foregroundStyle(Theme.accent)
-                        }
-                    }
-                    DisclosureGroup("Read the details", isExpanded: $showDetails) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            InfoBlock(label: "Who runs this",
-                                      text: "Abram, an individual in London, testing an idea for a travel planning app. It's research: nothing is sold, and there is no payment either way. Contact: \(AppConfig.contactEmail).")
-                            InfoBlock(label: "What you'll do",
-                                      text: "Answer a few questions and react to some London places, then get a day plan. If you like, use it on a real day and rate each stop 1–5 after you've been. More questions, all optional, come after your first plan.")
-                            InfoBlock(label: "What we keep, and why",
-                                      text: "Your answers, reactions, choices and ratings, to plan days that fit you and to test whether this works. The app only knows this phone by a random code.")
-                            InfoBlock(label: "Where, and for how long",
-                                      text: "On our server in Frankfurt, in the EU. Kept until 31 March 2027, then deleted. Anonymised results may be kept.")
-                            InfoBlock(label: "What we don't ask for",
-                                      text: "Your name, email, phone number, nationality, health details or allergies. Please don't enter them.")
-                            Link("Full privacy notice", destination: AppConfig.baseURL.appendingPathComponent("privacy"))
-                        }
-                        .padding(.top, 10)
-                    }
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("To take part, please confirm both")
-                            .font(.headline)
-                            .foregroundStyle(Theme.ink)
-                        Toggle("I'm 18 or over", isOn: $adult)
-                        Toggle("I agree to take part", isOn: $agree)
-                    }
-                    .padding(16)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accent, lineWidth: 1))
-                    PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: !(adult && agree) || model.busy) {
-                        Task { await model.agree() }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                PageTitle(text: "Before we start")
+                ForEach(summary, id: \.1) { item in
+                    Label {
+                        Text(item.1).foregroundStyle(Theme.ink)
+                    } icon: {
+                        Image(systemName: item.0).foregroundStyle(Theme.accent)
                     }
                 }
-                .padding(20)
+                DisclosureGroup("Read the details", isExpanded: $showDetails) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        InfoBlock(label: "Who runs this",
+                                  text: "Abram, an individual in London, testing an idea for a travel planning app. It's research: nothing is sold, and there is no payment either way. Contact: \(AppConfig.contactEmail).")
+                        InfoBlock(label: "What you'll do",
+                                  text: "Answer a few questions and react to some London places, then get a day plan. If you like, use it on a real day and rate each stop 1–5 after you've been. More questions, all optional, come after your first plan.")
+                        InfoBlock(label: "What we keep, and why",
+                                  text: "Your answers, reactions, choices and ratings, to plan days that fit you and to test whether this works. The app only knows this phone by a random code.")
+                        InfoBlock(label: "Where, and for how long",
+                                  text: "On our server in Frankfurt, in the EU. Kept until 31 March 2027, then deleted. Anonymised results may be kept.")
+                        InfoBlock(label: "What we don't ask for",
+                                  text: "Your name, email, phone number, nationality, health details or allergies. Please don't enter them.")
+                        Link("Full privacy notice", destination: AppConfig.baseURL.appendingPathComponent("privacy"))
+                    }
+                    .padding(.top, 10)
+                }
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("To take part, please confirm both")
+                        .font(.headline)
+                        .foregroundStyle(Theme.ink)
+                    Toggle("I'm 18 or over", isOn: $adult)
+                    Toggle("I agree to take part", isOn: $agree)
+                }
+                .padding(16)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accent, lineWidth: 1))
+                PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: !(adult && agree) || model.busy) {
+                    Task { await model.agree() }
+                }
             }
-            .background(Theme.background)
-            .navigationTitle("Before we start")
+            .padding(20)
         }
+        .background(Theme.background)
     }
 }

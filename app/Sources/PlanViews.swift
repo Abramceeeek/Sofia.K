@@ -74,7 +74,7 @@ struct PlanFormView: View {
             }
         }
         .themedList()
-        .navigationTitle("Plan a day")
+        .serifTitle("Plan a day")
     }
 }
 
@@ -99,6 +99,9 @@ struct PlanView: View {
                     .listRowBackground(Color.clear)
             } header: {
                 Text(plan.title ?? "Your day")
+                    .font(Theme.title2)
+                    .foregroundStyle(Theme.ink)
+                    .textCase(nil)
             }
             Section {
                 DayShapeChart(stops: plan.stops, personal: true)
@@ -175,7 +178,7 @@ struct PlanView: View {
             }
         }
         .themedList()
-        .navigationTitle("Your day")
+        .serifTitle("Your day")
         .navigationDestination(for: Stop.self) { stop in
             StopView(stop: stop)
         }
@@ -283,11 +286,17 @@ struct DayShapeChart: View {
         }
     }
 
+    /// The time axis: 20 minutes either side of the stops, and room after the last hour mark for its label (m150).
+    private static func axis(_ bs: [Block]) -> (lo: Double, hi: Double, ticks: [Double]) {
+        let lo = (bs.map(\.start).min() ?? 600) - 20
+        let end = (bs.map(\.end).max() ?? 1020) + 20
+        let ticks = stride(from: (lo / 60).rounded(.up) * 60, through: end, by: 60).map { $0 }
+        return (lo, max(end, (ticks.last ?? end) + 35), ticks)
+    }
+
     var body: some View {
         let bs = blocks
-        let lo = (bs.map(\.start).min() ?? 600) - 20
-        let hi = (bs.map(\.end).max() ?? 1020) + 20
-        let ticks = stride(from: (lo / 60).rounded(.up) * 60, through: hi, by: 60).map { $0 }
+        let axis = Self.axis(bs)
         VStack(alignment: .leading, spacing: 8) {
             Text("The shape of the day")
                 .font(.subheadline.weight(.semibold))
@@ -303,9 +312,9 @@ struct DayShapeChart: View {
             }
             .chartYAxis(.hidden)
             .chartYScale(domain: 0.0...1.3)
-            .chartXScale(domain: lo...hi)
+            .chartXScale(domain: axis.lo...axis.hi)
             .chartXAxis {
-                AxisMarks(values: ticks) { v in
+                AxisMarks(values: axis.ticks) { v in
                     AxisGridLine().foregroundStyle(Theme.outline)
                     AxisValueLabel {
                         if let m = v.as(Double.self) {
@@ -483,8 +492,7 @@ struct StopView: View {
             .padding(20)
         }
         .background(Theme.background)
-        .navigationTitle(stop.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.inline)   // the card's serif title is the page title
         .confirmationDialog("Swap \(stop.title) for something else?", isPresented: $confirmSwap,
                             titleVisibility: .visible) {
             Button("Swap it") {
@@ -502,7 +510,7 @@ struct StopView: View {
                 NavigationStack {
                     ScrollView { ShotCardView(card: card).padding(20) }
                         .background(Theme.background)
-                        .navigationTitle("Shot card")
+                        .serifTitle("Shot card")
                 }
             }
         }
@@ -529,7 +537,7 @@ struct MomentHero: View {
     let stop: Stop
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .topLeading) {
             if let pin = stop.pin {
                 Map(initialPosition: .camera(MapCamera(centerCoordinate: pin.coordinate, distance: 900,
                                                        heading: 0, pitch: 50))) {
@@ -540,33 +548,34 @@ struct MomentHero: View {
             } else {
                 Theme.surfaceHigh
             }
-            LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .center, endPoint: .bottom)
+            // the chip and the time sit at the top, so the map's logo and legal link at the bottom stay clear (m150)
+            LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .center)
                 .allowsHitTesting(false)
-            VStack(alignment: .leading, spacing: 8) {
-                if let worth = stop.worthGbp {
-                    Text("Worth about \(Money.text(worth)) to you")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.onAccent)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Theme.accentFill, in: Capsule())
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    if let worth = stop.worthGbp {
+                        Text("Worth about \(Money.text(worth)) to you")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.onAccent)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Theme.accentFill, in: Capsule())
+                    }
+                    Text("\(stop.arrive)–\(stop.depart)")
+                        .font(.subheadline.monospacedDigit())
+                        .foregroundStyle(.white)
                 }
-                Text("\(stop.arrive)–\(stop.depart)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.white)
+                Spacer(minLength: 8)
+                Text("Photo to come")
+                    .font(.footnote)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial, in: Capsule())
             }
             .padding(14)
         }
         .frame(height: 260)
         .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(alignment: .topTrailing) {
-            Text("Photo to come")
-                .font(.footnote)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(.ultraThinMaterial, in: Capsule())
-                .padding(10)
-        }
         .accessibilityElement(children: .combine)
     }
 }
@@ -693,8 +702,7 @@ struct RatingView: View {
                 .padding(20)
             }
             .background(Theme.background)
-            .navigationTitle(stop.title)
-            .navigationBarTitleDisplayMode(.inline)
+            .serifTitle(stop.title)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
             }

@@ -56,7 +56,7 @@ struct SafetyView: View {
                 }
             }
             .themedList()
-            .navigationTitle("Help & safety")
+            .serifTitle("Help & safety")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
             }
@@ -113,7 +113,7 @@ struct SettingsView: View {
                 }
             }
             .themedList()
-            .navigationTitle("Your data")
+            .serifTitle("Your data")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
             }
@@ -171,8 +171,7 @@ struct DeleteConfirmView: View {
                 }
             }
             .themedList()
-            .navigationTitle("Delete my data")
-            .navigationBarTitleDisplayMode(.inline)
+            .serifTitle("Delete my data")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { Button("Cancel") { dismiss() } }
             }

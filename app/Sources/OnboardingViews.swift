@@ -26,8 +26,7 @@ struct OnboardingView: View {
                 }
             }
             .background(Theme.background)
-            .navigationTitle(model.step.title)
-            .navigationBarTitleDisplayMode(.inline)
+            .serifTitle(model.step.title)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Text("Step \(model.step.rawValue + 1) of \(Step.allCases.count)")
@@ -423,8 +422,7 @@ struct ImproveView: View {
                 }
             }
             .themedList()
-            .navigationTitle("Improve future plans")
-            .navigationBarTitleDisplayMode(.inline)
+            .serifTitle("Improve future plans")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { Button("Close") { dismiss() } }
             }
@@ -435,8 +433,7 @@ struct ImproveView: View {
                         if model.errorMessage == nil { morePlaces = false }
                     }
                     .background(Theme.background)
-                    .navigationTitle("More places")
-                    .navigationBarTitleDisplayMode(.inline)
+                    .serifTitle("More places")
                 }
             }
             .sheet(isPresented: $moreTasks) {
@@ -447,8 +444,7 @@ struct ImproveView: View {
                         if model.errorMessage == nil { moreTasks = false }
                     }
                     .background(Theme.background)
-                    .navigationTitle("More example days")
-                    .navigationBarTitleDisplayMode(.inline)
+                    .serifTitle("More example days")
                 }
             }
         }
