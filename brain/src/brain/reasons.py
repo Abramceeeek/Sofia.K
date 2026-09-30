@@ -64,8 +64,8 @@ def _mid(name: str) -> str:
 
 
 def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: list[tuple[str, list[str], Moment]],
-                 feelings: list[str], rated: list[tuple[Moment, int]], interests: list[str], n_choices: int
-                 ) -> list[dict]:
+                 feelings: list[str], rated: list[tuple[Moment, int]], interests: list[str], n_choices: int,
+                 loved_kinds: list[tuple[str, Moment]] = (), wanted: list[tuple[str, Moment]] = ()) -> list[dict]:
     """Up to two reasons for one stop, each as "you" (the app) and "me" (the share card) wording."""
     d = dict(zip(pop.personal_names, (float(v) for v in delta)))   # δ is over the personal features only
     tags = _tags(m)
@@ -88,6 +88,18 @@ def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: l
         clear = d[f] > MIN_WEIGHT
         place = None if not clear else next((n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= 1),
                      None)
+        kind = None if not clear else next((k for k, km in loved_kinds if k not in used and _tags(km).get(f, 0) >= 1),
+                                           None)
+        if kind and not place:   # D116: a visitor's category card
+            out.append(_r(f"You love {kind}, and this has {phrase}.", f"I love {kind}, and this has {phrase}."))
+            used.add(kind)
+            continue
+        try_it = next((k for k, km in wanted if k not in used and _tags(km).get(f, 0) >= 1), None)
+        if try_it and not place:
+            out.append(_r(f"You'd like to try {try_it}, and this has {phrase}.",
+                          f"I wanted to try {try_it}, and this has {phrase}."))
+            used.add(try_it)
+            continue
         if place:
             out.append(_r(f"You loved {_mid(place)}, and this has {phrase} too.",
                           f"I loved {_mid(place)}, and this has {phrase} too."))
@@ -118,9 +130,9 @@ def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: l
     return out[:MAX_REASONS]
 
 
-def basis(n_places: int, n_choices: int, n_ratings: int, n_feelings: int) -> dict:
+def basis(n_places: int, n_choices: int, n_ratings: int, n_feelings: int, n_kinds: int = 0) -> dict:
     """What the reasons rest on so far, for the "so far" line."""
-    return {"places": n_places, "choices": n_choices, "ratings": n_ratings, "feelings": n_feelings}
+    return {"places": n_places, "choices": n_choices, "ratings": n_ratings, "feelings": n_feelings, "kinds": n_kinds}
 
 
 # ---- the plan's one-line feeling summary (D115) --------------------------------------------------------------

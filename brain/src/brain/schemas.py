@@ -35,6 +35,17 @@ class SwipesIn(BaseModel):
     items: list[SwipeItem]
 
 
+class CategoryItem(BaseModel):
+    """D116: a visitor's answer to a category card (data/categories.yaml)."""
+    key: str = Field(max_length=32)
+    reaction: Literal["loved", "fine", "didnt_enjoy", "never_tried", "skip"]
+    want: Literal["yes", "maybe", "no"] | None = None   # "Would you like to try it in London?", after never_tried
+
+
+class CategoriesIn(BaseModel):
+    items: list[CategoryItem]
+
+
 class ChoiceItem(BaseModel):
     task: int
     choice: Literal["A", "B", "N"]   # N: no preference (D110); stored, and left out of the fit
@@ -57,6 +68,9 @@ class AnswersIn(BaseModel):
 class ProfileIn(BaseModel):
     """Ask for what's needed, not the sensitive category (CLAUDE.md). All optional."""
     why_travel: list[str] = Field(default_factory=list, max_length=2)   # D115: feelings (reasons.FEELINGS)
+    # D116: where they're based; "abroad" means the visitors' onboarding and cohort. A town or city, never nationality
+    based: Literal["london", "uk", "abroad"] | None = None
+    home_city: str | None = Field(default=None, max_length=80)
     budget_band: Literal["under_20", "20_40", "40_70", "70_plus"] | None = None
     company: Literal["solo", "friends", "partner", "family"] | None = None
     chronotype: Literal["morning", "night", "neither"] | None = None

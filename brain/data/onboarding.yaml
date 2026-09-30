@@ -14,6 +14,11 @@ open_questions:
       - "Sitting on the top deck of a bus over Waterloo Bridge at dusk. Tired, but happy."
       - "Eating street food by the river with friends. No plan, lots of laughing."
       - "Swimming in a cold lake, then a hot drink. I felt completely awake."
+based:   # D116: the first question. "abroad" gets the category cards instead of the London places (a separate cohort)
+  prompt: "Where are you based?"
+  options: [london, uk, abroad]
+  city_prompt: "Which town or city? (optional)"
+  note: "So we ask the right questions. We never ask your nationality."
 why_travel:   # D115: feelings, each mapped onto existing features in brain/reasons.py (FEELINGS) and used in the fit
   prompt: "How do you most want to feel on a day out? Pick up to two, or none."
   options: [restored, excited, connected, curious, peaceful]

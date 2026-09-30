@@ -19,6 +19,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import dayplan, db, notify, reasons, share
+from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import Settings, get_settings
 from .features import Conditions, conjoint_plan_features
@@ -26,7 +27,7 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
+from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
                       PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, SwipesIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
@@ -75,6 +76,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.app_items_later = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml", later=True)
         app.state.example_day = None   # built on first request, then kept (D112)
         app.state.popularity = load_popularity(settings.data_dir / "popularity.yaml")   # the nudge's table (D113)
+        app.state.categories = load_categories(settings.data_dir / "categories.yaml")   # visitors' cards (D116)
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
@@ -134,6 +136,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if t and ch.choice in ("A", "B"):   # "N", no preference (D110), carries no A/B information
                 obs.append(conjoint_observation(p, conjoint_plan_features(t["A"]),
                                                 conjoint_plan_features(t["B"]), chose_a=ch.choice == "A"))
+        cats = app.state.categories
+        for a in user.categories:                              # D116: visitors' category cards, like place swipes
+            if cats and a.key in cats.items and (o := category_observation(p, cats.items[a.key], a.reaction, a.want)):
+                obs.append(o)
         for f in (user.profile or {}).get("why_travel", []):   # D115: feelings on screen 5, as stated choices
             if (o := reasons.feeling_observation(p, f)):
                 obs.append(o)
@@ -198,7 +204,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         later = conj.get("later") or []
         by_task = {t["task"]: t for t in tasks}
         place = lambda n: {"item": n, "name": app.state.swipe_cards[n][0]}
+        cats = app.state.categories
+        kinds = [] if cats is None else [
+            {"key": c.key, "title": c.title, "line": c.line, "example_id": c.example,
+             "example_title": ms[c.example].display_title() if c.example in ms else None}
+            for c in cats.items.values()]
         return {**app.state.onboarding,
+                # D116: visitors from abroad get kinds of place instead of the London places
+                "category_cards": kinds,
+                "categories": None if cats is None else {"prompt": cats.prompt, "note": cats.note,
+                                                          "want_prompt": cats.want_prompt},
                 # D112: asked before the first plan, and the rest in "Improve future plans"
                 "swipe_places": [place(n) for n in app.state.app_items],
                 "swipe_places_later": [place(n) for n in app.state.app_items_later],
@@ -214,6 +229,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if it.item not in app.state.swipe_items:
                 raise HTTPException(422, f"unknown swipe place {it.item}")
             s.add(db.Swipe(user_id=user.id, item=it.item, reaction=it.reaction))
+        s.flush()
+        s.refresh(user)
+        refit(s, user, p)
+        s.commit()
+        return Response(status_code=204)
+
+    @app.post("/v1/me/categories", status_code=204)
+    def post_categories(body: CategoriesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                        p: PopulationModel = Depends(pop)):
+        """D116: a visitor's answers to the category cards."""
+        cats = app.state.categories
+        for it in body.items:
+            if cats is None or it.key not in cats.items:
+                raise HTTPException(422, f"unknown category {it.key}")
+            s.add(db.CategoryAnswer(user_id=user.id, key=it.key, reaction=it.reaction,
+                                    want=it.want if it.reaction == "never_tried" else None))
         s.flush()
         s.refresh(user)
         refit(s, user, p)
@@ -313,6 +344,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         loved_places = [(*cards_at[sw.item], app.state.swipe_items[sw.item]) for sw in user.swipes
                         if sw.reaction == "loved" and sw.item in cards_at and sw.item in app.state.swipe_items]
         rated = [(ms[r.moment_id], r.rating) for r in user.ratings if r.moment_id in ms]
+        cats = app.state.categories.items if app.state.categories else {}
+        loved_kinds = [(cats[a.key].phrase, cats[a.key].moment) for a in user.categories
+                       if a.reaction == "loved" and a.key in cats]
+        wanted = [(cats[a.key].phrase, cats[a.key].moment) for a in user.categories
+                  if a.reaction == "never_tried" and a.want == "yes" and a.key in cats]
         n_choices = sum(ch.choice in ("A", "B") for ch in user.choices)
         amap, fields = app.state.amap, person_fields(user)
         for st in out:
@@ -322,6 +358,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 m = by_id[base]
                 st["reasons"] = [] if body.blind else reasons.stop_reasons(
                     p, post.mean, m, loved=loved_places, feelings=feelings, rated=rated,
+                    loved_kinds=loved_kinds, wanted=wanted,
                     interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices)
             if body.blind:
                 st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None
@@ -335,7 +372,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "feel_line": None if body.blind else reasons.feel_line(stops, by_id),
                 "basis": None if body.blind else reasons.basis(
                     sum(sw.reaction in ("loved", "fine", "didnt_enjoy", "havent_been") for sw in user.swipes),
-                    n_choices, len(rated), len(feelings))}
+                    n_choices, len(rated), len(feelings),
+                    sum(a.reaction != "skip" for a in user.categories))}
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -505,7 +543,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {name: rows(model) for name, model in [
             ("users", db.User), ("swipes", db.Swipe), ("conjoint_choices", db.ConjointChoice),
             ("answers", db.Answer), ("plans", db.Plan), ("ratings", db.Rating), ("events", db.Event),
-            ("safety_alerts", db.SafetyAlert), ("referrals", db.Referral), ("link_opens", db.LinkOpen)]}
+            ("safety_alerts", db.SafetyAlert), ("referrals", db.Referral), ("link_opens", db.LinkOpen),
+            ("category_answers", db.CategoryAnswer)]} | {
+            # D116: visitors from abroad are their own group, left out of the Test B analysis
+            "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
 
     return app
 

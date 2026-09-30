@@ -1,0 +1,73 @@
+# D116: category cards, the visitors' onboarding (after-9-nov #31). Shown instead of the London places only to people
+# who answer "Visiting from abroad" on "Where are you based?". Londoners and the rest of the UK keep the current places.
+#
+# Each card is a KIND of place, with the same tags as a swipe place (0-2, place and moment features), so an answer
+# enters the fit exactly like a place swipe: Love it / Fine / Not for me use the swipe cutpoints and scale (a GUESS:
+# they were fitted on real places, m134). "Never tried" asks "Would you like to try it in London?": yes or no is one
+# stated choice at half a this-or-that choice's weight, like the feelings (D115); "Not sure" carries nothing.
+#
+# `example` is a ready London card whose openly licensed photo (and credit) the app shows as "In London, for example".
+# `phrase` is how the kind reads inside a sentence ("You love big museums, and this has history too.").
+# Tags are Claude's judgements, not facts (as for the swipe places); Abram checks the list (D116).
+
+version: "0.1"
+prompt: "What kinds of places do you enjoy?"
+note: "Wherever you're from. There are no wrong answers."
+want_prompt: "Would you like to try it in London?"
+items:
+  big_museums:
+    title: "Big museums with famous collections"
+    line: "Treasures from around the world, under one roof."
+    phrase: "big museums"
+    example: m_bm_great_court
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 1, absorption: 1, awe: 1, social_pull: 0}
+  art_galleries:
+    title: "Art galleries"
+    line: "Paintings you've seen in books, in front of you."
+    phrase: "art galleries"
+    example: m_national_gallery
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 0}
+  old_buildings:
+    title: "Old buildings and hidden history"
+    line: "Ruins, courtyards and corners with a story."
+    phrase: "old buildings and hidden history"
+    example: m_st_dunstan_garden
+    place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 2, iconic: 0, local_novel: 2, crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+  parks:
+    title: "Parks and gardens"
+    line: "Grass, trees and water in the middle of the city."
+    phrase: "parks and gardens"
+    example: m_park_break_st_james
+    place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+  views_above:
+    title: "Views from above"
+    line: "Towers, hills and cable cars, with the whole city below."
+    phrase: "views from above"
+    example: m_horizon_22
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  river:
+    title: "Boats and the river"
+    line: "Seeing the city from the water."
+    phrase: "boats and the river"
+    example: m_uber_boat_west_day
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+  street_food:
+    title: "Street-food markets"
+    line: "Busy stalls, food from everywhere, eating as you go."
+    phrase: "street-food markets"
+    example: m_borough_market_graze
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+  hands_on:
+    title: "Something hands-on"
+    line: "Swimming outdoors, cycling through a park, doing rather than looking."
+    phrase: "hands-on activities"
+    example: m_london_fields_lido
+    place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 1, active: 2, outdoor_exposure: 2, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 1}

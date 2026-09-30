@@ -101,7 +101,7 @@ def test_the_app_plan_carries_reasons_but_the_blind_one_does_not(client):
     assert w["n_observations"] == 3                       # the swipe and the two feelings
     p = _plan(client, h)
     assert p["feel_line"] and p["blind"] is False
-    assert p["basis"] == {"places": 1, "choices": 0, "ratings": 0, "feelings": 2}
+    assert p["basis"] == {"places": 1, "choices": 0, "ratings": 0, "feelings": 2, "kinds": 0}
     rateable = [s for s in p["stops"] if s["rateable"]]
     assert rateable and all(s["reasons"] and s["reasons"][0]["you"] for s in rateable)
     b = _plan(client, h, blind=True)

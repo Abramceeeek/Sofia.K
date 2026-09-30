@@ -42,6 +42,7 @@ class User(Base):
     events = relationship("Event", cascade="all, delete-orphan", passive_deletes=True)
     alerts = relationship("SafetyAlert", cascade="all, delete-orphan", passive_deletes=True)
     referral = relationship("Referral", cascade="all, delete-orphan", passive_deletes=True, uselist=False)
+    categories = relationship("CategoryAnswer", cascade="all, delete-orphan", passive_deletes=True)
 
 
 class Swipe(Base):
@@ -124,6 +125,17 @@ class SafetyAlert(Base):
     notified: Mapped[bool] = mapped_column(Boolean, default=False)
     first_reply_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     replied_by: Mapped[str | None] = mapped_column(String(64))
+
+
+class CategoryAnswer(Base):
+    """D116: a visitor's reaction to a kind of place (data/categories.yaml), used like a place swipe."""
+    __tablename__ = "category_answers"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    key: Mapped[str] = mapped_column(String(32))
+    reaction: Mapped[str] = mapped_column(String(16))           # loved | fine | didnt_enjoy | never_tried | skip
+    want: Mapped[str | None] = mapped_column(String(8))         # after "never tried": yes | maybe | no
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 class Referral(Base):
