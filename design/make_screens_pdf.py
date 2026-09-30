@@ -22,8 +22,10 @@ from reportlab.pdfgen import canvas
 # (key, number, group, name, caption). Captions are written for people outside the project.
 SCREENS = [
     ("welcome", "1", "First run", "Welcome", "Who runs this, and why."),
-    ("example", "2", "First run", "An example day",
-     "What a plan looks like, with one stop's full card, before any question. It isn't planned for you."),
+    ("example", "2a", "First run", "An example day",
+     "What a plan looks like, before any question: how the day should feel, cost and the stops. Not planned for you."),
+    ("examplecard", "2b", "First run", "An example day: one full card",
+     "Further down the same screen: one stop's full card, so the special parts show before any question."),
     ("consent", "3", "First run", "Before we start",
      "A short summary, the two required choices in a box, and the details folded away."),
     ("besthour", "4", "Onboarding, up to the first plan", "A great moment",

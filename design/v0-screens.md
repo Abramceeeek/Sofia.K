@@ -56,7 +56,7 @@ From Abram's Google Stitch explorations, applied as a **theme on standard SwiftU
 | # | Screen | Build | What's on it |
 |---|---|---|---|
 | 1 | **Welcome** | 1 | "Days out that fit you", the one line, and who runs the test. **"See an example day"**, or "Skip the example" |
-| 2 | **An example day** | 1 | **D112:** what a plan looks like, before any question: the feeling line, the summary, the day's shape and the stops, **and one stop's full card (D115)**, so the special parts show before any question. Not personal (population weights only, a Sunday from Charing Cross, with none of Test B's usual places). "Start" |
+| 2 | **An example day** (2b: further down, the full card) | 1 | **D112:** what a plan looks like, before any question: the feeling line, the summary, the day's shape and the stops, **and one stop's full card (D115)**, so the special parts show before any question. Not personal (population weights only, a Sunday from Charing Cross, with none of Test B's usual places). "Start" |
 | 3 | **Consent** | 1 | A four-line plain-English summary; **the two required choices in a box** ("I'm 18 or over", "I agree to take part"); the details folded under "Read the details", with the privacy notice. No 999 text here (it's on 13) and no AI toggle (m117) |
 
 ## B. Onboarding, up to the first plan (D112: shorter)

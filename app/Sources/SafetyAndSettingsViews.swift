@@ -188,7 +188,12 @@ struct DemoScreen: View {
     var body: some View {
         switch name {
         case "welcome": WelcomeView()                                           // 1
-        case "example": ExampleDayView()                                        // 2
+        case "example": ExampleDayView()                                        // 2a
+        case "examplecard":                                                     // 2b (D115): further down screen 2
+            if let stop = ExampleDay.plan?.stops.first(where: { $0.rateable && $0.card != nil }) {
+                ScrollView { MomentCardContent(stop: stop, showWhy: false).padding(20) }
+                    .background(Theme.background)
+            }
         case "consent": ConsentView()                                           // 3
         case "besthour", "why", "places", "thisorthat": OnboardingView()       // 4-7
         case "planform": NavigationStack { PlanFormView() }                     // 8
