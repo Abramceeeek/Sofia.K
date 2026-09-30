@@ -179,7 +179,7 @@ Full plan, cuts and the Telegram comparison: [`decisions/v0-ios-plan.md`](decisi
 | wk 5 Oct – 2 Nov *(D106)* | 3 | Run Tests A–D by hand: Test B plans 1–3 days after each Test A (see the Phase 3 table) | 12.0 | | Pending (D63, D68). **Pulled forward from 19 Oct – 9 Nov (D105)** |
 | wk 19 Oct | 3 | **Test B buffer:** a second recruitment round if fewer than 12 strangers sign up (D86) | 3.0 | | Only if needed |
 | ~~wk 26 Oct – 2 Nov~~ | 4 | Brain code review: scoring maths, the planner and `brain.testb` | 2.0 | | **Optional, deferred (D107)**; `decisions/after-9-nov.md` #19 |
-| ~~wk 26 Oct~~ wk 28 Sep | 4 | ~~**If Test B passed:**~~ add the six GitHub secrets and the App Store Connect app record (`app/README.md`, D70e), then install the internal TestFlight build | 1.0 | | **Moved forward by D109** (app first). The membership runs until July 2027, so no renewal is needed first |
+| ~~wk 26 Oct~~ wk 28 Sep | 4 | ~~**If Test B passed:**~~ add the six GitHub secrets and the App Store Connect app record (`app/README.md`, D70e), then install the internal TestFlight build | 1.0 | | **Signing set-up done 30 Sep:** App ID, certificate, profile, app record, API key, six secrets, internal group. Build 13 uploaded to TestFlight. Left: install it on the iPhone. The Brain on Render is needed before the app can plan. Actual time: not yet reported |
 | ~23 Oct *(D106; was ~2 Nov)* | 3 | **Test B reports** → go or hold on the external app release (the code is built in parallel, D107) | — | | |
 | ~~wk 2 Nov~~ | 1 | Review Area 4 (D56) | 2.0 | | **Deferred (D107)** |
 | after 9 Nov | 1 | Review Areas 1–3 in full, including the 15 moment features (D17) | 5.0 | | **Deferred (D80)**; on `decisions/after-9-nov.md`, scheduled at Checkpoint 3 |

@@ -159,6 +159,7 @@ jobs:
           BUNDLE_ID=${APP_ID#"$TEAM_ID".}
           SIGN_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | sed -n 's/.*"\(.*\)".*/\1/p' | head -1)
           if [ -z "$SIGN_IDENTITY" ]; then echo "::error::No signing identity in the .p12. Check P12_PASSWORD and the certificate."; exit 1; fi
+          echo "::add-mask::$SIGN_IDENTITY"   # a legal name: masked in every later step's log, too
           {
             echo "TEAM_ID=$TEAM_ID"
             echo "BUNDLE_ID=$BUNDLE_ID"
