@@ -53,6 +53,8 @@ def test_a_visitor_answers_categories_and_is_its_own_cohort(client):
     assert client.post("/v1/me/categories", headers=h,
                        json={"items": [{"key": "nope", "reaction": "loved"}]}).status_code == 422
     assert client.put("/v1/me/profile", headers=h, json={"based": "mars"}).status_code == 422
+    # a later save without "based" (e.g. "Improve future plans") keeps it, so the cohort can't flip
+    assert client.put("/v1/me/profile", headers=h, json={"company": "solo"}).status_code == 204
     h2, uid2 = install(client)
     client.put("/v1/me/profile", headers=h2, json={"based": "london"})
     ex = client.get("/v1/admin/export", headers=ADMIN).json()

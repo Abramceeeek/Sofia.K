@@ -279,7 +279,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         amap = app.state.amap
         if amap is not None and (bad := [f for f in body.fields if f not in amap.fields]):
             raise HTTPException(422, f"unknown fields {bad}")
-        user.profile = body.model_dump(exclude_none=True)
+        new = body.model_dump(exclude_none=True)
+        for key in ("based", "home_city"):   # D116: a later save without them keeps them (the Test B cohort)
+            if key not in new and key in (user.profile or {}):
+                new[key] = user.profile[key]
+        user.profile = new
         refit(s, user, p)   # the inspiring fields change the swipes' aspiration term (D77)
         s.commit()
         return Response(status_code=204)

@@ -195,7 +195,8 @@ struct DemoScreen: View {
                     .background(Theme.background)
             }
         case "consent": ConsentView()                                           // 3
-        case "besthour", "why", "places", "thisorthat": OnboardingView()       // 4-7
+        case "based", "besthour", "why", "places", "categories", "thisorthat":  // 3b, 4-7, 6b (D116)
+            OnboardingView()
         case "planform": NavigationStack { PlanFormView() }                     // 8
         case "planlist": HomeView(layout: "list")                               // 9b
         case "stop", "rating":                                                  // 10, 11

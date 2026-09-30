@@ -25,6 +25,33 @@ struct Onboarding: Codable {
     let photos: [ScaleQuestion]
     let fields: Fields?
     let exampleShotCard: Card?
+    let based: BasedQuestion?                     // D116: "Where are you based?", the first question
+    let categoryCards: [CategoryCard]?            // D116: visitors from abroad get these instead of the London places
+    let categories: CategoriesPrompt?
+}
+
+/// D116: "Where are you based?" London / elsewhere in the UK / visiting from abroad, then a town or city (optional).
+struct BasedQuestion: Codable, Hashable {
+    let prompt: String
+    let options: [String]
+    let cityPrompt: String?
+    let note: String?
+}
+
+/// D116: a kind of place (brain/data/categories.yaml), shown with a ready London card's photo as its example.
+struct CategoryCard: Codable, Hashable, Identifiable {
+    let key: String
+    let title: String
+    let line: String
+    let exampleId: String
+    let exampleTitle: String?
+    var id: String { key }
+}
+
+struct CategoriesPrompt: Codable, Hashable {
+    let prompt: String
+    let note: String?
+    let wantPrompt: String?
 }
 
 struct OpenQuestion: Codable, Hashable {
@@ -154,10 +181,12 @@ struct Basis: Codable, Hashable {
     let choices: Int
     let ratings: Int
     let feelings: Int
+    let kinds: Int?                // D116: a visitor's category cards
 
     var soFar: String {
         func n(_ k: Int, _ one: String, _ many: String) -> String? { k > 0 ? "\(k) \(k == 1 ? one : many)" : nil }
         let parts = [n(places, "place", "places"), n(choices, "example day", "example days"),
+                     n(kinds ?? 0, "kind of place", "kinds of place"),
                      n(feelings, "feeling", "feelings"), n(ratings, "rating", "ratings")].compactMap { $0 }
         guard !parts.isEmpty else { return "We'll learn more about you as you answer and rate stops." }
         let list = parts.count == 1 ? parts[0] : parts.dropLast().joined(separator: ", ") + " and " + parts.last!
@@ -246,6 +275,13 @@ struct AnswerItem: Encodable {
     let inputMode: String
 }
 
+/// D116: Love it / Fine / Not for me / Never tried (then yes / maybe / no to trying it in London).
+struct CategoryItem: Encodable, Hashable {
+    let key: String
+    let reaction: String
+    var want: String?
+}
+
 struct SwipeItem: Encodable {
     let item: Int
     let reaction: String
@@ -268,6 +304,8 @@ struct Profile: Codable, Equatable {
     var photosMatter: Int?
     var shotCardAppeal: Int?
     var fields: [String] = []
+    var based: String?                      // D116: london | uk | abroad
+    var homeCity: String?                   // D116: a town or city, never nationality
 }
 
 /// Kept on the phone with the plan, so "Swap this stop" can ask again with `keep` and `exclude` (D110).

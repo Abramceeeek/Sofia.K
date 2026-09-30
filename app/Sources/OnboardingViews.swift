@@ -1,9 +1,10 @@
 import SwiftUI
 import MapKit
 
-/// Screens 4–7: onboarding up to the first plan (Test A inside the app, D109). Each step is sent as it finishes.
+/// Screens 3b–7: onboarding up to the first plan (Test A inside the app, D109). Each step is sent as it finishes.
 /// D112: a great moment, why, 6 places and 5 "this or that" tasks, then the plan. The other places and tasks
-/// are in "Improve future plans" (screen 12).
+/// are in "Improve future plans" (screen 12). D116: "Where are you based?" comes first, and visitors from abroad
+/// get the kinds-of-places cards (6b) instead of the London places.
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
 
@@ -12,10 +13,15 @@ struct OnboardingView: View {
             Group {
                 if let onboarding = model.onboarding {
                     switch model.step {
+                    case .based: BasedStep()
                     case .bestHour: BestHourStep()
                     case .why: WhyStep()
                     case .places:
-                        PlacesStep(places: onboarding.swipePlaces) { await model.finishPlaces() }
+                        if model.isVisitor, let cards = onboarding.categoryCards, !cards.isEmpty {
+                            CategoryStep(cards: cards) { await model.finishCategories() }   // D116
+                        } else {
+                            PlacesStep(places: onboarding.swipePlaces) { await model.finishPlaces() }
+                        }
                     case .thisOrThat:
                         ThisOrThatStep(tasks: onboarding.conjointTasks, doneText: "That's everything. Next: your first plan.",
                                        doneButton: "Plan my first day") { await model.finishThisOrThat() }
@@ -25,7 +31,7 @@ struct OnboardingView: View {
                 }
             }
             .background(Theme.background)
-            .serifTitle(model.step.title)
+            .serifTitle(model.stepTitle)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Text("Step \(model.step.rawValue + 1) of \(Step.allCases.count)")
@@ -82,6 +88,152 @@ struct SectionProgress: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(min(done + 1, total)) of \(total)")
+    }
+}
+
+// ---- 3b. Where you're based (D116) ----------------------------------------------------------------------
+
+struct BasedStep: View {
+    @Environment(AppModel.self) private var model
+    private let labels = [("london", "In London"), ("uk", "Elsewhere in the UK"), ("abroad", "Visiting from abroad")]
+
+    var body: some View {
+        @Bindable var model = model
+        let q = model.onboarding?.based
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                QuestionTitle(q?.prompt ?? "Where are you based?")
+                ForEach(labels, id: \.0) { option in
+                    ChoiceRow(label: option.1, on: model.profile.based == option.0) { model.profile.based = option.0 }
+                }
+                Text(q?.cityPrompt ?? "Which town or city? (optional)")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.inkSoft)
+                    .padding(.top, 6)
+                TextField("For example: Manchester, Tashkent", text: Binding(
+                    get: { model.profile.homeCity ?? "" },
+                    set: { model.profile.homeCity = $0.isEmpty ? nil : String($0.prefix(80)) }))
+                    .textInputAutocapitalization(.words)
+                    .padding(12)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.outline, lineWidth: 1))
+                Text(q?.note ?? "So we ask the right questions. We never ask your nationality.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.inkSoft)
+                PrimaryButton(title: model.busy ? "One moment…" : "Next", disabled: model.busy || model.profile.based == nil) {
+                    Task { await model.finishBased() }
+                }
+                .padding(.top, 8)
+            }
+            .padding(20)
+        }
+    }
+}
+
+// ---- 6b. Kinds of places: visitors from abroad, instead of the London places (D116) --------------------------
+
+/// One kind of place at a time, with a London example's photo. "Never tried" asks whether they'd like to.
+struct CategoryStep: View {
+    @Environment(AppModel.self) private var model
+    let cards: [CategoryCard]
+    let onDone: () async -> Void
+    @State private var index = 0
+    @State private var askingWant = false
+
+    private let reactions = [("loved", "Love it"), ("fine", "It's fine"), ("didnt_enjoy", "Not for me"),
+                             ("never_tried", "Never tried")]
+    private let wants = [("yes", "Yes, I'd like to"), ("maybe", "Not sure"), ("no", "No thanks")]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                if index < cards.count {
+                    let card = cards[index]
+                    SectionProgress(done: index, total: cards.count)
+                    Text(model.onboarding?.categories?.prompt ?? "What kinds of places do you enjoy?")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.inkSoft)
+                    CategoryPhoto(card: card)
+                    Text(card.title)
+                        .font(Theme.title2)
+                        .foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(card.line).foregroundStyle(Theme.ink)
+                    if askingWant {
+                        QuestionTitle(model.onboarding?.categories?.wantPrompt ?? "Would you like to try it in London?")
+                        ForEach(wants, id: \.0) { w in
+                            ChoiceRow(label: w.1, on: false) { answer(card, "never_tried", want: w.0) }
+                        }
+                    } else {
+                        ForEach(reactions, id: \.0) { r in
+                            ChoiceRow(label: r.1, on: model.categoryAnswers[card.key]?.reaction == r.0) {
+                                if r.0 == "never_tried" { askingWant = true } else { answer(card, r.0) }
+                            }
+                        }
+                    }
+                    HStack {
+                        Button("Back") {
+                            if askingWant { askingWant = false } else { index -= 1 }
+                        }
+                        .disabled(index == 0 && !askingWant)
+                        Spacer()
+                        Button("Not sure, skip") { answer(card, "skip") }
+                    }
+                    .font(.subheadline)
+                    .frame(minHeight: 44)
+                    Button("Skip the rest") { Task { await onDone() } }
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .disabled(model.busy)
+                } else {
+                    SectionProgress(done: cards.count, total: cards.count)
+                    Text("That's all \(cards.count). Thank you.")
+                        .font(Theme.title3)
+                        .foregroundStyle(Theme.ink)
+                        .padding(.vertical, 40)
+                    PrimaryButton(title: "Next", disabled: model.busy) { Task { await onDone() } }
+                    Button("Back") { index = max(cards.count - 1, 0) }
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+            }
+            .padding(20)
+        }
+    }
+
+    private func answer(_ card: CategoryCard, _ reaction: String, want: String? = nil) {
+        model.categoryAnswers[card.key] = CategoryItem(key: card.key, reaction: reaction, want: want)
+        askingWant = false
+        index += 1
+    }
+}
+
+/// The London example's photo (an openly licensed card photo, with its credit), or a plain tile without one.
+struct CategoryPhoto: View {
+    let card: CategoryCard
+
+    var body: some View {
+        let found = CardPhotos.photo(for: card.exampleId)
+        VStack(alignment: .leading, spacing: 4) {
+            Group {
+                if let image = found?.1 {
+                    Image(uiImage: image).resizable().scaledToFill()
+                } else {
+                    Theme.surface
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 200)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            if let title = card.exampleTitle {
+                Text("In London, for example: \(title)")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let photo = found?.0 {
+                Text(photo.credit).font(.caption2).foregroundStyle(Theme.inkSoft).lineLimit(2)
+            }
+        }
     }
 }
 
@@ -533,7 +685,7 @@ struct ImproveView: View {
                 .foregroundStyle(Theme.ink)
             Text("Your next plans will use these answers.")
                 .foregroundStyle(Theme.ink)
-            let later = model.onboarding?.swipePlacesLater ?? []
+            let later = model.isVisitor ? [] : (model.onboarding?.swipePlacesLater ?? [])   // D116: not London places
             let laterTasks = model.onboarding?.conjointTasksLater ?? []
             if !later.isEmpty || !laterTasks.isEmpty {
                 Text("Want to go further? About a minute more.")

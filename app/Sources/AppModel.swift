@@ -23,15 +23,17 @@ enum Route: Hashable {
 
 /// Onboarding up to the first plan (screens 3–6). D110: "about you" and photos moved after the first plan.
 enum Step: Int, CaseIterable {
-    case bestHour, why, places, thisOrThat
+    case based, bestHour, why, places, thisOrThat   // D116: "Where are you based?" first
 
-    /// CI screenshots: `-screen places` opens that onboarding step.
+    /// CI screenshots: `-screen places` opens that onboarding step; `categories` is the visitors' version of it.
     static func forScreen(_ name: String?) -> Step? {
-        ["besthour": .bestHour, "why": .why, "places": .places, "thisorthat": .thisOrThat][name ?? ""]
+        ["based": .based, "besthour": .bestHour, "why": .why, "places": .places, "categories": .places,
+         "thisorthat": .thisOrThat][name ?? ""]
     }
 
     var title: String {
         switch self {
+        case .based: return "Where you're based"
         case .bestHour: return "A great moment"
         case .why: return "How you want to feel"   // D115
         case .places: return "Places you've been"
@@ -49,7 +51,7 @@ enum ExampleDay {
 @Observable
 final class AppModel {
     var route: Route
-    var step: Step = .bestHour
+    var step: Step = .based
     var onboarding: Onboarding?
     var plan: Plan?
     var busy = false
@@ -60,6 +62,13 @@ final class AppModel {
     var bestHour = ""
     var bestHourMore = ""
     var bestHourVoice = false              // D115: "Tell it instead" was used (the Test A typed/voice split)
+    var categoryAnswers: [String: CategoryItem] = [:]   // D116: a visitor's category cards
+
+    /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
+    var isVisitor: Bool { profile.based == "abroad" }
+
+    /// Screen titles follow the person's path: visitors see "Kinds of places" where others see the London places.
+    var stepTitle: String { step == .places && isVisitor ? "Kinds of places" : step.title }
     var why: [String] = []
     var reactions: [Int: String] = [:]
     var choices: [Int: String] = [:]
@@ -86,7 +95,8 @@ final class AppModel {
             onboarding = try? BrainClient.bundled("demo_onboarding")
             let demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
             plan = demoPlan
-            step = Step.forScreen(screen) ?? .bestHour
+            step = Step.forScreen(screen) ?? .based
+            if screen == "categories" { profile.based = "abroad" }   // the visitors' onboarding (D116)
             lastRequest = PlanRequest(start: AppConfig.start, startName: AppConfig.startName, startTime: "12:00",
                                       endTime: "17:00", date: demoPlan?.date, stops: 4, familiar: true)
         } else if brain.token == nil {
@@ -95,6 +105,11 @@ final class AppModel {
             route = UserDefaults.standard.bool(forKey: "onboardingDone") ? .home : .onboarding
             plan = AppModel.loadCached(Plan.self, "plan.json")
             lastRequest = AppModel.loadCached(PlanRequest.self, "request.json")
+            // D116: the answers sent so far, so a later save (e.g. "Improve future plans") doesn't blank them
+            if let saved = AppModel.loadCached(Profile.self, "profile.json") {
+                profile = saved
+                why = saved.whyTravel
+            }
         }
     }
 
@@ -198,6 +213,24 @@ final class AppModel {
         if !items.isEmpty { try await client.sendChoices(items) }
     }
 
+    /// D116: "Where are you based?" is sent straight away, so the right questions follow.
+    func finishBased() async {
+        await run {
+            try await self.client.sendProfile(self.profile)
+            AppModel.cache(self.profile, "profile.json")
+            self.next()
+        }
+    }
+
+    /// D116: a visitor's answers to the category cards (unanswered ones, after "Skip the rest", aren't sent).
+    func finishCategories() async {
+        await run {
+            let items = (self.onboarding?.categoryCards ?? []).compactMap { self.categoryAnswers[$0.key] }
+            if !items.isEmpty { try await self.client.sendCategories(items) }
+            self.next()
+        }
+    }
+
     func finishPlaces() async {
         await run {
             try await self.sendReactions(self.onboarding?.swipePlaces ?? [])
@@ -228,6 +261,7 @@ final class AppModel {
         await run {
             try await self.sendChoices(self.onboarding?.conjointTasks ?? [])
             try await self.client.sendProfile(self.profile)
+            AppModel.cache(self.profile, "profile.json")
             UserDefaults.standard.set(true, forKey: "onboardingDone")
             await self.client.event("onboarding_done")
             self.route = .home
@@ -239,6 +273,7 @@ final class AppModel {
         profile.whyTravel = why
         await run {
             try await self.client.sendProfile(self.profile)
+            AppModel.cache(self.profile, "profile.json")
             if done {
                 self.improved = true
                 UserDefaults.standard.set(true, forKey: "improved")
@@ -348,6 +383,7 @@ final class AppModel {
             UserDefaults.standard.removeObject(forKey: "moreTasksDone")
             AppModel.cache(nil as Plan?, "plan.json")
             AppModel.cache(nil as PlanRequest?, "request.json")
+            AppModel.cache(nil as Profile?, "profile.json")
             self.plan = nil
             self.lastRequest = nil
             self.improved = false
@@ -362,7 +398,8 @@ final class AppModel {
             self.why = []
             self.bestHour = ""
             self.bestHourMore = ""
-            self.step = .bestHour
+            self.categoryAnswers = [:]
+            self.step = .based
             self.route = .welcome
         }
     }

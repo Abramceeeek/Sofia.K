@@ -77,6 +77,10 @@ final class BrainClient {
         try await send("POST", "v1/me/swipes", Items(items: items))
     }
 
+    func sendCategories(_ items: [CategoryItem]) async throws {
+        try await send("POST", "v1/me/categories", Items(items: items))
+    }
+
     func sendChoices(_ items: [ChoiceItem]) async throws {
         try await send("POST", "v1/me/conjoint", Items(items: items))
     }
