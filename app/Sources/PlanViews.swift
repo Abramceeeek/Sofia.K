@@ -527,6 +527,17 @@ struct StopView: View {
             PrimaryButton(title: done ? "Rated. Thank you" : "Been here? How did it feel?", disabled: done) {
                 showRating = true
             }
+            if done, model.myRatings[stop.momentId] != nil {
+                // D114: for any rating, so rating high never unlocks anything
+                Button {
+                    Task { await model.share(stop) }
+                } label: {
+                    Label("Share this moment", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .disabled(model.busy)
+            }
         }
     }
 }

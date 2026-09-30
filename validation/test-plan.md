@@ -66,15 +66,16 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 
 - **Offer the personalised plan** for a real day or weekend. If they clearly preferred the generic one, let them choose, and record which.
 - **During the day:** after each stop they send one number, 1–5. Log the message time, the weather (look it up afterwards) and the travel time from the plan.
-- **"Bring a friend":** the plan message includes a line to forward to a friend, with a personal referral link (`?ref=P07`).
-- **Share prompt after the shot-card moment:** "Got a shot you like? Share it if you want — here's a link friends can use to try this." Same referral link. **We never ask for the photo.**
+- **In the app (D109, D114): "Share this moment"** appears on a stop once it's rated, whatever the rating (so rating high never unlocks anything). It shares a card with the moment's photo, **the person's own rating** and "Planned with Days out", plus their link and the words "I think you'd love this day — try it". **No rewards, and never the model's "worth £X".** It only appears after the visit, so the blind plan comparison is already over.
+- ~~**"Bring a friend":** the plan message includes a line to forward to a friend, with a personal referral link (`?ref=P07`).~~ ~~**Share prompt after the shot-card moment.**~~ (WhatsApp version, paused by D109.) **We never ask for anyone's photo.**
 - **After the day:** "Would you go again?"; "How did it feel?"; "Did you invite anyone? How many?"; "Did you share a photo? Where?".
 - **For 2 weeks:** log any unprompted request for a second plan.
 
-**Virality measures:**
-- **Invites sent** per participant (self-report, plus forwarded "bring a friend" messages they mention).
-- **Invitee sign-ups:** waitlist sign-ups carrying their `ref`, or friends who contact Abram and name them.
-- **Shot-card shares** per participant (self-report).
+**Virality measures (D114: logged by the app and the Brain, `GET /v1/admin/referrals`):**
+- **The funnel, per sharer and in total:** share screen opened → **shared** (the share sheet completed; the kind of app, never who to) → link page **opened** in a browser (counted by the page's script, so link previews don't count; a reload counts again) → **installed** through the link → **onboarded** → **first plan**.
+- **Invites sent** per participant = shares; **invitee sign-ups** = installs through their link.
+- **Known undercount:** someone who installs from TestFlight and then opens the app directly, without tapping "Open Days out" on the link's page, isn't attributed. Ask in the after-the-day questions too ("Did you share it? Did anyone join?").
+- **Before external TestFlight exists, the page says the test is closed.** When the public TestFlight link exists, set `BRAIN_TESTFLIGHT_URL` on Render and the page offers it.
 - **K** = invitee sign-ups ÷ **stranger** participants who did Test C (D43). Their invitees count, whoever they are; friends-and-family participants' invites are reported separately. Also report invites per participant, sign-ups per invite and shares per participant.
 - **Compare with the workbook** (`Virality` tab): £50k from the consumer app alone needs K ≈ 0.98 (base) or ≈ 0.53 (upside, D31 prices).
 - **Caveat:** with ~12 people, one enthusiastic sharer moves K a lot, so report counts, not just the ratio.

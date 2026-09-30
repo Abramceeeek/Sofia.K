@@ -13,12 +13,12 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 
 import yaml
-from fastapi import Depends, FastAPI, Header, HTTPException, Response
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Response
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify
+from . import dayplan, db, notify, share
 from .aspiration import NONE, load_aspiration
 from .config import Settings, get_settings
 from .features import Conditions, conjoint_plan_features
@@ -396,6 +396,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.commit()
         return {"alert_id": alert.id, "message": notify.USER_MESSAGE}
 
+    # ---- sharing a rated moment (D114) -----------------------------------------------------
+    @app.get("/v1/me/referral")
+    def my_referral(user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """The person's share code (made on first use); the app builds the link as <base>/r/<code>?m=<moment>."""
+        return {"code": share.code_for(s, user), "text": share.SHARE_TEXT}
+
+    @app.get("/r/{code}", response_class=HTMLResponse)
+    def share_page(code: str = Path(pattern=share.CODE_PATTERN), m: str | None = Query(default=None, max_length=64),
+                   s: Session = Depends(session)):
+        """The page a share link opens. Opening it here counts nothing (link previews fetch it too); its script does."""
+        known = s.scalar(select(db.Referral).where(db.Referral.code == code)) is not None
+        row = s.get(db.MomentRow, m) if m else None
+        moment = Moment.model_validate(row.record) if row else None
+        ok = moment is not None and moment.status == "ready"
+        return HTMLResponse(share.page(code, known, moment.display_title() if ok else None, m if ok else None,
+                                       settings.testflight_url))
+
+    @app.post("/r/{code}/open", status_code=204)
+    def share_opened(code: str = Path(pattern=share.CODE_PATTERN), body: dict | None = Body(default=None),
+                     s: Session = Depends(session)):
+        m = (body or {}).get("m")
+        m = m if isinstance(m, str) and s.get(db.MomentRow, m) is not None else None
+        share.record_open(s, code, m)
+        return Response(status_code=204)
+
     @app.delete("/v1/me", status_code=204)
     def delete_me(user: db.User = Depends(current_user), s: Session = Depends(session)):
         """Delete everything about this install (App Review 5.1.1(v); UK GDPR erasure)."""
@@ -441,6 +466,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.commit()
         return plan_out(plan)
 
+    @app.get("/v1/admin/referrals", dependencies=[Depends(admin)])
+    def referrals(s: Session = Depends(session)):
+        """D114: the share funnel for Test C's K: shared → opened → installed → onboarded → first plan."""
+        return share.funnel(s)
+
     @app.get("/v1/admin/export", dependencies=[Depends(admin)])
     def export(s: Session = Depends(session)):
         """Everything needed for the Phase 3 read-out, keyed by user id (no names are stored)."""
@@ -451,7 +481,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {name: rows(model) for name, model in [
             ("users", db.User), ("swipes", db.Swipe), ("conjoint_choices", db.ConjointChoice),
             ("answers", db.Answer), ("plans", db.Plan), ("ratings", db.Rating), ("events", db.Event),
-            ("safety_alerts", db.SafetyAlert)]}
+            ("safety_alerts", db.SafetyAlert), ("referrals", db.Referral), ("link_opens", db.LinkOpen)]}
 
     return app
 

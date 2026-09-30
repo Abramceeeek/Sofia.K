@@ -30,6 +30,9 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false   # no custom encryption, so no export-compliance question per build
         UIAppFonts: [Newsreader.ttf]           # D112: serif titles (SIL Open Font License 1.1, Sources/Fonts)
+        CFBundleURLTypes:                      # D114: share links open the app as daysout://r/<code>
+          - CFBundleURLName: daysout.share
+            CFBundleURLSchemes: [daysout]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.face.placeholder

@@ -41,6 +41,7 @@ class User(Base):
     ratings = relationship("Rating", cascade="all, delete-orphan", passive_deletes=True)
     events = relationship("Event", cascade="all, delete-orphan", passive_deletes=True)
     alerts = relationship("SafetyAlert", cascade="all, delete-orphan", passive_deletes=True)
+    referral = relationship("Referral", cascade="all, delete-orphan", passive_deletes=True, uselist=False)
 
 
 class Swipe(Base):
@@ -123,6 +124,25 @@ class SafetyAlert(Base):
     notified: Mapped[bool] = mapped_column(Boolean, default=False)
     first_reply_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     replied_by: Mapped[str | None] = mapped_column(String(64))
+
+
+class Referral(Base):
+    """D114: a person's share-link code, made the first time they share a moment. Someone who installs through the
+    link gets `src = "ref:<code>"` on their own row; nothing else links the two, and no names exist."""
+    __tablename__ = "referrals"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    code: Mapped[str] = mapped_column(String(12), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class LinkOpen(Base):
+    """D114: one opening of a share link's page in a browser (counted by the page's script, so link previews don't
+    count). Nothing about the person who opened it: no address, no device, no user id."""
+    __tablename__ = "link_opens"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(String(12), index=True)
+    moment_id: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 class MomentRow(Base):

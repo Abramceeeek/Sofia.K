@@ -53,9 +53,10 @@ final class BrainClient {
         _ = try? await session.data(from: base.appendingPathComponent("v1/health"))
     }
 
-    func install(research: Bool) async throws {
+    /// `src` is "app", or "ref:<code>" for someone who arrived through a share link (D114).
+    func install(research: Bool, src: String = "app") async throws {
         if demo { return }
-        let body = InstallRequest(channel: "stranger", src: "app",
+        let body = InstallRequest(channel: "stranger", src: src,
                                   consent: ConsentBody(version: AppConfig.consentVersion, research: research,
                                                        aiProcessing: false))
         let out: InstallResponse = try await call("POST", "v1/installs", body)
@@ -87,6 +88,11 @@ final class BrainClient {
     func makePlan(_ request: PlanRequest) async throws -> Plan {
         if demo { return try Self.bundled("demo_plan") }
         return try await call("POST", "v1/me/plans", request)
+    }
+
+    func referral() async throws -> ReferralResponse {
+        if demo { return ReferralResponse(code: "DEMOCARD", text: "I think you'd love this day — try it") }
+        return try await call("GET", "v1/me/referral")
     }
 
     func rate(_ request: RatingRequest) async throws {

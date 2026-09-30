@@ -199,6 +199,17 @@ struct DemoScreen: View {
                 ?? model.plan?.stops.first(where: { $0.rateable }) {
                 if name == "stop" { NavigationStack { StopView(stop: stop) } } else { RatingView(stop: stop) }
             }
+        case "sharecard":                                                       // 11b (D114)
+            if let stop = model.plan?.stops.first(where: { $0.rateable && CardPhotos.photo(for: $0.momentId) != nil })
+                ?? model.plan?.stops.first(where: { $0.rateable }) {
+                ZStack {
+                    Theme.background.ignoresSafeArea()
+                    ShareCardView(stop: stop, rating: 5)
+                        .environment(\.colorScheme, .light)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(radius: 8)
+                }
+            }
         case "improve": ImproveView()                                           // 12
         case "safety": SafetyView()                                             // 13a
         case "safetysend": SafetyView(confirming: true)                         // 13b

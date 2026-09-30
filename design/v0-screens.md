@@ -76,6 +76,7 @@ From Abram's Google Stitch explorations, applied as a **theme on standard SwiftU
 | 9 | **Your day** (9a map, 9b list) | 1 | **The summary first and large:** cost per person, walking between stops, finish time. **The shape of the day:** each stop as a block across the day, taller where we expect the person to enjoy it more (no numbers). Map or List, the numbered stops ("Chosen for: …"), swipe to swap. **"Regenerate plan"** (one confirmation; off in the blind Test B comparison), "Improve future plans" and "Plan another day" |
 | 10 | **A stop** (moment card) | 1 | The big picture with **"Worth about £X to you"**, the title, the cost, **the approach line** (From → The way in → You arrive, in the card's words), **the best-light window** on the plan's day, what happens, the queue, the rain option, Directions, Shot card, Swap this stop. **Rating only after the visit** |
 | 11 | **Rating** | 1 | "How did that feel?" **Five worded steps: Flat · Pleasant · Restorative · Vivid · Unforgettable**, an optional "Would you bring someone here?", Save |
+| 11b | **Share card** (D114) | 1 | After a stop is rated, **"Share this moment"** under "Rated. Thank you" (for any rating). The card: the moment's photo with its credit, the title, **the person's own rating** ("My rating: 5 of 5, unforgettable"), "Planned with Days out". The system share sheet adds their link and "I think you'd love this day — try it". **Never "worth £X"; no rewards** |
 
 ## D. Improve future plans: one optional screen after the first plan (D112)
 

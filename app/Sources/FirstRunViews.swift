@@ -100,7 +100,7 @@ struct ConsentView: View {
                         InfoBlock(label: "What you'll do",
                                   text: "Answer a few questions and react to some London places, then get a day plan. If you like, use it on a real day and rate each stop 1–5 after you've been. More questions, all optional, come after your first plan.")
                         InfoBlock(label: "What we keep, and why",
-                                  text: "Your answers, reactions, choices and ratings, to plan days that fit you and to test whether this works. The app only knows this phone by a random code.")
+                                  text: "Your answers, reactions, choices and ratings, to plan days that fit you and to test whether this works. The app only knows this phone by a random code. If you share a moment, your link carries another random code, so we can count how many people it brings in.")
                         InfoBlock(label: "Where, and for how long",
                                   text: "On our server in Frankfurt, in the EU. Kept until 31 March 2027, then deleted. Anonymised results may be kept.")
                         InfoBlock(label: "What we don't ask for",

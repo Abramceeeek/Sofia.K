@@ -7,7 +7,7 @@ enum AppConfig {
         let raw = Bundle.main.object(forInfoDictionaryKey: "BrainBaseURL") as? String ?? ""
         return URL(string: raw) ?? URL(string: "https://moments-brain.onrender.com")!
     }
-    static let consentVersion = "app-2026-09"
+    static let consentVersion = "app-2026-09-30"   // D114: the share-link line
     static let contactEmail = "abram@abdurakhmonbek.com"
     /// Build 1 plans from the Test B start point (D104): Charing Cross station, Trafalgar Square exit (TfL).
     static let startName = "Charing Cross station"
@@ -64,6 +64,7 @@ final class AppModel {
     var choices: [Int: String] = [:]
     var profile = Profile()
     var rated: Set<String> = []            // moment ids rated in this plan
+    var myRatings: [String: Int] = [:]     // their own 1–5, for the share card (D114)
     var improved = UserDefaults.standard.bool(forKey: "improved")
     var morePlacesDone = UserDefaults.standard.bool(forKey: "morePlacesDone")   // D112: the 4 later places
     var moreTasksDone = UserDefaults.standard.bool(forKey: "moreTasksDone")     // and the 5 later tasks
@@ -145,10 +146,21 @@ final class AppModel {
 
     /// Registers the phone, then shows onboarding, which loads its own questions (one request, one place).
     func agree() async {
+        let joined = UserDefaults.standard.string(forKey: "refCode.joined")
         await run {
-            try await self.client.install(research: true)
+            try await self.client.install(research: true, src: joined.map { "ref:\($0)" } ?? "app")
+            UserDefaults.standard.removeObject(forKey: "refCode.joined")
             self.route = .onboarding
         }
+    }
+
+    /// D114: a share link opened in the app (`daysout://r/<code>`). Before registering, the code is kept and sent
+    /// with the install, so the funnel can count people who joined through a share. Nothing else is done with it.
+    func openLink(_ url: URL) {
+        guard url.scheme == "daysout", url.host == "r", client.token == nil,
+              let code = url.pathComponents.dropFirst().first,
+              code.count == 8, code.allSatisfy({ $0.isUppercase || $0.isNumber }) else { return }
+        UserDefaults.standard.set(code, forKey: "refCode.joined")
     }
 
     func loadOnboarding() async throws {
@@ -293,6 +305,25 @@ final class AppModel {
             try await self.client.rate(RatingRequest(momentId: stop.momentId, rating: rating, planId: self.plan?.id,
                                                      wouldBring: wouldBring))
             self.rated.insert(stop.momentId)
+            self.myRatings[stop.momentId] = rating
+        }
+    }
+
+    /// D114: after a rated stop, the person can share a card with their own rating and their link. The button
+    /// shows whatever the rating, so rating high never unlocks anything; and it only exists after the visit, so the
+    /// plan comparison (Test B) is already over.
+    func share(_ stop: Stop) async {
+        guard let rating = myRatings[stop.momentId] else { return }
+        var referral: ReferralResponse?
+        await run { referral = try await self.client.referral() }
+        guard let referral, var link = URLComponents(url: AppConfig.baseURL.appendingPathComponent("r/\(referral.code)"),
+                                                     resolvingAgainstBaseURL: false) else { return }
+        link.queryItems = [URLQueryItem(name: "m", value: CardPhotos.cardId(stop.momentId) ?? stop.momentId)]
+        var items: [Any] = ["\(referral.text): \(link.url?.absoluteString ?? "")"]
+        if let card = ShareCardView.render(stop: stop, rating: rating) { items.insert(card, at: 0) }
+        await client.event("share_sheet", ["moment": stop.momentId, "rating": "\(rating)"])
+        ShareSheet.present(items) { to, sent in
+            Task { await self.client.event(sent ? "share_sent" : "share_cancelled", ["moment": stop.momentId, "to": to ?? ""]) }
         }
     }
 

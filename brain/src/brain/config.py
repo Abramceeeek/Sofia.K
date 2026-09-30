@@ -16,6 +16,7 @@ class Settings:
     admin_token: str | None          # unset = admin endpoints disabled
     alert_webhook_url: str | None    # where safety alerts are posted (Abram, and the backup helper)
     planner_time_limit_s: float
+    testflight_url: str | None = None   # D114: the public TestFlight link a share page offers; unset until external testing
 
 
 def driver_url(raw: str) -> str:
@@ -33,4 +34,5 @@ def get_settings() -> Settings:
         admin_token=os.environ.get("BRAIN_ADMIN_TOKEN") or None,
         alert_webhook_url=os.environ.get("BRAIN_ALERT_WEBHOOK_URL") or None,
         planner_time_limit_s=float(os.environ.get("BRAIN_PLANNER_TIME_LIMIT_S", "1.0")),
+        testflight_url=os.environ.get("BRAIN_TESTFLIGHT_URL") or None,
     )

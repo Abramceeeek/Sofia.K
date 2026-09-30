@@ -201,6 +201,12 @@ struct InstallResponse: Decodable {
     let token: String
 }
 
+/// D114: the person's share code and the words that go with the link.
+struct ReferralResponse: Decodable {
+    let code: String
+    let text: String
+}
+
 struct Items<T: Encodable>: Encodable {
     let items: [T]
 }
