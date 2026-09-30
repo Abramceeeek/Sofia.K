@@ -47,7 +47,7 @@
 From Abram's Google Stitch explorations, applied as a **theme on standard SwiftUI parts** (colours and fonts, no custom controls), in light and dark.
 - **Keep:** the palette (charcoal #111317 surfaces, amber #FFC665), Newsreader serif titles, a big picture on moment cards, "Worth about £X to you", the approach line, the best-light window, the cost, the numbered day plan with a simple chart of the day's shape, and worded rating labels (Flat / Pleasant / Restorative / Vivid / Unforgettable).
 - **Don't use:** any model internals (β, calibration, convergence, σ, EV, "sensory yield", "surplus NET"), percentages of invented metrics, sensor or heart-rate data, or jargon ("phenomenological", "olfactory").
-- **Every card detail comes from our verified cards**, never invented. Until the cards have photos (Abram's own, or Wikimedia Commons with a credit), the big picture is the satellite view of the place, marked "Photo to come".
+- **Every card detail comes from our verified cards**, never invented. The big picture is an openly licensed photo from Wikimedia Commons with its credit underneath (m152, `design/photo-credits.md`), until Abram's own replace them. The four cards without one show the satellite view, marked "Photo to come".
 - **Type:** Newsreader for titles only (SIL Open Font License 1.1, bundled with its licence); body text stays SF Pro. Everything scales with Dynamic Type, and no text is smaller than footnote (13 pt at the default size), so no 9–11 px labels.
 - **Light mode:** warm paper (#FAF7F0) with a deeper amber (#7E5700) for text and icons, so contrast holds; the main button is amber with dark brown text in both modes.
 

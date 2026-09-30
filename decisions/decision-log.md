@@ -2,6 +2,21 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-09-30 — card photos, plan variety, the signing set-up
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| — | **Card photos: openly licensed photos, with credits**, until Abram's own replace them. **Apple membership runs until July 2027.** Round-2 review time: 30–60 min (LOG) | m144's "Photo to come" on every card | Founder decisions, 30 Sep |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m152 | **The photos:**<br>- 40 of the 44 ready cards have a Wikimedia Commons photo: CC0, public domain, CC BY or CC BY-SA only.<br>- Each was matched to its card's place by the file's title and description, and its licence was read from Commons' own metadata (30 Sep).<br>- Rejected: two searches that returned the wrong place (Parliament Hill Lido for London Fields; Tivoli in Copenhagen for the Royal Festival Hall), and a Transport Museum photo dominated by a poster (UK freedom of panorama doesn't cover posters).<br>- **Four cards keep the satellite view:** go-karting, the whale hall (no photo of the Mammals-hall model), Meet Bros and the Transport Museum.<br>- The credit (title, author, licence, "resized") sits under the picture and links to the source page.<br>- 9.2 MB, bundled in the app, so no third party sees who opens a card | `app/Sources/Photos/`, `design/photo-credits.md` |
+| m153 | **Plan variety: diagnosis and a proposal for Abram** (`decisions/plan-variety.md`).<br>- In Test B's real setting, the over-picked cards are the free, "safe" cards near the start: the Royal Festival Hall foyers 40% (20% with true tastes), Waterloo Bridge 21% (9%) and the National Portrait Gallery 16% (8%). The Garden at 120 and St Dunstan are close to what tastes justify.<br>- **Proposed:** a popularity nudge kept only when the person's own estimate loses ≤ £4.<br>- In simulation: the Royal Festival Hall falls to 18%, and plans overlap as much as true tastes imply. Fit is no worse (regret −0.26 ± 0.07); a second solve alone changes nothing.<br>- **Not built until Abram says yes** | `decisions/plan-variety.md` |
+| m151a | **The example day uses the realistic simulation** (amends m151). Its exclusions now also cover the British Museum, the National Portrait Gallery, Somerset House and the Greenwich view (each ≥ 15% of simulated Test B plans). It is now the Courtauld Gallery 10:43, lunch nearby, then Sir John Soane's Museum; both are in 7% or fewer of those plans | `api.py` `EXAMPLE_DAY`, `example_day.json` |
+| m154 | **The signing set-up, checked against Apple's and GitHub's pages (30 Sep):**<br>- **Ask for App Store Connect API access first:** Apple approves it case by case.<br>- **An App Manager team key:** Apple lists that role as allowed to upload builds.<br>- **The `.p12` uses 3DES/SHA1** so macOS reads it.<br>- **Git Bash needs `MSYS_NO_PATHCONV=1`** for the OpenSSL subject.<br>- **Claude starts the upload run through GitHub's API**, because "Run workflow" only shows for workflows on `main` | `app/README.md` |
+
 ## 2026-09-29 (late) — the swipe re-run rule; feedback round 2; the Stitch theme
 
 | # | Decision | Replaces | Why |

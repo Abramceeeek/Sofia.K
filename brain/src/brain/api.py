@@ -35,15 +35,17 @@ from .travel import LondonEstimate
 BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}
 EXAMPLE_SHOT_CARD = "m_waterloo_bridge_sunset"   # the Test A example (D106), shown on the photos screen
 # D112: the example day shown before consent. Not personal (population weights only), and a Sunday, so it overlaps
-# little with the Test B pair (a Saturday afternoon). m150: it leaves out the generic plan's places (National Gallery,
-# Borough Market, the Royal Festival Hall as its rain swap) and the moments in 15% or more of 40 simulated Test B
-# personal plans, so nobody meets a Test B stop here first and can tell which plan is which
+# little with the Test B pair (a Saturday afternoon). m151: it leaves out the generic plan's places (National Gallery,
+# Borough Market, the Royal Festival Hall as its rain swap) and every moment in 15% or more of simulated Test B
+# personal plans (m153: 200 people, the short onboarding, the loved-place and end-time rules), so nobody meets a
+# Test B stop here first and can tell which plan is which
 EXAMPLE_DAY = dict(start_name="Charing Cross station", start=(51.507819, -0.126137), start_time="10:30",
                    end_time="14:30", stops=3, weekday="sun", day_label="An example Sunday",
                    exclude=("m_national_gallery", "m_borough_market_graze", "m_rfh_foyers_rest",
-                            "m_garden_at_120", "m_st_dunstan_garden", "m_millennium_bridge_dome",
-                            "m_waterloo_bridge_sunset", "m_alderman_stairs_sunset", "m_park_break_embankment",
-                            "m_to_river_somerset", "m_beigel_bake_late"))
+                            "m_bm_great_court", "m_garden_at_120", "m_to_river_somerset", "m_waterloo_bridge_sunset",
+                            "m_st_dunstan_garden", "m_national_portrait_gallery", "m_greenwich_wolfe_view",
+                            "m_millennium_bridge_dome", "m_alderman_stairs_sunset", "m_park_break_embankment",
+                            "m_beigel_bake_late"))
 
 
 def _hash(token: str) -> str:

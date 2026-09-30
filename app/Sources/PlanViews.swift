@@ -531,52 +531,70 @@ struct StopView: View {
     }
 }
 
-/// The big picture at the top of a moment card. Until the cards have photos (Abram's own, or Wikimedia Commons with
-/// a credit), it shows the satellite view of the place: real, not invented.
+/// The big picture at the top of a moment card: the card's photo with its credit underneath (openly licensed, until
+/// Abram's own replace them), or, for a card without one, the satellite view of the place: real, not invented.
 struct MomentHero: View {
     let stop: Stop
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            if let pin = stop.pin {
-                Map(initialPosition: .camera(MapCamera(centerCoordinate: pin.coordinate, distance: 900,
-                                                       heading: 0, pitch: 50))) {
-                    Marker(stop.title, coordinate: pin.coordinate).tint(Theme.accentFill)
-                }
-                .mapStyle(.imagery(elevation: .realistic))
-                .allowsHitTesting(false)
-            } else {
-                Theme.surfaceHigh
-            }
-            // the chip and the time sit at the top, so the map's logo and legal link at the bottom stay clear (m150)
-            LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .center)
-                .allowsHitTesting(false)
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
-                    if let worth = stop.worthGbp {
-                        Text("Worth about \(Money.text(worth)) to you")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Theme.onAccent)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Theme.accentFill, in: Capsule())
+        let found = CardPhotos.photo(for: stop.momentId)
+        VStack(alignment: .leading, spacing: 6) {
+            ZStack(alignment: .topLeading) {
+                if let image = found?.1 {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                        .accessibilityLabel("Photo of the place")
+                } else if let pin = stop.pin {
+                    Map(initialPosition: .camera(MapCamera(centerCoordinate: pin.coordinate, distance: 900,
+                                                           heading: 0, pitch: 50))) {
+                        Marker(stop.title, coordinate: pin.coordinate).tint(Theme.accentFill)
                     }
-                    Text("\(stop.arrive)–\(stop.depart)")
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.white)
+                    .mapStyle(.imagery(elevation: .realistic))
+                    .allowsHitTesting(false)
+                } else {
+                    Theme.surfaceHigh
                 }
-                Spacer(minLength: 8)
-                Text("Photo to come")
-                    .font(.footnote)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(.ultraThinMaterial, in: Capsule())
+                // the chip and the time sit at the top, so the map's logo and legal link at the bottom stay clear (m150)
+                LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .center)
+                    .allowsHitTesting(false)
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let worth = stop.worthGbp {
+                            Text("Worth about \(Money.text(worth)) to you")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.onAccent)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Theme.accentFill, in: Capsule())
+                        }
+                        Text("\(stop.arrive)–\(stop.depart)")
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.white)
+                    }
+                    Spacer(minLength: 8)
+                    if found == nil {
+                        Text("Photo to come")
+                            .font(.footnote)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(.ultraThinMaterial, in: Capsule())
+                    }
+                }
+                .padding(14)
             }
-            .padding(14)
+            .frame(height: 260)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .accessibilityElement(children: .combine)
+            if let photo = found?.0 {
+                // the credit the licence asks for; it opens the photo's page on Wikimedia Commons
+                Link(photo.credit, destination: photo.source)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.inkSoft)
+            }
         }
-        .frame(height: 260)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .accessibilityElement(children: .combine)
     }
 }
 

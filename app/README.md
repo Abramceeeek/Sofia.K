@@ -4,63 +4,174 @@
 
 **The simulator build passed on its first run** (2026-09-26, run 36262736945; the build step took 18 s). Signing and upload haven't run yet.
 - **Before the secrets exist:** any push that changes `app/` builds for the simulator only (no signing). That checks the runner, XcodeGen and the Swift.
-- **After the secrets exist:** a push to `main`, or **Actions → ios → Run workflow** with "upload" ticked, archives, signs and uploads to TestFlight. The build number is the run number.
+- **After the secrets exist:** a push to `main`, or a manual run with "upload" ticked, archives, signs and uploads to TestFlight. The build number is the run number.
+- **The "Run workflow" button only appears once the workflow is on `main`** (GitHub: "the workflow file exists on the default branch", read 30 Sep). `main` still holds only the first commit. A workflow that has run before can still be started on any branch through GitHub's API, so **Claude starts the upload run** when you say the secrets are in. Merging the branch into `main` later brings the button back.
 
-## Build 1 on your iPhone: what you do (about 1–1.5 h, D109)
+## Build 1 on your iPhone: the signing set-up, step by step (about 45–60 min, D109)
 
-Do these in order. Each has a check at the end. **Never paste a key, password or certificate into a chat with me:** they go straight into GitHub Secrets.
+Do these in order. Each step says where to click and what to keep. **Never paste a key, password or certificate into a chat with me:** they go straight into GitHub Secrets. Checked against Apple's help pages and GitHub's docs on 30 Sep 2026 (`research/sources.csv`).
 
-### 1. The membership (2 min)
+### 0. Before you start (5 min)
 
-developer.apple.com/account → Membership details. **Send me the expiry date.**
-- TestFlight needs an active membership. If it lapses, you can't upload builds or open Certificates, Identifiers & Profiles (Apple's renewal page, read 29 Sep).
-- The tests now run in the app until about the week of 23 Nov, so **the membership must stay active until then.** D74 said "renew only if Test B passes". If it expires before late November, renewing is a money decision for you (US$99 a year, in local currency).
+- **A computer with a terminal.**
+  - Windows: install **Git for Windows** and use **Git Bash**, which includes OpenSSL.
+  - Mac or Linux: the built-in Terminal.
+  - Your iPhone can't do steps 3–5.
+- **One private folder** for the files you'll make, e.g. `Documents/daysout-signing`. Keep it off shared drives, and never put it in the repo.
+- **A password manager entry** for the `.p12` password (step 5).
 
-### 2. The app's identity (10 min)
+### 1. Ask Apple for App Store Connect API access (2 min, then a wait). Do this first
 
-In Certificates, Identifiers & Profiles:
-1. **Identifiers → +** → App IDs → App → an explicit bundle ID, e.g. `com.abdurakhmonbek.daysout`. No capabilities are needed.
-2. **Certificates → +** → Apple Distribution. Reuse your earlier app's certificate instead if it's still valid.
-   - Without a Mac, make the signing request with OpenSSL on any computer:
-     ```
-     openssl genrsa -out dist.key 2048
-     openssl req -new -key dist.key -out dist.csr -subj "/CN=Abram/C=GB"
-     ```
-   - Upload `dist.csr` and download `distribution.cer`. Then make the `.p12` (choose a password):
-     ```
-     openssl x509 -inform DER -in distribution.cer -out dist.pem
-     openssl pkcs12 -export -legacy -inkey dist.key -in dist.pem -out dist.p12
-     ```
-   - `-legacy` keeps the file readable by macOS's keychain tool (OpenSSL 3; UNVERIFIED whether the runner still needs it). Keep `dist.key` private.
-3. **Profiles → +** → App Store Connect (distribution) → your App ID → the certificate → name it, e.g. "Days out App Store" → download the `.mobileprovision` file.
+**Why first:** Apple approves this request "on a case-by-case basis", so it may take a while. Only the Account Holder can ask, which is you.
 
-### 3. App Store Connect (10 min)
+1. Go to appstoreconnect.apple.com and open **Users and Access**.
+2. Click **Integrations**. It opens on **App Store Connect API**.
+3. Click **Request Access**, tick the terms and click **Submit**.
 
-1. **Apps → + → New App:**
-   - iOS; English (UK); the bundle ID from step 2; any SKU;
-   - a name. It must be unique on the App Store and can change later; you choose it.
-2. **Users and Access → Integrations → App Store Connect API → Team Keys → +:**
-   - role App Manager;
-   - download the `.p8` file (you can only download it once);
-   - note the Key ID and the Issuer ID.
+**Check:** the page shows the request as submitted. Carry on with steps 2–7 while you wait. Step 8 needs the approval.
 
-### 4. The six GitHub secrets (10 min)
+### 2. Register the App ID (5 min)
 
-GitHub → Settings → Secrets and variables → Actions → New repository secret. There are six:
+1. Go to developer.apple.com/account and open **Certificates, Identifiers & Profiles**.
+2. Click **Identifiers**, then **+**. Choose **App IDs**, then **App**, then **Continue**.
+3. **Description:** `Days out`.
+4. **Bundle ID:** choose **Explicit** and enter e.g. `com.abdurakhmonbek.daysout`.
+   - Pick it with care: the app record in step 7 is tied to it for good.
+   - The app's display name can change later; the bundle ID can't.
+5. Leave every capability unticked. Click **Continue**, then **Register**.
 
-| Secret | What it is |
+**Check:** the new App ID is in the list.
+
+### 3. Make a certificate signing request (5 min)
+
+In the terminal, go to your private folder and run:
+```
+openssl genrsa -out dist.key 2048
+MSYS_NO_PATHCONV=1 openssl req -new -key dist.key -out dist.csr -subj "/emailAddress=YOUR_APPLE_ID_EMAIL/CN=Abram Distribution/C=GB"
+```
+- `MSYS_NO_PATHCONV=1` stops Git Bash on Windows from treating `/emailAddress=…` as a file path. It does nothing on a Mac or Linux.
+- `dist.key` is the private key. **Anyone who has it can sign apps as you**, so never share it.
+- Apple's help shows the same OpenSSL form for a request made without Keychain Access.
+
+**Check:** the folder now holds `dist.key` and `dist.csr`.
+
+### 4. Create the Apple Distribution certificate (3 min)
+
+1. In Certificates, Identifiers & Profiles, click **Certificates**, then **+**.
+2. Choose **Apple Distribution** and click **Continue**.
+3. Upload `dist.csr` and click **Continue**, then **Download**. You get `distribution.cer`; move it into your folder.
+
+**Check:** the certificate is listed with an expiry date about a year away.
+
+### 5. Package the certificate and key as a `.p12` (3 min)
+
+```
+openssl x509 -inform DER -in distribution.cer -out dist.pem
+openssl pkcs12 -export -inkey dist.key -in dist.pem -out dist.p12 \
+  -certpbe PBE-SHA1-3DES -keypbe PBE-SHA1-3DES -macalg sha1
+```
+- It asks for an export password. Choose a strong one and save it in your password manager: it becomes the `P12_PASSWORD` secret.
+- The three `PBE-SHA1-3DES` / `sha1` options use the older encryption that macOS's keychain tool reads without trouble. OpenSSL 3 would otherwise use a newer default, which older macOS versions couldn't import (Claude's reading; UNVERIFIED on the current runner).
+- If the upload run later fails with "No signing identity in the .p12", redo this step with `-legacy` in place of those three options.
+
+**Check:** `dist.p12` exists.
+
+### 6. Create the App Store Connect provisioning profile (3 min)
+
+1. In Certificates, Identifiers & Profiles, click **Profiles**, then **+**.
+2. Under **Distribution**, choose **App Store Connect** and click **Continue**.
+3. Choose the App ID from step 2 and click **Continue**.
+4. Choose the certificate from step 4 and click **Continue**.
+5. **Name:** `Days out App Store`. Click **Generate**, then **Download**.
+
+The CI job reads your team, the bundle ID and this profile's name from the file itself, so none of them are secrets.
+
+**Check:** a `.mobileprovision` file is in your folder.
+
+### 7. Create the app record in App Store Connect (5 min)
+
+1. Go to appstoreconnect.apple.com and open **Apps**. Click **+**, then **New App**.
+2. **Platform:** iOS.
+3. **Name:** your choice. It must be unique on the App Store; if "Days out" is taken, try e.g. "Days out: London". You can change it later.
+4. **Primary language:** English (UK).
+5. **Bundle ID:** the one from step 2.
+6. **SKU:** any private reference, e.g. `daysout-001`.
+7. **User access:** Full Access. Click **Create**.
+
+**Check:** the app page opens.
+
+### 8. Generate the API key (3 min, once Apple has approved step 1)
+
+1. Go to **Users and Access**, then **Integrations**, then **App Store Connect API**, then **Team Keys**.
+2. Click **Generate API Key** (or **+**).
+3. **Name:** `GitHub CI`. **Access:** **App Manager**, which Apple lists as allowed to upload builds. Click **Generate**.
+4. Click **Download API Key**. **This works only once**: you get `AuthKey_XXXXXXXXXX.p8`; move it into your folder.
+5. Copy two values into your password manager:
+   - the **Key ID**, shown in the key's row;
+   - the **Issuer ID**, shown above the table.
+
+**Check:** you have the `.p8` file, the Key ID and the Issuer ID.
+
+### 9. Turn the three files into base64 text (3 min)
+
+- **Git Bash, Linux or Mac:** `base64 -w0 dist.p12 > dist.p12.txt`
+  - Do the same for the `.mobileprovision` file and the `.p8` file.
+  - On a Mac, use `base64 -i dist.p12 -o dist.p12.txt`.
+- **PowerShell:**
+  ```
+  [Convert]::ToBase64String([IO.File]::ReadAllBytes("dist.p12")) | Out-File -Encoding ascii dist.p12.txt
+  ```
+
+**Check:** each `.txt` file is one long line of letters and digits.
+
+### 10. Add the six GitHub secrets (5 min)
+
+1. On GitHub, open the repository and go to **Settings → Secrets and variables → Actions**.
+2. For each row below, click **New repository secret**, paste the value exactly and click **Add secret**.
+
+| Secret | Paste |
 |---|---|
-| `BUILD_CERTIFICATE_BASE64` | `dist.p12`, base64-encoded |
-| `P12_PASSWORD` | The password you chose for the `.p12` |
-| `BUILD_PROVISION_PROFILE_BASE64` | The `.mobileprovision` file, base64-encoded |
-| `APP_STORE_CONNECT_KEY_ID` | The API key's Key ID |
-| `APP_STORE_CONNECT_ISSUER_ID` | The Issuer ID |
-| `APP_STORE_CONNECT_KEY_BASE64` | The `AuthKey_XXXX.p8` file, base64-encoded |
+| `BUILD_CERTIFICATE_BASE64` | the contents of `dist.p12.txt` |
+| `P12_PASSWORD` | the password from step 5 |
+| `BUILD_PROVISION_PROFILE_BASE64` | the contents of the `.mobileprovision` `.txt` |
+| `APP_STORE_CONNECT_KEY_ID` | the Key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID |
+| `APP_STORE_CONNECT_KEY_BASE64` | the contents of the `.p8` `.txt` |
 
-- Base64 on Linux: `base64 -w0 file`.
-- Base64 in Windows PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("file"))`.
+**Check:** six secrets are listed. GitHub never shows a value again, which is expected.
 
-### 5. The Brain on Render (10 min)
+### 11. Make an internal testing group with you in it (3 min)
+
+1. In App Store Connect, open your app, then the **TestFlight** tab.
+2. Next to **Internal Testing**, click **+**.
+3. Name the group `Me` and tick **Enable automatic distribution**, so every new build reaches you without a click. Click **Create**.
+4. Click **Invite Testers**, tick yourself and click **Add**.
+   - Internal testers must be users on your App Store Connect account, up to 100.
+   - Builds for internal testers need no App Review.
+
+### 12. The first upload (you: 1 min; the run: about 10 min)
+
+1. **Tell me "the secrets are in"** (never the values). I start the `ios` workflow on the branch with "upload" ticked, through GitHub's API.
+2. The run archives, signs and uploads the build.
+3. Apple then processes the build before it appears under TestFlight. How long that takes: UNVERIFIED; minutes to an hour is typical.
+
+**If the run fails,** the log names the step; I fix what's in the code. For a secret, the log says which one to redo.
+
+### 13. Install it on your iPhone (5 min)
+
+1. Install **TestFlight** from the App Store.
+2. Open the invitation email on the iPhone (or TestFlight shows it) and tap **Accept**, then **Install**.
+
+### 14. Tidy up (5 min)
+
+- Keep `dist.key`, `dist.p12`, the `.p8` file and the passwords in your password manager or encrypted storage. Delete loose copies from Downloads and the `.txt` files.
+- **If anything leaks:**
+  - revoke the certificate (Certificates, Identifiers & Profiles);
+  - revoke the API key (Users and Access → Integrations);
+  - then redo steps 3–10.
+- The certificate lasts about a year. When it expires, redo steps 3–6 and update three secrets.
+
+### The Brain on Render (10 min, still needed before the app can plan)
 
 1. Render dashboard → Blueprints → your blueprint → **Sync**. If the blueprint syncs automatically, the service may already be there. It adds the `moments-brain` service from `render.yaml`:
    - free tier;
@@ -68,12 +179,6 @@ GitHub → Settings → Secrets and variables → Actions → New repository sec
    - shares the swipe page's free database, because Render allows only one free database per workspace.
 2. When it's live, open `https://<its address>/v1/health`. It should say `"ok": true`.
 3. **Send me the address.** I'll put it in the app if it isn't `moments-brain.onrender.com`.
-
-### 6. The first upload and your iPhone (15 min)
-
-1. GitHub → Actions → **ios** → Run workflow → pick the branch `claude/vigilant-cannon-my82dj`, tick "upload" → Run. It builds, signs and uploads (about 10 min).
-2. App Store Connect → your app → **TestFlight → Internal Testing → +** → add a group and add yourself. Internal testers need no App Review (Apple, read 29 Sep).
-3. On your iPhone, install **TestFlight** from the App Store, accept the invitation and install **Days out**.
 
 **The check:**
 - Open the app and agree.

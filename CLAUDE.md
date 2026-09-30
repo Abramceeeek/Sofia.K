@@ -22,6 +22,7 @@ This file is the standing context for this project. Read it fully before any tas
   - **Before public App Store release (D53):** check Apple's outside-activities policy for publishing under Abram's own developer account. **Abram is double-checking the Apple policy and the Apple IP clause before any external TestFlight build (D60, D94).**
   - **Developer account (D61):** individual for TestFlight. Switch to a company account (incorporation plus a D-U-N-S number) before the public App Store launch. Start about 3 weeks ahead.
     - **Renew the membership only if Test B passes (D74).** Keep auto-renew off until then. **Auto-renew is off (confirmed 28 Sep, D94).**
+    - **The membership runs until July 2027 (Abram, 30 Sep).** So it covers every test through Checkpoint 3; the D74 renewal decision falls due before July 2027.
   - Revenue from trips or subscriptions can start once the money gates are done. Research and unpaid tests can proceed now.
 
 ## The core idea
@@ -151,6 +152,7 @@ The same profile matches **people**, not just places. Compatible trip-mates make
     - Abram's review stays small: one screenshot page per batch from CI.
     - His own design pass on the four custom screens (D81) is optional, after Test B.
     - **Visual direction (D112):** his Stitch "Sensory Cartography" explorations, applied as a theme on standard SwiftUI parts (`design/v0-screens.md`).
+    - **Card photos (30 Sep):** openly licensed photos from Wikimedia Commons, with a credit under each, until Abram's own replace them (`design/photo-credits.md`). A card with no suitable photo keeps the satellite view.
     - The first external TestFlight build is about the week of 9 Nov, behind the same gates.
     - The GitHub Actions pipeline builds for the simulator until Abram adds the signing secrets (D70e).
   - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.

@@ -4,21 +4,21 @@
  "date": null,
  "stops": [
   {
-   "moment_id": "m_national_portrait_gallery",
-   "key": "m_national_portrait_gallery",
-   "title": "Centuries of British faces at the National Portrait Gallery",
-   "arrive": "10:35",
-   "depart": "11:37",
-   "travel_min": 5,
+   "moment_id": "m_courtauld_gallery",
+   "key": "m_courtauld_gallery",
+   "title": "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid",
+   "arrive": "10:43",
+   "depart": "11:48",
+   "travel_min": 13,
    "travel_mode": "walk",
-   "travel_text": "Getting there: about 5 min on foot from Charing Cross station.",
-   "approach": "Walk to St Martin's Place, beside the National Gallery, and go in.",
-   "what": "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.",
+   "travel_text": "Getting there: about 13 min on foot from Charing Cross station.",
+   "approach": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
+   "what": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
    "queue_min": 0,
    "best_text": "",
-   "cost_gbp": 0.0,
+   "cost_gbp": 12.0,
    "cost_kind": "entry",
-   "cost_text": "Cost: free",
+   "cost_text": "Entry: £12",
    "rain_swap": "",
    "lunch": false,
    "familiar": false,
@@ -27,54 +27,54 @@
    "approach_steps": [
     {
      "label": "From",
-     "text": "Charing Cross or Leicester Square station"
+     "text": "Temple or Covent Garden station"
     },
     {
      "label": "The way in",
-     "text": "Walk to St Martin's Place, beside the National Gallery, and go in"
+     "text": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery"
     },
     {
      "label": "You arrive",
-     "text": "National Portrait Gallery, St Martin's Place"
+     "text": "The Courtauld Gallery, Somerset House"
     }
    ],
    "best_light": "",
    "best_window": "",
    "pin": {
-    "lat": 51.509399,
-    "lon": -0.128453
+    "lat": 51.510734,
+    "lon": -0.116912
    },
    "chosen_for": [],
    "why": [],
    "lines": [
-    "Getting there: about 5 min on foot from Charing Cross station.",
-    "Walk to St Martin's Place, beside the National Gallery, and go in.",
-    "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.",
-    "Cost: free"
+    "Getting there: about 13 min on foot from Charing Cross station.",
+    "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
+    "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
+    "Entry: £12"
    ],
    "card": {
-    "id": "m_national_portrait_gallery",
-    "title": "Centuries of British faces at the National Portrait Gallery",
+    "id": "m_courtauld_gallery",
+    "title": "Van Gogh's bandaged ear and Manet's barmaid at the Courtauld",
     "status": "ready",
     "place": {
-     "name": "National Portrait Gallery, St Martin's Place",
+     "name": "The Courtauld Gallery, Somerset House",
      "overture_id": null,
-     "lat": 51.509399,
-     "lon": -0.128453
+     "lat": 51.510734,
+     "lon": -0.116912
     },
     "approach": {
-     "from": "Charing Cross or Leicester Square station",
-     "path": "Walk to St Martin's Place, beside the National Gallery, and go in",
+     "from": "Temple or Covent Garden station",
+     "path": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery",
      "step_free": null,
      "start_point": {
-      "lat": 51.509399,
-      "lon": -0.128453
+      "lat": 51.510734,
+      "lon": -0.116912
      }
     },
-    "what_happens": "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.",
+    "what_happens": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
     "best_time": {
      "time_of_day": [
-      "10:30-18:00"
+      "10:00-18:00"
      ],
      "light": null,
      "weather": [
@@ -82,25 +82,25 @@
      ],
      "company": null,
      "crowd_window": null,
-     "opening_hours": "Sun-Thu 10:30-18:00, Fri-Sat to 21:00; free. Official site via search, 2026-09-28",
+     "opening_hours": "Open daily 10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site, 2026-09-28",
      "days": [],
      "best_window": [],
      "best_around_sunset": null
     },
-    "cost_gbp": 0.0,
+    "cost_gbp": 12.0,
     "shot_card": null,
     "plannable": true
    }
   },
   {
-   "moment_id": "lunch@m_transport_museum",
-   "key": "lunch@m_transport_museum",
-   "title": "Lunch near Covent Garden station",
+   "moment_id": "lunch@m_courtauld_gallery",
+   "key": "lunch@m_courtauld_gallery",
+   "title": "Lunch near The Courtauld Gallery",
    "arrive": "11:53",
    "depart": "12:38",
-   "travel_min": 11,
+   "travel_min": 0,
    "travel_mode": "walk",
-   "travel_text": "Getting there: about 11 min on foot from National Portrait Gallery.",
+   "travel_text": "",
    "approach": "",
    "what": "Pick a café, pub or food stall nearby.",
    "queue_min": 0,
@@ -117,13 +117,12 @@
    "best_light": "",
    "best_window": "",
    "pin": {
-    "lat": 51.512125,
-    "lon": -0.121222
+    "lat": 51.510734,
+    "lon": -0.116912
    },
    "chosen_for": [],
    "why": [],
    "lines": [
-    "Getting there: about 11 min on foot from National Portrait Gallery.",
     "Pick a café, pub or food stall nearby.",
     "Food: about £15"
    ]
@@ -132,11 +131,11 @@
    "moment_id": "m_soane_museum",
    "key": "m_soane_museum",
    "title": "Sir John Soane's house of curiosities, top-lit and full of mirrors",
-   "arrive": "12:54",
-   "depart": "14:00",
-   "travel_min": 11,
+   "arrive": "12:56",
+   "depart": "14:02",
+   "travel_min": 13,
    "travel_mode": "walk",
-   "travel_text": "Getting there: about 11 min on foot from Covent Garden station.",
+   "travel_text": "Getting there: about 13 min on foot from The Courtauld Gallery.",
    "approach": "Walk south to Lincoln's Inn Fields and number 13.",
    "what": "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
    "queue_min": 10.0,
@@ -172,7 +171,7 @@
    "chosen_for": [],
    "why": [],
    "lines": [
-    "Getting there: about 11 min on foot from Covent Garden station.",
+    "Getting there: about 13 min on foot from The Courtauld Gallery.",
     "Walk south to Lincoln's Inn Fields and number 13.",
     "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
     "Allow about 10 min to queue.",
@@ -227,14 +226,14 @@
  ],
  "summary": [
   "Start: Charing Cross station at 10:30 · 3 stops, including lunch",
-  "Costs: about £15 for food and entry, all on foot"
+  "Costs: about £27 for food and entry, all on foot"
  ],
  "totals": {
-  "cost_gbp": 15.0,
-  "spend_gbp": 15.0,
+  "cost_gbp": 27.0,
+  "spend_gbp": 27.0,
   "transport_gbp": 0.0,
-  "walk_min": 27,
-  "walk_km": 2.0,
-  "finish": "14:00"
+  "walk_min": 26,
+  "walk_km": 1.9,
+  "finish": "14:02"
  }
 }
