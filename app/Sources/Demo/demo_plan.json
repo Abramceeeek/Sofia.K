@@ -42,121 +42,14 @@
    ]
   },
   {
-   "moment_id": "m_st_dunstan_garden",
-   "key": "m_st_dunstan_garden",
-   "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
-   "arrive": "13:33",
-   "depart": "13:58",
-   "travel_min": 26,
-   "travel_mode": "transit",
-   "travel_text": "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Monument or Tower Hill station.",
-   "approach": "Walk down St Dunstan's Hill towards the river.",
-   "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-   "queue_min": 0,
-   "best_text": "",
-   "cost_gbp": 0.0,
-   "cost_kind": "entry",
-   "cost_text": "Cost: free",
-   "rain_swap": "",
-   "lunch": false,
-   "familiar": false,
-   "rateable": true,
-   "worth_gbp": 23,
-   "approach_steps": [
-    {
-     "label": "From",
-     "text": "Monument or Tower Hill station"
-    },
-    {
-     "label": "The way in",
-     "text": "Walk down St Dunstan's Hill towards the river"
-    },
-    {
-     "label": "You arrive",
-     "text": "St Dunstan-in-the-East"
-    }
-   ],
-   "best_light": "Daylight",
-   "best_window": "",
-   "pin": {
-    "lat": 51.50967,
-    "lon": -0.08272
-   },
-   "chosen_for": [
-    "one of your interests"
-   ],
-   "why": [
-    {
-     "feature": "local_novel",
-     "label": "local, new-to-you places",
-     "contribution": -0.33
-    },
-    {
-     "feature": "aspiration_match",
-     "label": "places tied to a field that inspires them",
-     "contribution": 0.25
-    },
-    {
-     "feature": "transfer_15_30",
-     "label": "transfers of 15-30 min",
-     "contribution": -0.22
-    }
-   ],
-   "lines": [
-    "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Monument or Tower Hill station.",
-    "Walk down St Dunstan's Hill towards the river.",
-    "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-    "Cost: free"
-   ],
-   "card": {
-    "id": "m_st_dunstan_garden",
-    "title": "A ruined church garden hidden in the City",
-    "status": "ready",
-    "place": {
-     "name": "St Dunstan-in-the-East",
-     "overture_id": null,
-     "lat": 51.50967,
-     "lon": -0.08272
-    },
-    "approach": {
-     "from": "Monument or Tower Hill station",
-     "path": "Walk down St Dunstan's Hill towards the river",
-     "step_free": null,
-     "start_point": {
-      "lat": 51.50967,
-      "lon": -0.08272
-     }
-    },
-    "what_happens": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-    "best_time": {
-     "time_of_day": [
-      "08:00-16:15"
-     ],
-     "light": "Daylight",
-     "weather": [
-      "any"
-     ],
-     "company": null,
-     "crowd_window": "Weekday lunchtimes bring office workers (GUESS)",
-     "opening_hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27",
-     "days": [],
-     "best_window": [],
-     "best_around_sunset": null
-    },
-    "cost_gbp": 0.0,
-    "shot_card": null,
-    "plannable": true
-   }
-  },
-  {
    "moment_id": "m_garden_at_120",
    "key": "m_garden_at_120",
    "title": "The Garden at 120: a rooftop garden among the City towers",
-   "arrive": "14:09",
-   "depart": "14:44",
-   "travel_min": 6,
-   "travel_mode": "walk",
-   "travel_text": "Getting there: about 6 min on foot from St Dunstan-in-the-East.",
+   "arrive": "13:33",
+   "depart": "14:08",
+   "travel_min": 26,
+   "travel_mode": "transit",
+   "travel_text": "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
    "approach": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
    "what": "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
    "queue_min": 0,
@@ -168,7 +61,7 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 31,
+   "worth_gbp": 45,
    "approach_steps": [
     {
      "label": "From",
@@ -197,21 +90,21 @@
     {
      "feature": "movement_views",
      "label": "movement and views",
-     "contribution": 0.408
+     "contribution": 0.452
     },
     {
      "feature": "local_novel",
      "label": "local, new-to-you places",
-     "contribution": -0.33
+     "contribution": -0.261
     },
     {
      "feature": "contrast_reveal",
      "label": "reveals and contrast",
-     "contribution": 0.204
+     "contribution": 0.2
     }
    ],
    "lines": [
-    "Getting there: about 6 min on foot from St Dunstan-in-the-East.",
+    "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
     "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
     "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
     "Cost: free"
@@ -259,7 +152,135 @@
     "cost_gbp": 0.0,
     "shot_card": null,
     "plannable": true
-   }
+   },
+   "reasons": [
+    {
+     "you": "You loved Uber Boat on the Thames, and this has views too.",
+     "me": "I loved Uber Boat on the Thames, and this has views too."
+    },
+    {
+     "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
+     "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
+    }
+   ]
+  },
+  {
+   "moment_id": "m_st_dunstan_garden",
+   "key": "m_st_dunstan_garden",
+   "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
+   "arrive": "14:19",
+   "depart": "14:44",
+   "travel_min": 6,
+   "travel_mode": "walk",
+   "travel_text": "Getting there: about 6 min on foot from The Garden at 120.",
+   "approach": "Walk down St Dunstan's Hill towards the river.",
+   "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "worth_gbp": 40,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Monument or Tower Hill station"
+    },
+    {
+     "label": "The way in",
+     "text": "Walk down St Dunstan's Hill towards the river"
+    },
+    {
+     "label": "You arrive",
+     "text": "St Dunstan-in-the-East"
+    }
+   ],
+   "best_light": "Daylight",
+   "best_window": "",
+   "pin": {
+    "lat": 51.50967,
+    "lon": -0.08272
+   },
+   "chosen_for": [
+    "one of your interests",
+    "reveals and contrast"
+   ],
+   "why": [
+    {
+     "feature": "local_novel",
+     "label": "local, new-to-you places",
+     "contribution": -0.261
+    },
+    {
+     "feature": "aspiration_match",
+     "label": "places tied to a field that inspires them",
+     "contribution": 0.25
+    },
+    {
+     "feature": "contrast_reveal",
+     "label": "reveals and contrast",
+     "contribution": 0.2
+    }
+   ],
+   "lines": [
+    "Getting there: about 6 min on foot from The Garden at 120.",
+    "Walk down St Dunstan's Hill towards the river.",
+    "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+    "Cost: free"
+   ],
+   "card": {
+    "id": "m_st_dunstan_garden",
+    "title": "A ruined church garden hidden in the City",
+    "status": "ready",
+    "place": {
+     "name": "St Dunstan-in-the-East",
+     "overture_id": null,
+     "lat": 51.50967,
+     "lon": -0.08272
+    },
+    "approach": {
+     "from": "Monument or Tower Hill station",
+     "path": "Walk down St Dunstan's Hill towards the river",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.50967,
+      "lon": -0.08272
+     }
+    },
+    "what_happens": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+    "best_time": {
+     "time_of_day": [
+      "08:00-16:15"
+     ],
+     "light": "Daylight",
+     "weather": [
+      "any"
+     ],
+     "company": null,
+     "crowd_window": "Weekday lunchtimes bring office workers (GUESS)",
+     "opening_hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27",
+     "days": [],
+     "best_window": [],
+     "best_around_sunset": null
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   },
+   "reasons": [
+    {
+     "you": "You loved Uber Boat on the Thames, and this has a big reveal too.",
+     "me": "I loved Uber Boat on the Thames, and this has a big reveal too."
+    },
+    {
+     "you": "You loved the view from the top of Greenwich Park, and this has green space too.",
+     "me": "I loved the view from the top of Greenwich Park, and this has green space too."
+    }
+   ]
   },
   {
    "moment_id": "m_greenwich_wolfe_view",
@@ -269,7 +290,7 @@
    "depart": "16:25",
    "travel_min": 41,
    "travel_mode": "transit",
-   "travel_text": "Getting there: about 41 min: walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to Cutty Sark DLR station.",
+   "travel_text": "Getting there: about 41 min: walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
    "approach": "Walk into the park and up the steep hill to the statue beside the Royal Observatory: about 15-20 min, the last part uphill.",
    "what": "At the top, all of London opens up across the river: Canary Wharf, the Shard and St Paul's.",
    "queue_min": 0,
@@ -281,7 +302,7 @@
    "lunch": false,
    "familiar": true,
    "rateable": true,
-   "worth_gbp": 26,
+   "worth_gbp": 37,
    "approach_steps": [
     {
      "label": "From",
@@ -307,23 +328,23 @@
    ],
    "why": [
     {
-     "feature": "movement_views",
-     "label": "movement and views",
-     "contribution": 0.408
-    },
-    {
      "feature": "transfer_30_plus",
      "label": "transfers over 30 min",
-     "contribution": -0.385
+     "contribution": -0.571
+    },
+    {
+     "feature": "movement_views",
+     "label": "movement and views",
+     "contribution": 0.452
     },
     {
      "feature": "crowds",
      "label": "crowds",
-     "contribution": -0.365
+     "contribution": -0.429
     }
    ],
    "lines": [
-    "Getting there: about 41 min: walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to Cutty Sark DLR station.",
+    "Getting there: about 41 min: walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
     "Walk into the park and up the steep hill to the statue beside the Royal Observatory: about 15-20 min, the last part uphill.",
     "At the top, all of London opens up across the river: Canary Wharf, the Shard and St Paul's.",
     "Best: Late afternoon on a clear day",
@@ -373,13 +394,23 @@
     "cost_gbp": 0.0,
     "shot_card": null,
     "plannable": true
-   }
+   },
+   "reasons": [
+    {
+     "you": "You loved the view from the top of Greenwich Park.",
+     "me": "I loved the view from the top of Greenwich Park."
+    },
+    {
+     "you": "You loved Uber Boat on the Thames, and this has views too.",
+     "me": "I loved Uber Boat on the Thames, and this has views too."
+    }
+   ]
   }
  ],
- "value": 4.102,
+ "value": 5.31,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-09-29T19:27:42.658584+00:00",
+ "created_at": "2026-09-30T14:42:01.552533+00:00",
  "title": "Saturday 31 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
@@ -394,5 +425,13 @@
   "finish": "16:25"
  },
  "pace": "even",
- "solver_status": "ok"
+ "solver_status": "ok",
+ "blind": false,
+ "feel_line": "Lunch to start, one big reveal, some history, then a big view",
+ "basis": {
+  "places": 3,
+  "choices": 5,
+  "ratings": 0,
+  "feelings": 2
+ }
 }

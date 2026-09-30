@@ -36,7 +36,8 @@ struct HomeView: View {
     }
 }
 
-/// Screen 8. Build 1 plans from Charing Cross (the Test B start, D104), on a date and between times you choose.
+/// Screen 8 (D115): next Saturday, 12:00–17:00 from Charing Cross (the Test B day, D104) is already filled in, so one
+/// tap makes the plan; "Change" opens the day, times and number of stops.
 struct PlanFormView: View {
     @Environment(AppModel.self) private var model
     var onDone: (() -> Void)?
@@ -44,23 +45,37 @@ struct PlanFormView: View {
     @State private var start = Dates.time(12)
     @State private var end = Dates.time(17)
     @State private var stops = 4
+    @State private var editing = false
 
     var body: some View {
         Form {
             Section {
-                Text("Your day starts at \(AppConfig.startName), by the Trafalgar Square exit.")
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(Dates.dayName.string(from: date))
+                        .font(Theme.title2)
+                        .foregroundStyle(Theme.ink)
+                    Text("\(Dates.hhmm.string(from: start))–\(Dates.hhmm.string(from: end)) · \(stops) stops, with lunch if the day spans midday")
+                        .foregroundStyle(Theme.ink)
+                    Text("From \(AppConfig.startName), by the Trafalgar Square exit.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.inkSoft)
+                }
+                .padding(.vertical, 4)
+                .listRowBackground(Theme.surface)
+                Button(editing ? "Done changing" : "Change the day or times") {
+                    withAnimation { editing.toggle() }
+                }
+                .listRowBackground(Theme.surface)
             } header: {
-                Text("Where")
+                Text("Your day out")
             }
-            Section("When") {
-                DatePicker("Day", selection: $date, in: Calendar.current.startOfDay(for: .now)..., displayedComponents: .date)
-                DatePicker("Start", selection: $start, displayedComponents: .hourAndMinute)
-                DatePicker("Finish", selection: $end, displayedComponents: .hourAndMinute)
-            }
-            Section {
-                Stepper("\(stops) stops", value: $stops, in: 3...5)
-            } footer: {
-                Text("Including lunch when the day spans midday.")
+            if editing {
+                Section("When") {
+                    DatePicker("Day", selection: $date, in: Calendar.current.startOfDay(for: .now)..., displayedComponents: .date)
+                    DatePicker("Start", selection: $start, displayedComponents: .hourAndMinute)
+                    DatePicker("Finish", selection: $end, displayedComponents: .hourAndMinute)
+                    Stepper("\(stops) stops", value: $stops, in: 3...5)
+                }
             }
             Section {
                 PrimaryButton(title: model.busy ? "Planning…" : "Make my plan", disabled: model.busy || end <= start) {
@@ -104,7 +119,7 @@ struct PlanView: View {
                     .textCase(nil)
             }
             Section {
-                DayShapeChart(stops: plan.stops, personal: true)
+                DayShapeChart(stops: plan.stops, personal: !plan.isBlind)
                     .listRowBackground(Theme.surface)
                 Picker("Show", selection: layout) {
                     Text("Map").tag("map")
@@ -131,7 +146,8 @@ struct PlanView: View {
                     }
                     NavigationLink(value: stop) {
                         StopRow(number: i + 1, stop: stop, showTravel: !asList,
-                                rated: model.rated.contains(stop.momentId), swapped: model.swappedIn == stop.momentId)
+                                rated: model.rated.contains(stop.momentId), swapped: model.swappedIn == stop.momentId,
+                                showWhy: !plan.isBlind)
                     }
                     .listRowBackground(Theme.surface)
                     .swipeActions {
@@ -197,12 +213,19 @@ struct PlanView: View {
     }
 }
 
-/// Cost per person, walking between stops and the finish time, large and first (D110, D112).
+/// The day's feeling in one line (D115), then cost per person, walking between stops and the finish time (D110).
 struct PlanSummaryCard: View {
     let plan: Plan
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            if !plan.isBlind, let feel = plan.feelLine, !feel.isEmpty {
+                // D115: how the day should feel, first; then the practical numbers
+                Text(feel)
+                    .font(Theme.title3)
+                    .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if let t = plan.totals {
                 HStack(alignment: .top, spacing: 12) {
                     Stat(value: Money.text(t.costGbp), label: "per person")
@@ -298,9 +321,15 @@ struct DayShapeChart: View {
         let bs = blocks
         let axis = Self.axis(bs)
         VStack(alignment: .leading, spacing: 8) {
-            Text("The shape of the day")
+            Text(personal ? "How your day should feel" : "The shape of the day")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.inkSoft)
+            // D115: one plain sentence, above the picture, so it reads before it's looked at
+            Text(personal ? "Each block is a stop, from when you arrive to when you leave. The taller it is, the more we think you'll enjoy it."
+                          : "Each block is a stop, from when you arrive to when you leave.")
+                .font(.footnote)
+                .foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
             Chart(bs) { b in
                 RectangleMark(xStart: .value("Arrive", b.start), xEnd: .value("Leave", b.end),
                               yStart: .value("Base", 0.0), yEnd: .value("Height", b.height))
@@ -325,10 +354,6 @@ struct DayShapeChart: View {
             }
             .frame(height: 130)
             .accessibilityLabel("The day's \(bs.count) stops from \(stops.first?.arrive ?? "") to \(stops.last?.depart ?? "")")
-            Text(personal ? "Taller blocks are the stops we expect you to enjoy most."
-                          : "Each block is a stop, from arrival to leaving.")
-                .font(.footnote)
-                .foregroundStyle(Theme.inkSoft)
         }
         .padding(.vertical, 6)
     }
@@ -369,6 +394,7 @@ struct StopRow: View {
     var showTravel = true
     let rated: Bool
     var swapped = false
+    var showWhy = true             // D115: off in the blind Test B comparison
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -391,9 +417,9 @@ struct StopRow: View {
                 if stop.familiar {
                     Label("A place you loved", systemImage: "heart").font(.footnote)
                 }
-                if !stop.chosenFor.isEmpty {
-                    Text("Chosen for: " + stop.chosenFor.joined(separator: ", ")).font(.footnote)
-                        .foregroundStyle(Theme.ink)
+                if showWhy, let why = stop.reasons?.first?.you {
+                    // D115: the plain-words reason, visible on the plan, not only on the card
+                    Label(why, systemImage: "sparkles").font(.footnote).foregroundStyle(Theme.ink)
                 }
                 if rated {
                     Label("Rated", systemImage: "checkmark").font(.footnote).foregroundStyle(Theme.inkSoft)
@@ -412,71 +438,131 @@ extension Stop {
     }
 }
 
-/// Screen 10: the moment card in the new style (D112). Everything on it comes from the verified card or the plan:
-/// the approach line, the best-light window, the cost and "worth about £V to you".
+/// The moment card's content (D112), shared by screen 10 and the example day (screen 2, D115). Everything on it comes
+/// from the verified card or the plan: why it was picked, the cost and worth to you, the approach line, the best light.
+struct MomentCardContent: View {
+    @Environment(\.openURL) private var openURL
+    let stop: Stop
+    var basis: Basis?
+    var showWhy = true             // D115: never in the blind Test B comparison
+    @State private var showShot = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            MomentHero(stop: stop)
+            Text(stop.title)
+                .font(Theme.title)
+                .foregroundStyle(Theme.ink)
+            if stop.familiar {
+                Label("A place you loved", systemImage: "heart").font(.subheadline).foregroundStyle(Theme.accent)
+            }
+            if showWhy, let reasons = stop.reasons, !reasons.isEmpty {
+                WhyPicked(reasons: reasons, basis: basis)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                if stop.costGbp > 0 || stop.worthGbp == nil {
+                    InfoBlock(label: "Cost", text: stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst)
+                }
+                if let worth = stop.worthGbp {
+                    // D115: a free stop says so in the same line as its worth
+                    Text(stop.costGbp == 0 ? "Worth about \(Money.text(worth)) to you, and it's free."
+                                           : "Worth about \(Money.text(worth)) to you.")
+                        .font(.headline)
+                        .foregroundStyle(Theme.ink)
+                    Text("Our estimate from your answers so far.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.inkSoft)
+                }
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                Text("How to arrive")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.inkSoft)
+                if !stop.travelText.isEmpty {
+                    Text(stop.travelText).foregroundStyle(Theme.ink)
+                }
+                if let steps = stop.approachSteps, !steps.isEmpty {
+                    ApproachLine(steps: steps)
+                } else if !stop.approach.isEmpty {
+                    Text(stop.approach).foregroundStyle(Theme.ink)
+                }
+            }
+            .surfaceCard()
+            if let light = stop.bestLight, !light.isEmpty {
+                BestLightBox(light: light, window: stop.bestWindow ?? "")
+            }
+            InfoBlock(label: "What happens", text: stop.what)
+            if let queue = stop.queueMin, queue > 0 {
+                InfoBlock(label: "Queue", text: "Allow about \(Int(queue)) min to queue.")
+            }
+            InfoBlock(label: "If it rains", text: stop.rainSwap)
+            HStack {
+                if let pin = stop.pin {
+                    Button {
+                        openURL(URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=w")!)
+                    } label: {
+                        Label("Directions", systemImage: "arrow.triangle.turn.up.right.diamond")
+                    }
+                    .buttonStyle(.bordered)
+                }
+                if stop.card?.shotCard != nil {
+                    Button { showShot = true } label: { Label("Shot card", systemImage: "camera") }
+                        .buttonStyle(.bordered)
+                }
+            }
+        }
+        .sheet(isPresented: $showShot) {
+            if let card = stop.card {
+                NavigationStack {
+                    ScrollView { ShotCardView(card: card).padding(20) }
+                        .background(Theme.background)
+                        .serifTitle("Shot card")
+                }
+            }
+        }
+    }
+}
+
+/// D115: "Why we picked this for you", in plain words from the person's own answers, honest about "so far".
+struct WhyPicked: View {
+    let reasons: [Reason]
+    let basis: Basis?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Why we picked this for you")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.accent)
+            ForEach(reasons, id: \.you) { r in
+                Label {
+                    Text(r.you).foregroundStyle(Theme.ink)
+                } icon: {
+                    Image(systemName: "sparkles").foregroundStyle(Theme.accent)
+                }
+            }
+            if let basis {
+                Text(basis.soFar)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.inkSoft)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .surfaceCard()
+    }
+}
+
+/// Screen 10: the moment card, then swapping and (after the visit) rating and sharing.
 struct StopView: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
     let stop: Stop
-    @State private var showShot = false
     @State private var showRating = false
     @State private var confirmSwap = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                MomentHero(stop: stop)
-                Text(stop.title)
-                    .font(Theme.title)
-                    .foregroundStyle(Theme.ink)
-                if stop.familiar {
-                    Label("A place you loved", systemImage: "heart").font(.subheadline).foregroundStyle(Theme.accent)
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    InfoBlock(label: "Cost", text: stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst)
-                    if let worth = stop.worthGbp {
-                        Text("Worth about \(Money.text(worth)) to you: our estimate from your answers so far.")
-                            .font(.footnote)
-                            .foregroundStyle(Theme.inkSoft)
-                    }
-                }
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("How to arrive")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.inkSoft)
-                    if !stop.travelText.isEmpty {
-                        Text(stop.travelText).foregroundStyle(Theme.ink)
-                    }
-                    if let steps = stop.approachSteps, !steps.isEmpty {
-                        ApproachLine(steps: steps)
-                    } else if !stop.approach.isEmpty {
-                        Text(stop.approach).foregroundStyle(Theme.ink)
-                    }
-                }
-                .surfaceCard()
-                if let light = stop.bestLight, !light.isEmpty {
-                    BestLightBox(light: light, window: stop.bestWindow ?? "")
-                }
-                InfoBlock(label: "What happens", text: stop.what)
-                if let queue = stop.queueMin, queue > 0 {
-                    InfoBlock(label: "Queue", text: "Allow about \(Int(queue)) min to queue.")
-                }
-                InfoBlock(label: "If it rains", text: stop.rainSwap)
-                HStack {
-                    if let pin = stop.pin {
-                        Button {
-                            openURL(URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=w")!)
-                        } label: {
-                            Label("Directions", systemImage: "arrow.triangle.turn.up.right.diamond")
-                        }
-                        .buttonStyle(.bordered)
-                    }
-                    if stop.card?.shotCard != nil {
-                        Button { showShot = true } label: { Label("Shot card", systemImage: "camera") }
-                            .buttonStyle(.bordered)
-                    }
-                }
+                MomentCardContent(stop: stop, basis: model.plan?.basis, showWhy: !(model.plan?.isBlind ?? false))
                 if stop.rateable {
                     Button {
                         confirmSwap = true
@@ -504,15 +590,6 @@ struct StopView: View {
             Button("Keep it", role: .cancel) {}
         } message: {
             Text("The other stops stay. This one won't come back in this plan.")
-        }
-        .sheet(isPresented: $showShot) {
-            if let card = stop.card {
-                NavigationStack {
-                    ScrollView { ShotCardView(card: card).padding(20) }
-                        .background(Theme.background)
-                        .serifTitle("Shot card")
-                }
-            }
         }
         .sheet(isPresented: $showRating) { RatingView(stop: stop) }
     }

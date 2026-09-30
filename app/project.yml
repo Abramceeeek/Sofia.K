@@ -30,6 +30,9 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false   # no custom encryption, so no export-compliance question per build
         UIAppFonts: [Newsreader.ttf]           # D112: serif titles (SIL Open Font License 1.1, Sources/Fonts)
+        # D115: "Tell it instead" (screen 4): speech becomes text on the phone; the sound is never saved or sent
+        NSMicrophoneUsageDescription: "Only when you tap Tell it instead: your phone turns what you say into text. The sound is never saved or sent."
+        NSSpeechRecognitionUsageDescription: "Your phone turns what you say into text, on the phone itself. Only the text is sent, as if you'd typed it."
         CFBundleURLTypes:                      # D114: share links open the app as daysout://r/<code>
           - CFBundleURLName: daysout.share
             CFBundleURLSchemes: [daysout]

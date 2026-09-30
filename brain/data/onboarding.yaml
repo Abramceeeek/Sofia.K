@@ -14,14 +14,14 @@ open_questions:
       - "Sitting on the top deck of a bus over Waterloo Bridge at dusk. Tired, but happy."
       - "Eating street food by the river with friends. No plan, lots of laughing."
       - "Swimming in a cold lake, then a hot drink. I felt completely awake."
-why_travel:
-  prompt: "Which of these is most often why you go out or travel? Pick up to two, or none."
-  options: [switch_off, people, discover, nature, culture, food]
+why_travel:   # D115: feelings, each mapped onto existing features in brain/reasons.py (FEELINGS) and used in the fit
+  prompt: "How do you most want to feel on a day out? Pick up to two, or none."
+  options: [restored, excited, connected, curious, peaceful]
 swipe:
   prompt: "Have you been? How did it feel?"
   reactions: [loved, fine, didnt_enjoy, havent_been, skip]   # skip: "Not sure" (D110)
 conjoint:
-  prompt: "Two made-up example days. Which would you rather have?"   # D112: clearly made up
+  prompt: "Which day sounds more like you? There's no right answer."   # D115 (D112: labelled as made up)
   option_label: "Example day"   # "Example day A" / "Example day B"
   no_preference: "No preference"   # D110: stored, left out of the fit
   # D112: 5 before the first plan, 5 in "Improve future plans", chosen with the upfront places by expected regret

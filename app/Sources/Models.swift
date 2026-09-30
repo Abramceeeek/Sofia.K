@@ -135,6 +135,34 @@ struct Plan: Codable, Hashable, Identifiable {
     let totals: Totals?            // the summary at the top (D110)
     let date: String?
     let stops: [Stop]
+    let feelLine: String?          // D115: "Lunch to start, one big reveal, some history, then a big view"
+    let basis: Basis?              // D115: what the reasons rest on so far
+    let blind: Bool?               // D115: the blind Test B comparison: no reasons, no feeling line, no worth
+
+    var isBlind: Bool { blind == true }
+}
+
+/// D115: one reason a stop was picked, from the person's own answers: "you" for the app, "me" for the share card.
+struct Reason: Codable, Hashable {
+    let you: String
+    let me: String?
+}
+
+/// D115: how much the person has told us so far, for the honest "so far" line under the reasons.
+struct Basis: Codable, Hashable {
+    let places: Int
+    let choices: Int
+    let ratings: Int
+    let feelings: Int
+
+    var soFar: String {
+        func n(_ k: Int, _ one: String, _ many: String) -> String? { k > 0 ? "\(k) \(k == 1 ? one : many)" : nil }
+        let parts = [n(places, "place", "places"), n(choices, "example day", "example days"),
+                     n(feelings, "feeling", "feelings"), n(ratings, "rating", "ratings")].compactMap { $0 }
+        guard !parts.isEmpty else { return "We'll learn more about you as you answer and rate stops." }
+        let list = parts.count == 1 ? parts[0] : parts.dropLast().joined(separator: ", ") + " and " + parts.last!
+        return "From what you've told us so far: \(list). It gets better as you rate stops."
+    }
 }
 
 /// Cost per person, walking between stops and the finish time (brain.dayplan.plan_totals).
@@ -178,6 +206,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let approachSteps: [ApproachStep]?   // from where, the way in, where you arrive: the card's own text (D112)
     let bestLight: String?         // the card's light line
     let bestWindow: String?        // "16:12–17:12" on the plan's date
+    let reasons: [Reason]?         // D115: "Why we picked this for you"
 
     var id: String { momentId + "@" + arrive }
 }

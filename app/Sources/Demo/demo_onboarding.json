@@ -14,14 +14,13 @@
   }
  ],
  "why_travel": {
-  "prompt": "Which of these is most often why you go out or travel? Pick up to two, or none.",
+  "prompt": "How do you most want to feel on a day out? Pick up to two, or none.",
   "options": [
-   "switch_off",
-   "people",
-   "discover",
-   "nature",
-   "culture",
-   "food"
+   "restored",
+   "excited",
+   "connected",
+   "curious",
+   "peaceful"
   ]
  },
  "swipe": {
@@ -35,7 +34,7 @@
   ]
  },
  "conjoint": {
-  "prompt": "Two made-up example days. Which would you rather have?",
+  "prompt": "Which day sounds more like you? There's no right answer.",
   "option_label": "Example day",
   "no_preference": "No preference",
   "upfront": [

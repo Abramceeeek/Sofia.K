@@ -18,7 +18,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify, share
+from . import dayplan, db, notify, reasons, share
 from .aspiration import NONE, load_aspiration
 from .config import Settings, get_settings
 from .features import Conditions, conjoint_plan_features
@@ -134,6 +134,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if t and ch.choice in ("A", "B"):   # "N", no preference (D110), carries no A/B information
                 obs.append(conjoint_observation(p, conjoint_plan_features(t["A"]),
                                                 conjoint_plan_features(t["B"]), chose_a=ch.choice == "A"))
+        for f in (user.profile or {}).get("why_travel", []):   # D115: feelings on screen 5, as stated choices
+            if (o := reasons.feeling_observation(p, f)):
+                obs.append(o)
         for r in user.ratings:
             if r.moment_id in ms:
                 m = ms[r.moment_id]
@@ -304,16 +307,35 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             plan, stops, _, notes = run(set(), set())
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
+        # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
+        ms = moments_by_id(s)
+        feelings = [f for f in (user.profile or {}).get("why_travel", []) if f in reasons.FEELINGS]
+        loved_places = [(*cards_at[sw.item], app.state.swipe_items[sw.item]) for sw in user.swipes
+                        if sw.reaction == "loved" and sw.item in cards_at and sw.item in app.state.swipe_items]
+        rated = [(ms[r.moment_id], r.rating) for r in user.ratings if r.moment_id in ms]
+        n_choices = sum(ch.choice in ("A", "B") for ch in user.choices)
+        amap, fields = app.state.amap, person_fields(user)
         for st in out:
-            if st["rateable"] and st["moment_id"] in by_id:
-                st["card"] = card(by_id[st["moment_id"]])
+            base = st["moment_id"].split("#")[0]
+            if st["rateable"] and base in by_id:
+                st["card"] = card(by_id[base])
+                m = by_id[base]
+                st["reasons"] = [] if body.blind else reasons.stop_reasons(
+                    p, post.mean, m, loved=loved_places, feelings=feelings, rated=rated,
+                    interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices)
+            if body.blind:
+                st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None
         intent = {**body.intent, **({"swapped_out": body.exclude} if body.exclude else {})}
         row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
         s.add(row)
         s.commit()
         return {**plan_out(row), "title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
-                "solver_status": plan.status}
+                "solver_status": plan.status, "blind": body.blind,
+                "feel_line": None if body.blind else reasons.feel_line(stops, by_id),
+                "basis": None if body.blind else reasons.basis(
+                    sum(sw.reaction in ("loved", "fine", "didnt_enjoy", "havent_been") for sw in user.swipes),
+                    n_choices, len(rated), len(feelings))}
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -336,6 +358,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if st["rateable"] and st["moment_id"] in by_id:
                     st["card"] = card(by_id[st["moment_id"]])
             app.state.example_day = {"id": 0, "title": brief.day_label, "date": None, "stops": out,
+                                     "feel_line": reasons.feel_line(stops, by_id),   # D115: from the cards, not a person
                                      "summary": dayplan.summary_lines(brief, stops),
                                      "totals": dayplan.plan_totals(stops, app.state.travel)}
         return app.state.example_day
@@ -365,14 +388,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/ratings", status_code=201)
     def rate(body: RatingIn, user: db.User = Depends(current_user), s: Session = Depends(session),
              p: PopulationModel = Depends(pop)):
-        if s.get(db.MomentRow, body.moment_id) is None:
+        moment_id = body.moment_id.split("#")[0]   # "m_x#lunch" (a food card as the lunch stop) is card m_x
+        if s.get(db.MomentRow, moment_id) is None:
             raise HTTPException(404, "no such moment")
         if body.plan_id is not None:
             pl = s.get(db.Plan, body.plan_id)
             if pl is None or pl.user_id != user.id:
                 raise HTTPException(404, "no such plan")
         c = body.conditions
-        s.add(db.Rating(user_id=user.id, plan_id=body.plan_id, moment_id=body.moment_id, rating=body.rating,
+        s.add(db.Rating(user_id=user.id, plan_id=body.plan_id, moment_id=moment_id, rating=body.rating,
                         would_bring=body.would_bring, temp_c=c.temp_c if c else None,
                         rain_prob=c.rain_prob if c else None, travel_min=body.travel_min))
         s.flush()

@@ -210,7 +210,8 @@ struct DemoScreen: View {
                         .shadow(radius: 8)
                 }
             }
-        case "improve": ImproveView()                                           // 12
+        case "improve": ImproveView()                                           // 12a
+        case "improveq": ImproveView(startAt: 0)                                // 12b (D115)
         case "safety": SafetyView()                                             // 13a
         case "safetysend": SafetyView(confirming: true)                         // 13b
         case "settings": SettingsView()                                         // 14a

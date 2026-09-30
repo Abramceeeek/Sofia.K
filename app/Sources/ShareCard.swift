@@ -1,8 +1,8 @@
 import SwiftUI
 import UIKit
 
-/// D114: the card a person can share after rating a stop: the moment's photo, their own rating, "Planned with Days
-/// out". Never the model's "worth £X". No rewards. The photo is openly licensed, so its credit goes on the card.
+/// D114: the card a person can share after rating a stop: the moment's photo, their own rating, the reason in their
+/// own voice (D115), "Planned with Days out". Never the model's "worth £X". No rewards. The photo is openly licensed, so its credit goes on the card.
 struct ShareCardView: View {
     let stop: Stop
     let rating: Int
@@ -18,7 +18,7 @@ struct ShareCardView: View {
                                    endPoint: .bottomTrailing)
                 }
             }
-            .frame(width: 360, height: 262)
+            .frame(width: 360, height: 236)
             .clipped()
             VStack(alignment: .leading, spacing: 8) {
                 Text(stop.title)
@@ -36,6 +36,14 @@ struct ShareCardView: View {
                         .font(.subheadline)
                         .foregroundStyle(Theme.ink)
                 }
+                if let why = stop.reasons?.compactMap(\.me).first {
+                    // D115: the plain-language reason, in the sharer's own voice
+                    Text(why)
+                        .font(.footnote)
+                        .foregroundStyle(Theme.ink)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 Spacer(minLength: 0)
                 HStack(alignment: .bottom) {
                     Text("Planned with Days out")
@@ -51,7 +59,7 @@ struct ShareCardView: View {
                 }
             }
             .padding(18)
-            .frame(width: 360, height: 188, alignment: .topLeading)
+            .frame(width: 360, height: 214, alignment: .topLeading)
             .background(Theme.background)
         }
         .frame(width: 360, height: 450)

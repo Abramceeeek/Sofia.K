@@ -56,7 +56,7 @@ class AnswersIn(BaseModel):
 
 class ProfileIn(BaseModel):
     """Ask for what's needed, not the sensitive category (CLAUDE.md). All optional."""
-    why_travel: list[str] = Field(default_factory=list, max_length=2)
+    why_travel: list[str] = Field(default_factory=list, max_length=2)   # D115: feelings (reasons.FEELINGS)
     budget_band: Literal["under_20", "20_40", "40_70", "70_plus"] | None = None
     company: Literal["solo", "friends", "partner", "family"] | None = None
     chronotype: Literal["morning", "night", "neither"] | None = None
@@ -89,6 +89,8 @@ class PlanRequest(BaseModel):
     # swapped-out cards (this one and any before it) in `exclude`
     keep: list[str] = Field(default_factory=list, max_length=6)
     exclude: list[str] = Field(default_factory=list, max_length=40)
+    # D115: the blind Test B comparison: no reasons, no feeling line, no "worth to you", nothing that gives it away
+    blind: bool = False
 
 
 class CuratedStop(BaseModel):

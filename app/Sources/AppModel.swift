@@ -7,7 +7,7 @@ enum AppConfig {
         let raw = Bundle.main.object(forInfoDictionaryKey: "BrainBaseURL") as? String ?? ""
         return URL(string: raw) ?? URL(string: "https://moments-brain.onrender.com")!
     }
-    static let consentVersion = "app-2026-09-30"   // D114: the share-link line
+    static let consentVersion = "app-2026-09-30b"   // D114: the share-link line; D115: speaking an answer
     static let contactEmail = "abram@abdurakhmonbek.com"
     /// Build 1 plans from the Test B start point (D104): Charing Cross station, Trafalgar Square exit (TfL).
     static let startName = "Charing Cross station"
@@ -33,7 +33,7 @@ enum Step: Int, CaseIterable {
     var title: String {
         switch self {
         case .bestHour: return "A great moment"
-        case .why: return "Why you go out"
+        case .why: return "How you want to feel"   // D115
         case .places: return "Places you've been"
         case .thisOrThat: return "This or that"
         }
@@ -59,6 +59,7 @@ final class AppModel {
     // Answers, kept until each step is sent
     var bestHour = ""
     var bestHourMore = ""
+    var bestHourVoice = false              // D115: "Tell it instead" was used (the Test A typed/voice split)
     var why: [String] = []
     var reactions: [Int: String] = [:]
     var choices: [Int: String] = [:]
@@ -178,7 +179,8 @@ final class AppModel {
             var items: [AnswerItem] = []
             let first = self.bestHour.trimmingCharacters(in: .whitespacesAndNewlines)
             let more = self.bestHourMore.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !first.isEmpty { items.append(AnswerItem(question: "best_hour", text: first, inputMode: "typed")) }
+            let mode = self.bestHourVoice ? "voice" : "typed"
+            if !first.isEmpty { items.append(AnswerItem(question: "best_hour", text: first, inputMode: mode)) }
             if !more.isEmpty { items.append(AnswerItem(question: "best_hour_more", text: more, inputMode: "typed")) }
             if !items.isEmpty { try await self.client.sendAnswers(items) }
             self.next()
