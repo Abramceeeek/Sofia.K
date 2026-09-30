@@ -21,8 +21,7 @@ struct OnboardingView: View {
                                        doneButton: "Plan my first day") { await model.finishThisOrThat() }
                     }
                 } else {
-                    ProgressView("Loading the questions…")
-                        .task { await model.run { try await model.loadOnboarding() } }
+                    OnboardingLoading()
                 }
             }
             .background(Theme.background)
@@ -35,6 +34,36 @@ struct OnboardingView: View {
                 }
             }
         }
+    }
+}
+
+/// Loads the questions once; if that fails, says so and offers "Try again" instead of spinning for ever.
+struct OnboardingLoading: View {
+    @Environment(AppModel.self) private var model
+    @State private var failed = false
+
+    var body: some View {
+        VStack(spacing: 16) {
+            if failed {
+                Text("The questions didn't load.")
+                    .font(Theme.title3)
+                    .foregroundStyle(Theme.ink)
+                PrimaryButton(title: "Try again", disabled: model.busy) {
+                    Task { await load() }
+                }
+            } else {
+                ProgressView("Loading the questions…")
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .task { await load() }
+    }
+
+    private func load() async {
+        failed = false
+        await model.run { try await model.loadOnboarding() }
+        failed = model.onboarding == nil
     }
 }
 

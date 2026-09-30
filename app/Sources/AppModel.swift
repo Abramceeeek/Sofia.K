@@ -108,21 +108,41 @@ final class AppModel {
         do {
             try await work()
         } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription
-                ?? "Couldn't reach the planner. Check your connection and try again."
+            errorMessage = AppModel.message(for: error)
         }
         note.cancel()
         waking = false
         busy = false
     }
 
+    /// What went wrong, in words a person can act on. A cancelled call (the screen moved on) is not an error.
+    static func message(for error: Error) -> String? {
+        if error is CancellationError { return nil }
+        if let e = error as? URLError {
+            switch e.code {
+            case .cancelled:
+                return nil
+            case .timedOut:
+                return "The planner took too long to answer. It may still be waking up, so try again in a minute."
+            case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
+                return "You seem to be offline. Check your connection and try again."
+            default:
+                return "Couldn't reach the planner (error \(e.code.rawValue)). Check your connection and try again."
+            }
+        }
+        if error is DecodingError {
+            return "The app couldn't read the planner's answer. Please update the app in TestFlight."
+        }
+        return (error as? LocalizedError)?.errorDescription ?? "Something unexpected happened. Please try again."
+    }
+
     // ---- first run ---------------------------------------------------------------------------
 
+    /// Registers the phone, then shows onboarding, which loads its own questions (one request, one place).
     func agree() async {
         await run {
             try await self.client.install(research: true)
             self.route = .onboarding
-            try await self.loadOnboarding()
         }
     }
 
