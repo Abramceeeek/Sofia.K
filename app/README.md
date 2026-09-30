@@ -22,6 +22,8 @@ Do these in order. Each step says where to click and what to keep. **Never paste
 
 ### 1. Ask Apple for App Store Connect API access (2 min, then a wait). Do this first
 
+**Done (30 Sep):** access was already enabled, so no request was needed.
+
 **Why first:** Apple approves this request "on a case-by-case basis", so it may take a while. Only the Account Holder can ask, which is you.
 
 1. Go to appstoreconnect.apple.com and open **Users and Access**.
@@ -35,7 +37,7 @@ Do these in order. Each step says where to click and what to keep. **Never paste
 1. Go to developer.apple.com/account and open **Certificates, Identifiers & Profiles**.
 2. Click **Identifiers**, then **+**. Choose **App IDs**, then **App**, then **Continue**.
 3. **Description:** `Days out`.
-4. **Bundle ID:** choose **Explicit** and enter e.g. `com.abdurakhmonbek.daysout`.
+4. **Bundle ID:** choose **Explicit** and enter `com.abdurakhmonbek.daysout` (recommended, m155).
    - Pick it with care: the app record in step 7 is tied to it for good.
    - The app's display name can change later; the bundle ID can't.
 5. Leave every capability unticked. Click **Continue**, then **Register**.
@@ -101,6 +103,8 @@ The CI job reads your team, the bundle ID and this profile's name from the file 
 **Check:** the app page opens.
 
 ### 8. Generate the API key (3 min, once Apple has approved step 1)
+
+**Done (30 Sep):** team key "Days Out CI", role App Manager; the `.p8` is saved.
 
 1. Go to **Users and Access**, then **Integrations**, then **App Store Connect API**, then **Team Keys**.
 2. Click **Generate API Key** (or **+**).
