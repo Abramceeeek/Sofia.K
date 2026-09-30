@@ -83,9 +83,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
-        with app.state.Session() as s:   # load the moment files into an empty database
-            if s.scalar(select(db.MomentRow.id).limit(1)) is None:
-                _reload_moments(s, settings)
+        with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
+            _reload_moments(s, settings)
         yield
         engine.dispose()
 
