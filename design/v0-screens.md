@@ -56,33 +56,33 @@ From Abram's Google Stitch explorations, applied as a **theme on standard SwiftU
 | # | Screen | Build | What's on it |
 |---|---|---|---|
 | 1 | **Welcome** | 1 | "Days out that fit you", the one line, and who runs the test. **"See an example day"**, or "Skip the example" |
-| 2 | **An example day** | 1 | **D112:** what a plan looks like, before any question: the summary, the day's shape and the stops. Not personal (population weights only, a Sunday from Charing Cross, with none of Test B's usual places: m151) and bundled with the app, so nothing is sent. "Start" leads to consent |
+| 2 | **An example day** | 1 | **D112:** what a plan looks like, before any question: the feeling line, the summary, the day's shape and the stops, **and one stop's full card (D115)**, so the special parts show before any question. Not personal (population weights only, a Sunday from Charing Cross, with none of Test B's usual places). "Start" |
 | 3 | **Consent** | 1 | A four-line plain-English summary; **the two required choices in a box** ("I'm 18 or over", "I agree to take part"); the details folded under "Read the details", with the privacy notice. No 999 text here (it's on 13) and no AI toggle (m117) |
 
 ## B. Onboarding, up to the first plan (D112: shorter)
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 4 | **A great moment** | 1 | "Tell us about a great moment from a recent day out. Where were you, what was happening, how did it feel?" Three short example answers, a text field (keyboard mic for voice), the follow-up once they type, and "Skip this question" |
-| 5 | **Why you go out** | 1 | "Pick up to two, or none." With none picked, the button reads **"None of these"** |
+| 4 | **A great moment** | 1 | "Tell us about a great moment from a recent day out. Where were you, what was happening, how did it feel?" Three short example answers, **a big "Tell it instead" button (D115: speech becomes text on the phone; the sound is never saved or sent)**, then "Or type it", the follow-up once there's an answer, Next and **Skip this question** |
+| 5 | **How you want to feel** (D115; was "Why you go out") | 1 | "How do you most want to feel on a day out? Pick up to two, or none." **Restored · Excited · Connected · Curious · Peaceful**, each with a short line; each maps onto existing features and counts in the fit as one stated choice (`brain/reasons.py`). With none picked, the button reads "None of these" |
 | 6 | **Places you've been** | 1 | **6 places**, one at a time: Loved it · It was fine · Didn't enjoy it · Haven't been, plus "Not sure, skip", Back, a progress bar and **"Skip the rest"**. The other 4 are in screen 12 |
-| 7 | **This or that** | 1 | **5 made-up example days**, labelled "Example day A / B" and "Made up", six attributes in the same order with the same icons; "No preference", Back and a progress bar. The other 5 are in screen 12 |
+| 7 | **This or that** | 1 | **"Which day sounds more like you? There's no right answer." (D115)** 5 made-up example days, labelled "Example day A / B" and "Made up", six attributes in the same order with the same icons; "No preference", Back and a progress bar. The other 5 are in screen 12 |
 
 ## C. The plan and the day out
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 8 | **Plan a day** | 1 | Where it starts (Charing Cross in Build 1), the day, the times and the number of stops |
-| 9 | **Your day** (9a map, 9b list) | 1 | **The summary first and large:** cost per person, walking between stops, finish time. **The shape of the day:** each stop as a block across the day, taller where we expect the person to enjoy it more (no numbers). Map or List, the numbered stops ("Chosen for: …"), swipe to swap. **"Regenerate plan"** (one confirmation; off in the blind Test B comparison), "Improve future plans" and "Plan another day" |
-| 10 | **A stop** (moment card) | 1 | The big picture with **"Worth about £X to you"**, the title, the cost, **the approach line** (From → The way in → You arrive, in the card's words), **the best-light window** on the plan's day, what happens, the queue, the rain option, Directions, Shot card, Swap this stop. **Rating only after the visit** |
-| 11a | **Rating** | 1 | "How did that feel?" **Five worded steps: Flat · Pleasant · Restorative · Vivid · Unforgettable**, an optional "Would you bring someone here?", Save |
-| 11b | **Share card** (D114) | 1 | After a stop is rated, **"Share this moment"** under "Rated. Thank you" (for any rating). The card: the moment's photo with its credit, the title, **the person's own rating** ("My rating: 5 of 5, unforgettable"), "Planned with Days out". The system share sheet adds their link and "I think you'd love this day — try it". **Never "worth £X"; no rewards** |
+| 8 | **Plan a day** | 1 | **D115: next Saturday, 12:00–17:00 from Charing Cross, 4 stops, already filled in; one tap on "Make my plan".** "Change the day or times" opens the pickers |
+| 9 | **Your day** (9a map, 9b list) | 1 | **D115: the feeling line first** ("Lunch to start, one big reveal, some history, then a big view"), then **the summary, large:** cost per person, walking between stops, finish time. **The shape of the day:** each stop as a block across the day, taller where we expect the person to enjoy it more (no numbers). Map or List, the numbered stops ("Chosen for: …"), swipe to swap. **"Regenerate plan"** (one confirmation; off in the blind Test B comparison), "Improve future plans" and "Plan another day" | **Each stop shows its first reason** (D115). The chart says what it shows in one sentence (D115). Feeling line and reasons are hidden in the blind comparison |
+| 10 | **A stop** (moment card) | 1 | The big picture with **"Worth about £X to you"**, the title, the cost, **the approach line** (From → The way in → You arrive, in the card's words), **the best-light window** on the plan's day, what happens, the queue, the rain option, Directions, Shot card, Swap this stop. **Rating only after the visit**. **D115: "Why we picked this for you"**, up to two reasons from the person's own answers and an honest "so far" line; **"Worth about £X to you, and it's free"** on free stops |
+| 11a | **Rating** | 1 | "How did that feel?" **Five worded steps, one dimension (D115): Flat · Fine · Good · Great · Unforgettable**, an optional "Would you bring someone here?", Save |
+| 11b | **Share card** (D114) | 1 | After a stop is rated, **"Share this moment"** under "Rated. Thank you" (for any rating). The card: the moment's photo with its credit, the title, **the person's own rating** ("My rating: 5 of 5, unforgettable"), "Planned with Days out". The system share sheet adds their link and "I think you'd love this day — try it". **Never "worth £X"; no rewards**. **D115: the plain-language reason, in their own voice** ("I loved the view from the top of Greenwich Park.") |
 
 ## D. Improve future plans: one optional screen after the first plan (D112)
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
-| 12 | **Improve future plans** | 1 | One screen: **4 more places** and **5 more made-up example days** (each opens the same step as 6 or 7), then budget, company, morning or night, how active, "What interests you most?", where you grew up, foods avoided, how much photos matter, and the shot-card question with a **short example** (where to stand and when). Save. **No nationality, income, health or allergy questions** |
+| 12 | **Improve future plans** (12a invitation, 12b a question) | 1 | **D115: "Want us to learn you better? About 30 seconds."** Then one question per screen, one tap each: budget, company, morning or night, how active, "What interests you most?", where you grew up, foods avoided, how much photos matter, the shot-card question with a **short example**. Skip any; "Stop here, keep my answers". After that, optionally, **4 more places** and **5 more made-up example days** (about a minute). **No nationality, income, health or allergy questions** |
 
 ## E. Help, safety and your data
 
