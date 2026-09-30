@@ -14,7 +14,8 @@ Do these in order. Each step says where to click and what to keep. **Never paste
 ### 0. Before you start (5 min)
 
 - **A computer with a terminal.**
-  - Windows: install **Git for Windows** and use **Git Bash**, which includes OpenSSL.
+  - Windows: install **Git for Windows** (git-scm.com) and use **Git Bash**, which includes OpenSSL.
+  - **The commands in steps 3, 5 and 9 are Bash commands.** Windows PowerShell has no `openssl` and doesn't understand `MSYS_NO_PATHCONV=1 …` (seen 30 Sep). Open **Git Bash** from the Start menu instead.
   - Mac or Linux: the built-in Terminal.
   - Your iPhone can't do steps 3–5.
 - **One private folder** for the files you'll make, e.g. `Documents/daysout-signing`. Keep it off shared drives, and never put it in the repo.
