@@ -61,6 +61,10 @@ Every Test A metric is reported **overall, and separately for voice and text** (
   - **Some "why" answers may be AI-assisted.** Mark long, polished answers with "(possibly AI-assisted)" in the "Why (open)" cell; the choice still counts, but those answers aren't quoted as evidence of feeling.
   - **The dry run (friends, not test data)** found the personal plan easy to spot from its content, and the generic plan weak. So the generic plan is now a strong "best of London" day (D100).
 - **Trip intent** (Area 15) is asked just before: "recharge or explore?", "who's coming?", "one must-do?". It is stored with the plan (D27).
+- **Visitors from abroad are a separate cohort, excluded from the Test B analysis (D116).** The app's first question is "Where are you based?" (London / elsewhere in the UK / visiting from abroad). Visitors get the kinds-of-places cards instead of the London places, so their plans rest on different evidence.
+  - Split by `cohorts` in the admin export ("visitor" or "resident").
+  - Report visitors' preference and "fits me" separately and descriptively, and count them in the sign-ups.
+  - The share of sign-ups who are visitors is itself a result: it feeds the London-first or visitor-first decision at Checkpoint 3.
 
 ## Test C — actual use (plus virality, D23)
 
@@ -109,6 +113,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Proportions** with Wilson 95% intervals. With n ≈ 12, a 70% rate has an interval of roughly ±25 points, so read passes as "consistent with", not proof.
 - **Medians** of 1–5 items, with a count at each level.
 - **Voice vs text:** side by side, descriptive (samples too small for tests).
+- **Residents and visitors (D116):** every Test B and Test A result is for residents (London and the rest of the UK); visitors are reported beside them, descriptively.
 - **Conjoint:** a pooled binary logit on 120 choices, as a sign and magnitude check.
 - **Checkpoint 3** (`results.md`):
   - results vs thresholds;

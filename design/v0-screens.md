@@ -63,9 +63,11 @@ From Abram's Google Stitch explorations, applied as a **theme on standard SwiftU
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
+| 3b | **Where you're based** (D116) | 1 | "Where are you based?" In London · Elsewhere in the UK · Visiting from abroad, then "Which town or city? (optional)" and the note "So we ask the right questions. We never ask your nationality." Next once a choice is made. It picks the questions that follow and the cohort (visitors are reported apart from Test B) |
 | 4 | **A great moment** | 1 | "Tell us about a great moment from a recent day out. Where were you, what was happening, how did it feel?" Three short example answers, **a big "Tell it instead" button (D115: speech becomes text on the phone; the sound is never saved or sent)**, then "Or type it", the follow-up once there's an answer, Next and **Skip this question** |
 | 5 | **How you want to feel** (D115; was "Why you go out") | 1 | "How do you most want to feel on a day out? Pick up to two, or none." **Restored · Excited · Connected · Curious · Peaceful**, each with a short line; each maps onto existing features and counts in the fit as one stated choice (`brain/reasons.py`). With none picked, the button reads "None of these" |
 | 6 | **Places you've been** | 1 | **6 places**, one at a time: Loved it · It was fine · Didn't enjoy it · Haven't been, plus "Not sure, skip", Back, a progress bar and **"Skip the rest"**. The other 4 are in screen 12 |
+| 6b | **Kinds of places** (visitors from abroad only, D116) | 1 | **Instead of 6**, for someone who answered "Visiting from abroad": "What kinds of places do you enjoy?" 8 kinds, one at a time, each with a London example's photo and its credit ("In London, for example: …"). Love it · It's fine · Not for me · Never tried; "Never tried" then asks "Would you like to try it in London?" (Yes · Not sure · No). "Not sure, skip", Back, a progress bar and "Skip the rest". Visitors don't get the later London places in 12 |
 | 7 | **This or that** | 1 | **"Which day sounds more like you? There's no right answer." (D115)** 5 made-up example days, labelled "Example day A / B" and "Made up", six attributes in the same order with the same icons; "No preference", Back and a progress bar. The other 5 are in screen 12 |
 
 ## C. The plan and the day out
