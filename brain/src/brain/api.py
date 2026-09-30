@@ -24,6 +24,7 @@ from .config import Settings, get_settings
 from .features import Conditions, conjoint_plan_features
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
+from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
                       PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, SwipesIn)
@@ -73,6 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # before the plan (D112)
         app.state.app_items_later = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml", later=True)
         app.state.example_day = None   # built on first request, then kept (D112)
+        app.state.popularity = load_popularity(settings.data_dir / "popularity.yaml")   # the nudge's table (D113)
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
@@ -291,7 +293,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return dayplan.personal_plan(
                 p, post, ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
                 fields=person_fields(user), loved=loved, disliked=disliked, familiar=body.familiar,
-                keep=keep, exclude=exclude)
+                keep=keep, exclude=exclude,
+                popularity=app.state.popularity.shares if app.state.popularity else None)
 
         failed = lambda pl: pl.status != "ok" or not pl.stops
         plan, stops, _, notes = run(set(body.keep), set(body.exclude))

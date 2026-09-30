@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
@@ -96,6 +97,9 @@ class PlanNotes:
     dislikes: list[tuple[str, str]] = field(default_factory=list)
     pace: str = "even"                                               # relaxed | even | packed
     lunch: str = ""
+    value: float = 0.0             # the plan's worth by the person's own estimated weights (stops − transfer penalties)
+    value_usual: float | None = None   # D113: the usual plan's worth, when the popularity nudge was tried
+    nudged: bool = False               # D113: the nudged plan was kept (it lost ≤ NUDGE_CAP against the usual one)
 
 
 BUFFER_WALK_MIN, BUFFER_TRANSIT_MIN = 5, 10   # D100 (GUESS): breathing space after a walk / a Tube or bus leg
@@ -117,6 +121,14 @@ LUNCH_BONUS = 5.0
 
 
 LUNCH_CARD_MIN = 0.5   # a food card is offered as the lunch stop only if the person is predicted to like it this much
+
+
+# D113 (m153, decisions/plan-variety.md): the popularity nudge. A second plan is made with each card's utility lowered
+# by NUDGE_GAMMA × its reference share of simulated plans (data/popularity.yaml), and kept only if, by the person's
+# own estimated weights, it's worth at most NUDGE_CAP less than the usual plan: 0.1 utility ≈ £4 at the population's
+# cost weight (−0.25 per £10). Checked on 150 fresh simulated people (m156): the Royal Festival Hall 38% → 28% of
+# plans, overlap 0.16 → 0.13, fit no worse.
+NUDGE_GAMMA, NUDGE_CAP = 3.0, 0.1
 
 
 def _base(cid: str) -> str:
@@ -150,11 +162,13 @@ def dwell_targets(by_id: dict[str, Moment], ids: list[str]) -> dict[str, int]:
     return out
 
 
-def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief) -> list:
+def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
+                     liked: Mapping[str, float] | None = None) -> list:
     """The planner's candidates plus the lunch options (D102): each food card the person is predicted to like
     (utility ≥ LUNCH_CARD_MIN) again as "<id>#lunch", allowed to start only in the lunch window (sharing a variant
     group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside every place,
-    scored as neutral (0). Nothing is added if the day doesn't span lunch."""
+    scored as neutral (0). Nothing is added if the day doesn't span lunch. `liked` holds the person's own
+    utilities when the planner's are nudged (D113), so a popular food card still counts as liked."""
     lo, hi = LUNCH_START
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     if day_end < lo + LUNCH_MIN or day_start > hi:
@@ -162,7 +176,8 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief) -> list
     out = []
     for c in real:
         m = by_id[c.moment_id]
-        if (m.features.place.get("food") or 0) >= 2 and (m.cost_gbp or 0) > 0 and c.utility >= LUNCH_CARD_MIN:
+        own = (liked or {}).get(c.moment_id, c.utility)
+        if (m.features.place.get("food") or 0) >= 2 and (m.cost_gbp or 0) > 0 and own >= LUNCH_CARD_MIN:
             wins = tuple((max(a, lo), min(b, hi + c.duration_min)) for a, b in c.windows
                          if max(a, lo) + c.duration_min <= min(b, hi + c.duration_min))
             if wins:
@@ -196,7 +211,35 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
                   fields: frozenset[str] = frozenset(), end_window: tuple[int, int] | None = None,
                   loved: list[tuple[str, list[str]]] = (), disliked: list[tuple[str, list[str]]] = (),
                   familiar: bool = False, keep: set[str] | frozenset[str] = frozenset(),
-                  exclude: set[str] | frozenset[str] = frozenset()) -> tuple[DayPlan, list[dict], list[dict], PlanNotes]:
+                  exclude: set[str] | frozenset[str] = frozenset(), popularity: Mapping[str, float] | None = None,
+                  cap: float = NUDGE_CAP) -> tuple[DayPlan, list[dict], list[dict], PlanNotes]:
+    """The personalised plan (see `_personal_plan`). D113: with `popularity` (card → reference share of plans), a
+    second plan is made with each card's utility lowered by NUDGE_GAMMA × its share, and it is kept only if, by the
+    person's own estimated weights, it loses at most `cap` against the usual plan and is no less feasible."""
+    args = (pop, post, moments, brief, travel, must_do, amap, fields, end_window, loved, disliked, familiar,
+            keep, exclude)
+    usual = _personal_plan(*args)
+    if not popularity:
+        return usual
+    # the second solve only looks for near-ties, so it gets half the time (at least 0.3 s): a plan request stays quick
+    quick = replace(brief, time_limit_s=max(0.3, brief.time_limit_s / 2))
+    nudged = _personal_plan(*args[:3], quick, *args[4:], offset={k: NUDGE_GAMMA * v for k, v in popularity.items()})
+    plan0, notes0 = usual[0], usual[3]
+    plan1, notes1 = nudged[0], nudged[3]
+    feasible = bool(plan1.stops) and (plan1.status == "ok" or plan0.status != "ok")
+    if feasible and notes1.value >= notes0.value - cap:
+        notes1.nudged, notes1.value_usual = True, notes0.value
+        return nudged
+    notes0.value_usual = notes0.value
+    return usual
+
+
+def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], brief: Brief,
+                   travel: LondonEstimate, must_do: str | None, amap: AspirationMap | None, fields: frozenset[str],
+                   end_window: tuple[int, int] | None, loved: list[tuple[str, list[str]]],
+                   disliked: list[tuple[str, list[str]]], familiar: bool, keep: set[str] | frozenset[str],
+                   exclude: set[str] | frozenset[str], offset: Mapping[str, float] | None = None,
+                   ) -> tuple[DayPlan, list[dict], list[dict], PlanNotes]:
     """The personalised plan. `end_window` (earliest, latest end in minutes) keeps it ending within
     30 min of the generic plan (D97); if that can't be met, it plans without it and says so in `status`.
 
@@ -206,7 +249,9 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     D102: one of the stops is lunch when the day spans midday; a relaxed person gets longer stays where the day
     has room; rain swaps respect the person's weights.
     D110 ("swap this stop"): `keep` holds the other stops of the plan being changed, and `exclude` the cards swapped
-    out so far; their day/night variants are left out too, so the swap brings something different."""
+    out so far; their day/night variants are left out too, so the swap brings something different.
+    D113: `offset` lowers cards' utilities for the solver only. Everything reported (predicted, left out, rain swaps,
+    `notes.value`) uses the person's own utilities."""
     b = pop.b_person(post.mean)
     cond = Conditions(brief.temp_c, brief.rain_prob)
     rain = brief.rain_prob is not None and brief.rain_prob >= 0.5
@@ -220,9 +265,12 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     disliked_ids = {cid for _, ids in disliked for cid in ids} - {must_do}
     loved_ids = {cid for _, ids in loved for cid in ids} - disliked_ids
     floor = pop.cutpoints["rating"][1]
-    real = [candidate_for(m, float(pop.vector(moment_features(m, cond, aspiration_match=asp[m.id])) @ b))
-            for m in usable if m.id not in disliked_ids]
-    cands = lunch_candidates(real, by_id, brief)
+    u_hat = {m.id: float(pop.vector(moment_features(m, cond, aspiration_match=asp[m.id])) @ b)
+             for m in usable if m.id not in disliked_ids}
+    off = offset or {}
+    # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
+    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0)) for m in usable if m.id not in disliked_ids]
+    cands = lunch_candidates(real, by_id, brief, liked=u_hat)
     by_cand = {c.moment_id: c for c in cands}
     idx = {n: i for i, n in enumerate(pop.names)}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
@@ -306,7 +354,7 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
                     "title": m.display_title(), "approach": approach_text(m, walked_from_stop=True),
                     "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
                     "best_windows": m.best_windows(_sunset(brief)), "queue": m.experience.queue_min or 0,
-                    "moment_id": m.id, "predicted": st.utility,
+                    "moment_id": m.id, "predicted": round(u_hat[m.id], 3),
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops)}
             nxt = (m.end(), m.leave_name(), m.exit_station())
@@ -323,20 +371,24 @@ def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mome
     # Rain swaps are backups, not part of the planned day: a loved place can be one; a disliked place never is,
     # nor a place the person is predicted not to enjoy, nor one with a feature they clearly dislike (D102).
     dislikes = {w.name for w in named_weights(pop, post) if w.confident and w.direction == "dislikes"}
-    allowed = {c.moment_id for c in real if c.utility >= floor
+    allowed = {c.moment_id for c in real if u_hat[c.moment_id] >= floor
                and not any(moment_features(by_id[c.moment_id], cond, aspiration_match=asp[c.moment_id]).get(f, 0) >= 1.0
                            for f in dislikes)}
-    add_rain_swaps(stops, plan, by_id, by_cand, allowed, brief, travel)
+    own = {k: replace(c, utility=u_hat[_base(k)]) if _base(k) in u_hat else c for k, c in by_cand.items()}
+    add_rain_swaps(stops, plan, by_id, own, allowed, brief, travel)   # backups ranked by the person's own weights
     # Only moments that fit the day's hours count as "left out" (D99: no evening cards in a 12:00-17:00 day)
     visited = {_base(s["moment_id"]) for s in stops}
-    left_out = [{"moment_id": c.moment_id, "title": by_id[c.moment_id].title, "predicted": round(c.utility, 3)}
-                for c in sorted(real, key=lambda c: c.utility, reverse=True)
+    left_out = [{"moment_id": c.moment_id, "title": by_id[c.moment_id].title, "predicted": round(u_hat[c.moment_id], 3)}
+                for c in sorted(real, key=lambda c: u_hat[c.moment_id], reverse=True)
                 if fits_day(c, day_start, day_end) and c.moment_id not in visited][:3]
     all_ready = {m.id: m for m in moments}
     notes.loves = [(name, love_note(ids, all_ready, by_cand, plan, notes.favourite, familiar, brief, rain, travel))
                    for name, ids in loved]
     notes.dislikes = [(name, "kept out of the plan" if any(i in all_ready for i in ids) else "no moment card")
                       for name, ids in disliked]
+    # the plan's worth by the person's own weights: stop utilities (a "lunch near X" slot scores 0) minus transfer
+    # penalties. The stop count is fixed by the brief, so the floor and pace terms are the same for every plan
+    notes.value = round(sum(u_hat.get(_base(st.moment_id), 0.0) - legs.penalty(st.travel_min) for st in plan.stops), 4)
     return plan, stops, left_out, notes
 
 

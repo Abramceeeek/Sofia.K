@@ -176,7 +176,9 @@ The CI job reads your team, the bundle ID and this profile's name from the file 
   - then redo steps 3–10.
 - The certificate lasts about a year. When it expires, redo steps 3–6 and update three secrets.
 
-### The Brain on Render (10 min, still needed before the app can plan)
+### The Brain on Render (10 min)
+
+**Done 30 Sep:** live at `moments-brain.onrender.com`, the address the app already uses; `/v1/health` says ok.
 
 1. Render dashboard → Blueprints → your blueprint → **Sync**. If the blueprint syncs automatically, the service may already be there. It adds the `moments-brain` service from `render.yaml`:
    - free tier;

@@ -1,6 +1,8 @@
 # Why a few cards fill most plans, and a fix that keeps fit
 
-**Decision for Abram (yes or no):** add a **popularity nudge with a £4 cap** to the personal planner, and use it in Test B. It costs about 1.5 h of Claude's time and none of yours. Plans take about twice as long to compute.
+**Decided: yes (D113, 30 Sep). Built, with one change: the nudged plan must still fit the brief, so the effect is smaller than simulated below.** See "As built" at the end.
+
+*The proposal as put to Abram:* add a **popularity nudge with a £4 cap** to the personal planner, and use it in Test B. It costs about 1.5 h of Claude's time and none of yours. Plans take about twice as long to compute.
 
 The evidence comes from 200 simulated people on Test B's day: Charing Cross, Saturday 12:00–17:00, 4 stops, £40. They answer the short onboarding (6 places, 5 tasks). The plan must end within 30 min of the generic plan, and it includes one place they loved (the app's default). **Fit** is the value of the plan under each person's *true* weights. **Regret** is how far that falls short of the plan made with the true weights.
 
@@ -77,4 +79,28 @@ Utility is u_ij = x_j · (b + δ_i).
 - population taste means estimated from the swipe page, Test A and the ratings;
 - a card-level random effect, so a card's popularity is learned rather than implied by its tags.
 
-*Simulation code: Claude's scratchpad (`overlap_diag.py`, `overlap_v2.py`), 30 Sep 2026. The fit measure counts stop utilities and travel penalties under true weights; the lunch slot scores 0. Planner time limit 0.3 s per solve in the simulation. Standard errors are of the paired difference against today.*
+## As built (D113, 30 Sep)
+
+`dayplan.personal_plan` solves twice, as proposed. The shares are in `brain/data/popularity.yaml`, from `python -m brain.popularity` (200 simulated people, the short onboarding, one loved place). A test fails if the priors change and the table isn't regenerated.
+
+**One change: the nudged plan must still fit the brief** (4 stops, ending near the generic plan).
+- The nudge pushes popular cards below the planner's rating floor, so they drop out. Sometimes the day can then no longer hold 4 stops.
+- The simulation's rule took those 3-stop plans. They look good by value, because a missing stop costs no transfer penalty, but they don't meet the brief. The built version refuses them and keeps the usual plan.
+- **So the simulated gains above are too high.** On the simulation's own 200 people, the Royal Festival Hall share is 20% with 3-stop plans allowed and 26% without them. The fit gain is +0.20 with them and +0.06 ± 0.03 without them.
+
+**Checked on 150 fresh simulated people, through the production code:**
+
+| | Regret | Royal Festival Hall | Overlap (Jaccard) | Distinct cards |
+|---|---|---|---|---|
+| With true tastes | 0 | 19% | 0.10 | 22.4 |
+| Today | 2.80 | 38% | 0.16 | 15.8 |
+| **With the nudge** | **2.77** (−0.02 ± 0.03) | **28%** | **0.13** | **16.9** |
+
+- The nudged plan is kept for 21% of people.
+- **Fit: no worse.** Variety: a modest gain. The Royal Festival Hall share and the overlap move about half the way from today to what true tastes imply; distinct cards move about a sixth of the way.
+- **Tried and dropped:** letting the nudge stop at the floor, so popular cards stay eligible. They came back as fillers (RFH 38%), and fit fell slightly (−0.02 ± 0.02).
+- **Speed:** a plan takes about 3.2 s instead of 2.1 s. The second solve gets half the time limit, at least 0.3 s.
+- The example day doesn't use the nudge; `brain.testb --no-nudge` turns it off for Test B.
+- The real fix is still #21 on `decisions/after-9-nov.md`.
+
+*Simulation code: Claude's scratchpad (`overlap_diag.py`, `overlap_v2.py`; the built version: `validate_nudge.py`, `nudge_gap.py`), 30 Sep 2026. The fit measure counts stop utilities and travel penalties under true weights; the lunch slot scores 0. Planner time limit 0.3 s per solve in the simulation. Standard errors are of the paired difference against today.*

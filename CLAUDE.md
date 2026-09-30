@@ -140,6 +140,8 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 
 - **v0 is a native iOS app (SwiftUI)**, tested through TestFlight, then released on the App Store once it passes (after the D53 gate). It replaces the Telegram bot.
 - **Brain** (`brain/`): FastAPI on Python 3.12. It holds the moment database, scoring as `S = x·(b_population + δ_person)` with δ kept separate and portable, and the OR-Tools planner. Claude Code builds and tests it in this repo.
+  - **Live on Render** at `moments-brain.onrender.com` (free tier, 30 Sep).
+  - **Plan variety (D113):** a popularity nudge. The planner lowers each card by 3 × its share of simulated plans (`brain/data/popularity.yaml`). It keeps that plan only if it loses at most about £4 by the person's own weights and still fits the brief (`decisions/plan-variety.md`).
 - **Face:** the SwiftUI app. It is built, signed and uploaded to TestFlight by **GitHub Actions on a macOS runner**, with no personal Mac (D64). iOS builds run only when files under the app folder change, and backend tests run on Linux. Abram holds the signing secrets in GitHub Secrets. Claude writes the Swift here, but can't run it here, so every check goes through CI.
 - **Phase 3 (D63, D65–D68):**
   - **App first (D109, supersedes the hand-run tests):** no posting or advertising until the app is ready. **Tests A–C run inside the app:** in-app onboarding with the swipes and the "this or that" choices, a blind Plan 1 / Plan 2 comparison with the generic plan, and one-tap ratings on a real day. The order: (1) a build on Abram's iPhone (internal TestFlight), (2) friends (external TestFlight), (3) strangers (external TestFlight). The WhatsApp chat version is paused and kept as a fallback.

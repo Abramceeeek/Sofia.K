@@ -40,6 +40,7 @@ from .aspiration import AspirationMap, load_aspiration
 from .moments import Moment, load_moments, parse_windows
 from .personal import DeltaPosterior
 from .planner import DayPlan, hhmm, parse_hhmm
+from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .scoring import conjoint_observation, named_weights, swipe_observation, update_person
 from .travel import LondonEstimate
@@ -567,6 +568,8 @@ def cmd_plans(args) -> int:
     out.mkdir(parents=True, exist_ok=True)
     travel = LondonEstimate()
     swipe_cards = load_swipe_cards(Path(args.data) / "swipe_items.yaml")
+    table = load_popularity(Path(args.data) / "popularity.yaml")   # D113: the popularity nudge
+    popularity = table.shares if table else None
     for pid in sorted(people):
         if args.ids and pid not in args.ids:
             continue
@@ -581,7 +584,8 @@ def cmd_plans(args) -> int:
         labels = amap.labels(fields) if amap else []
         loved, disliked = places_by_reaction(p, swipe_cards)
         plan, stops, left_out, notes = personal_plan(pop, post, moments, brief, travel, must_do, amap, fields,
-                                                     end_window, loved, disliked, familiar=args.familiar)
+                                                     end_window, loved, disliked, familiar=args.familiar,
+                                                     popularity=None if args.no_nudge else popularity)
         if args.numbered:
             p = replace(p, personal_label=NUMBERED[p.personal_label])
         generic_label = OTHER_LABEL[p.personal_label]
@@ -623,6 +627,7 @@ def main(argv: list[str] | None = None) -> int:
     pl.add_argument("--out", required=True)
     pl.add_argument("--ids", type=lambda s: set(s.split(",")))
     pl.add_argument("--no-pdf", action="store_true")
+    pl.add_argument("--no-nudge", action="store_true", help="plan without the popularity nudge (D113)")
     pl.add_argument("--numbered", action="store_true", help='label the plans "Plan 1" / "Plan 2" instead of A / B')
     pl.add_argument("--familiar", action="store_true",
                     help="D100 proposal: include exactly one place the person loved, if one fits the day")
