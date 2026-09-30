@@ -115,6 +115,11 @@ final class AppModel {
         busy = false
     }
 
+    /// Starts waking the free server early; the answer doesn't matter.
+    func wake() async {
+        await client.wake()
+    }
+
     /// What went wrong, in words a person can act on. A cancelled call (the screen moved on) is not an error.
     static func message(for error: Error) -> String? {
         if error is CancellationError { return nil }

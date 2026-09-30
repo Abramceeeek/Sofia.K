@@ -46,6 +46,13 @@ final class BrainClient {
 
     // ---- the calls the app makes -----------------------------------------------------------
 
+    /// Starts waking the free server (D109) as the app opens, so it's usually up before the first real call.
+    /// Fire and forget: no token, and any failure is ignored.
+    func wake() async {
+        if demo { return }
+        _ = try? await session.data(from: base.appendingPathComponent("v1/health"))
+    }
+
     func install(research: Bool) async throws {
         if demo { return }
         let body = InstallRequest(channel: "stranger", src: "app",
