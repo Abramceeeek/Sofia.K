@@ -78,14 +78,15 @@ def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: l
             used.add(name)
             break
 
-    # this stop's features that the person leans towards, strongest first
-    leans = sorted((f for f in PHRASE if tags.get(f, 0) >= 1 and d.get(f, 0) > MIN_WEIGHT),
-                   key=lambda f: -tags[f] * d[f])
+    # this stop's features that the person leans towards, strongest first. A feeling they picked is itself the
+    # evidence, so any positive lean it gives counts; a loved place or a rating needs a clear lean (MIN_WEIGHT)
+    leans = sorted((f for f in PHRASE if tags.get(f, 0) >= 1 and d.get(f, 0) > 0), key=lambda f: -tags[f] * d[f])
     for f in leans:
         if len(out) >= MAX_REASONS:
             break
         phrase = PHRASE[f]
-        place = next((n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= 1),
+        clear = d[f] > MIN_WEIGHT
+        place = None if not clear else next((n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= 1),
                      None)
         if place:
             out.append(_r(f"You loved {_mid(place)}, and this has {phrase} too.",
@@ -98,8 +99,8 @@ def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: l
                           f"I go out to feel {feel}, and this has {phrase}."))
             used.add(feel)
             continue
-        good = next((rm for rm, r in rated if r >= 4 and rm.id != m.id and _tags(rm).get(f, 0) >= 1
-                     and rm.title not in used), None)
+        good = None if not clear else next((rm for rm, r in rated if r >= 4 and rm.id != m.id
+                                            and _tags(rm).get(f, 0) >= 1 and rm.title not in used), None)
         if good:
             out.append(_r(f"You rated {good.title} highly, and this has {phrase} too.",
                           f"I rated {good.title} highly, and this has {phrase} too."))

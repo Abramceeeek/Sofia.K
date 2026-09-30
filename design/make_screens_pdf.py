@@ -67,7 +67,7 @@ ACCENT = colors.HexColor("#b4532f")
 RULE = colors.HexColor("#d9dce3")
 
 COVER_LINES = [
-    ("title", "Days out: the test app, updated after the screen review (30 Sep)"),
+    ("title", "Days out: the test app, after the screen review"),
     ("sub", f"{N_SCREENS} screens, in the order you'd see them"),
     ("gap", ""),
     ("body", "An iPhone app that plans a day out in London around how you want it to feel, not a list of famous sights."),

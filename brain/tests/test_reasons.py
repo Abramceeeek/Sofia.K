@@ -66,6 +66,14 @@ def test_the_familiar_favourite_and_feelings():
                                     interests=["Nature"], n_choices=5)) == 2
 
 
+def test_one_feeling_alone_is_enough_to_say_so():
+    post = update_person(POP, [reasons.feeling_observation(POP, "curious")])
+    history = next(mm for mm in BY_ID.values() if (mm.features.place.get("history_culture") or 0) >= 2)
+    r = reasons.stop_reasons(POP, post.mean, history, loved=[], feelings=["curious"], rated=[], interests=[],
+                             n_choices=0)
+    assert r[0]["you"] == "You go out to feel curious, and this has history."
+
+
 def test_feel_line_reads_as_a_day():
     stops = [{"moment_id": "m_st_dunstan_garden" if "m_st_dunstan_garden" in BY_ID else next(iter(BY_ID)),
               "predicted": 0.1, "lunch": False},
