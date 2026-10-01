@@ -43,6 +43,7 @@ class User(Base):
     alerts = relationship("SafetyAlert", cascade="all, delete-orphan", passive_deletes=True)
     referral = relationship("Referral", cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     categories = relationship("CategoryAnswer", cascade="all, delete-orphan", passive_deletes=True)
+    corrections = relationship("Correction", cascade="all, delete-orphan", passive_deletes=True)
 
 
 class Swipe(Base):
@@ -135,6 +136,17 @@ class CategoryAnswer(Base):
     key: Mapped[str] = mapped_column(String(32))
     reaction: Mapped[str] = mapped_column(String(16))           # loved | fine | didnt_enjoy | never_tried | skip
     want: Mapped[str | None] = mapped_column(String(8))         # after "never tried": yes | maybe | no
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class Correction(Base):
+    """D117: an item on "So far, I've learned…" that the person marked "not right" before their first plan. Kept as a
+    row (the answer behind it stays too), and that answer stops counting in the fit."""
+    __tablename__ = "corrections"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    item: Mapped[str] = mapped_column(String(48))               # feeling:<f> | place:<n> | kind:<key> | choice:<attr>
+    text: Mapped[str] = mapped_column(Text)                     # the line as the person saw it
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 

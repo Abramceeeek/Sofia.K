@@ -60,7 +60,8 @@ def test_onboarding_serves_swipes_tasks_and_questions(client):
     places = r["swipe_places"]
     assert [p["item"] for p in places] == [4, 6, 11, 12, 13, 14]
     assert [p["item"] for p in r["swipe_places_later"]] == [1, 2, 3, 15]
-    assert places[0] == {"item": 4, "name": "British Museum"}
+    assert {k: places[0][k] for k in ("item", "name")} == {"item": 4, "name": "British Museum"}
+    assert places[0]["reactions"]["loved"] == "Got it: big museums full of history."   # D117
     assert r["open_questions"][0]["text"].startswith("Tell us about a great moment")
     assert "skip" in r["swipe"]["reactions"] and r["conjoint"]["no_preference"]
     assert len(r["open_questions"][0]["examples"]) == 3

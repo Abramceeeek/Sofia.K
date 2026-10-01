@@ -16,6 +16,9 @@
 # crowds, walking_effort, active, outdoor_exposure, photo_potential.
 # Moment: contrast_reveal, absorption, awe, social_pull.
 #
+# `phrase` (D117): the place in a few words, for the reactions between answers ("Got it: food with a bit of
+# atmosphere") and the "So far, I've learned…" list. Wording only: it changes nothing in the fit.
+#
 # `cards` (D100): the moment cards at the same place. A place the person loved can come back as the plan's one
 # familiar favourite (testb --familiar); cards at a place they didn't enjoy are never planned for them.
 
@@ -27,82 +30,98 @@ app_items_later: [1, 2, 3, 15]
 items:
   1:
     name: "Big Ben and Parliament Square"
+    phrase: "the big famous sights"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
   2:
     name: "Uber Boat on the Thames"
+    phrase: "seeing the city from the water"
     cards: [m_uber_boat_west_day, m_uber_boat_west_night]
     place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
   3:
     name: "Borough Market"
+    phrase: "food with a bit of atmosphere"
     cards: [m_borough_market_graze]
     place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   4:
     name: "British Museum"
+    phrase: "big museums full of history"
     cards: [m_bm_great_court]
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
     moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
   5:
     name: "IFS Cloud Cable Car"
+    phrase: "views from up high"
     cards: []   # no moment card yet
     place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
   6:
     name: "Hyde Park"
+    phrase: "big green spaces and long walks"
     cards: [m_park_break_hyde]
     place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
   7:
     name: "Camden Market"
+    phrase: "busy markets and street food"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   8:
     name: "Tate Modern Turbine Hall"
+    phrase: "big modern spaces and art"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
     moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 1}
   9:
     name: "Sky Garden"
+    phrase: "views from the top of a tower"
     cards: []   # no moment card yet
     place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   10:
     name: "Columbia Road Flower Market (Sunday)"
+    phrase: "local markets and flowers"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 1, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   11:
     name: "The view from the top of Greenwich Park"
+    phrase: "a climb to a big view"
     cards: [m_greenwich_wolfe_view]
     place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   12:
     name: "Walking from South Kensington tube to the Natural History Museum"
+    phrase: "a grand building coming into view"
     cards: [m_nhm_whale_hall, m_southken_nhm_reveal]
     moment_id: m_southken_nhm_reveal   # seed moment 1; its own place tags are still TO TAG by Abram
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 2, absorption: 0, awe: 2, social_pull: 2}   # Abram's proposed seed tags
   13:
     name: "Primrose Hill at sunset"
+    phrase: "a hilltop sunset over the city"
     cards: []   # no moment card yet
     place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   14:
     name: "Brick Lane for food"
+    phrase: "local food with a bit of history"
     cards: [m_beigel_bake_late]
     place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   15:
     name: "Hampstead Heath ponds (swimming)"
+    phrase: "a cold outdoor swim"
     cards: []   # no moment card yet
     place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 1, active: 2, outdoor_exposure: 2, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 1}
   16:
     name: "Regent's Canal walk from Little Venice"
+    phrase: "a quiet canal-side walk"
     cards: []   # no moment card yet
     place: {movement_views: 1, food: 0, green_nature: 1, history_culture: 1, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 0, social_pull: 1}

@@ -26,12 +26,19 @@ swipe:
   prompt: "Have you been? How did it feel?"
   reactions: [loved, fine, didnt_enjoy, havent_been, skip]   # skip: "Not sure" (D110)
 conjoint:
-  prompt: "Which day sounds more like you? There's no right answer."   # D115 (D112: labelled as made up)
+  prompt: "Which day sounds more like you? There are no wrong answers."   # D117 (D115, D112: labelled as made up)
   option_label: "Example day"   # "Example day A" / "Example day B"
   no_preference: "No preference"   # D110: stored, left out of the fit
   # D112: 5 before the first plan, 5 in "Improve future plans", chosen with the upfront places by expected regret
   upfront: [2, 4, 6, 8, 9]
   later: [1, 3, 5, 7, 10]
+# D117: before the first plan, from the person's answers only (brain/summary.py). No scores. "Change something" lets
+# them mark an item "not right": it's stored, and that answer stops counting
+summary:
+  title: "So far, I've learned…"
+  note: "From your answers only. Nothing here is a score."
+  empty: "You skipped the questions, which is fine. Your first plan starts from what most people enjoy, and it learns from how you rate each stop."
+  change_note: "Tap anything that isn't right. We'll stop using that answer."
 about_you:
   - {key: budget_band, text: "Roughly what do you like to spend on a day out, per person?"}
   - {key: company, text: "Who do you usually go with?"}

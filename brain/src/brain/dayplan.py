@@ -56,6 +56,13 @@ def load_app_items(path: Path, later: bool = False) -> list[int]:
     return items
 
 
+def load_swipe_phrases(path: Path) -> dict[int, str]:
+    """D117: each swipe place in a few words ("food with a bit of atmosphere"), for the reactions and "So far"."""
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f)
+    return {int(num): it["phrase"] for num, it in d["items"].items() if it.get("phrase")}
+
+
 def load_swipe_cards(path: Path) -> dict[int, tuple[str, list[str]]]:
     """Each swipe place's name and the moment cards at the same place (D100)."""
     with open(path, encoding="utf-8") as f:

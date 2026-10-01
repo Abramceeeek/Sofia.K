@@ -18,16 +18,16 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify, reasons, share
+from . import dayplan, db, notify, reasons, share, summary
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import Settings, get_settings
-from .features import Conditions, conjoint_plan_features
+from .features import Conditions
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
+from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CorrectionsIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
                       PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, SwipesIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
@@ -75,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # the 16 locked swipe places (D107): their tags for the δ update, and the cards at each place for planning
         app.state.swipe_items = dayplan.load_swipe_items(settings.data_dir / "swipe_items.yaml")
         app.state.swipe_cards = dayplan.load_swipe_cards(settings.data_dir / "swipe_items.yaml")
+        app.state.swipe_phrases = dayplan.load_swipe_phrases(settings.data_dir / "swipe_items.yaml")   # D117
         app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # before the plan (D112)
         app.state.app_items_later = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml", later=True)
         app.state.example_day = None   # built on first request, then kept (D112)
@@ -123,12 +124,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """The inspiring fields the person picked (D77), as aspiration.yaml codes."""
         return frozenset(f for f in (user.profile or {}).get("fields", []) if f != NONE)
 
+    def corrected(user: db.User) -> set[str]:
+        """D117: the "So far" items the person marked "not right"; those answers stop counting."""
+        return {c.item for c in user.corrections}
+
     def refit(s: Session, user: db.User, p: PopulationModel) -> DeltaPosterior:
         """Rebuild δ_person from everything this person has told us (swipes, choices, ratings)."""
         ms = moments_by_id(s)
         amap, fields = app.state.amap, person_fields(user)
+        fixed = corrected(user)
         obs = []
         for sw in user.swipes:
+            if f"place:{sw.item}" in fixed:
+                continue
             m = app.state.swipe_items.get(sw.item)
             asp = amap.match(m, fields) if (amap and m is not None) else 0.0
             if m is not None and (o := swipe_observation(p, m, sw.reaction, asp)):
@@ -136,10 +144,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for ch in user.choices:
             t = app.state.tasks.get(ch.task)
             if t and ch.choice in ("A", "B"):   # "N", no preference (D110), carries no A/B information
-                obs.append(conjoint_observation(p, conjoint_plan_features(t["A"]),
-                                                conjoint_plan_features(t["B"]), chose_a=ch.choice == "A"))
+                obs.append(conjoint_observation(p, summary.choice_features(t["A"], fixed),
+                                                summary.choice_features(t["B"], fixed), chose_a=ch.choice == "A"))
         cats = app.state.categories
         for a in user.categories:                              # D116: visitors' category cards, like place swipes
+            if f"kind:{a.key}" in fixed:
+                continue
             if cats and a.key in cats.items and (o := category_observation(p, cats.items[a.key], a.reaction, a.want)):
                 obs.append(o)
         for f in (user.profile or {}).get("why_travel", []):   # D115: feelings on screen 5, as stated choices
@@ -194,7 +204,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/v1/onboarding")
     def onboarding(user: db.User = Depends(current_user), s: Session = Depends(session)):
         ms = moments_by_id(s)
-        tasks = [{"task": k, "A": v["A"]["description"], "B": v["B"]["description"]}
+        tasks = [{"task": k, "A": v["A"]["description"], "B": v["B"]["description"],
+                  "levels": summary.task_levels(v)}   # D117: for "So far you've picked … every time"
                  for k, v in sorted(app.state.tasks.items())]
         amap = app.state.amap
         fields = None if amap is None else {
@@ -205,11 +216,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         upfront = conj.get("upfront") or [t["task"] for t in tasks]
         later = conj.get("later") or []
         by_task = {t["task"]: t for t in tasks}
-        place = lambda n: {"item": n, "name": app.state.swipe_cards[n][0]}
+        place = lambda n: {"item": n, "name": app.state.swipe_cards[n][0],
+                           "reactions": summary.place_reactions(app.state.swipe_phrases.get(n))}   # D117
         cats = app.state.categories
         kinds = [] if cats is None else [
             {"key": c.key, "title": c.title, "line": c.line, "example_id": c.example,
-             "example_title": ms[c.example].display_title() if c.example in ms else None}
+             "example_title": ms[c.example].display_title() if c.example in ms else None,
+             "reactions": {**summary.place_reactions(c.phrase),                                  # D117
+                           "want_yes": f"Noted: you'd like to try {c.phrase}."}}
             for c in cats.items.values()]
         return {**app.state.onboarding,
                 # D116: visitors from abroad get kinds of place instead of the London places
@@ -220,6 +234,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "swipe_places": [place(n) for n in app.state.app_items],
                 "swipe_places_later": [place(n) for n in app.state.app_items_later],
                 "conjoint_tasks": [by_task[k] for k in upfront if k in by_task],
+                "conjoint_words": summary.tendency_words(),   # D117
                 "conjoint_tasks_later": [by_task[k] for k in later if k in by_task],
                 "fields": fields,
                 "example_shot_card": card(example) if example and example.shot_card else None}
@@ -288,6 +303,52 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.commit()
         return Response(status_code=204)
 
+    def learned(user: db.User) -> list[dict]:
+        """D117: "So far, I've learned…", from the person's own answers only (brain.summary)."""
+        latest = {}
+        for sw in sorted(user.swipes, key=lambda r: r.id):
+            latest[sw.item] = sw.reaction
+        kinds = {}
+        for a in sorted(user.categories, key=lambda r: r.id):
+            kinds[a.key] = (a.key, a.reaction, a.want)
+        choices = {}
+        for ch in sorted(user.choices, key=lambda r: r.id):
+            choices[ch.task] = ch.choice
+        cats = app.state.categories.items if app.state.categories else {}
+        return summary.items(
+            feelings=[f for f in (user.profile or {}).get("why_travel", []) if f in reasons.FEELINGS],
+            swipes=list(latest.items()),
+            places={n: (name, app.state.swipe_phrases.get(n)) for n, (name, _) in app.state.swipe_cards.items()},
+            kinds=list(kinds.values()), phrases={k: c.phrase for k, c in cats.items()},
+            choices=choices, tasks=app.state.tasks, corrected=corrected(user))
+
+    @app.get("/v1/me/summary")
+    def get_summary(user: db.User = Depends(current_user)):
+        """D117: shown before the first plan, with "Looks right" and "Change something". No scores."""
+        text = app.state.onboarding.get("summary") or {}
+        return {**text, "items": learned(user)}
+
+    @app.post("/v1/me/corrections", status_code=204)
+    def post_corrections(body: CorrectionsIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                         p: PopulationModel = Depends(pop)):
+        """D117: items marked "not right". Each is stored with the words the person saw, and its answer stops counting:
+        a feeling leaves the profile; a place, a kind or a this-or-that attribute is left out of the fit."""
+        shown = {it["id"]: it["text"] for it in learned(user)}
+        unknown = [i for i in body.items if i not in shown]
+        if unknown:
+            raise HTTPException(422, f"not on the list: {unknown}")
+        for item in dict.fromkeys(body.items):
+            s.add(db.Correction(user_id=user.id, item=item, text=shown[item]))
+            if item.startswith("feeling:"):
+                prof = dict(user.profile or {})
+                prof["why_travel"] = [f for f in prof.get("why_travel", []) if f != item.split(":", 1)[1]]
+                user.profile = prof
+        s.flush()
+        s.refresh(user)
+        refit(s, user, p)
+        s.commit()
+        return Response(status_code=204)
+
     @app.get("/v1/me/weights")
     def weights(user: db.User = Depends(current_user), p: PopulationModel = Depends(pop)):
         post = posterior(user, p)
@@ -324,8 +385,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         by_id = {m.id: m for m in ready}
         cards_at = app.state.swipe_cards
-        loved = [cards_at[sw.item] for sw in user.swipes if sw.reaction == "loved" and sw.item in cards_at]
-        disliked = [cards_at[sw.item] for sw in user.swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
+        fixed = corrected(user)   # D117: answers marked "not right" on "So far" don't count
+        swipes = [sw for sw in user.swipes if f"place:{sw.item}" not in fixed]
+        kinds = [a for a in user.categories if f"kind:{a.key}" not in fixed]
+        loved = [cards_at[sw.item] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at]
+        disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in by_id else None
         post = posterior(user, p)
 
@@ -347,13 +411,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
         ms = moments_by_id(s)
         feelings = [f for f in (user.profile or {}).get("why_travel", []) if f in reasons.FEELINGS]
-        loved_places = [(*cards_at[sw.item], app.state.swipe_items[sw.item]) for sw in user.swipes
+        loved_places = [(*cards_at[sw.item], app.state.swipe_items[sw.item]) for sw in swipes
                         if sw.reaction == "loved" and sw.item in cards_at and sw.item in app.state.swipe_items]
         rated = [(ms[r.moment_id], r.rating) for r in user.ratings if r.moment_id in ms]
         cats = app.state.categories.items if app.state.categories else {}
-        loved_kinds = [(cats[a.key].phrase, cats[a.key].moment) for a in user.categories
+        loved_kinds = [(cats[a.key].phrase, cats[a.key].moment) for a in kinds
                        if a.reaction == "loved" and a.key in cats]
-        wanted = [(cats[a.key].phrase, cats[a.key].moment) for a in user.categories
+        wanted = [(cats[a.key].phrase, cats[a.key].moment) for a in kinds
                   if a.reaction == "never_tried" and a.want == "yes" and a.key in cats]
         n_choices = sum(ch.choice in ("A", "B") for ch in user.choices)
         amap, fields = app.state.amap, person_fields(user)
@@ -550,7 +614,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ("users", db.User), ("swipes", db.Swipe), ("conjoint_choices", db.ConjointChoice),
             ("answers", db.Answer), ("plans", db.Plan), ("ratings", db.Rating), ("events", db.Event),
             ("safety_alerts", db.SafetyAlert), ("referrals", db.Referral), ("link_opens", db.LinkOpen),
-            ("category_answers", db.CategoryAnswer)]} | {
+            ("category_answers", db.CategoryAnswer), ("corrections", db.Correction)]} | {
             # D116: visitors from abroad are their own group, left out of the Test B analysis
             "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
 

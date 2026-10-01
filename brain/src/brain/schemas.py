@@ -46,6 +46,11 @@ class CategoriesIn(BaseModel):
     items: list[CategoryItem]
 
 
+class CorrectionsIn(BaseModel):
+    """D117: the ids of the "So far, I've learned…" items the person marked "not right"."""
+    items: list[str] = Field(max_length=20)
+
+
 class ChoiceItem(BaseModel):
     task: int
     choice: Literal["A", "B", "N"]   # N: no preference (D110); stored, and left out of the fit
