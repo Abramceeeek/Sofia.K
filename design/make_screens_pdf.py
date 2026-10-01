@@ -21,31 +21,41 @@ from reportlab.pdfgen import canvas
 # screens 1-14; a second picture of the same screen gets a letter (9a map, 9b list), so no label repeats.
 # (key, number, group, name, caption). Captions are written for people outside the project.
 SCREENS = [
-    ("welcome", "1", "First run", "Welcome", "Who runs this, and why."),
+    ("intro", "1a", "First run", "Welcome: the logo",
+     "On first opening, the icon's ring draws itself, then settles above the title (about 1.3 s; a tap skips it)."),
+    ("welcome", "1b", "First run", "Welcome", "Who runs this, and why."),
     ("example", "2a", "First run", "An example day",
      "What a plan looks like, before any question: how the day should feel, cost and the stops. Not planned for you."),
     ("examplecard", "2b", "First run", "An example day: one full card",
      "Further down the same screen: one stop's full card, so the special parts show before any question."),
+    ("founder", "2c", "First run", "A hello from Abram",
+     "A 20–30 s video, bundled in the app, with captions. Skip, or Continue when it ends. (Placeholder until it's recorded.)"),
     ("consent", "3", "First run", "Before we start",
      "A short summary, the two required choices in a box, and the details folded away."),
     ("based", "3b", "Onboarding, up to the first plan", "Where you're based",
      "London, elsewhere in the UK, or visiting from abroad, and a town or city if they like. Never nationality."),
     ("besthour", "4", "Onboarding, up to the first plan", "A great moment",
-     "One open question, with three example answers. \"Tell it instead\" to speak it, or type, or skip."),
+     "Abram asks it in a small video tile (placeholder until recorded). \"Tell it instead\" to speak, or type, or skip."),
     ("why", "5", "Onboarding, up to the first plan", "How you want to feel",
      "Restored, excited, connected, curious or peaceful: pick up to two, or none."),
     ("places", "6", "Onboarding, up to the first plan", "Places you've been",
-     "6 London places, one at a time: four reactions, \"Not sure, skip\", Back and \"Skip the rest\"."),
+     "6 London places, one at a time. A short line reacts to the last answer (\"Got it: …\"), only from what was answered."),
     ("categories", "6b", "Onboarding, up to the first plan", "Kinds of places (visitors)",
      "Visitors from abroad only, instead of 6: 8 kinds of places with a London example. \"Never tried\" asks if they'd like to."),
     ("thisorthat", "7", "Onboarding, up to the first plan", "This or that",
-     "Which day sounds more like you? Two made-up days: pick one, or \"No preference\". There are 5."),
+     "\"There are no wrong answers.\" Two made-up days: pick one, or \"No preference\". A pattern is named once it holds 3 times."),
+    ("learned", "7b", "Onboarding, up to the first plan", "So far, I've learned…",
+     "Abram's thank-you tile, then your own answers in plain words. No scores. Looks right, or Change something."),
+    ("learnedchange", "7c", "Onboarding, up to the first plan", "So far: changing something",
+     "Tap any line that isn't right. It's stored, and that answer stops counting."),
     ("planform", "8", "The plan and the day out", "Plan a day",
      "Next Saturday, 12:00–17:00, already filled in: one tap makes the plan. The day and times can change."),
     ("plan", "9a", "The plan and the day out", "Your day",
      "How the day should feel in one line, then cost, walking and finish, the day's shape, the map and the stops."),
     ("planlist", "9b", "The plan and the day out", "Your day, as a list",
      "The same plan without the map, with the travel between stops. \"Regenerate plan\" is further down."),
+    ("reveal", "9c", "The plan and the day out", "Your day: the reveal, part-way",
+     "Instead of a spinner: the feeling line, the summary, then the route draws and each stop appears (2.6 s, once)."),
     ("stop", "10", "The plan and the day out", "A stop",
      "The moment card: why we picked it for you, worth to you, the way in, the best light, a rain option, Swap."),
     ("rating", "11a", "The plan and the day out", "Rating",
@@ -63,7 +73,7 @@ SCREENS = [
     ("settings", "14a", "Help, safety and your data", "Your data", "What's stored, where and for how long."),
     ("delete", "14b", "Help, safety and your data", "Delete my data", "Type DELETE to confirm. It can't be undone."),
 ]
-N_SCREENS = len({s[1].rstrip("ab") for s in SCREENS})
+N_SCREENS = len({s[1].rstrip("abcdefghij") for s in SCREENS})
 
 INK = colors.HexColor("#1c2230")
 MUTED = colors.HexColor("#5b6475")

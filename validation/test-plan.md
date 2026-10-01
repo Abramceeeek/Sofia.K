@@ -42,6 +42,12 @@ Every Test A metric is reported **overall, and separately for voice and text** (
   7. **read-back**: "Here's what I heard — did I get that right?";
   8. short survey.
 - **Measures:** completion; minutes from first to last message; drop-off layer; the survey items; open answers.
+- **In the app (D117), descriptive, no pass threshold:**
+  - "So far, I've learned…" is the app's read-back (layer 7). Report:
+    - the share who tap "Looks right" (`summary_ok`) versus "Change something" (`summary_changed`);
+    - which kinds of line get corrected (`corrections` in the export, with the words shown). Many corrected place lines would mean the place phrases or tags are off.
+  - How far people watch Abram's hello (`founder_video`: seconds, and whether it ended).
+  - Time from install to first plan, with and without the video. The video and "So far" add time, so read completion and minutes beside these.
 
 ## Test B — plan quality (blind)
 
