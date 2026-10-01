@@ -23,8 +23,9 @@ struct OnboardingView: View {
                             PlacesStep(places: onboarding.swipePlaces) { await model.finishPlaces() }
                         }
                     case .thisOrThat:
-                        ThisOrThatStep(tasks: onboarding.conjointTasks, doneText: "That's everything. Next: your first plan.",
-                                       doneButton: "Plan my first day") { await model.finishThisOrThat() }
+                        ThisOrThatStep(tasks: onboarding.conjointTasks, doneText: "That's everything. Next: what I've learned so far.",
+                                       doneButton: "Next") { await model.finishThisOrThat() }
+                    case .learned: LearnedStep()   // D117
                     }
                 } else {
                     OnboardingLoading()
@@ -34,9 +35,11 @@ struct OnboardingView: View {
             .serifTitle(model.stepTitle)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Text("Step \(model.step.rawValue + 1) of \(Step.allCases.count)")
-                        .font(.footnote.monospacedDigit())
-                        .foregroundStyle(Theme.inkSoft)
+                    if model.step != .learned {
+                        Text("Step \(model.step.rawValue + 1) of \(Step.questions.count)")
+                            .font(.footnote.monospacedDigit())
+                            .foregroundStyle(Theme.inkSoft)
+                    }
                 }
             }
         }
@@ -88,6 +91,31 @@ struct SectionProgress: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(min(done + 1, total)) of \(total)")
+    }
+}
+
+/// D117: a short reaction to the last answer ("Got it: food with a bit of atmosphere."), above the next question.
+/// Only from what the person answered; it fades in quietly (no movement with Reduce Motion) and VoiceOver reads it.
+struct ReactionLine: View {
+    let text: String?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            if let text {
+                Label(text, systemImage: "checkmark.circle")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.accent)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .transition(.opacity)
+                    .id(text)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 22, alignment: .leading)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: text)
+        .onChange(of: text) { _, new in
+            if let new { UIAccessibility.post(notification: .announcement, argument: new) }
+        }
     }
 }
 
@@ -150,6 +178,7 @@ struct CategoryStep: View {
                 if index < cards.count {
                     let card = cards[index]
                     SectionProgress(done: index, total: cards.count)
+                    ReactionLine(text: model.reaction)
                     Text(model.onboarding?.categories?.prompt ?? "What kinds of places do you enjoy?")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Theme.inkSoft)
@@ -187,6 +216,7 @@ struct CategoryStep: View {
                         .disabled(model.busy)
                 } else {
                     SectionProgress(done: cards.count, total: cards.count)
+                    ReactionLine(text: model.reaction)
                     Text("That's all \(cards.count). Thank you.")
                         .font(Theme.title3)
                         .foregroundStyle(Theme.ink)
@@ -202,6 +232,7 @@ struct CategoryStep: View {
 
     private func answer(_ card: CategoryCard, _ reaction: String, want: String? = nil) {
         model.categoryAnswers[card.key] = CategoryItem(key: card.key, reaction: reaction, want: want)
+        model.react(card.reactions, want == "yes" ? "want_yes" : reaction)   // D117
         askingWant = false
         index += 1
     }
@@ -237,6 +268,144 @@ struct CategoryPhoto: View {
     }
 }
 
+// ---- 7b. So far, I've learned… (D117): before the first plan ------------------------------------------------
+
+/// The person's own answers in plain words (never scores, never from the weights), with Abram's thank-you clip.
+/// "Looks right" goes on to the first plan. "Change something" lets them tap any line that isn't right; those are
+/// stored and stop counting. A screen they can always pass: with nothing learned, it says so and goes on.
+struct LearnedStep: View {
+    @Environment(AppModel.self) private var model
+    var startChanging = false        // CI screenshots only
+    @State private var changing = false
+    @State private var wrong: Set<String> = []
+    @State private var failed = false   // the list didn't load: it's optional, so the first plan is still one tap away
+
+    var body: some View {
+        let learned = model.learned
+        let items = learned?.items ?? []
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                ClipTile(name: "thanks", label: "Video: Abram says thank you. Tap to play.") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(learned?.title ?? "So far, I've learned…")
+                            .font(Theme.title2)
+                            .foregroundStyle(Theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(learned?.note ?? "From your answers only. Nothing here is a score.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                if failed {
+                    Text("This didn't load just now, but your answers are saved.")
+                        .foregroundStyle(Theme.ink)
+                    PrimaryButton(title: "Plan my first day", disabled: model.busy) {
+                        Task { await model.finishLearned(wrong: []) }
+                    }
+                } else if learned == nil {
+                    ProgressView().frame(maxWidth: .infinity, minHeight: 80)
+                } else if items.isEmpty {
+                    Text(learned?.empty ?? "Your first plan starts from what most people enjoy, and it learns from how you rate each stop.")
+                        .foregroundStyle(Theme.ink)
+                } else {
+                    if changing {
+                        Text(learned?.changeNote ?? "Tap anything that isn't right. We'll stop using that answer.")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.ink)
+                    }
+                    VStack(spacing: 10) {
+                        ForEach(items) { item in
+                            LearnedRow(item: item, changing: changing, wrong: wrong.contains(item.id)) {
+                                if wrong.contains(item.id) { wrong.remove(item.id) } else { wrong.insert(item.id) }
+                            }
+                        }
+                    }
+                }
+                if changing {
+                    PrimaryButton(title: model.busy ? "One moment…" : (wrong.isEmpty ? "Plan my first day" : "Save and plan my first day"),
+                                  disabled: model.busy) {
+                        Task { await model.finishLearned(wrong: wrong) }
+                    }
+                    .padding(.top, 6)
+                    Button("Cancel") {
+                        changing = false
+                        wrong = []
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                } else if learned != nil {
+                    PrimaryButton(title: model.busy ? "One moment…" : (items.isEmpty ? "Plan my first day" : "Looks right"),
+                                  disabled: model.busy) {
+                        Task { await model.finishLearned(wrong: []) }
+                    }
+                    .padding(.top, 6)
+                    if !items.isEmpty {
+                        Button("Change something") { changing = true }
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                }
+            }
+            .padding(20)
+        }
+        .task {
+            if model.learned == nil {
+                await model.loadLearned()
+                failed = model.learned == nil
+            }
+            if startChanging, let last = model.learned?.items.last?.id {   // CI: one line marked
+                changing = true
+                wrong = [last]
+            }
+        }
+    }
+}
+
+struct LearnedRow: View {
+    let item: LearnedItem
+    let changing: Bool
+    let wrong: Bool
+    let toggle: () -> Void
+
+    var body: some View {
+        if changing {
+            Button(action: toggle) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: wrong ? "xmark.circle.fill" : "circle")
+                        .foregroundStyle(wrong ? Theme.danger : Theme.inkSoft)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.text)
+                            .strikethrough(wrong)
+                            .foregroundStyle(Theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if wrong {
+                            Text("Not right").font(.footnote).foregroundStyle(Theme.danger)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(wrong ? Theme.danger : Theme.outline, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(item.text)
+            .accessibilityValue(wrong ? "Marked not right" : "")
+            .accessibilityHint("Double-tap to mark it as not right, or to undo")
+        } else {
+            Label {
+                Text(item.text).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "checkmark").foregroundStyle(Theme.accent)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+}
+
 // ---- 4. A great moment (D112: was "The best hour") -----------------------------------------------
 
 struct BestHourStep: View {
@@ -248,9 +417,13 @@ struct BestHourStep: View {
         let q = model.onboarding?.openQuestions.first
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(q?.text ?? "Tell us about a great moment from a recent day out.")
-                    .font(Theme.title3)
-                    .foregroundStyle(Theme.ink)
+                // D117: Abram asking the question himself, as a small tile beside it (left out until the clip exists)
+                ClipTile(name: "ask_moment", label: "Video: Abram asks this question. Tap to play.") {
+                    Text(q?.text ?? "Tell us about a great moment from a recent day out.")
+                        .font(Theme.title3)
+                        .foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if let examples = q?.examples, !examples.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("For example")
@@ -422,6 +595,9 @@ struct WhyStep: View {
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(on ? .isSelected : [])
                 }
+                // D117: what we take from it, in their own words
+                ReactionLine(text: model.why.isEmpty ? nil
+                             : "Got it: you want to feel " + model.why.map { $0 }.joined(separator: " and ") + ".")
                 PrimaryButton(title: model.why.isEmpty ? "None of these" : "Next") { model.next() }
                     .padding(.top, 8)
             }
@@ -443,6 +619,7 @@ struct PlacesStep: View {
             if index < places.count {
                 let place = places[index]
                 SectionProgress(done: index, total: places.count)
+                ReactionLine(text: model.reaction)   // D117
                 Spacer()
                 Text(place.name)
                     .font(Theme.title)
@@ -477,6 +654,7 @@ struct PlacesStep: View {
                     .disabled(model.busy)
             } else {
                 SectionProgress(done: places.count, total: places.count)
+                ReactionLine(text: model.reaction)
                 Spacer()
                 Text("That's all \(places.count) places. Thank you.")
                     .font(Theme.title3)
@@ -492,6 +670,7 @@ struct PlacesStep: View {
 
     private func react(_ place: SwipePlace, _ reaction: String) {
         model.reactions[place.item] = reaction
+        model.react(place.reactions, reaction)   // D117: loved / didn't enjoy say something; the rest don't
         index += 1
     }
 }
@@ -513,6 +692,7 @@ struct ThisOrThatStep: View {
                 if index < tasks.count {
                     let task = tasks[index]
                     SectionProgress(done: index, total: tasks.count)
+                    ReactionLine(text: model.reaction)   // D117: a pattern, once it has held 3 times
                     Text(model.onboarding?.conjoint?.prompt ?? "Which day sounds more like you? There's no right answer.")
                         .font(Theme.title3)
                         .foregroundStyle(Theme.ink)
@@ -529,6 +709,7 @@ struct ThisOrThatStep: View {
                     .frame(minHeight: 44)
                 } else {
                     SectionProgress(done: tasks.count, total: tasks.count)
+                    ReactionLine(text: model.reaction)
                     Text(doneText)
                         .font(Theme.title3)
                         .foregroundStyle(Theme.ink)
@@ -546,6 +727,7 @@ struct ThisOrThatStep: View {
 
     private func choose(_ task: ConjointTask, _ choice: String) {
         model.choices[task.task] = choice    // "N": no preference (D110), left out of the fit
+        model.reactToChoices(tasks)
         index += 1
     }
 }

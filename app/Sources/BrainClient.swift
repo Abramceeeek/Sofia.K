@@ -81,6 +81,16 @@ final class BrainClient {
         try await send("POST", "v1/me/categories", Items(items: items))
     }
 
+    /// D117: "So far, I've learned…", from the person's own answers.
+    func summary() async throws -> Learned {
+        if demo { return try Self.bundled("demo_summary") }
+        return try await call("GET", "v1/me/summary")
+    }
+
+    func sendCorrections(_ ids: [String]) async throws {
+        try await send("POST", "v1/me/corrections", CorrectionsRequest(items: ids))
+    }
+
     func sendChoices(_ items: [ChoiceItem]) async throws {
         try await send("POST", "v1/me/conjoint", Items(items: items))
     }

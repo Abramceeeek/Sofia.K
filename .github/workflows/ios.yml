@@ -105,7 +105,7 @@ jobs:
           # A warm-up launch, so first-boot system notices are gone before the first screenshot
           xcrun simctl launch "$UDID" "$BID" -demo YES -screen plan >/dev/null
           sleep 25
-          for s in welcome example examplecard consent based besthour why places categories thisorthat planform plan planlist stop rating sharecard improve improveq safety safetysend settings delete; do
+          for s in intro welcome example examplecard founder consent based besthour why places categories thisorthat learned learnedchange planform plan planlist reveal stop rating sharecard improve improveq safety safetysend settings delete; do
             xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" >/dev/null
             sleep 5
             xcrun simctl io "$UDID" screenshot "shots/$s.png" >/dev/null

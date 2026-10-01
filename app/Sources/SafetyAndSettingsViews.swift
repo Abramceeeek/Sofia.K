@@ -187,6 +187,7 @@ struct DemoScreen: View {
 
     var body: some View {
         switch name {
+        case "intro": WelcomeView(introAt: 0.7)                                 // 1, the logo drawing (D117)
         case "welcome": WelcomeView()                                           // 1
         case "example": ExampleDayView()                                        // 2a
         case "examplecard":                                                     // 2b (D115): further down screen 2
@@ -194,11 +195,15 @@ struct DemoScreen: View {
                 ScrollView { MomentCardContent(stop: stop, showWhy: false).padding(20) }
                     .background(Theme.background)
             }
+        case "founder": FounderVideoView()                                      // 2c (D117)
         case "consent": ConsentView()                                           // 3
-        case "based", "besthour", "why", "places", "categories", "thisorthat":  // 3b, 4-7, 6b (D116)
+        case "based", "besthour", "why", "places", "categories", "thisorthat", "learned":  // 3b, 4-7, 6b, 7b
             OnboardingView()
+        case "learnedchange":                                                   // 7b, changing something (D117)
+            NavigationStack { LearnedStep(startChanging: true).background(Theme.background).serifTitle("So far") }
         case "planform": NavigationStack { PlanFormView() }                     // 8
         case "planlist": HomeView(layout: "list")                               // 9b
+        case "reveal": HomeView(reveal: 0.55)                                   // 9c: the plan reveal, part-way (D117)
         case "stop", "rating":                                                  // 10, 11
             // the stop with the most on its card: a best-light window, then any stop that can be rated
             if let stop = model.plan?.stops.first(where: { !($0.bestWindow ?? "").isEmpty })

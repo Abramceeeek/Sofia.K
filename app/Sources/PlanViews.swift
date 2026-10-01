@@ -8,12 +8,13 @@ struct HomeView: View {
     @State private var showSettings = false
     @Environment(AppModel.self) private var model
     var layout: String?          // CI screenshots only: "list"
+    var reveal: Double?          // CI screenshots only: the plan reveal frozen part-way (D117)
 
     var body: some View {
         NavigationStack {
             Group {
                 if let plan = model.plan {
-                    PlanView(plan: plan, forcedLayout: layout)
+                    PlanView(plan: plan, forcedLayout: layout, forcedReveal: reveal)
                 } else {
                     PlanFormView()
                 }
@@ -97,9 +98,12 @@ struct PlanFormView: View {
 /// numbers match), or the stops as a list. Regenerate, improve and plan another day at the end.
 struct PlanView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let plan: Plan
     var forcedLayout: String?
+    var forcedReveal: Double?                  // CI screenshots only: the reveal frozen part-way
     @AppStorage("planLayout") private var savedLayout = "map"
+    @State private var reveal: Double = 1      // D117: 0…1 through the reveal; 1 = everything shown
     @State private var showNewPlan = false
     @State private var showImprove = false
     @State private var confirmRegenerate = false
@@ -107,9 +111,10 @@ struct PlanView: View {
     var body: some View {
         let layout = Binding(get: { forcedLayout ?? savedLayout }, set: { savedLayout = $0 })
         let asList = layout.wrappedValue == "list"
+        let fractions = RouteMath.stopFractions(plan.stops)
         List {
             Section {
-                PlanSummaryCard(plan: plan)
+                PlanSummaryCard(plan: plan, feel: phase(0, 0.15), rest: phase(plan.isBlind ? 0 : 0.12, 0.25))
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             } header: {
@@ -121,6 +126,7 @@ struct PlanView: View {
             Section {
                 DayShapeChart(stops: plan.stops, personal: !plan.isBlind)
                     .listRowBackground(Theme.surface)
+                    .opacity(phase(0.2, 0.3))
                 Picker("Show", selection: layout) {
                     Text("Map").tag("map")
                     Text("List").tag("list")
@@ -130,7 +136,7 @@ struct PlanView: View {
             }
             if !asList {
                 Section {
-                    PlanMap(stops: plan.stops)
+                    PlanMap(stops: plan.stops, progress: phase(Self.route.lowerBound, Self.route.upperBound))
                         .frame(height: 240)
                         .listRowInsets(EdgeInsets())
                 }
@@ -150,6 +156,7 @@ struct PlanView: View {
                                 showWhy: !plan.isBlind)
                     }
                     .listRowBackground(Theme.surface)
+                    .opacity(rowShown(i, fractions))   // D117: each stop as the route reaches it
                     .swipeActions {
                         if stop.rateable {
                             Button("Swap") { Task { await model.swap(stop) } }
@@ -210,12 +217,119 @@ struct PlanView: View {
             }
         }
         .sheet(isPresented: $showImprove) { ImproveView() }
+        .task(id: plan.id) { await runReveal() }
+    }
+
+    // ---- D117: the plan reveal, instead of a spinner ------------------------------------------------------------
+    // The feeling line first, then the rest of the summary, then the route draws across the map and each stop appears
+    // as the line reaches it. About 2.6 s, once per new plan (not on a swap, not when reopening the app). Quiet: fades
+    // only, no bounce. With Reduce Motion everything is simply there.
+
+    private static let revealSeconds = 2.6
+    private static let route = 0.28...0.88       // the share of the reveal the route line takes
+
+    /// How far the reveal is. A plan that has just arrived is hidden from its first frame, so nothing flashes.
+    private var shown: Double {
+        if let f = forcedReveal { return f }
+        return model.revealPlanId == plan.id && !reduceMotion ? 0 : reveal
+    }
+
+    /// 0…1 within one part of the reveal.
+    private func phase(_ from: Double, _ to: Double) -> Double {
+        min(1, max(0, (shown - from) / max(to - from, 0.001)))
+    }
+
+    private func rowShown(_ i: Int, _ fractions: [Double]) -> Double {
+        let at = Self.route.lowerBound + (Self.route.upperBound - Self.route.lowerBound) * (i < fractions.count ? fractions[i] : 1)
+        return phase(at, at + 0.06)
+    }
+
+    private func runReveal() async {
+        guard forcedReveal == nil, model.revealPlanId == plan.id else { return }
+        if reduceMotion {
+            model.revealPlanId = nil
+            reveal = 1
+            return
+        }
+        reveal = 0
+        model.revealPlanId = nil
+        let start = Date.now
+        while !Task.isCancelled, reveal < 1 {
+            try? await Task.sleep(for: .milliseconds(30))
+            reveal = min(1, Date.now.timeIntervalSince(start) / Self.revealSeconds)
+        }
+        reveal = 1
+    }
+}
+
+/// D117: the route line drawn part-way, and where each stop sits along it.
+enum RouteMath {
+    /// Flat distance on the map, good enough across a day in London.
+    private static func dist(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
+        let k = cos(a.latitude * .pi / 180)
+        return hypot((b.latitude - a.latitude), (b.longitude - a.longitude) * k)
+    }
+
+    /// Each point's share of the way along the line (0 for the first, 1 for the last).
+    static func fractions(_ cs: [CLLocationCoordinate2D]) -> [Double] {
+        guard cs.count > 1 else { return cs.map { _ in 0 } }
+        var acc = [0.0]
+        for i in 1..<cs.count { acc.append(acc[i - 1] + dist(cs[i - 1], cs[i])) }
+        let total = max(acc.last ?? 0, 1e-9)
+        return acc.map { $0 / total }
+    }
+
+    /// The same, per stop (a stop without a pin takes the one before it).
+    static func stopFractions(_ stops: [Stop]) -> [Double] {
+        let withPin = stops.indices.filter { stops[$0].pin != nil }
+        let f = fractions(withPin.compactMap { stops[$0].pin?.coordinate })
+        var out: [Double] = []
+        var last = 0.0
+        for i in stops.indices {
+            if let j = withPin.firstIndex(of: i) { last = f[j] }
+            out.append(last)
+        }
+        return out
+    }
+
+    /// The line from the first point to `t` of the way along (always two points, so it can be drawn).
+    static func partial(_ cs: [CLLocationCoordinate2D], _ t: Double) -> [CLLocationCoordinate2D] {
+        guard let first = cs.first else { return [] }
+        if t >= 1 || cs.count < 2 { return cs.count < 2 ? [first, first] : cs }
+        let f = fractions(cs)
+        var out = [first]
+        for i in 1..<cs.count {
+            if f[i] <= t {
+                out.append(cs[i])
+            } else {
+                let span = max(f[i] - f[i - 1], 1e-9)
+                let u = (t - f[i - 1]) / span
+                out.append(CLLocationCoordinate2D(latitude: cs[i - 1].latitude + (cs[i].latitude - cs[i - 1].latitude) * u,
+                                                  longitude: cs[i - 1].longitude + (cs[i].longitude - cs[i - 1].longitude) * u))
+                break
+            }
+        }
+        return out.count < 2 ? [first, first] : out
+    }
+
+    /// The whole day in view from the start, so the map doesn't move while the line draws.
+    static func camera(_ cs: [CLLocationCoordinate2D]) -> MapCameraPosition {
+        guard cs.count > 1 else { return .automatic }
+        let lats = cs.map(\.latitude), lons = cs.map(\.longitude)
+        let center = CLLocationCoordinate2D(latitude: (lats.min()! + lats.max()!) / 2,
+                                            longitude: (lons.min()! + lons.max()!) / 2)
+        let span = MKCoordinateSpan(latitudeDelta: max((lats.max()! - lats.min()!) * 1.5, 0.008),
+                                    longitudeDelta: max((lons.max()! - lons.min()!) * 1.5, 0.008))
+        return .region(MKCoordinateRegion(center: center, span: span))
     }
 }
 
 /// The day's feeling in one line (D115), then cost per person, walking between stops and the finish time (D110).
+/// D117: `feel` and `rest` fade them in, in that order, when a new plan arrives.
 struct PlanSummaryCard: View {
     let plan: Plan
+    var feel: Double = 1
+    var rest: Double = 1
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -225,20 +339,24 @@ struct PlanSummaryCard: View {
                     .font(Theme.title3)
                     .foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
+                    .opacity(self.feel)
             }
-            if let t = plan.totals {
-                HStack(alignment: .top, spacing: 12) {
-                    Stat(value: Money.text(t.costGbp), label: "per person")
-                    Stat(value: String(format: "%.1f km", t.walkKm), label: "walking between stops")
-                    Stat(value: t.finish ?? plan.stops.last?.depart ?? "–", label: "finish")
+            Group {
+                if let t = plan.totals {
+                    HStack(alignment: .top, spacing: 12) {
+                        Stat(value: Money.text(t.costGbp), label: "per person")
+                        Stat(value: String(format: "%.1f km", t.walkKm), label: "walking between stops")
+                        Stat(value: t.finish ?? plan.stops.last?.depart ?? "–", label: "finish")
+                    }
+                    Text(breakdown(t))
+                        .font(.footnote)
+                        .foregroundStyle(Theme.inkSoft)
                 }
-                Text(breakdown(t))
-                    .font(.footnote)
-                    .foregroundStyle(Theme.inkSoft)
+                if let start = plan.summary?.first {
+                    Text(start).font(.footnote).foregroundStyle(Theme.inkSoft)
+                }
             }
-            if let start = plan.summary?.first {
-                Text(start).font(.footnote).foregroundStyle(Theme.inkSoft)
-            }
+            .opacity(rest)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -361,6 +479,7 @@ struct DayShapeChart: View {
 
 struct PlanMap: View {
     let stops: [Stop]
+    var progress: Double = 1       // D117: how much of the route line is drawn; a stop's pin shows once it's reached
 
     private struct Pin: Identifiable {
         let id: Int
@@ -376,10 +495,14 @@ struct PlanMap: View {
     }
 
     var body: some View {
-        Map(initialPosition: .automatic) {
-            MapPolyline(coordinates: pins.map(\.coordinate))
+        let all = pins
+        let coords = all.map(\.coordinate)
+        let along = RouteMath.fractions(coords)
+        let reached = all.indices.filter { along[$0] <= progress + 1e-6 }.map { all[$0] }
+        Map(initialPosition: progress < 1 ? RouteMath.camera(coords) : .automatic) {
+            MapPolyline(coordinates: RouteMath.partial(coords, progress))
                 .stroke(Theme.accentFill, lineWidth: 3)
-            ForEach(pins) { pin in
+            ForEach(reached) { pin in
                 Marker(pin.title, monogram: Text("\(pin.id)"), coordinate: pin.coordinate)
                     .tint(Theme.accentFill)
             }

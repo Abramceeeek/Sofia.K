@@ -1,0 +1,32 @@
+{
+ "title": "So far, I've learned…",
+ "note": "From your answers only. Nothing here is a score.",
+ "empty": "You skipped the questions, which is fine. Your first plan starts from what most people enjoy, and it learns from how you rate each stop.",
+ "change_note": "Tap anything that isn't right. We'll stop using that answer.",
+ "items": [
+  {
+   "id": "feeling:restored",
+   "text": "You want to feel restored on a day out."
+  },
+  {
+   "id": "feeling:curious",
+   "text": "You want to feel curious on a day out."
+  },
+  {
+   "id": "place:14",
+   "text": "You loved Brick Lane for food: local food with a bit of history."
+  },
+  {
+   "id": "place:13",
+   "text": "You loved Primrose Hill at sunset: a hilltop sunset over the city."
+  },
+  {
+   "id": "choice:pace",
+   "text": "In the example days, you chose the relaxed day with fewer stops every time."
+  },
+  {
+   "id": "place:6",
+   "text": "Hyde Park wasn't for you."
+  }
+ ]
+}

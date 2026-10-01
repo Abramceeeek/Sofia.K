@@ -28,6 +28,53 @@ struct Onboarding: Codable {
     let based: BasedQuestion?                     // D116: "Where are you based?", the first question
     let categoryCards: [CategoryCard]?            // D116: visitors from abroad get these instead of the London places
     let categories: CategoriesPrompt?
+    let conjointWords: [PatternWords]?            // D117: "So far you've picked less walking every time"
+    let summary: SummaryText?                     // D117: "So far, I've learned…"
+}
+
+/// D117: one "this or that" attribute's two sides in words (brain/summary.py, the same words as "So far").
+struct PatternWords: Codable, Hashable {
+    let attr: String
+    let low: String
+    let high: String
+}
+
+/// D117: what to say after an answer. Typed, because the decoder turns snake_case dictionary keys into camelCase.
+struct Reactions: Codable, Hashable {
+    let loved: String?
+    let didntEnjoy: String?
+    let wantYes: String?
+
+    /// The words for an answer: "loved", "didnt_enjoy" or "want_yes"; nothing for the rest.
+    func text(for answer: String) -> String? {
+        switch answer {
+        case "loved": return loved
+        case "didnt_enjoy": return didntEnjoy
+        case "want_yes": return wantYes
+        default: return nil
+        }
+    }
+}
+
+struct SummaryText: Codable, Hashable {
+    let title: String?
+    let note: String?
+    let empty: String?
+    let changeNote: String?
+}
+
+/// D117: "So far, I've learned…" (GET /v1/me/summary): the person's own answers in plain words, never scores.
+struct Learned: Codable, Hashable {
+    let title: String?
+    let note: String?
+    let empty: String?
+    let changeNote: String?
+    let items: [LearnedItem]
+}
+
+struct LearnedItem: Codable, Hashable, Identifiable {
+    let id: String
+    let text: String
 }
 
 /// D116: "Where are you based?" London / elsewhere in the UK / visiting from abroad, then a town or city (optional).
@@ -45,6 +92,7 @@ struct CategoryCard: Codable, Hashable, Identifiable {
     let line: String
     let exampleId: String
     let exampleTitle: String?
+    let reactions: Reactions?          // D117
     var id: String { key }
 }
 
@@ -76,6 +124,7 @@ struct Prompt: Codable, Hashable {
 struct SwipePlace: Codable, Hashable, Identifiable {
     let item: Int
     let name: String
+    let reactions: Reactions?          // D117: "Got it: food with a bit of atmosphere."
     var id: Int { item }
 }
 
@@ -83,12 +132,14 @@ struct ConjointTask: Codable, Hashable, Identifiable {
     let task: Int
     let a: String
     let b: String
+    let levels: [String: [Double]]?   // D117: each day's level per attribute (lower is the "less" side)
     var id: Int { task }
 
     enum CodingKeys: String, CodingKey {
         case task
         case a = "A"
         case b = "B"
+        case levels
     }
 }
 
@@ -276,6 +327,11 @@ struct AnswerItem: Encodable {
 }
 
 /// D116: Love it / Fine / Not for me / Never tried (then yes / maybe / no to trying it in London).
+/// D117: the "So far" items the person marked "not right".
+struct CorrectionsRequest: Encodable {
+    let items: [String]
+}
+
 struct CategoryItem: Encodable, Hashable {
     let key: String
     let reaction: String

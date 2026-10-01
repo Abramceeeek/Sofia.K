@@ -22,6 +22,8 @@ enum Theme {
     static let accentFill = Color(uiColor: UIColor(hex: 0xFFC665))
     static let onAccent = Color(uiColor: UIColor(hex: 0x432C00))
     static let danger = Color(uiColor: UIColor(hex: 0xC62828))   // "Call 999": one red, white text in both modes
+    /// D117: the app icon's teal, for the logo ring; lighter on charcoal so it keeps its contrast.
+    static let brand = Color(uiColor: dynamic(dark: 0x5DBFA9, light: 0x0F6B5A))
 
     // ---- type: serif titles, system text; everything scales with Dynamic Type ----------------
     static let serifName = "Newsreader16pt-Regular"   // the font's default instance (Sources/Fonts)

@@ -18,17 +18,21 @@ enum AppConfig {
 }
 
 enum Route: Hashable {
-    case welcome, example, consent, onboarding, home   // D112: an example day before consent
+    case welcome, example, founder, consent, onboarding, home   // D112: an example day before consent; D117: a hello
 }
 
 /// Onboarding up to the first plan (screens 3–6). D110: "about you" and photos moved after the first plan.
 enum Step: Int, CaseIterable {
     case based, bestHour, why, places, thisOrThat   // D116: "Where are you based?" first
+    case learned                                    // D117: "So far, I've learned…", before the first plan
+
+    /// The question steps, counted as "Step n of 5"; "So far" isn't a question.
+    static let questions = allCases.filter { $0 != .learned }
 
     /// CI screenshots: `-screen places` opens that onboarding step; `categories` is the visitors' version of it.
     static func forScreen(_ name: String?) -> Step? {
         ["based": .based, "besthour": .bestHour, "why": .why, "places": .places, "categories": .places,
-         "thisorthat": .thisOrThat][name ?? ""]
+         "thisorthat": .thisOrThat, "learned": .learned, "learnedchange": .learned][name ?? ""]
     }
 
     var title: String {
@@ -38,6 +42,7 @@ enum Step: Int, CaseIterable {
         case .why: return "How you want to feel"   // D115
         case .places: return "Places you've been"
         case .thisOrThat: return "This or that"
+        case .learned: return "So far"
         }
     }
 }
@@ -63,6 +68,12 @@ final class AppModel {
     var bestHourMore = ""
     var bestHourVoice = false              // D115: "Tell it instead" was used (the Test A typed/voice split)
     var categoryAnswers: [String: CategoryItem] = [:]   // D116: a visitor's category cards
+    /// D117: the last answer's short reaction ("Got it: food with a bit of atmosphere."), shown above the next question.
+    /// Only from what the person actually answered; nil when an answer tells us too little to say anything.
+    var reaction: String?
+    @ObservationIgnored private var saidPatterns: Set<String> = []
+    var learned: Learned?                  // D117: "So far, I've learned…"
+    var revealPlanId: Int?                 // D117: a new plan plays its reveal once
 
     /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
     var isVisitor: Bool { profile.based == "abroad" }
@@ -97,12 +108,15 @@ final class AppModel {
             plan = demoPlan
             step = Step.forScreen(screen) ?? .based
             if screen == "categories" { profile.based = "abroad" }   // the visitors' onboarding (D116)
+            reaction = Self.demoReactions[screen ?? ""]               // D117: one reaction on the screenshot
             lastRequest = PlanRequest(start: AppConfig.start, startName: AppConfig.startName, startTime: "12:00",
                                       endTime: "17:00", date: demoPlan?.date, stops: 4, familiar: true)
         } else if brain.token == nil {
             route = .welcome
         } else {
             route = UserDefaults.standard.bool(forKey: "onboardingDone") ? .home : .onboarding
+            // D117: back to the step they were on (each step's answers are already sent)
+            step = Step(rawValue: UserDefaults.standard.integer(forKey: "onboardingStep")) ?? .based
             plan = AppModel.loadCached(Plan.self, "plan.json")
             lastRequest = AppModel.loadCached(PlanRequest.self, "request.json")
             // D116: the answers sent so far, so a later save (e.g. "Improve future plans") doesn't blank them
@@ -166,6 +180,10 @@ final class AppModel {
         await run {
             try await self.client.install(research: true, src: joined.map { "ref:\($0)" } ?? "app")
             UserDefaults.standard.removeObject(forKey: "refCode.joined")
+            if let video = UserDefaults.standard.dictionary(forKey: "founderVideo") as? [String: String] {
+                await self.client.event("founder_video", video)   // D117: watched to the end, or skipped after n s
+                UserDefaults.standard.removeObject(forKey: "founderVideo")
+            }
             self.route = .onboarding
         }
     }
@@ -186,7 +204,43 @@ final class AppModel {
     // ---- onboarding: each step is sent as it finishes -------------------------------------------
 
     func next() {
-        if let n = Step(rawValue: step.rawValue + 1) { step = n }
+        reaction = nil
+        if let n = Step(rawValue: step.rawValue + 1) {
+            step = n
+            if !client.demo { UserDefaults.standard.set(n.rawValue, forKey: "onboardingStep") }
+        }
+    }
+
+    // ---- D117: short reactions between answers, from the answer itself ------------------------------
+
+    static let demoReactions = ["places": "Got it: big museums full of history.",
+                                "categories": "Got it: views from above.",
+                                "thisorthat": "So far you've picked less walking every time."]
+
+    /// A place swipe or a kind of place: "loved", "didnt_enjoy" or "want_yes" have words; the rest say nothing.
+    func react(_ reactions: Reactions?, _ answer: String) {
+        reaction = reactions?.text(for: answer)
+    }
+
+    /// "This or that": one choice can't say why (the two days differ on five or six things), so this names a pattern
+    /// once it has held every time, in at least 3 made-up days; each pattern once. Same rule as "So far" (brain/summary.py).
+    func reactToChoices(_ tasks: [ConjointTask]) {
+        guard let words = onboarding?.conjointWords else { reaction = nil; return }
+        var best: (k: Int, attr: String, text: String)?
+        for (i, w) in words.enumerated() where !saidPatterns.contains(w.attr) {
+            var low = 0, high = 0
+            for t in tasks {
+                guard let c = choices[t.task], c != "N", let lv = t.levels, let mine = lv[c],
+                      let other = lv[c == "A" ? "B" : "A"], i < mine.count, i < other.count else { continue }
+                if mine[i] < other[i] { low += 1 } else if mine[i] > other[i] { high += 1 }
+            }
+            let k = low + high
+            if k >= 3, low == 0 || high == 0, k > (best?.k ?? 0) {
+                best = (k, w.attr, "So far you've picked \(low > 0 ? w.low : w.high) every time.")
+            }
+        }
+        if let best { saidPatterns.insert(best.attr) }
+        reaction = best?.text
     }
 
     func finishBestHour() async {
@@ -262,10 +316,51 @@ final class AppModel {
             try await self.sendChoices(self.onboarding?.conjointTasks ?? [])
             try await self.client.sendProfile(self.profile)
             AppModel.cache(self.profile, "profile.json")
+            self.learned = nil
+            self.next()                       // D117: "So far, I've learned…" before the first plan
+        }
+    }
+
+    // ---- D117: "So far, I've learned…", then the first plan -------------------------------------------------
+
+    func loadLearned() async {
+        await run { self.learned = try await self.client.summary() }
+    }
+
+    /// "Looks right" (no corrections) or "Change something" then save. Corrections are stored by the Brain and those
+    /// answers stop counting; a corrected feeling also leaves the answers kept on the phone, so it isn't sent again.
+    func finishLearned(wrong: Set<String>) async {
+        await run {
+            if wrong.isEmpty {
+                await self.client.event(self.learned == nil ? "summary_unavailable" : "summary_ok",
+                                        ["items": "\(self.learned?.items.count ?? 0)"])
+            } else {
+                try await self.client.sendCorrections(Array(wrong).sorted())
+                let feelings = Set(wrong.filter { $0.hasPrefix("feeling:") }.map { String($0.dropFirst(8)) })
+                self.why.removeAll { feelings.contains($0) }
+                self.profile.whyTravel = self.why
+                AppModel.cache(self.profile, "profile.json")
+                await self.client.event("summary_changed", ["n": "\(wrong.count)"])
+            }
             UserDefaults.standard.set(true, forKey: "onboardingDone")
+            UserDefaults.standard.removeObject(forKey: "onboardingStep")
             await self.client.event("onboarding_done")
             self.route = .home
         }
+    }
+
+    // ---- D117: Abram's hello, after the example day (only if the video is in the app) ----------------------
+
+    func afterExample() {
+        route = BundledVideo.exists("founder") ? .founder : .consent
+    }
+
+    /// The founder video plays before consent, when the app has no token yet, so how it went is kept on the phone and
+    /// sent as one event once the person has agreed (`agree`).
+    func founderVideoDone(seconds: Double, ended: Bool) {
+        UserDefaults.standard.set(["seconds": String(format: "%.0f", seconds), "ended": ended ? "yes" : "no"],
+                                  forKey: "founderVideo")
+        route = .consent
     }
 
     /// "Improve future plans": saved when the person taps Save; `done` marks the step as finished.
@@ -331,6 +426,7 @@ final class AppModel {
             if !swap {
                 self.rated = []
                 self.swappedIn = nil
+                self.revealPlanId = plan.id   // D117: a new plan appears line by line, once
             }
             AppModel.cache(plan, "plan.json")
             AppModel.cache(request, "request.json")
@@ -399,6 +495,10 @@ final class AppModel {
             self.bestHour = ""
             self.bestHourMore = ""
             self.categoryAnswers = [:]
+            self.learned = nil
+            self.reaction = nil
+            self.saidPatterns = []
+            UserDefaults.standard.removeObject(forKey: "onboardingStep")
             self.step = .based
             self.route = .welcome
         }

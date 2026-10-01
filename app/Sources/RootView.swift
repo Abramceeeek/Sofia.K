@@ -11,6 +11,7 @@ struct RootView: View {
                 switch model.route {
                 case .welcome: WelcomeView()
                 case .example: ExampleDayView()
+                case .founder: FounderVideoView()
                 case .consent: ConsentView()
                 case .onboarding: OnboardingView()
                 case .home: HomeView()

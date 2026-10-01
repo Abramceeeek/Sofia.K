@@ -44,7 +44,7 @@
   ]
  },
  "conjoint": {
-  "prompt": "Which day sounds more like you? There's no right answer.",
+  "prompt": "Which day sounds more like you? There are no wrong answers.",
   "option_label": "Example day",
   "no_preference": "No preference",
   "upfront": [
@@ -61,6 +61,12 @@
    7,
    10
   ]
+ },
+ "summary": {
+  "title": "So far, I've learned…",
+  "note": "From your answers only. Nothing here is a score.",
+  "empty": "You skipped the questions, which is fine. Your first plan starts from what most people enjoy, and it learns from how you rate each stop.",
+  "change_note": "Tap anything that isn't right. We'll stop using that answer."
  },
  "about_you": [
   {
@@ -109,56 +115,96 @@
    "title": "Big museums with famous collections",
    "line": "Treasures from around the world, under one roof.",
    "example_id": "m_bm_great_court",
-   "example_title": "British Museum: Egypt galleries, the Great Court, then the King's Library"
+   "example_title": "British Museum: Egypt galleries, the Great Court, then the King's Library",
+   "reactions": {
+    "loved": "Got it: big museums.",
+    "didnt_enjoy": "Noted: not so much big museums.",
+    "want_yes": "Noted: you'd like to try big museums."
+   }
   },
   {
    "key": "art_galleries",
    "title": "Art galleries",
    "line": "Paintings you've seen in books, in front of you.",
    "example_id": "m_national_gallery",
-   "example_title": "From Trafalgar Square into the quiet of the National Gallery"
+   "example_title": "From Trafalgar Square into the quiet of the National Gallery",
+   "reactions": {
+    "loved": "Got it: art galleries.",
+    "didnt_enjoy": "Noted: not so much art galleries.",
+    "want_yes": "Noted: you'd like to try art galleries."
+   }
   },
   {
    "key": "old_buildings",
    "title": "Old buildings and hidden history",
    "line": "Ruins, courtyards and corners with a story.",
    "example_id": "m_st_dunstan_garden",
-   "example_title": "St Dunstan-in-the-East: a ruined church garden hidden in the City"
+   "example_title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
+   "reactions": {
+    "loved": "Got it: old buildings and hidden history.",
+    "didnt_enjoy": "Noted: not so much old buildings and hidden history.",
+    "want_yes": "Noted: you'd like to try old buildings and hidden history."
+   }
   },
   {
    "key": "parks",
    "title": "Parks and gardens",
    "line": "Grass, trees and water in the middle of the city.",
    "example_id": "m_park_break_st_james",
-   "example_title": "A park break: St James's Park and its pelicans"
+   "example_title": "A park break: St James's Park and its pelicans",
+   "reactions": {
+    "loved": "Got it: parks and gardens.",
+    "didnt_enjoy": "Noted: not so much parks and gardens.",
+    "want_yes": "Noted: you'd like to try parks and gardens."
+   }
   },
   {
    "key": "views_above",
    "title": "Views from above",
    "line": "Towers, hills and cable cars, with the whole city below.",
    "example_id": "m_horizon_22",
-   "example_title": "Level 58: the City from Horizon 22"
+   "example_title": "Level 58: the City from Horizon 22",
+   "reactions": {
+    "loved": "Got it: views from above.",
+    "didnt_enjoy": "Noted: not so much views from above.",
+    "want_yes": "Noted: you'd like to try views from above."
+   }
   },
   {
    "key": "river",
    "title": "Boats and the river",
    "line": "Seeing the city from the water.",
    "example_id": "m_uber_boat_west_day",
-   "example_title": "The Uber Boat up the river from Greenwich to Battersea, by day"
+   "example_title": "The Uber Boat up the river from Greenwich to Battersea, by day",
+   "reactions": {
+    "loved": "Got it: boats and the river.",
+    "didnt_enjoy": "Noted: not so much boats and the river.",
+    "want_yes": "Noted: you'd like to try boats and the river."
+   }
   },
   {
    "key": "street_food",
    "title": "Street-food markets",
    "line": "Busy stalls, food from everywhere, eating as you go.",
    "example_id": "m_borough_market_graze",
-   "example_title": "Graze your way round Borough Market"
+   "example_title": "Graze your way round Borough Market",
+   "reactions": {
+    "loved": "Got it: street-food markets.",
+    "didnt_enjoy": "Noted: not so much street-food markets.",
+    "want_yes": "Noted: you'd like to try street-food markets."
+   }
   },
   {
    "key": "hands_on",
    "title": "Something hands-on",
    "line": "Swimming outdoors, cycling through a park, doing rather than looking.",
    "example_id": "m_london_fields_lido",
-   "example_title": "A heated outdoor swim at London Fields Lido"
+   "example_title": "A heated outdoor swim at London Fields Lido",
+   "reactions": {
+    "loved": "Got it: hands-on activities.",
+    "didnt_enjoy": "Noted: not so much hands-on activities.",
+    "want_yes": "Noted: you'd like to try hands-on activities."
+   }
   }
  ],
  "categories": {
@@ -169,99 +215,351 @@
  "swipe_places": [
   {
    "item": 4,
-   "name": "British Museum"
+   "name": "British Museum",
+   "reactions": {
+    "loved": "Got it: big museums full of history.",
+    "didnt_enjoy": "Noted: not so much big museums full of history."
+   }
   },
   {
    "item": 6,
-   "name": "Hyde Park"
+   "name": "Hyde Park",
+   "reactions": {
+    "loved": "Got it: big green spaces and long walks.",
+    "didnt_enjoy": "Noted: not so much big green spaces and long walks."
+   }
   },
   {
    "item": 11,
-   "name": "The view from the top of Greenwich Park"
+   "name": "The view from the top of Greenwich Park",
+   "reactions": {
+    "loved": "Got it: a climb to a big view.",
+    "didnt_enjoy": "Noted: not so much a climb to a big view."
+   }
   },
   {
    "item": 12,
-   "name": "Walking from South Kensington tube to the Natural History Museum"
+   "name": "Walking from South Kensington tube to the Natural History Museum",
+   "reactions": {
+    "loved": "Got it: a grand building coming into view.",
+    "didnt_enjoy": "Noted: not so much a grand building coming into view."
+   }
   },
   {
    "item": 13,
-   "name": "Primrose Hill at sunset"
+   "name": "Primrose Hill at sunset",
+   "reactions": {
+    "loved": "Got it: a hilltop sunset over the city.",
+    "didnt_enjoy": "Noted: not so much a hilltop sunset over the city."
+   }
   },
   {
    "item": 14,
-   "name": "Brick Lane for food"
+   "name": "Brick Lane for food",
+   "reactions": {
+    "loved": "Got it: local food with a bit of history.",
+    "didnt_enjoy": "Noted: not so much local food with a bit of history."
+   }
   }
  ],
  "swipe_places_later": [
   {
    "item": 1,
-   "name": "Big Ben and Parliament Square"
+   "name": "Big Ben and Parliament Square",
+   "reactions": {
+    "loved": "Got it: the big famous sights.",
+    "didnt_enjoy": "Noted: not so much the big famous sights."
+   }
   },
   {
    "item": 2,
-   "name": "Uber Boat on the Thames"
+   "name": "Uber Boat on the Thames",
+   "reactions": {
+    "loved": "Got it: seeing the city from the water.",
+    "didnt_enjoy": "Noted: not so much seeing the city from the water."
+   }
   },
   {
    "item": 3,
-   "name": "Borough Market"
+   "name": "Borough Market",
+   "reactions": {
+    "loved": "Got it: food with a bit of atmosphere.",
+    "didnt_enjoy": "Noted: not so much food with a bit of atmosphere."
+   }
   },
   {
    "item": 15,
-   "name": "Hampstead Heath ponds (swimming)"
+   "name": "Hampstead Heath ponds (swimming)",
+   "reactions": {
+    "loved": "Got it: a cold outdoor swim.",
+    "didnt_enjoy": "Noted: not so much a cold outdoor swim."
+   }
   }
  ],
  "conjoint_tasks": [
   {
    "task": 2,
    "A": "longest transfer 50 min; mild and dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 8 km walking",
-   "B": "longest transfer 30 min; rainy at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 3 km walking"
+   "B": "longest transfer 30 min; rainy at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     50.0,
+     0.0,
+     1.0,
+     0.0,
+     60.0,
+     1.0
+    ],
+    "B": [
+     30.0,
+     2.0,
+     0.0,
+     1.0,
+     60.0,
+     0.0
+    ]
+   }
   },
   {
    "task": 4,
    "A": "longest transfer 50 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 8 km walking",
-   "B": "longest transfer 15 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 3 km walking"
+   "B": "longest transfer 15 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     50.0,
+     1.0,
+     0.0,
+     0.0,
+     40.0,
+     1.0
+    ],
+    "B": [
+     15.0,
+     0.0,
+     1.0,
+     1.0,
+     40.0,
+     0.0
+    ]
+   }
   },
   {
    "task": 6,
    "A": "longest transfer 30 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
-   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking"
+   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     30.0,
+     0.0,
+     1.0,
+     1.0,
+     40.0,
+     1.0
+    ],
+    "B": [
+     15.0,
+     2.0,
+     0.0,
+     0.0,
+     20.0,
+     0.0
+    ]
+   }
   },
   {
    "task": 8,
    "A": "longest transfer 50 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
-   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 3 km walking"
+   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     50.0,
+     2.0,
+     1.0,
+     1.0,
+     20.0,
+     1.0
+    ],
+    "B": [
+     30.0,
+     1.0,
+     0.0,
+     0.0,
+     60.0,
+     0.0
+    ]
+   }
   },
   {
    "task": 9,
    "A": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 8 km walking",
-   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £20 per person; about 3 km walking"
+   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £20 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     30.0,
+     2.0,
+     1.0,
+     0.0,
+     40.0,
+     1.0
+    ],
+    "B": [
+     50.0,
+     0.0,
+     0.0,
+     1.0,
+     20.0,
+     0.0
+    ]
+   }
+  }
+ ],
+ "conjoint_words": [
+  {
+   "attr": "transfer",
+   "low": "shorter journeys between stops",
+   "high": "longer journeys between stops"
+  },
+  {
+   "attr": "weather",
+   "low": "better weather at the outdoor stops",
+   "high": "the day with worse weather"
+  },
+  {
+   "attr": "pace",
+   "low": "the relaxed day with fewer stops",
+   "high": "the fuller day with more stops"
+  },
+  {
+   "attr": "crowds",
+   "low": "quieter places",
+   "high": "busier places"
+  },
+  {
+   "attr": "cost",
+   "low": "the cheaper day",
+   "high": "the pricier day"
+  },
+  {
+   "attr": "walking",
+   "low": "less walking",
+   "high": "more walking"
   }
  ],
  "conjoint_tasks_later": [
   {
    "task": 1,
    "A": "longest transfer 15 min; cold but dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 3 km walking",
-   "B": "longest transfer 30 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking"
+   "B": "longest transfer 30 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
+   "levels": {
+    "A": [
+     15.0,
+     1.0,
+     1.0,
+     0.0,
+     60.0,
+     0.0
+    ],
+    "B": [
+     30.0,
+     0.0,
+     0.0,
+     1.0,
+     60.0,
+     1.0
+    ]
+   }
   },
   {
    "task": 3,
    "A": "longest transfer 50 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £60 per person; about 3 km walking",
-   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 8 km walking"
+   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 8 km walking",
+   "levels": {
+    "A": [
+     50.0,
+     1.0,
+     1.0,
+     1.0,
+     60.0,
+     0.0
+    ],
+    "B": [
+     15.0,
+     2.0,
+     0.0,
+     0.0,
+     60.0,
+     1.0
+    ]
+   }
   },
   {
    "task": 5,
    "A": "longest transfer 15 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
-   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 3 km walking"
+   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     15.0,
+     1.0,
+     1.0,
+     1.0,
+     20.0,
+     1.0
+    ],
+    "B": [
+     50.0,
+     0.0,
+     0.0,
+     0.0,
+     40.0,
+     0.0
+    ]
+   }
   },
   {
    "task": 7,
    "A": "longest transfer 15 min; cold but dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
-   "B": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 3 km walking"
+   "B": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     15.0,
+     1.0,
+     0.0,
+     1.0,
+     60.0,
+     1.0
+    ],
+    "B": [
+     30.0,
+     2.0,
+     1.0,
+     0.0,
+     40.0,
+     0.0
+    ]
+   }
   },
   {
    "task": 10,
    "A": "longest transfer 15 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
-   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking"
+   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking",
+   "levels": {
+    "A": [
+     15.0,
+     2.0,
+     1.0,
+     1.0,
+     40.0,
+     1.0
+    ],
+    "B": [
+     30.0,
+     1.0,
+     0.0,
+     0.0,
+     20.0,
+     0.0
+    ]
+   }
   }
  ],
  "fields": {

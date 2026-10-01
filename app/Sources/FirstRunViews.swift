@@ -1,27 +1,101 @@
 import SwiftUI
 
-/// Screen 1: a person, not a brand.
+/// Screen 1: a person, not a brand. D117: on first opening, the app icon's ring draws itself (about 0.8 s), then
+/// settles into its place above the title as the words fade in (0.45 s). A tap skips it; with Reduce Motion it doesn't
+/// play. Quiet and the same every time: no bounce, no confetti.
 struct WelcomeView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var logo
+    var introAt: Double?                  // CI screenshots only: the intro frozen part-way (0–1 of the ring drawn)
+    @State private var settled = WelcomeView.played
+    @State private var drawn: CGFloat = WelcomeView.played ? 1 : 0
+    private static var played = false     // once per launch
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Spacer()
-            Text("Days out that fit you")
-                .font(Theme.display)
-                .foregroundStyle(Theme.ink)
-            Text("We wanted to bring some of the best experiences we've had to you, so you can have them too.")
-                .font(.title3)
-                .foregroundStyle(Theme.ink)
-            Text("This is a research test run by a person, Abram, in London. It plans a day out around how you want it to feel, not a list of famous sights.")
-                .foregroundStyle(Theme.inkSoft)
-            Spacer()
-            PrimaryButton(title: "See an example day") { model.route = .example }
-            Button("Skip the example") { model.route = .consent }
-                .frame(maxWidth: .infinity, minHeight: 44)
+        ZStack {
+            VStack(alignment: .leading, spacing: 20) {
+                Spacer()
+                Group {
+                    if settled {
+                        LogoRing(progress: 1).matchedGeometryEffect(id: "logo", in: logo)
+                    } else {
+                        Color.clear
+                    }
+                }
+                .frame(width: 44, height: 44)
+                Text("Days out that fit you")
+                    .font(Theme.display)
+                    .foregroundStyle(Theme.ink)
+                Text("We wanted to bring some of the best experiences we've had to you, so you can have them too.")
+                    .font(.title3)
+                    .foregroundStyle(Theme.ink)
+                Text("This is a research test run by a person, Abram, in London. It plans a day out around how you want it to feel, not a list of famous sights.")
+                    .foregroundStyle(Theme.inkSoft)
+                Spacer()
+                PrimaryButton(title: "See an example day") { model.route = .example }
+                Button("Skip the example") { model.afterExample() }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .padding(24)
+            .opacity(settled ? 1 : 0)
+            .allowsHitTesting(settled)
+            if !settled {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { finish(animated: false) }   // tap to skip
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityLabel("Days out. Tap to skip")
+                LogoRing(progress: drawn)
+                    .matchedGeometryEffect(id: "logo", in: logo)
+                    .frame(width: 132, height: 132)
+                    .allowsHitTesting(false)
+            }
         }
-        .padding(24)
         .background(Theme.background)
+        .task { await play() }
+    }
+
+    private func play() async {
+        if let at = introAt {             // CI: show the ring part-drawn, still centred
+            settled = false
+            drawn = at
+            return
+        }
+        guard !settled else { return }
+        WelcomeView.played = true
+        if reduceMotion { finish(animated: false); return }
+        withAnimation(.easeInOut(duration: 0.8)) { drawn = 1 }
+        try? await Task.sleep(for: .milliseconds(850))
+        finish(animated: true)
+    }
+
+    private func finish(animated: Bool) {
+        WelcomeView.played = true
+        if animated {
+            withAnimation(.easeInOut(duration: 0.45)) { settled = true }
+        } else {
+            drawn = 1
+            settled = true
+        }
+    }
+}
+
+/// The app icon's mark: one ring, drawn from the top clockwise. The stroke is a tenth of the width, as on the icon.
+struct LogoRing: View {
+    var progress: CGFloat
+
+    var body: some View {
+        GeometryReader { g in
+            let w = min(g.size.width, g.size.height) * 0.105
+            Circle()
+                .inset(by: w / 2)
+                .trim(from: 0, to: progress)
+                .stroke(Theme.brand, style: StrokeStyle(lineWidth: w, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .accessibilityHidden(true)
     }
 }
 
@@ -67,7 +141,7 @@ struct ExampleDayView: View {
                 }
             }
             Section {
-                PrimaryButton(title: "Start") { model.route = .consent }
+                PrimaryButton(title: "Start") { model.afterExample() }
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             }
