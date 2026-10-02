@@ -54,6 +54,9 @@ services:
         generateValue: true    # Abram's only; unlocks /v1/admin (safety alerts, export). Never shared
       - key: BRAIN_PLANNER_TIME_LIMIT_S
         value: "1.0"
+      - key: BRAIN_ALERT_WEBHOOK_URL
+        sync: false            # D118: where safety alerts are posted ({"text": ...}), e.g. a Slack incoming webhook
+                               # that Abram and the backup helper both see on their phones. Never committed here
 
 databases:
   - name: london-places-swipe-db
