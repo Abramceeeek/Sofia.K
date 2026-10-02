@@ -386,6 +386,21 @@ struct RatingRequest: Encodable {
 
 struct SafetyRequest: Encodable {
     let message: String
+    let contact: String?           // D118: optional phone or email, only to reply; deleted once it's sorted
+}
+
+/// D118: one Help & safety message and the replies to it (GET /v1/me/safety).
+struct SafetyThread: Codable, Hashable, Identifiable {
+    let id: Int
+    let message: String
+    let createdAt: String
+    let contactKept: Bool
+    let replies: [SafetyReplyItem]
+}
+
+struct SafetyReplyItem: Codable, Hashable {
+    let text: String
+    let createdAt: String
 }
 
 struct SafetyResponse: Decodable {

@@ -24,7 +24,7 @@
   "note": "So we ask the right questions. We never ask your nationality."
  },
  "why_travel": {
-  "prompt": "How do you most want to feel on a day out? Pick up to two, or none.",
+  "prompt": "How do you most want to feel on a day out? Pick one or two.",
   "options": [
    "restored",
    "excited",

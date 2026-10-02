@@ -7,7 +7,9 @@ enum AppConfig {
         let raw = Bundle.main.object(forInfoDictionaryKey: "BrainBaseURL") as? String ?? ""
         return URL(string: raw) ?? URL(string: "https://moments-brain.onrender.com")!
     }
-    static let consentVersion = "app-2026-09-30b"   // D114: the share-link line; D115: speaking an answer
+    static let consentVersion = "app-2026-10-02"    // D114 share link; D115 speaking; D118 safety contact, reminders
+    /// CI screenshots: the demo plan's day, so "Plan a day" (8) and the plan (9) show the same date.
+    static let demoDate = "2026-10-31"
     static let contactEmail = "abram@abdurakhmonbek.com"
     /// Build 1 plans from the Test B start point (D104): Charing Cross station, Trafalgar Square exit (TfL).
     static let startName = "Charing Cross station"
@@ -74,6 +76,12 @@ final class AppModel {
     @ObservationIgnored private var saidPatterns: Set<String> = []
     var learned: Learned?                  // D117: "So far, I've learned…"
     var revealPlanId: Int?                 // D117: a new plan plays its reveal once
+    var stepProgress = 0                   // D118: answers given within the current step, for "Question 7 of 14"
+    var path: [Stop] = []                  // D118: the plan's navigation, so a rating reminder can open its stop
+    var ratedOnce = UserDefaults.standard.bool(forKey: "ratedOnce")   // D118: 12a waits until the first rating
+    var safetyThreads: [SafetyThread] = [] // D118: Help & safety messages and the replies to them
+    var remindersOn = UserDefaults.standard.bool(forKey: "remindersOn")
+    var reminderAsked = UserDefaults.standard.bool(forKey: "reminderAsked")
 
     /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
     var isVisitor: Bool { profile.based == "abroad" }
@@ -203,8 +211,27 @@ final class AppModel {
 
     // ---- onboarding: each step is sent as it finishes -------------------------------------------
 
+    // ---- D118: "Question 7 of 14", every question before the first plan, counted honestly ---------------------
+
+    private func questions(in step: Step) -> Int {
+        switch step {
+        case .based, .bestHour, .why: return 1
+        case .places: return isVisitor ? (onboarding?.categoryCards?.count ?? 0) : (onboarding?.swipePlaces.count ?? 0)
+        case .thisOrThat: return onboarding?.conjointTasks.count ?? 0
+        case .learned: return 0
+        }
+    }
+
+    var questionTotal: Int { Step.questions.reduce(0) { $0 + questions(in: $1) } }
+
+    var questionNumber: Int {
+        let before = Step.questions.prefix { $0 != step }.reduce(0) { $0 + questions(in: $1) }
+        return min(before + min(stepProgress, max(questions(in: step) - 1, 0)) + 1, max(questionTotal, 1))
+    }
+
     func next() {
         reaction = nil
+        stepProgress = 0
         if let n = Step(rawValue: step.rawValue + 1) {
             step = n
             if !client.demo { UserDefaults.standard.set(n.rawValue, forKey: "onboardingStep") }
@@ -215,7 +242,7 @@ final class AppModel {
 
     static let demoReactions = ["places": "Got it: big museums full of history.",
                                 "categories": "Got it: views from above.",
-                                "thisorthat": "So far you've picked less walking every time."]
+                                "thisorthat": "So far you've picked the relaxed day with fewer stops every time."]
 
     /// A place swipe or a kind of place: "loved", "didnt_enjoy" or "want_yes" have words; the rest say nothing.
     func react(_ reactions: Reactions?, _ answer: String) {
@@ -430,6 +457,7 @@ final class AppModel {
             }
             AppModel.cache(plan, "plan.json")
             AppModel.cache(request, "request.json")
+            if self.remindersOn { await Reminders.schedule(plan, rated: self.rated) }   // D118: follow the new plan
         }
     }
 
@@ -439,7 +467,56 @@ final class AppModel {
                                                      wouldBring: wouldBring))
             self.rated.insert(stop.momentId)
             self.myRatings[stop.momentId] = rating
+            self.ratedOnce = true                                  // D118: now "Improve future plans" is offered
+            UserDefaults.standard.set(true, forKey: "ratedOnce")
+            Reminders.cancel(stop: stop)                           // rated already: no nudge for it
         }
+    }
+
+    // ---- D118: rating reminders, asked once, right after a plan is made ---------------------------------------
+
+    /// "A nudge to rate each stop after you leave?" Yes asks iOS for permission (only now, never before); the
+    /// reminders are local to the phone, one after each stop.
+    func answerReminders(_ yes: Bool) async {
+        reminderAsked = true
+        UserDefaults.standard.set(true, forKey: "reminderAsked")
+        remindersOn = yes ? await Reminders.ask() : false
+        UserDefaults.standard.set(remindersOn, forKey: "remindersOn")
+        if remindersOn, let plan { await Reminders.schedule(plan, rated: rated) }
+        await client.event(remindersOn ? "reminders_on" : "reminders_off")
+    }
+
+    func turnRemindersOff() async {
+        remindersOn = false
+        UserDefaults.standard.set(false, forKey: "remindersOn")
+        Reminders.clear()
+        await client.event("reminders_off")
+    }
+
+    /// A reminder was tapped: open that stop, where it's rated.
+    func openStop(_ momentId: String) {
+        guard let stop = plan?.stops.first(where: { $0.momentId == momentId }) else { return }
+        route = .home
+        path = [stop]
+    }
+
+    // ---- D118: Help & safety replies ------------------------------------------------------------------------
+
+    /// Asked only by someone who has sent a message (so nobody else makes the call).
+    func loadSafety() async {
+        guard (client.demo && screen == "safetyreply") || UserDefaults.standard.bool(forKey: "safetySent") else { return }
+        if let threads = try? await client.mySafety() { safetyThreads = threads }
+    }
+
+    /// A reply newer than the last time Help & safety was opened.
+    var unreadSafety: Bool {
+        let seen = UserDefaults.standard.string(forKey: "safetySeen") ?? ""
+        return safetyThreads.flatMap(\.replies).contains { $0.createdAt > seen }
+    }
+
+    func markSafetySeen() {
+        let latest = safetyThreads.flatMap(\.replies).map(\.createdAt).max() ?? ""
+        UserDefaults.standard.set(latest, forKey: "safetySeen")
     }
 
     /// D114: after a rated stop, the person can share a card with their own rating and their link. The button
@@ -464,9 +541,13 @@ final class AppModel {
         Task { await client.event("plan_another_day") }   // a Test C measure: unprompted second plans
     }
 
-    func sendSafety(_ message: String) async -> String? {
+    func sendSafety(_ message: String, contact: String?) async -> String? {
         var reply: String?
-        await run { reply = try await self.client.safety(message) }
+        await run {
+            reply = try await self.client.safety(message, contact: contact)
+            UserDefaults.standard.set(true, forKey: "safetySent")
+        }
+        await loadSafety()
         return reply
     }
 
@@ -499,6 +580,15 @@ final class AppModel {
             self.reaction = nil
             self.saidPatterns = []
             UserDefaults.standard.removeObject(forKey: "onboardingStep")
+            for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen"] {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+            Reminders.clear()
+            self.ratedOnce = false
+            self.remindersOn = false
+            self.reminderAsked = false
+            self.safetyThreads = []
+            self.path = []
             self.step = .based
             self.route = .welcome
         }

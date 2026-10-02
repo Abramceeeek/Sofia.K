@@ -11,7 +11,8 @@ struct HomeView: View {
     var reveal: Double?          // CI screenshots only: the plan reveal frozen part-way (D117)
 
     var body: some View {
-        NavigationStack {
+        @Bindable var model = model
+        NavigationStack(path: $model.path) {   // D118: a rating reminder opens its stop
             Group {
                 if let plan = model.plan {
                     PlanView(plan: plan, forcedLayout: layout, forcedReveal: reveal)
@@ -22,8 +23,16 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showSafety = true } label: {
-                        Label("Help & safety", systemImage: "exclamationmark.shield")
+                        // D118: the word as well as the shield; a dot when a person has replied
+                        Label("Help", systemImage: "exclamationmark.shield")
+                            .labelStyle(.titleAndIcon)
+                            .overlay(alignment: .topTrailing) {
+                                if model.unreadSafety {
+                                    Circle().fill(Theme.danger).frame(width: 8, height: 8).offset(x: 4, y: -2)
+                                }
+                            }
                     }
+                    .accessibilityLabel(model.unreadSafety ? "Help and safety, new reply" : "Help and safety")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: {
@@ -42,7 +51,8 @@ struct HomeView: View {
 struct PlanFormView: View {
     @Environment(AppModel.self) private var model
     var onDone: (() -> Void)?
-    @State private var date = Dates.nextSaturday()
+    @State private var date = AppConfig.demo ? (Dates.isoDay.date(from: AppConfig.demoDate) ?? Dates.nextSaturday())
+                                             : Dates.nextSaturday()
     @State private var start = Dates.time(12)
     @State private var end = Dates.time(17)
     @State private var stops = 4
@@ -62,6 +72,15 @@ struct PlanFormView: View {
                         .foregroundStyle(Theme.inkSoft)
                 }
                 .padding(.vertical, 4)
+                .listRowBackground(Theme.surface)
+                // D118: quick picks for a spontaneous day; next Saturday stays the default
+                HStack(spacing: 8) {
+                    QuickDay(title: "Today", on: isSameDay(date, .now)) { pickToday() }
+                    QuickDay(title: "Tomorrow", on: isSameDay(date, tomorrow)) { pick(tomorrow) }
+                    if !isSameDay(Dates.nextSaturday(), .now), !isSameDay(Dates.nextSaturday(), tomorrow) {
+                        QuickDay(title: "Saturday", on: isSameDay(date, Dates.nextSaturday())) { pick(Dates.nextSaturday()) }
+                    }
+                }
                 .listRowBackground(Theme.surface)
                 Button(editing ? "Done changing" : "Change the day or times") {
                     withAnimation { editing.toggle() }
@@ -92,6 +111,47 @@ struct PlanFormView: View {
         .themedList()
         .serifTitle("Plan a day")
     }
+
+    private var tomorrow: Date { Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now }
+
+    private func isSameDay(_ a: Date, _ b: Date) -> Bool { Calendar.current.isDate(a, inSameDayAs: b) }
+
+    private func pick(_ day: Date) {
+        date = day
+        start = Dates.time(12)
+        end = Dates.time(17)
+    }
+
+    /// Today: from the next half hour (at the earliest 12:00), for at least three hours, ending by 22:00.
+    private func pickToday() {
+        date = .now
+        let soon = Date.now.addingTimeInterval(15 * 60)
+        let half = Calendar.current.date(bySetting: .second, value: 0, of: soon) ?? soon
+        let minute = Calendar.current.component(.minute, from: half)
+        let rounded = Calendar.current.date(byAdding: .minute, value: (30 - minute % 30) % 30, to: half) ?? half
+        start = max(Dates.time(12), rounded)
+        end = min(max(Dates.time(17), start.addingTimeInterval(3 * 3600)), Dates.time(22))
+    }
+}
+
+/// A day chip on "Plan a day" (D118).
+struct QuickDay: View {
+    let title: String
+    let on: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(on ? Theme.onAccent : Theme.ink)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 36)
+                .background(on ? Theme.accentFill : Theme.surfaceHigh, in: Capsule())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityAddTraits(on ? .isSelected : [])
+    }
 }
 
 /// Screen 9: the summary first and prominent (D110, D112), the day's shape, then the map and the stops (the
@@ -117,6 +177,11 @@ struct PlanView: View {
                 PlanSummaryCard(plan: plan, feel: phase(0, 0.15), rest: phase(plan.isBlind ? 0 : 0.12, 0.25))
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
+                if !model.reminderAsked, !plan.isBlind, shown >= 1 {
+                    ReminderAsk()   // D118: asked once, right after a plan, never before
+                        .listRowInsets(EdgeInsets(top: 12, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
+                }
             } header: {
                 Text(plan.title ?? "Your day")
                     .font(Theme.title2)
@@ -182,17 +247,25 @@ struct PlanView: View {
                         .disabled(model.busy)
                         .listRowBackground(Theme.surface)
                 }
-                Button {
-                    showImprove = true
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(model.improved ? "Change your answers" : "Improve future plans").font(.headline)
-                        Text("Optional, about 2 minutes: a few more places and example days, your budget, pace and interests.")
-                            .font(.footnote)
-                            .foregroundStyle(Theme.inkSoft)
+                if model.ratedOnce || model.improved {
+                    // D118: offered once a stop is rated, so it doesn't arrive as a second ask on top of the plan
+                    Button {
+                        showImprove = true
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.improved ? "Change your answers" : "Your first stop taught us something").font(.headline)
+                            Text(model.improved ? "Your budget, pace and interests, a few more places and example days."
+                                                : "Make the next day even better? About 30 seconds, then more if you like.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.inkSoft)
+                        }
                     }
+                    .listRowBackground(Theme.surface)
+                } else {
+                    Button("A few more questions (optional)") { showImprove = true }
+                        .font(.subheadline)
+                        .listRowBackground(Theme.surface)
                 }
-                .listRowBackground(Theme.surface)
                 Button("Plan another day") {
                     model.planAnotherDay()
                     showNewPlan = true
@@ -439,11 +512,11 @@ struct DayShapeChart: View {
         let bs = blocks
         let axis = Self.axis(bs)
         VStack(alignment: .leading, spacing: 8) {
-            Text(personal ? "How your day should feel" : "The shape of the day")
+            Text(personal ? "How much we think you'll enjoy each stop" : "The shape of the day")   // D118
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.inkSoft)
             // D115: one plain sentence, above the picture, so it reads before it's looked at
-            Text(personal ? "Each block is a stop, from when you arrive to when you leave. The taller it is, the more we think you'll enjoy it."
+            Text(personal ? "Each block is a stop, from when you arrive to when you leave. Taller means we think you'll enjoy it more."
                           : "Each block is a stop, from when you arrive to when you leave.")
                 .font(.footnote)
                 .foregroundStyle(Theme.ink)
@@ -588,11 +661,12 @@ struct MomentCardContent: View {
                 }
                 if let worth = stop.worthGbp {
                     // D115: a free stop says so in the same line as its worth
-                    Text(stop.costGbp == 0 ? "Worth about \(Money.text(worth)) to you, and it's free."
-                                           : "Worth about \(Money.text(worth)) to you.")
+                    // D118: the worth and the price side by side, and plainly a first estimate
+                    Text(stop.costGbp == 0 ? "Worth about \(Money.text(worth)) to you · Free entry"
+                                           : "Worth about \(Money.text(worth)) to you · Costs \(Money.text(stop.costGbp))")
                         .font(.headline)
                         .foregroundStyle(Theme.ink)
-                    Text("Our estimate from your answers so far.")
+                    Text("A first estimate from what you've told us so far. It gets better as you rate stops.")
                         .font(.footnote)
                         .foregroundStyle(Theme.inkSoft)
                 }
@@ -784,6 +858,9 @@ struct MomentHero: View {
                         Text("\(stop.arrive)–\(stop.depart)")
                             .font(.subheadline.monospacedDigit())
                             .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(.black.opacity(0.55), in: Capsule())   // D118: readable on bright photos
                     }
                     Spacer(minLength: 8)
                     if found == nil {
@@ -942,4 +1019,37 @@ struct RatingView: View {
 extension String {
     /// "free" → "Free", for lines shown under their own label.
     var capitalizedFirst: String { prefix(1).uppercased() + String(dropFirst()) }
+}
+
+/// D118: asked once, right after a plan is made. "Yes" brings iOS's own permission prompt (only then, D117); the
+/// reminders are local, one after each stop. "No thanks" is the same size as "Yes" (no dark patterns).
+struct ReminderAsk: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("A nudge to rate each stop after you leave?", systemImage: "bell")
+                .font(.headline)
+                .foregroundStyle(Theme.ink)
+            Text("One tap each, on the day. Your ratings are what make the next plan better. Set on your phone; nothing else is sent.")
+                .font(.footnote)
+                .foregroundStyle(Theme.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 10) {
+                Button { Task { await model.answerReminders(true) } } label: {
+                    Text("Yes, nudge me").frame(maxWidth: .infinity, minHeight: 40)
+                }
+                .buttonStyle(.bordered)
+                Button { Task { await model.answerReminders(false) } } label: {
+                    Text("No thanks").frame(maxWidth: .infinity, minHeight: 40)
+                }
+                .buttonStyle(.bordered)
+            }
+            .tint(Theme.accent)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.outline, lineWidth: 1))
+    }
 }

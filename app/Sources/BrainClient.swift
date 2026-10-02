@@ -113,12 +113,23 @@ final class BrainClient {
         try await send("POST", "v1/me/ratings", request)
     }
 
-    func safety(_ message: String) async throws -> String {
+    func safety(_ message: String, contact: String?) async throws -> String {
         if demo {
-            return "If you or someone else is in danger or hurt, call 999 now. We've told a person on our team, and they will reply within a few hours."
+            return "If you or someone else is in danger or hurt, call 999 now. We've told a person: Abram, or whoever is covering for him. They'll reply within a few hours, here in Help & safety, and by phone or email if you left one."
         }
-        let out: SafetyResponse = try await call("POST", "v1/me/safety", SafetyRequest(message: message))
+        let out: SafetyResponse = try await call("POST", "v1/me/safety", SafetyRequest(message: message, contact: contact))
         return out.message
+    }
+
+    /// D118: this person's Help & safety messages, with the replies.
+    func mySafety() async throws -> [SafetyThread] {
+        if demo {
+            return [SafetyThread(id: 1, message: "I've lost the group near the market and my phone is on 10%.",
+                                 createdAt: "2026-10-31T14:05:00+00:00", contactKept: true,
+                                 replies: [SafetyReplyItem(text: "Hi, it's Abram. Are you somewhere safe? I'll call the number you left in a minute.",
+                                                           createdAt: "2026-10-31T14:31:00+00:00")])]
+        }
+        return try await call("GET", "v1/me/safety")
     }
 
     func event(_ name: String, _ props: [String: String] = [:]) async {

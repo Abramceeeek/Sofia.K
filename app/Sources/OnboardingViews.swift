@@ -36,9 +36,11 @@ struct OnboardingView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if model.step != .learned {
-                        Text("Step \(model.step.rawValue + 1) of \(Step.questions.count)")
+                        // D118: every question counted, so "Step 4 of 5" no longer hides six places inside it
+                        Text("\(model.questionNumber) of \(model.questionTotal)")
                             .font(.footnote.monospacedDigit())
                             .foregroundStyle(Theme.inkSoft)
+                            .accessibilityLabel("Question \(model.questionNumber) of \(model.questionTotal)")
                     }
                 }
             }
@@ -235,6 +237,7 @@ struct CategoryStep: View {
         model.react(card.reactions, want == "yes" ? "want_yes" : reaction)   // D117
         askingWant = false
         index += 1
+        model.stepProgress = index
     }
 }
 
@@ -285,7 +288,8 @@ struct LearnedStep: View {
         let items = learned?.items ?? []
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                ClipTile(name: "thanks", label: "Video: Abram says thank you. Tap to play.") {
+                // D118: a small "note from Abram"; the person's own answers are what this screen is for
+                ClipTile(name: "thanks", label: "A note from Abram, a short video. Tap to play.", small: true) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(learned?.title ?? "So far, I've learned…")
                             .font(Theme.title2)
@@ -369,30 +373,34 @@ struct LearnedRow: View {
 
     var body: some View {
         if changing {
-            Button(action: toggle) {
+            // D118: one clear button per line ("Not right" / "Undo"); a marked line is greyed and says what happens
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: wrong ? "xmark.circle.fill" : "circle")
-                        .foregroundStyle(wrong ? Theme.danger : Theme.inkSoft)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(item.text)
-                            .strikethrough(wrong)
-                            .foregroundStyle(Theme.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if wrong {
-                            Text("Not right").font(.footnote).foregroundStyle(Theme.danger)
-                        }
-                    }
+                    Text(item.text)
+                        .strikethrough(wrong)
+                        .foregroundStyle(wrong ? Theme.inkSoft : Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
+                    Button(action: toggle) {
+                        Text(wrong ? "Undo" : "Not right")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(minWidth: 84, minHeight: 36)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(wrong ? Theme.accent : Theme.danger)
+                    .accessibilityLabel(wrong ? "Undo: keep using this" : "Not right: stop using this")
                 }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(wrong ? Theme.danger : Theme.outline, lineWidth: 1))
+                if wrong {
+                    Text("We'll stop using this answer.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.inkSoft)
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(item.text)
-            .accessibilityValue(wrong ? "Marked not right" : "")
-            .accessibilityHint("Double-tap to mark it as not right, or to undo")
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(wrong ? Theme.danger : Theme.outline, lineWidth: 1))
+            .accessibilityElement(children: .contain)
         } else {
             Label {
                 Text(item.text).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
@@ -486,18 +494,26 @@ struct BestHourStep: View {
                     dictation.stop()
                     Task { await model.finishBestHour() }
                 }
-                Button("Skip this question") {
-                    dictation.stop()
-                    model.bestHour = ""
-                    model.bestHourMore = ""
-                    model.bestHourVoice = false
-                    Task { await model.finishBestHour() }
-                }
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .disabled(model.busy)
+                Button("Skip this question") { skip() }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .disabled(model.busy)
             }
             .padding(20)
         }
+        .toolbar {
+            // D118: Skip where it's always visible, not only below the fold
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Skip") { skip() }.disabled(model.busy)
+            }
+        }
+    }
+
+    private func skip() {
+        dictation.stop()
+        model.bestHour = ""
+        model.bestHourMore = ""
+        model.bestHourVoice = false
+        Task { await model.finishBestHour() }
     }
 }
 
@@ -567,7 +583,7 @@ struct WhyStep: View {
         let choices = model.onboarding?.whyTravel
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text(choices?.prompt ?? "How do you most want to feel on a day out? Pick up to two, or none.")
+                Text(choices?.prompt ?? "How do you most want to feel on a day out? Pick one or two.")
                     .font(Theme.title3)
                     .foregroundStyle(Theme.ink)
                 ForEach(choices?.options ?? [], id: \.self) { key in
@@ -583,7 +599,7 @@ struct WhyStep: View {
                                 }
                             }
                             Spacer()
-                            Image(systemName: on ? "checkmark.circle.fill" : "circle")
+                            Image(systemName: on ? "checkmark.square.fill" : "square")   // D118: squares = pick several
                         }
                         .padding(.vertical, 6)
                         .foregroundStyle(on ? Theme.onAccent : Theme.ink)
@@ -598,8 +614,15 @@ struct WhyStep: View {
                 // D117: what we take from it, in their own words
                 ReactionLine(text: model.why.isEmpty ? nil
                              : "Got it: you want to feel " + model.why.map { $0 }.joined(separator: " and ") + ".")
-                PrimaryButton(title: model.why.isEmpty ? "None of these" : "Next") { model.next() }
+                PrimaryButton(title: "Next", disabled: model.why.isEmpty) { model.next() }
                     .padding(.top, 8)
+                // D118: opting out is a quiet link, not the loudest button on the screen
+                Button("None of these") {
+                    model.why = []
+                    model.next()
+                }
+                .font(.subheadline)
+                .frame(maxWidth: .infinity, minHeight: 44)
             }
             .padding(20)
         }
@@ -672,6 +695,7 @@ struct PlacesStep: View {
         model.reactions[place.item] = reaction
         model.react(place.reactions, reaction)   // D117: loved / didn't enjoy say something; the rest don't
         index += 1
+        model.stepProgress = index
     }
 }
 
@@ -729,6 +753,7 @@ struct ThisOrThatStep: View {
         model.choices[task.task] = choice    // "N": no preference (D110), left out of the fit
         model.reactToChoices(tasks)
         index += 1
+        model.stepProgress = index
     }
 }
 
@@ -846,7 +871,7 @@ struct ImproveView: View {
 
     private var invitation: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Want us to learn you better?")
+            Text("Make your next day even better?")   // D118: was "Want us to learn you better?"
                 .font(Theme.title)
                 .foregroundStyle(Theme.ink)
             Text("About 30 seconds. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.")

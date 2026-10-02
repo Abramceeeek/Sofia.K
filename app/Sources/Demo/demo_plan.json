@@ -46,7 +46,7 @@
    "key": "m_garden_at_120",
    "title": "The Garden at 120: a rooftop garden among the City towers",
    "arrive": "13:33",
-   "depart": "14:08",
+   "depart": "14:23",
    "travel_min": 26,
    "travel_mode": "transit",
    "travel_text": "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
@@ -61,7 +61,7 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 45,
+   "worth_gbp": 32,
    "approach_steps": [
     {
      "label": "From",
@@ -90,17 +90,17 @@
     {
      "feature": "movement_views",
      "label": "movement and views",
-     "contribution": 0.452
+     "contribution": 0.451
     },
     {
      "feature": "local_novel",
      "label": "local, new-to-you places",
-     "contribution": -0.261
+     "contribution": -0.263
     },
     {
      "feature": "contrast_reveal",
      "label": "reveals and contrast",
-     "contribution": 0.2
+     "contribution": 0.199
     }
    ],
    "lines": [
@@ -168,8 +168,8 @@
    "moment_id": "m_st_dunstan_garden",
    "key": "m_st_dunstan_garden",
    "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
-   "arrive": "14:19",
-   "depart": "14:44",
+   "arrive": "14:34",
+   "depart": "15:19",
    "travel_min": 6,
    "travel_mode": "walk",
    "travel_text": "Getting there: about 6 min on foot from The Garden at 120.",
@@ -184,7 +184,7 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 40,
+   "worth_gbp": 28,
    "approach_steps": [
     {
      "label": "From",
@@ -213,7 +213,7 @@
     {
      "feature": "local_novel",
      "label": "local, new-to-you places",
-     "contribution": -0.261
+     "contribution": -0.263
     },
     {
      "feature": "aspiration_match",
@@ -223,7 +223,7 @@
     {
      "feature": "contrast_reveal",
      "label": "reveals and contrast",
-     "contribution": 0.2
+     "contribution": 0.199
     }
    ],
    "lines": [
@@ -286,8 +286,8 @@
    "moment_id": "m_greenwich_wolfe_view",
    "key": "m_greenwich_wolfe_view",
    "title": "The whole of London from General Wolfe's hill, Greenwich Park",
-   "arrive": "15:35",
-   "depart": "16:25",
+   "arrive": "16:10",
+   "depart": "17:00",
    "travel_min": 41,
    "travel_mode": "transit",
    "travel_text": "Getting there: about 41 min: walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
@@ -302,7 +302,7 @@
    "lunch": false,
    "familiar": true,
    "rateable": true,
-   "worth_gbp": 37,
+   "worth_gbp": 27,
    "approach_steps": [
     {
      "label": "From",
@@ -328,19 +328,19 @@
    ],
    "why": [
     {
-     "feature": "transfer_30_plus",
-     "label": "transfers over 30 min",
-     "contribution": -0.571
-    },
-    {
      "feature": "movement_views",
      "label": "movement and views",
-     "contribution": 0.452
+     "contribution": 0.451
     },
     {
      "feature": "crowds",
      "label": "crowds",
-     "contribution": -0.429
+     "contribution": -0.404
+    },
+    {
+     "feature": "transfer_30_plus",
+     "label": "transfers over 30 min",
+     "contribution": -0.353
     }
    ],
    "lines": [
@@ -407,10 +407,10 @@
    ]
   }
  ],
- "value": 5.31,
+ "value": 3.126,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-10-01T15:41:48.363039+00:00",
+ "created_at": "2026-10-02T12:14:20.522447+00:00",
  "title": "Saturday 31 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
@@ -422,12 +422,12 @@
   "transport_gbp": 6.0,
   "walk_min": 18,
   "walk_km": 1.4,
-  "finish": "16:25"
+  "finish": "17:00"
  },
- "pace": "even",
+ "pace": "relaxed",
  "solver_status": "ok",
  "blind": false,
- "feel_line": "Lunch to start, one big reveal, some history, then a big view",
+ "feel_line": "A curious, peaceful day: lunch to start, one big reveal, some history, then a big view",
  "basis": {
   "places": 3,
   "choices": 5,

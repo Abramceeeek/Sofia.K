@@ -20,7 +20,7 @@ based:   # D116: the first question. "abroad" gets the category cards instead of
   city_prompt: "Which town or city? (optional)"
   note: "So we ask the right questions. We never ask your nationality."
 why_travel:   # D115: feelings, each mapped onto existing features in brain/reasons.py (FEELINGS) and used in the fit
-  prompt: "How do you most want to feel on a day out? Pick up to two, or none."
+  prompt: "How do you most want to feel on a day out? Pick one or two."   # D118: "None of these" is a link below
   options: [restored, excited, connected, curious, peaceful]
 swipe:
   prompt: "Have you been? How did it feel?"

@@ -9,6 +9,7 @@ struct SafetyView: View {
     @Environment(\.openURL) private var openURL
     @State private var confirming: Bool
     @State private var message = ""
+    @State private var contact = ""
     @State private var reply: String?
 
     init(confirming: Bool = false) {
@@ -21,13 +22,23 @@ struct SafetyView: View {
                 if let reply {
                     Section { Text(reply) }
                     emergency
+                    threads
                 } else if confirming {
                     Section {
-                        Text("Tell a person on our team what's happening. They'll reply within a few hours.")
+                        Text("Tell a person what's happening: Abram, or whoever is covering for him. They'll reply within a few hours, here in Help & safety.")
                         TextField("What's happening? (optional)", text: $message, axis: .vertical)
                             .lineLimit(3...6)
+                        // D118: so a reply can reach you even if you don't open the app again
+                        TextField("Phone or email, so we can reply (optional)", text: $contact)
+                            .textContentType(.telephoneNumber)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                        Text("Used only to reply to this message, and deleted once it's sorted (after 30 days at the latest).")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkSoft)
                         PrimaryButton(title: model.busy ? "Sending…" : "Tell a person", disabled: model.busy) {
-                            Task { reply = await model.sendSafety(message) }
+                            let c = contact.trimmingCharacters(in: .whitespacesAndNewlines)
+                            Task { reply = await model.sendSafety(message, contact: c.isEmpty ? nil : String(c.prefix(120))) }
                         }
                     } header: {
                         Text("Something's wrong")
@@ -35,8 +46,9 @@ struct SafetyView: View {
                     emergency
                 } else {
                     emergency
+                    threads
                     Section {
-                        Text("You feel unsafe, or something has gone wrong on your day out, and it isn't an emergency. A person on our team replies within a few hours.")
+                        Text("You feel unsafe, or something has gone wrong on your day out, and it isn't an emergency. A person (Abram, or whoever is covering for him) replies within a few hours, here in Help & safety.")
                         Button {
                             confirming = true
                         } label: {
@@ -59,6 +71,39 @@ struct SafetyView: View {
             .serifTitle("Help & safety")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
+            }
+            .task {
+                await model.loadSafety()
+                model.markSafetySeen()
+            }
+        }
+    }
+
+    /// D118: what the person sent, and each reply, newest first.
+    @ViewBuilder private var threads: some View {
+        if !model.safetyThreads.isEmpty {
+            Section("Your messages") {
+                ForEach(model.safetyThreads) { t in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(t.message.isEmpty ? "(No message, just a call for help)" : t.message)
+                            .foregroundStyle(Theme.ink)
+                        if t.replies.isEmpty {
+                            Text("No reply yet. A person replies within a few hours. In an emergency, call 999.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.inkSoft)
+                        }
+                        ForEach(t.replies, id: \.self) { r in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Reply").font(.footnote.weight(.semibold)).foregroundStyle(Theme.accent)
+                                Text(r.text).foregroundStyle(Theme.ink)
+                            }
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Theme.surfaceHigh, in: RoundedRectangle(cornerRadius: 10))
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
             }
         }
     }
@@ -92,7 +137,17 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("What we store") {
-                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", your plans and your ratings. No name, email or phone number: the app knows this phone only by a random code.")
+                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", your plans and your ratings, and anything you send in Help & safety. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                }
+                Section {
+                    // D118: rating reminders can be turned off (or on) here, any time
+                    Toggle("Rating reminders after each stop", isOn: Binding(
+                        get: { model.remindersOn },
+                        set: { on in Task { if on { await model.answerReminders(true) } else { await model.turnRemindersOff() } } }))
+                } header: {
+                    Text("Reminders")
+                } footer: {
+                    Text("Set on your phone for the day of your plan. Nothing is sent.")
                 }
                 Section("Where, and for how long") {
                     Text("On our server in Frankfurt, in the EU, until 31 March 2027.")
@@ -225,6 +280,7 @@ struct DemoScreen: View {
         case "improveq": ImproveView(startAt: 0)                                // 12b (D115)
         case "safety": SafetyView()                                             // 13a
         case "safetysend": SafetyView(confirming: true)                         // 13b
+        case "safetyreply": SafetyView()                                        // 13c: a reply has come (D118)
         case "settings": SettingsView()                                         // 14a
         case "delete": DeleteConfirmView()                                      // 14b
         default: HomeView()                                                     // 9a ("plan")

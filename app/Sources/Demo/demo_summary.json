@@ -5,28 +5,28 @@
  "change_note": "Tap anything that isn't right. We'll stop using that answer.",
  "items": [
   {
-   "id": "feeling:restored",
-   "text": "You want to feel restored on a day out."
-  },
-  {
    "id": "feeling:curious",
    "text": "You want to feel curious on a day out."
   },
   {
-   "id": "place:14",
-   "text": "You loved Brick Lane for food: local food with a bit of history."
+   "id": "feeling:peaceful",
+   "text": "You want to feel peaceful on a day out."
   },
   {
-   "id": "place:13",
-   "text": "You loved Primrose Hill at sunset: a hilltop sunset over the city."
+   "id": "place:2",
+   "text": "You loved Uber Boat on the Thames: seeing the city from the water."
+  },
+  {
+   "id": "place:11",
+   "text": "You loved the view from the top of Greenwich Park: a climb to a big view."
   },
   {
    "id": "choice:pace",
    "text": "In the example days, you chose the relaxed day with fewer stops every time."
   },
   {
-   "id": "place:6",
-   "text": "Hyde Park wasn't for you."
+   "id": "place:3",
+   "text": "Borough Market wasn't for you."
   }
  ]
 }

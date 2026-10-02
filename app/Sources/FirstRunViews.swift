@@ -162,7 +162,7 @@ struct ConsentView: View {
     private let summary = [
         ("person", "A research test run by Abram, one person in London. Nothing is sold."),
         ("list.bullet", "A few quick questions and some London places, then your day plan."),
-        ("lock", "We keep your answers to plan your days and to test the idea. No name, email or phone number."),
+        ("lock", "We keep your answers to plan your days and to test the idea. We don't ask for your name, email or phone number."),
         ("hand.raised", "Skip any question and stop any time. Settings → Delete my data removes everything."),
     ]
 
@@ -188,7 +188,7 @@ struct ConsentView: View {
                         InfoBlock(label: "Where, and for how long",
                                   text: "On our server in Frankfurt, in the EU. Kept until 31 March 2027, then deleted. Anonymised results may be kept.")
                         InfoBlock(label: "What we don't ask for",
-                                  text: "Your name, email, phone number, nationality, health details or allergies. Please don't enter them.")
+                                  text: "Your name, email, phone number, nationality, health details or allergies. Please don't enter them. The one exception is your choice: in Help & safety you can leave a phone or email so a person can reply, and it's deleted once it's sorted.")
                         Link("Full privacy notice", destination: AppConfig.baseURL.appendingPathComponent("privacy"))
                     }
                     .padding(.top, 10)

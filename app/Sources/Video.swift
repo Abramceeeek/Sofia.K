@@ -168,6 +168,7 @@ struct FounderVideoView: View {
 struct ClipTile<Content: View>: View {
     let name: String
     let label: String
+    var small = false              // D118: on "So far" the tile stays small, so the answers lead
     @ViewBuilder let content: Content
     @State private var clip: ClipPlayer?
 
@@ -175,9 +176,15 @@ struct ClipTile<Content: View>: View {
         if BundledVideo.exists(name) || AppConfig.demo {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 14) {
-                    tile
-                        .frame(width: 104, height: 185)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    VStack(spacing: 4) {
+                        tile
+                            .frame(width: small ? 56 : 104, height: small ? 100 : 185)
+                            .clipShape(RoundedRectangle(cornerRadius: small ? 10 : 14))
+                        if small {
+                            Text("A note from Abram").font(.caption2).foregroundStyle(Theme.inkSoft)
+                                .multilineTextAlignment(.center).frame(width: 64)
+                        }
+                    }
                     content
                 }
                 if let c = clip?.caption {
@@ -218,7 +225,7 @@ struct ClipTile<Content: View>: View {
             .accessibilityAddTraits(.startsMediaSession)
             .accessibilityAction { clip.toggle() }
         } else {
-            VideoPlaceholder(title: "Abram", note: "Clip to come")
+            VideoPlaceholder(title: small ? "" : "Abram", note: small ? "" : "Clip to come")
         }
     }
 }
