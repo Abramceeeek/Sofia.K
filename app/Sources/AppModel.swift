@@ -82,6 +82,8 @@ final class AppModel {
     var safetyThreads: [SafetyThread] = [] // D118: Help & safety messages and the replies to them
     var remindersOn = UserDefaults.standard.bool(forKey: "remindersOn")
     var reminderAsked = UserDefaults.standard.bool(forKey: "reminderAsked")
+    var showNow = false                    // D119: "Now", the quiet screen while you're out
+    var nowIndex = 0                       // which stop of the plan "Now" is on (kept per plan)
 
     /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
     var isVisitor: Bool { profile.based == "abroad" }
@@ -228,6 +230,10 @@ final class AppModel {
         let before = Step.questions.prefix { $0 != step }.reduce(0) { $0 + questions(in: $1) }
         return min(before + min(stepProgress, max(questions(in: step) - 1, 0)) + 1, max(questionTotal, 1))
     }
+
+    /// D119: the eyebrow on each question, and how far through the questions before the first plan
+    var questionLabel: String { "Question \(questionNumber) of \(questionTotal)" }
+    var questionProgress: Double { Double(questionNumber - 1) / Double(max(questionTotal, 1)) }
 
     func next() {
         reaction = nil
@@ -497,7 +503,26 @@ final class AppModel {
     func openStop(_ momentId: String) {
         guard let stop = plan?.stops.first(where: { $0.momentId == momentId }) else { return }
         route = .home
+        showNow = false
         path = [stop]
+    }
+
+    // ---- D119: "Now", during the day --------------------------------------------------------------------------
+
+    /// "Start the day": the first stop not yet rated, or where they were last time for this plan.
+    func startDay() {
+        guard let plan else { return }
+        let saved = UserDefaults.standard.object(forKey: "nowIndex.\(plan.id)") as? Int
+        nowIndex = saved ?? (plan.stops.firstIndex { !rated.contains($0.momentId) } ?? 0)
+        showNow = true
+        Task { await client.event("start_day", ["stop": "\(nowIndex)"]) }
+    }
+
+    /// "I'm done here", or "On to the next stop" after rating.
+    func advanceNow() {
+        guard let plan else { return }
+        nowIndex = min(nowIndex + 1, plan.stops.count)
+        UserDefaults.standard.set(nowIndex, forKey: "nowIndex.\(plan.id)")
     }
 
     // ---- D118: Help & safety replies ------------------------------------------------------------------------
@@ -589,6 +614,7 @@ final class AppModel {
             self.reminderAsked = false
             self.safetyThreads = []
             self.path = []
+            self.showNow = false
             self.step = .based
             self.route = .welcome
         }

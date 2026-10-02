@@ -36,21 +36,23 @@ struct RootView: View {
 /// The free server sleeps when nobody has used it for 15 minutes (D109).
 struct WakingBanner: View {
     var body: some View {
-        HStack(spacing: 8) {
-            ProgressView()
+        HStack(spacing: 10) {
+            ProgressView().tint(Theme.accent)
             Text("Waking up the planner. This can take up to a minute.")
                 .font(.footnote)
+                .foregroundStyle(Theme.ink)
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(.regularMaterial, in: Capsule())
+        .background(Theme.surface, in: Capsule())
+        .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
         .padding(.top, 8)
         .accessibilityElement(children: .combine)
     }
 }
 
-/// A 1–5 scale as five large, equal buttons. With `labels`, each number carries a word (the rating: Flat …
-/// Unforgettable, D112); without, the two ends are labelled underneath. Text never goes below footnote size.
+/// A 1–5 scale as five equal tiles. With `labels`, each number carries a word (the rating's words, D112); without,
+/// the two ends are labelled underneath. Text never goes below footnote size.
 struct ScaleRow: View {
     let low: String
     let high: String
@@ -60,50 +62,25 @@ struct ScaleRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let labels, labels.count == 5 {
-                // Worded scale: one full-width row per step, so the words never shrink
                 ForEach(1...5, id: \.self) { n in
-                    let on = value == n
-                    Button {
-                        value = n
-                    } label: {
-                        HStack(spacing: 14) {
-                            Text("\(n)")
-                                .font(Theme.title3)
-                                .frame(width: 28)
-                            Text(labels[n - 1])
-                                .font(.body)
-                            Spacer()
-                            if on { Image(systemName: "checkmark") }
-                        }
-                        .foregroundStyle(on ? Theme.onAccent : Theme.ink)
-                        .padding(.horizontal, 16)
-                        .frame(maxWidth: .infinity, minHeight: 52)
-                        .background(on ? Theme.accentFill : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12)
-                            .stroke(on ? Theme.accentFill : Theme.outline, lineWidth: 1))
+                    SelectTile(on: value == n, radius: 16, minHeight: 52, action: { value = n }) {
+                        Text(labels[n - 1])
+                            .font(Theme.option)
+                            .foregroundStyle(Theme.ink)
+                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderless)
                     .accessibilityLabel("\(n) of 5, \(labels[n - 1])")
-                    .accessibilityAddTraits(on ? .isSelected : [])
                 }
             } else {
                 HStack(spacing: 8) {
                     ForEach(1...5, id: \.self) { n in
-                        let on = value == n
-                        Button {
-                            value = n
-                        } label: {
+                        SelectTile(on: value == n, radius: 16, minHeight: 56, action: { value = n }) {
                             Text("\(n)")
                                 .font(Theme.title3)
-                                .frame(maxWidth: .infinity, minHeight: 56)
-                                .foregroundStyle(on ? Theme.onAccent : Theme.ink)
-                                .background(on ? Theme.accentFill : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-                                .overlay(RoundedRectangle(cornerRadius: 12)
-                                    .stroke(on ? Theme.accentFill : Theme.outline, lineWidth: 1))
+                                .foregroundStyle(Theme.ink)
+                                .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.borderless)
                         .accessibilityLabel("\(n) of 5")
-                        .accessibilityAddTraits(on ? .isSelected : [])
                     }
                 }
                 HStack {
@@ -112,28 +89,9 @@ struct ScaleRow: View {
                     Text("5 = \(high)")
                 }
                 .font(.footnote)
-                .foregroundStyle(Theme.inkSoft)
+                .foregroundStyle(Theme.muted)
             }
         }
-    }
-}
-
-/// The main action at the bottom of a screen: amber, with dark text in both modes.
-struct PrimaryButton: View {
-    let title: String
-    var disabled = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(disabled ? Theme.inkSoft : Theme.onAccent)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(disabled ? Theme.surfaceHigh : Theme.accentFill, in: RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-        .disabled(disabled)
     }
 }
 
@@ -146,12 +104,39 @@ struct InfoBlock: View {
         if !text.isEmpty {
             VStack(alignment: .leading, spacing: 4) {
                 Text(label)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.inkSoft)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.muted)
                 Text(text)
                     .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+}
+
+/// Rows of label and text on one card, divided by hairlines (the moment card's "Best time and light", "Cost" …).
+struct DetailRows: View {
+    let rows: [(String, String)]
+
+    var body: some View {
+        let shown = rows.filter { !$0.1.isEmpty }
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(shown.indices, id: \.self) { i in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(shown[i].0).font(.subheadline).foregroundStyle(Theme.muted)
+                    Text(shown[i].1)
+                        .foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if i < shown.count - 1 {
+                    Rectangle().fill(Theme.hairline).frame(height: 1)
+                }
+            }
+        }
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
     }
 }

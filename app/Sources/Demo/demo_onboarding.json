@@ -219,7 +219,10 @@
    "reactions": {
     "loved": "Got it: big museums full of history.",
     "didnt_enjoy": "Noted: not so much big museums full of history."
-   }
+   },
+   "photo_ids": [
+    "m_bm_great_court"
+   ]
   },
   {
    "item": 6,
@@ -227,7 +230,10 @@
    "reactions": {
     "loved": "Got it: big green spaces and long walks.",
     "didnt_enjoy": "Noted: not so much big green spaces and long walks."
-   }
+   },
+   "photo_ids": [
+    "m_park_break_hyde"
+   ]
   },
   {
    "item": 11,
@@ -235,7 +241,10 @@
    "reactions": {
     "loved": "Got it: a climb to a big view.",
     "didnt_enjoy": "Noted: not so much a climb to a big view."
-   }
+   },
+   "photo_ids": [
+    "m_greenwich_wolfe_view"
+   ]
   },
   {
    "item": 12,
@@ -243,7 +252,11 @@
    "reactions": {
     "loved": "Got it: a grand building coming into view.",
     "didnt_enjoy": "Noted: not so much a grand building coming into view."
-   }
+   },
+   "photo_ids": [
+    "m_nhm_whale_hall",
+    "m_southken_nhm_reveal"
+   ]
   },
   {
    "item": 13,
@@ -251,7 +264,8 @@
    "reactions": {
     "loved": "Got it: a hilltop sunset over the city.",
     "didnt_enjoy": "Noted: not so much a hilltop sunset over the city."
-   }
+   },
+   "photo_ids": []
   },
   {
    "item": 14,
@@ -259,7 +273,10 @@
    "reactions": {
     "loved": "Got it: local food with a bit of history.",
     "didnt_enjoy": "Noted: not so much local food with a bit of history."
-   }
+   },
+   "photo_ids": [
+    "m_beigel_bake_late"
+   ]
   }
  ],
  "swipe_places_later": [
@@ -269,7 +286,8 @@
    "reactions": {
     "loved": "Got it: the big famous sights.",
     "didnt_enjoy": "Noted: not so much the big famous sights."
-   }
+   },
+   "photo_ids": []
   },
   {
    "item": 2,
@@ -277,7 +295,11 @@
    "reactions": {
     "loved": "Got it: seeing the city from the water.",
     "didnt_enjoy": "Noted: not so much seeing the city from the water."
-   }
+   },
+   "photo_ids": [
+    "m_uber_boat_west_day",
+    "m_uber_boat_west_night"
+   ]
   },
   {
    "item": 3,
@@ -285,7 +307,10 @@
    "reactions": {
     "loved": "Got it: food with a bit of atmosphere.",
     "didnt_enjoy": "Noted: not so much food with a bit of atmosphere."
-   }
+   },
+   "photo_ids": [
+    "m_borough_market_graze"
+   ]
   },
   {
    "item": 15,
@@ -293,7 +318,8 @@
    "reactions": {
     "loved": "Got it: a cold outdoor swim.",
     "didnt_enjoy": "Noted: not so much a cold outdoor swim."
-   }
+   },
+   "photo_ids": []
   }
  ],
  "conjoint_tasks": [

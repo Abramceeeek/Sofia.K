@@ -31,11 +31,11 @@ final class Dictation {
             SFSpeechRecognizer.requestAuthorization { c.resume(returning: $0) }
         }
         guard status == .authorized else {
-            problem = "To speak your answer, allow speech recognition for Days out in Settings. Or just type."
+            problem = "To speak your answer, allow speech recognition for ODYS in Settings. Or just type."
             return
         }
         guard await AVAudioApplication.requestRecordPermission() else {
-            problem = "To speak your answer, allow the microphone for Days out in Settings. Or just type."
+            problem = "To speak your answer, allow the microphone for ODYS in Settings. Or just type."
             return
         }
         do {

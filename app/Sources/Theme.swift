@@ -1,44 +1,68 @@
 import SwiftUI
 import UIKit
 
-/// "Sensory Cartography" (D112, from Abram's Stitch explorations): charcoal surfaces, one amber accent and
-/// Newsreader serif titles, applied as a theme on standard SwiftUI parts. Colours and fonts only: no custom
-/// controls. Light mode uses warm paper with a deeper amber, so text keeps its contrast.
+/// ODYS (D119, from Abram's design files): warm ink on charcoal, one amber light, Newsreader serif for what matters
+/// and the system font for the rest. Dark always (`.preferredColorScheme(.dark)` at the root), so every colour here is
+/// fixed. The older token names (surface, inkSoft, accentFill …) are kept, so every screen picks up the new look.
 enum Theme {
-    // ---- colours (dark / light) -------------------------------------------------------------
-    static let uiBackground = dynamic(dark: 0x111317, light: 0xFAF7F0)
-    static let uiSurface = dynamic(dark: 0x1E2023, light: 0xFFFFFF)
-    static let uiInk = dynamic(dark: 0xE2E2E6, light: 0x1C1B18)
+    // ---- colours ---------------------------------------------------------------------------------
+    static let uiBackground = UIColor(hex: 0x111317)
+    static let uiInk = UIColor(hex: 0xF4EBDD)
 
-    static let background = Color(uiColor: uiBackground)
-    static let surface = Color(uiColor: uiSurface)
-    static let surfaceHigh = Color(uiColor: dynamic(dark: 0x282A2D, light: 0xF1ECE2))
-    static let ink = Color(uiColor: uiInk)
-    static let inkSoft = Color(uiColor: dynamic(dark: 0xD4C4B0, light: 0x5E5446))
-    static let outline = Color(uiColor: dynamic(dark: 0x504535, light: 0xD8CDBA))
-    /// Amber for text, icons and the tint: bright on charcoal, deep on paper.
-    static let accent = Color(uiColor: dynamic(dark: 0xFFC665, light: 0x7E5700))
-    /// Amber fills (the main button, chips, map pins), with `onAccent` text in both modes.
-    static let accentFill = Color(uiColor: UIColor(hex: 0xFFC665))
-    static let onAccent = Color(uiColor: UIColor(hex: 0x432C00))
-    static let danger = Color(uiColor: UIColor(hex: 0xC62828))   // "Call 999": one red, white text in both modes
-    /// D117: the app icon's teal, for the logo ring; lighter on charcoal so it keeps its contrast.
-    static let brand = Color(uiColor: dynamic(dark: 0x5DBFA9, light: 0x0F6B5A))
+    static let background = Color(hex: 0x111317)     // the phone
+    static let calm = Color(hex: 0x0B0C0E)           // "Now": the screen gets quieter while you're out
+    static let surface = Color(hex: 0x1A1D23)        // cards and tiles
+    static let deep = Color(hex: 0x15171C)           // the day's curve and the map
+    static let surfaceHigh = Color(hex: 0x2A2E36)    // a chosen tab, a field
+    static let selected = Color(hex: 0x241F17)       // a chosen tile: a little warmth
+    static let ink = Color(hex: 0xF4EBDD)
+    static let inkSoft = Color(hex: 0xCFC6B8)
+    static let inkTertiary = Color(hex: 0xB5AB9C)
+    static let muted = Color(hex: 0xA89F92)          // labels; 7:1 on the background
+    static let line = Color(hex: 0x2C2F36)           // the arch's frame, the path not yet walked
+    static let outline = Color(hex: 0xF4EBDD).opacity(0.12)
+    static let outlineStrong = Color(hex: 0xF4EBDD).opacity(0.18)
+    static let hairline = Color(hex: 0xF4EBDD).opacity(0.07)
+    /// The one light: amber for text, icons, fills and the tint.
+    static let accent = Color(hex: 0xFFC665)
+    static let accentFill = accent
+    static let amberDeep = Color(hex: 0xE5A93C)      // eyebrows, a pressed button
+    static let amberLight = Color(hex: 0xFFE7B0)     // the top of the arch's light
+    static let onAccent = Color(hex: 0x111317)
+    // Help & safety: one red, only for emergencies
+    static let danger = Color(hex: 0xE5484D)         // "Call 999"
+    static let emergencyBg = Color(hex: 0x3A1416)
+    static let emergencyBorder = Color(hex: 0x7A2A2E)
+    static let emergencyTitle = Color(hex: 0xFFDCDC)
+    static let emergencyText = Color(hex: 0xF6D2D2)
+    // The share card is cream, so it reads the same wherever it's sent
+    static let cream = Color(hex: 0xF4EBDD)
+    static let creamInk = Color(hex: 0x111317)
+    static let creamSoft = Color(hex: 0x6B5E4C)
+    static let creamQuote = Color(hex: 0x3A3128)
 
-    // ---- type: serif titles, system text; everything scales with Dynamic Type ----------------
-    static let serifName = "Newsreader16pt-Regular"   // the font's default instance (Sources/Fonts)
+    // ---- type: serif for titles, answers and reactions; system for the rest. All scale with Dynamic Type --------
+    static let serifName = "Newsreader16pt-Regular"   // the variable font's default instance (Sources/Fonts)
+    static let italicName = "Newsreader16pt-Italic"   // D119: reactions, feel words, quotes
 
     static func serif(_ size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
         .custom(serifName, size: size, relativeTo: style)
     }
 
-    static let display = serif(34, relativeTo: .largeTitle)
-    static let title = serif(28, relativeTo: .title)
-    static let title2 = serif(23, relativeTo: .title2)
-    static let title3 = serif(20, relativeTo: .title3)
+    static func italic(_ size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
+        .custom(italicName, size: size, relativeTo: style)
+    }
 
-    /// Navigation bars on the page colour. Called once at launch. Titles are set per screen with `serifTitle` (m150):
-    /// in CI on iOS 26, bar titles styled here came out blank or in the system font.
+    static let hero = serif(44, relativeTo: .largeTitle)      // "Now"
+    static let display = serif(40, relativeTo: .largeTitle)   // Welcome
+    static let h1 = serif(34, relativeTo: .largeTitle)        // each screen's title
+    static let title = serif(28, relativeTo: .title)
+    static let title2 = serif(24, relativeTo: .title2)
+    static let title3 = serif(21, relativeTo: .title3)
+    static let option = serif(22, relativeTo: .title3)        // an answer on a tile
+    static let reaction = italic(20, relativeTo: .title3)     // "Got it: …", in amber
+
+    /// Navigation bars on the page colour, for the few screens that keep one (sheets, the moment card).
     static func applyAppearance() {
         let bar = UINavigationBarAppearance()
         bar.configureWithOpaqueBackground()
@@ -50,10 +74,6 @@ enum Theme {
         UINavigationBar.appearance().scrollEdgeAppearance = bar
         UINavigationBar.appearance().compactAppearance = bar
     }
-
-    private static func dynamic(dark: UInt32, light: UInt32) -> UIColor {
-        UIColor { $0.userInterfaceStyle == .dark ? UIColor(hex: dark) : UIColor(hex: light) }
-    }
 }
 
 extension UIColor {
@@ -63,22 +83,30 @@ extension UIColor {
     }
 }
 
-/// A big serif title at the top of a page's content (screens 2 and 3), in place of a large navigation title.
+extension Color {
+    init(hex: UInt32) {
+        self.init(uiColor: UIColor(hex: hex))
+    }
+}
+
+/// A screen's title in the serif, at the top of its content (the ODYS screens have no navigation-bar titles).
 struct PageTitle: View {
     let text: String
+    var font: Font = Theme.h1
 
     var body: some View {
         Text(text)
-            .font(Theme.display)
+            .font(font)
             .foregroundStyle(Theme.ink)
+            .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 extension View {
-    /// The screen's title, inline in the navigation bar and in the serif (m150). `navigationTitle` is still set, for
-    /// VoiceOver and the back button.
+    /// The screen's title, inline in the navigation bar and in the serif (m150), for sheets that keep a bar.
+    /// `navigationTitle` is still set, for VoiceOver and the back button.
     func serifTitle(_ title: String) -> some View {
         navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -93,16 +121,15 @@ extension View {
             }
     }
 
-    /// Lists and forms on the page colour instead of the system grey.
+    /// Lists and forms on the page colour instead of the system grey, with the rows on the card colour.
     func themedList() -> some View {
         scrollContentBackground(.hidden).background(Theme.background)
     }
 
-    /// A rounded surface card, used for the plan summary, the approach line and the example shot card.
-    func surfaceCard(padding: CGFloat = 16) -> some View {
+    /// A rounded card on the surface colour.
+    func surfaceCard(padding: CGFloat = 16, radius: CGFloat = 18) -> some View {
         self.padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.outline, lineWidth: 1))
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: radius))
     }
 }

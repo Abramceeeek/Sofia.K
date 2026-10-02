@@ -22,14 +22,15 @@ targets:
     info:
       path: Info.plist                  # generated; git-ignored
       properties:
-        CFBundleDisplayName: Days out   # working name under the icon (Abram decides the real one)
+        CFBundleDisplayName: ODYS       # D119: the name under the icon (was "Days out")
+        UIUserInterfaceStyle: Dark      # D119: dark always, system sheets included
         BrainBaseURL: https://moments-brain.onrender.com   # the Brain on Render (render.yaml); confirm after deploy
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false   # no custom encryption, so no export-compliance question per build
-        UIAppFonts: [Newsreader.ttf]           # D112: serif titles (SIL Open Font License 1.1, Sources/Fonts)
+        UIAppFonts: [Newsreader.ttf, NewsreaderItalic.ttf]   # D112, D119: serif and italic (SIL Open Font License 1.1, Sources/Fonts)
         # D115: "Tell it instead" (screen 4): speech becomes text on the phone; the sound is never saved or sent
         NSMicrophoneUsageDescription: "Only when you tap Tell it instead: your phone turns what you say into text. The sound is never saved or sent."
         NSSpeechRecognitionUsageDescription: "Your phone turns what you say into text, on the phone itself. Only the text is sent, as if you'd typed it."

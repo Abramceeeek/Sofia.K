@@ -15,6 +15,7 @@ struct FaceApp: App {
             RootView()
                 .environment(model)
                 .tint(Theme.accent)
+                .preferredColorScheme(.dark)   // D119: ODYS is dark always
                 .onOpenURL { url in model.openLink(url) }   // D114: a share link, daysout://r/<code>
                 .onChange(of: scenePhase, initial: true) { _, phase in
                     // each time the app comes to the front, start waking the free server (it sleeps after 15 min)

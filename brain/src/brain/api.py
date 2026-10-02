@@ -218,7 +218,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         later = conj.get("later") or []
         by_task = {t["task"]: t for t in tasks}
         place = lambda n: {"item": n, "name": app.state.swipe_cards[n][0],
-                           "reactions": summary.place_reactions(app.state.swipe_phrases.get(n))}   # D117
+                           "reactions": summary.place_reactions(app.state.swipe_phrases.get(n)),   # D117
+                           # D119: the cards at the same place; the app shows the first one's photo it has
+                           "photo_ids": app.state.swipe_cards[n][1]}
         cats = app.state.categories
         kinds = [] if cats is None else [
             {"key": c.key, "title": c.title, "line": c.line, "example_id": c.example,

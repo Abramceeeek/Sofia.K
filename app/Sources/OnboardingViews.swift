@@ -2,9 +2,9 @@ import SwiftUI
 import MapKit
 
 /// Screens 3b–7: onboarding up to the first plan (Test A inside the app, D109). Each step is sent as it finishes.
-/// D112: a great moment, why, 6 places and 5 "this or that" tasks, then the plan. The other places and tasks
-/// are in "Improve future plans" (screen 12). D116: "Where are you based?" comes first, and visitors from abroad
-/// get the kinds-of-places cards (6b) instead of the London places.
+/// D112: a great moment, how you want to feel, 6 places and 5 "this or that" tasks, then the plan. D116: "Where are you
+/// based?" comes first, and visitors from abroad get the kinds-of-places cards (6b) instead of the London places.
+/// D119 (ODYS): no navigation bar; each question carries its own eyebrow ("Question 7 of 14", D118) and title.
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
 
@@ -23,8 +23,7 @@ struct OnboardingView: View {
                             PlacesStep(places: onboarding.swipePlaces) { await model.finishPlaces() }
                         }
                     case .thisOrThat:
-                        ThisOrThatStep(tasks: onboarding.conjointTasks, doneText: "That's everything. Next: what I've learned so far.",
-                                       doneButton: "Next") { await model.finishThisOrThat() }
+                        ThisOrThatStep(tasks: onboarding.conjointTasks) { await model.finishThisOrThat() }
                     case .learned: LearnedStep()   // D117
                     }
                 } else {
@@ -32,18 +31,8 @@ struct OnboardingView: View {
                 }
             }
             .background(Theme.background)
-            .serifTitle(model.stepTitle)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    if model.step != .learned {
-                        // D118: every question counted, so "Step 4 of 5" no longer hides six places inside it
-                        Text("\(model.questionNumber) of \(model.questionTotal)")
-                            .font(.footnote.monospacedDigit())
-                            .foregroundStyle(Theme.inkSoft)
-                            .accessibilityLabel("Question \(model.questionNumber) of \(model.questionTotal)")
-                    }
-                }
-            }
+            .navigationTitle(model.stepTitle)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 }
@@ -54,7 +43,8 @@ struct OnboardingLoading: View {
     @State private var failed = false
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 18) {
+            ArchGlyph(width: 28)
             if failed {
                 Text("The questions didn't load.")
                     .font(Theme.title3)
@@ -63,10 +53,11 @@ struct OnboardingLoading: View {
                     Task { await load() }
                 }
             } else {
-                ProgressView("Loading the questions…")
+                Text("Getting the questions…")
+                    .foregroundStyle(Theme.muted)
             }
         }
-        .padding(20)
+        .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task { await load() }
     }
@@ -78,46 +69,83 @@ struct OnboardingLoading: View {
     }
 }
 
-/// A progress bar with "4 of 6" under it. No timers anywhere (design brief).
-struct SectionProgress: View {
-    let done: Int
-    let total: Int
+/// The top of each question: "Question 7 of 14" (D118: every question counted) and a thin line of progress, with a
+/// quiet action on the right ("Skip", "Skip the rest"). No timers anywhere (design brief).
+struct StepHeader<Trailing: View>: View {
+    let label: String
+    let progress: Double
+    let trailing: Trailing
+
+    init(_ label: String, progress: Double, @ViewBuilder trailing: () -> Trailing) {
+        self.label = label
+        self.progress = progress
+        self.trailing = trailing()
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            ProgressView(value: Double(done), total: Double(max(total, 1)))
-                .tint(Theme.accent)
-            Text("\(min(done + 1, total)) of \(total)")
-                .font(.footnote.monospacedDigit())
-                .foregroundStyle(Theme.inkSoft)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Eyebrow(label)
+                Spacer(minLength: 8)
+                trailing
+            }
+            .frame(minHeight: 44)
+            ProgressLine(value: progress)
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(min(done + 1, total)) of \(total)")
     }
 }
 
-/// D117: a short reaction to the last answer ("Got it: food with a bit of atmosphere."), above the next question.
-/// Only from what the person answered; it fades in quietly (no movement with Reduce Motion) and VoiceOver reads it.
-struct ReactionLine: View {
-    let text: String?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+extension StepHeader where Trailing == EmptyView {
+    init(_ label: String, progress: Double) {
+        self.init(label, progress: progress) { EmptyView() }
+    }
+}
+
+struct ProgressLine: View {
+    let value: Double
 
     var body: some View {
-        ZStack(alignment: .leading) {
-            if let text {
-                Label(text, systemImage: "checkmark.circle")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.accent)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .transition(.opacity)
-                    .id(text)
+        GeometryReader { g in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.ink.opacity(0.1))
+                Capsule().fill(Theme.amberDeep).frame(width: g.size.width * min(max(value, 0), 1))
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 22, alignment: .leading)
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: text)
-        .onChange(of: text) { _, new in
-            if let new { UIAccessibility.post(notification: .announcement, argument: new) }
-        }
+        .frame(height: 4)
+        .animation(.easeOut(duration: 0.4), value: value)
+        .accessibilityHidden(true)
+    }
+}
+
+/// A typed answer: a dark box with a soft outline.
+struct AnswerBox: View {
+    @Binding var text: String
+    var minHeight: CGFloat = 110
+    let label: String
+
+    var body: some View {
+        TextEditor(text: $text)
+            .scrollContentBackground(.hidden)
+            .foregroundStyle(Theme.ink)
+            .frame(minHeight: minHeight)
+            .padding(10)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.outline, lineWidth: 1))
+            .accessibilityLabel(label)
+    }
+}
+
+/// A one-line typed answer.
+struct LineField: View {
+    let placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(Theme.muted))
+            .foregroundStyle(Theme.ink)
+            .padding(.horizontal, 16)
+            .frame(minHeight: 52)
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.outlineStrong, lineWidth: 1))
     }
 }
 
@@ -130,33 +158,51 @@ struct BasedStep: View {
     var body: some View {
         @Bindable var model = model
         let q = model.onboarding?.based
+        let abroad = model.profile.based == "abroad"
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                QuestionTitle(q?.prompt ?? "Where are you based?")
-                ForEach(labels, id: \.0) { option in
-                    ChoiceRow(label: option.1, on: model.profile.based == option.0) { model.profile.based = option.0 }
+                StepHeader(model.questionLabel, progress: model.questionProgress)
+                PageTitle(text: q?.prompt ?? "Where are you based?")
+                    .padding(.vertical, 6)
+                    .settle(0)
+                ForEach(labels.indices, id: \.self) { i in
+                    let option = labels[i]
+                    let on = model.profile.based == option.0
+                    SelectTile(on: on, action: { model.profile.based = option.0 }) {
+                        HStack {
+                            Text(option.1).foregroundStyle(Theme.ink)
+                            Spacer()
+                            RadioDot(on: on)
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .settle(i + 1)
                 }
-                Text(q?.cityPrompt ?? "Which town or city? (optional)")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.inkSoft)
-                    .padding(.top, 6)
-                TextField("For example: Manchester, Tashkent", text: Binding(
-                    get: { model.profile.homeCity ?? "" },
-                    set: { model.profile.homeCity = $0.isEmpty ? nil : String($0.prefix(80)) }))
-                    .textInputAutocapitalization(.words)
-                    .padding(12)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.outline, lineWidth: 1))
+                VStack(alignment: .leading, spacing: 8) {
+                    // a town or city, never nationality (D116)
+                    Text(abroad ? "Which town or city are you visiting from? (optional)"
+                                : (q?.cityPrompt ?? "Which town or city? (optional)"))
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.muted)
+                    LineField(placeholder: abroad ? "e.g. Tashkent" : "e.g. Manchester", text: Binding(
+                        get: { model.profile.homeCity ?? "" },
+                        set: { model.profile.homeCity = $0.isEmpty ? nil : String($0.prefix(80)) }))
+                        .textInputAutocapitalization(.words)
+                }
+                .padding(.top, 10)
                 Text(q?.note ?? "So we ask the right questions. We never ask your nationality.")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.inkSoft)
-                PrimaryButton(title: model.busy ? "One moment…" : "Next", disabled: model.busy || model.profile.based == nil) {
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: model.busy || model.profile.based == nil) {
                     Task { await model.finishBased() }
                 }
-                .padding(.top, 8)
+                .padding(.top, 12)
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 }
 
@@ -165,10 +211,12 @@ struct BasedStep: View {
 /// One kind of place at a time, with a London example's photo. "Never tried" asks whether they'd like to.
 struct CategoryStep: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let cards: [CategoryCard]
     let onDone: () async -> Void
     @State private var index = 0
     @State private var askingWant = false
+    @State private var advance: Task<Void, Never>?
 
     private let reactions = [("loved", "Love it"), ("fine", "It's fine"), ("didnt_enjoy", "Not for me"),
                              ("never_tried", "Never tried")]
@@ -176,105 +224,179 @@ struct CategoryStep: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 16) {
+                StepHeader(model.questionLabel, progress: model.questionProgress) {
+                    if index < cards.count { QuietButton("Skip the rest") { Task { await onDone() } } }
+                }
                 if index < cards.count {
                     let card = cards[index]
-                    SectionProgress(done: index, total: cards.count)
-                    ReactionLine(text: model.reaction)
-                    Text(model.onboarding?.categories?.prompt ?? "What kinds of places do you enjoy?")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.inkSoft)
-                    CategoryPhoto(card: card)
-                    Text(card.title)
-                        .font(Theme.title2)
-                        .foregroundStyle(Theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(card.line).foregroundStyle(Theme.ink)
-                    if askingWant {
-                        QuestionTitle(model.onboarding?.categories?.wantPrompt ?? "Would you like to try it in London?")
-                        ForEach(wants, id: \.0) { w in
-                            ChoiceRow(label: w.1, on: false) { answer(card, "never_tried", want: w.0) }
-                        }
-                    } else {
-                        ForEach(reactions, id: \.0) { r in
-                            ChoiceRow(label: r.1, on: model.categoryAnswers[card.key]?.reaction == r.0) {
-                                if r.0 == "never_tried" { askingWant = true } else { answer(card, r.0) }
+                    VStack(alignment: .leading, spacing: 16) {
+                        PlaceField(title: card.title, photoId: card.exampleId, feel: nil,
+                                   note: card.exampleTitle.map { "In London, for example: \($0)" })
+                        Text(card.line)
+                            .font(Theme.italic(19, relativeTo: .body))
+                            .foregroundStyle(Theme.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if askingWant {
+                            Text(model.onboarding?.categories?.wantPrompt ?? "Would you like to try it in London?")
+                                .font(Theme.title3)
+                                .foregroundStyle(Theme.ink)
+                            ForEach(wants, id: \.0) { w in
+                                AnswerTile(title: w.1, on: false) { answer(card, "never_tried", want: w.0) }
+                            }
+                        } else {
+                            Text(model.onboarding?.categories?.prompt ?? "What kinds of places do you enjoy?")
+                                .foregroundStyle(Theme.inkSoft)
+                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
+                                      spacing: 10) {
+                                ForEach(reactions, id: \.0) { r in
+                                    AnswerTile(title: r.1, on: model.categoryAnswers[card.key]?.reaction == r.0) {
+                                        if r.0 == "never_tried" { askingWant = true } else { answer(card, r.0) }
+                                    }
+                                }
                             }
                         }
                     }
+                    .id(card.key)
+                    .transition(.opacity)
+                    ReactionSpace(text: model.reaction)
                     HStack {
-                        Button("Back") {
-                            if askingWant { askingWant = false } else { index -= 1 }
-                        }
-                        .disabled(index == 0 && !askingWant)
+                        QuietButton("Back") { back() }
+                            .disabled(index == 0 && !askingWant)
                         Spacer()
-                        Button("Not sure, skip") { answer(card, "skip") }
+                        QuietButton("Not sure, skip") { answer(card, "skip") }
                     }
-                    .font(.subheadline)
-                    .frame(minHeight: 44)
-                    Button("Skip the rest") { Task { await onDone() } }
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .disabled(model.busy)
                 } else {
-                    SectionProgress(done: cards.count, total: cards.count)
-                    ReactionLine(text: model.reaction)
-                    Text("That's all \(cards.count). Thank you.")
-                        .font(Theme.title3)
-                        .foregroundStyle(Theme.ink)
-                        .padding(.vertical, 40)
-                    PrimaryButton(title: "Next", disabled: model.busy) { Task { await onDone() } }
-                    Button("Back") { index = max(cards.count - 1, 0) }
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                    StepEnd(text: "That's all \(cards.count). Thank you.", onBack: { index = max(cards.count - 1, 0) },
+                            onDone: onDone)
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
+        .animation(reduceMotion ? nil : Motion.fade, value: index)
+    }
+
+    private func back() {
+        advance?.cancel()
+        model.reaction = nil
+        if askingWant { askingWant = false } else { index = max(index - 1, 0) }
+        model.stepProgress = index
     }
 
     private func answer(_ card: CategoryCard, _ reaction: String, want: String? = nil) {
         model.categoryAnswers[card.key] = CategoryItem(key: card.key, reaction: reaction, want: want)
         model.react(card.reactions, want == "yes" ? "want_yes" : reaction)   // D117
-        askingWant = false
-        index += 1
-        model.stepProgress = index
+        let wait = model.reaction == nil ? 300 : 1100     // long enough to read a reaction; any tap goes on
+        advance?.cancel()
+        advance = Task {
+            try? await Task.sleep(for: .milliseconds(wait))
+            if Task.isCancelled { return }
+            askingWant = false
+            model.reaction = nil
+            index += 1
+            model.stepProgress = index
+            if index >= cards.count { await onDone() }
+        }
     }
 }
 
-/// The London example's photo (an openly licensed card photo, with its credit), or a plain tile without one.
-struct CategoryPhoto: View {
-    let card: CategoryCard
+/// A place or a kind of place: its photo (openly licensed, credited underneath) or a field of colour, with its name.
+struct PlaceField: View {
+    let title: String
+    let photoId: String?
+    let feel: String?
+    var note: String?
 
     var body: some View {
-        let found = CardPhotos.photo(for: card.exampleId)
-        VStack(alignment: .leading, spacing: 4) {
-            Group {
-                if let image = found?.1 {
-                    Image(uiImage: image).resizable().scaledToFill()
-                } else {
-                    Theme.surface
+        let found = photoId.flatMap { CardPhotos.photo(for: $0) }
+        VStack(alignment: .leading, spacing: 6) {
+            Color.clear
+                .frame(height: 260)
+                .overlay {
+                    if let found {
+                        Image(uiImage: found.1).resizable().scaledToFill()
+                    } else {
+                        Field(feel: feel)
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            if let title = card.exampleTitle {
-                Text("In London, for example: \(title)")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.inkSoft)
-                    .fixedSize(horizontal: false, vertical: true)
+                .overlay(alignment: .bottomLeading) {
+                    Text(title)
+                        .font(Theme.serif(34, relativeTo: .largeTitle))
+                        .foregroundStyle(Theme.ink)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.7)
+                        .padding(20)
+                        .padding(.top, 30)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .accessibilityElement(children: .combine)
+            if let note {
+                Text(note).font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             }
             if let photo = found?.0 {
-                Text(photo.credit).font(.caption2).foregroundStyle(Theme.inkSoft).lineLimit(2)
+                Text(photo.credit).font(.caption2).foregroundStyle(Theme.muted).lineLimit(2)
             }
         }
+    }
+}
+
+/// An answer in the 2 × 2 grid, or in a list.
+struct AnswerTile: View {
+    let title: String
+    let on: Bool
+    let action: () -> Void
+
+    var body: some View {
+        SelectTile(on: on, radius: 16, minHeight: 56, action: action) {
+            Text(title)
+                .foregroundStyle(Theme.ink)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 8)
+        }
+    }
+}
+
+/// Where a reaction appears, with room kept for it so nothing jumps.
+struct ReactionSpace: View {
+    let text: String?
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            if let text { WordReveal(text: text) }
+        }
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .topLeading)
+    }
+}
+
+/// The end of a set of questions: what normally goes on by itself, with a button in case sending failed.
+struct StepEnd: View {
+    @Environment(AppModel.self) private var model
+    let text: String
+    let onBack: () -> Void
+    let onDone: () async -> Void
+
+    var body: some View {
+        VStack(spacing: 18) {
+            ArchGlyph(width: 28).padding(.top, 40)
+            Text(text)
+                .font(Theme.title3)
+                .foregroundStyle(Theme.ink)
+                .multilineTextAlignment(.center)
+            PrimaryButton(title: model.busy ? "One moment…" : "Next", disabled: model.busy) { Task { await onDone() } }
+            QuietButton("Back", action: onBack)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
 // ---- 7b. So far, I've learned… (D117): before the first plan ------------------------------------------------
 
 /// The person's own answers in plain words (never scores, never from the weights), with Abram's thank-you clip.
-/// "Looks right" goes on to the first plan. "Change something" lets them tap any line that isn't right; those are
+/// "Looks right" goes on to the first plan. "Change something" lets them mark any line that isn't right; those are
 /// stored and stop counting. A screen they can always pass: with nothing learned, it says so and goes on.
 struct LearnedStep: View {
     @Environment(AppModel.self) private var model
@@ -287,21 +409,18 @@ struct LearnedStep: View {
         let learned = model.learned
         let items = learned?.items ?? []
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 18) {
                 // D118: a small "note from Abram"; the person's own answers are what this screen is for
                 ClipTile(name: "thanks", label: "A note from Abram, a short video. Tap to play.", small: true) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(learned?.title ?? "So far, I've learned…")
-                            .font(Theme.title2)
-                            .foregroundStyle(Theme.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .accessibilityAddTraits(.isHeader)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Eyebrow(learned?.title ?? "So far, I've learned…")
                         Text(learned?.note ?? "From your answers only. Nothing here is a score.")
-                            .font(.footnote)
-                            .foregroundStyle(Theme.inkSoft)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+                .padding(.top, 28)
                 if failed {
                     Text("This didn't load just now, but your answers are saved.")
                         .foregroundStyle(Theme.ink)
@@ -309,48 +428,52 @@ struct LearnedStep: View {
                         Task { await model.finishLearned(wrong: []) }
                     }
                 } else if learned == nil {
-                    ProgressView().frame(maxWidth: .infinity, minHeight: 80)
+                    ProgressView().tint(Theme.accent).frame(maxWidth: .infinity, minHeight: 80)
                 } else if items.isEmpty {
                     Text(learned?.empty ?? "Your first plan starts from what most people enjoy, and it learns from how you rate each stop.")
+                        .font(Theme.title3)
                         .foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
                 } else {
                     if changing {
                         Text(learned?.changeNote ?? "Tap anything that isn't right. We'll stop using that answer.")
                             .font(.subheadline)
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(Theme.inkSoft)
                     }
-                    VStack(spacing: 10) {
-                        ForEach(items) { item in
+                    VStack(alignment: .leading, spacing: 16) {
+                        ForEach(items.indices, id: \.self) { i in
+                            let item = items[i]
                             LearnedRow(item: item, changing: changing, wrong: wrong.contains(item.id)) {
                                 if wrong.contains(item.id) { wrong.remove(item.id) } else { wrong.insert(item.id) }
                             }
+                            .settle(i)
                         }
                     }
                 }
-                if changing {
-                    PrimaryButton(title: model.busy ? "One moment…" : (wrong.isEmpty ? "Plan my first day" : "Save and plan my first day"),
-                                  disabled: model.busy) {
-                        Task { await model.finishLearned(wrong: wrong) }
-                    }
-                    .padding(.top, 6)
-                    Button("Cancel") {
-                        changing = false
-                        wrong = []
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                } else if learned != nil {
-                    PrimaryButton(title: model.busy ? "One moment…" : (items.isEmpty ? "Plan my first day" : "Looks right"),
-                                  disabled: model.busy) {
-                        Task { await model.finishLearned(wrong: []) }
-                    }
-                    .padding(.top, 6)
-                    if !items.isEmpty {
-                        Button("Change something") { changing = true }
-                            .frame(maxWidth: .infinity, minHeight: 44)
+                VStack(spacing: 10) {
+                    if changing {
+                        PrimaryButton(title: model.busy ? "One moment…" : (wrong.isEmpty ? "Plan my first day" : "Save and plan my first day"),
+                                      disabled: model.busy) {
+                            Task { await model.finishLearned(wrong: wrong) }
+                        }
+                        QuietButton("Cancel") {
+                            changing = false
+                            wrong = []
+                        }
+                    } else if learned != nil {
+                        PrimaryButton(title: model.busy ? "One moment…" : (items.isEmpty ? "Plan my first day" : "Looks right"),
+                                      disabled: model.busy) {
+                            Task { await model.finishLearned(wrong: []) }
+                        }
+                        if !items.isEmpty {
+                            SecondaryButton(title: "Change something") { changing = true }
+                        }
                     }
                 }
+                .padding(.top, 10)
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
         .task {
             if model.learned == nil {
@@ -372,45 +495,40 @@ struct LearnedRow: View {
     let toggle: () -> Void
 
     var body: some View {
-        if changing {
-            // D118: one clear button per line ("Not right" / "Undo"); a marked line is greyed and says what happens
+        HStack(alignment: .top, spacing: 14) {
+            ArchGlyph(color: wrong ? Theme.line : Theme.accent)
+                .padding(.top, changing ? 6 : 9)
             VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .top, spacing: 12) {
-                    Text(item.text)
-                        .strikethrough(wrong)
-                        .foregroundStyle(wrong ? Theme.inkSoft : Theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer(minLength: 0)
-                    Button(action: toggle) {
-                        Text(wrong ? "Undo" : "Not right")
-                            .font(.subheadline.weight(.semibold))
-                            .frame(minWidth: 84, minHeight: 36)
+                Text(item.text)
+                    .font(changing ? Theme.serif(20, relativeTo: .title3) : Theme.title2)
+                    .strikethrough(wrong)
+                    .foregroundStyle(wrong ? Theme.muted : Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                if changing {
+                    // D118: one clear button per line ("Not right" / "Undo"); a marked line says what happens
+                    HStack(spacing: 10) {
+                        Button(action: toggle) {
+                            Text(wrong ? "Undo" : "Not right")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(wrong ? Theme.accent : Theme.ink)
+                                .padding(.horizontal, 16)
+                                .frame(minHeight: 36)
+                                .overlay(Capsule().stroke(wrong ? Theme.accent : Theme.outlineStrong, lineWidth: 1))
+                                .contentShape(Capsule())
+                        }
+                        .buttonStyle(PressStyle())
+                        .accessibilityLabel(wrong ? "Undo: keep using this" : "Not right: stop using this")
+                        if wrong {
+                            Text("We'll stop using this answer.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .tint(wrong ? Theme.accent : Theme.danger)
-                    .accessibilityLabel(wrong ? "Undo: keep using this" : "Not right: stop using this")
-                }
-                if wrong {
-                    Text("We'll stop using this answer.")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.inkSoft)
                 }
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(wrong ? Theme.danger : Theme.outline, lineWidth: 1))
-            .accessibilityElement(children: .contain)
-        } else {
-            Label {
-                Text(item.text).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: "checkmark").foregroundStyle(Theme.accent)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
     }
 }
 
@@ -425,24 +543,29 @@ struct BestHourStep: View {
         let q = model.onboarding?.openQuestions.first
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                // D118: Skip where it's always visible
+                StepHeader(model.questionLabel, progress: model.questionProgress) {
+                    QuietButton("Skip") { skip() }.disabled(model.busy)
+                }
                 // D117: Abram asking the question himself, as a small tile beside it (left out until the clip exists)
                 ClipTile(name: "ask_moment", label: "Video: Abram asks this question. Tap to play.") {
-                    Text(q?.text ?? "Tell us about a great moment from a recent day out.")
-                        .font(Theme.title3)
-                        .foregroundStyle(Theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
+                    PageTitle(text: q?.text ?? "Tell us about a great moment from a recent day out.",
+                              font: Theme.serif(28, relativeTo: .title))
                 }
+                .settle(0)
                 if let examples = q?.examples, !examples.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("For example")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Theme.inkSoft)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.muted)
                         ForEach(examples, id: \.self) { line in
                             Text("“\(line)”")
-                                .font(.subheadline)
+                                .font(Theme.italic(18, relativeTo: .body))
                                 .foregroundStyle(Theme.inkSoft)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
+                    .settle(1)
                 }
                 if dictation.available {
                     // D115: speaking is the easy way in, so it comes first and big; typing stays below
@@ -461,51 +584,35 @@ struct BestHourStep: View {
                     }
                     Text("Your phone turns your words into text. The sound isn't saved or sent.")
                         .font(.footnote)
-                        .foregroundStyle(Theme.inkSoft)
+                        .foregroundStyle(Theme.muted)
                 }
                 if let problem = dictation.problem {
                     Text(problem).font(.footnote).foregroundStyle(Theme.ink)
                 }
                 Text(dictation.available ? "Or type it" : "Type it, or tap the mic on your keyboard")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.inkSoft)
-                TextEditor(text: $model.bestHour)
-                    .scrollContentBackground(.hidden)
-                    .frame(minHeight: 110)
-                    .padding(8)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.outline, lineWidth: 1))
-                    .accessibilityLabel("Your answer")
-                Text("A few words is fine.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.muted)
+                AnswerBox(text: $model.bestHour, label: "Your answer")
+                Text("A few words is fine. There are no wrong answers.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.inkSoft)
+                    .foregroundStyle(Theme.muted)
                 if !model.bestHour.isEmpty {
                     Text(q?.followUp ?? "Is there anything else you'd like to add about that?")
+                        .font(Theme.title3)
                         .foregroundStyle(Theme.ink)
-                    TextEditor(text: $model.bestHourMore)
-                        .scrollContentBackground(.hidden)
-                        .frame(minHeight: 80)
-                        .padding(8)
-                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10))
-                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.outline, lineWidth: 1))
-                        .accessibilityLabel("Anything else")
+                        .fixedSize(horizontal: false, vertical: true)
+                    AnswerBox(text: $model.bestHourMore, minHeight: 80, label: "Anything else")
                 }
                 PrimaryButton(title: "Next", disabled: model.busy || model.bestHour.isEmpty) {
                     dictation.stop()
                     Task { await model.finishBestHour() }
                 }
-                Button("Skip this question") { skip() }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .disabled(model.busy)
+                .padding(.top, 4)
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
-        .toolbar {
-            // D118: Skip where it's always visible, not only below the fold
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Skip") { skip() }.disabled(model.busy)
-            }
-        }
+        .scrollDismissesKeyboard(.interactively)
     }
 
     private func skip() {
@@ -517,35 +624,43 @@ struct BestHourStep: View {
     }
 }
 
-/// D115: the big "Tell it instead" button: a mic in an amber circle, outlined in amber so it can't be missed.
+/// D115: the big "Tell it instead" button: a mic in an amber circle. D119: rings move out from it while it listens.
 struct TellItButton: View {
     let listening: Bool
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                Image(systemName: listening ? "stop.fill" : "mic.fill")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(Theme.onAccent)
-                    .frame(width: 44, height: 44)
-                    .background(Circle().fill(Theme.accentFill))
+        Button {
+            Haptics.light()
+            action()
+        } label: {
+            HStack(spacing: 16) {
+                ZStack {
+                    ListenRings(active: listening)
+                    Image(systemName: listening ? "stop.fill" : "mic.fill")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(Theme.onAccent)
+                        .frame(width: 52, height: 52)
+                        .background(Circle().fill(Theme.accentFill))
+                }
+                .frame(width: 52, height: 52)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(listening ? "Listening… tap when you're done" : "Tell it instead")
                         .font(.headline)
                         .foregroundStyle(Theme.ink)
                     Text(listening ? "Say it the way you'd tell a friend." : "Speak your answer. No typing.")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.inkSoft)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.muted)
                 }
-                Spacer()
+                Spacer(minLength: 0)
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 68)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.accentFill, lineWidth: 2))
+            .padding(14)
+            .frame(maxWidth: .infinity, minHeight: 80)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 22))
+            .overlay(RoundedRectangle(cornerRadius: 22).stroke(Theme.accent.opacity(listening ? 1 : 0.55), lineWidth: 1.5))
+            .contentShape(RoundedRectangle(cornerRadius: 22))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .accessibilityLabel(listening ? "Stop listening" : "Tell it instead: speak your answer")
     }
 }
@@ -556,11 +671,12 @@ enum Labels {
     /// D115: feelings, each mapped onto the model's features in brain/reasons.py (FEELINGS)
     static let why = ["restored": "Restored", "excited": "Excited", "connected": "Connected",
                       "curious": "Curious", "peaceful": "Peaceful"]
-    static let whyNote = ["restored": "Rested and recharged, back to yourself",
-                          "excited": "Heart going, something to talk about",
-                          "connected": "Close to the people you're with",
-                          "curious": "Finding out something new",
-                          "peaceful": "Calm and unhurried, away from the crowds"]
+    /// D119: the lines under each feeling, from the ODYS design
+    static let whyNote = ["restored": "Come home lighter than you left",
+                          "excited": "Something to tell people about",
+                          "connected": "Time that feels shared",
+                          "curious": "Learn something you didn't expect",
+                          "peaceful": "Calm while the city rushes past"]
     static let budget = [("under_20", "Under £20"), ("20_40", "£20–40"), ("40_70", "£40–70"), ("70_plus", "£70 or more")]
     static let company = [("solo", "On my own"), ("friends", "Friends"), ("partner", "A partner"), ("family", "Family")]
     static let chronotype = [("morning", "Morning person"), ("night", "Night person"), ("neither", "Neither")]
@@ -569,7 +685,7 @@ enum Labels {
                          ("countryside", "The countryside")]
     static let reactions = [("loved", "Loved it"), ("fine", "It was fine"), ("didnt_enjoy", "Didn't enjoy it"),
                             ("havent_been", "Haven't been")]
-    /// The rating's words (D115: one dimension, was Flat · Pleasant · Restorative · Vivid · Unforgettable), 1–5.
+    /// The rating's words (D115: one dimension), 1–5.
     static let feel = ["Flat", "Fine", "Good", "Great", "Unforgettable"]
     /// The "this or that" attributes, always in the same order with the same icons (D95).
     static let attributeIcons = ["arrow.triangle.swap", "cloud.sun", "gauge.with.dots.needle.33percent",
@@ -581,50 +697,62 @@ struct WhyStep: View {
 
     var body: some View {
         let choices = model.onboarding?.whyTravel
+        let prompt = PromptText.split(choices?.prompt ?? "How do you most want to feel on a day out? Pick one or two.")
+        let options = choices?.options ?? []
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text(choices?.prompt ?? "How do you most want to feel on a day out? Pick one or two.")
-                    .font(Theme.title3)
-                    .foregroundStyle(Theme.ink)
-                ForEach(choices?.options ?? [], id: \.self) { key in
+                StepHeader(model.questionLabel, progress: model.questionProgress)
+                PageTitle(text: prompt.0).padding(.top, 6).settle(0)
+                if let sub = prompt.1 {
+                    Text(sub).foregroundStyle(Theme.muted).padding(.bottom, 6)
+                }
+                ForEach(options.indices, id: \.self) { i in
+                    let key = options[i]
                     let on = model.why.contains(key)
-                    Button {
-                        if on { model.why.removeAll { $0 == key } } else if model.why.count < 2 { model.why.append(key) }
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(Labels.why[key] ?? key).font(.headline)
+                    SelectTile(on: on, action: { pick(key, on) }) {
+                        HStack(spacing: 14) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(Labels.why[key] ?? key)
+                                    .font(Theme.option)
+                                    .foregroundStyle(Theme.ink)
                                 if let note = Labels.whyNote[key] {
-                                    Text(note).font(.footnote).opacity(0.8)
+                                    Text(note)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Theme.inkTertiary)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
-                            Spacer()
-                            Image(systemName: on ? "checkmark.square.fill" : "square")   // D118: squares = pick several
+                            Spacer(minLength: 8)
+                            TickBox(on: on)   // D118: squares mean "pick more than one"
                         }
-                        .padding(.vertical, 6)
-                        .foregroundStyle(on ? Theme.onAccent : Theme.ink)
-                        .padding(.horizontal, 16)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(on ? Theme.accentFill : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Theme.accentFill : Theme.outline, lineWidth: 1))
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(on ? .isSelected : [])
+                    .settle(i + 1)
                 }
                 // D117: what we take from it, in their own words
-                ReactionLine(text: model.why.isEmpty ? nil
-                             : "Got it: you want to feel " + model.why.map { $0 }.joined(separator: " and ") + ".")
-                PrimaryButton(title: "Next", disabled: model.why.isEmpty) { model.next() }
-                    .padding(.top, 8)
+                ReactionSpace(text: model.why.isEmpty ? nil
+                              : "Got it: you want to feel " + model.why.joined(separator: " and ") + ".")
+                PrimaryButton(title: "Continue", disabled: model.why.isEmpty) { model.next() }
                 // D118: opting out is a quiet link, not the loudest button on the screen
-                Button("None of these") {
+                QuietButton("None of these") {
                     model.why = []
                     model.next()
                 }
-                .font(.subheadline)
-                .frame(maxWidth: .infinity, minHeight: 44)
+                .frame(maxWidth: .infinity)
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+        }
+    }
+
+    /// Up to two: a third choice takes the place of the first one.
+    private func pick(_ key: String, _ on: Bool) {
+        if on {
+            model.why.removeAll { $0 == key }
+        } else {
+            if model.why.count >= 2 { model.why.removeFirst() }
+            model.why.append(key)
         }
     }
 }
@@ -633,69 +761,82 @@ struct WhyStep: View {
 
 struct PlacesStep: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let places: [SwipePlace]
+    var standalone = false          // in "Improve future plans": counted on its own
     let onDone: () async -> Void
     @State private var index = 0
+    @State private var answered: String?
+    @State private var advance: Task<Void, Never>?
 
     var body: some View {
-        VStack(spacing: 14) {
-            if index < places.count {
-                let place = places[index]
-                SectionProgress(done: index, total: places.count)
-                ReactionLine(text: model.reaction)   // D117
-                Spacer()
-                Text(place.name)
-                    .font(Theme.title)
-                    .foregroundStyle(Theme.ink)
-                    .multilineTextAlignment(.center)
-                Text(model.onboarding?.swipe?.prompt ?? "Have you been? How did it feel?")
-                    .foregroundStyle(Theme.inkSoft)
-                Spacer()
-                ForEach(Labels.reactions, id: \.0) { pair in
-                    Button {
-                        react(place, pair.0)
-                    } label: {
-                        Text(pair.1)
-                            .foregroundStyle(Theme.ink)
-                            .frame(maxWidth: .infinity, minHeight: 48)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.outline, lineWidth: 1))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                StepHeader(standalone ? "\(min(index + 1, places.count)) of \(places.count)" : model.questionLabel,
+                           progress: standalone ? Double(index) / Double(max(places.count, 1)) : model.questionProgress) {
+                    // D112: the unanswered ones aren't sent
+                    if index < places.count { QuietButton("Skip the rest") { Task { await onDone() } } }
+                }
+                if index < places.count {
+                    let place = places[index]
+                    VStack(alignment: .leading, spacing: 16) {
+                        PlaceField(title: place.name,
+                                   photoId: place.photoIds?.first { CardPhotos.photo(for: $0) != nil }, feel: nil)
+                        Text(model.onboarding?.swipe?.prompt ?? "Have you been? How did it feel?")
+                            .foregroundStyle(Theme.inkSoft)
+                        LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
+                                  spacing: 10) {
+                            ForEach(Labels.reactions, id: \.0) { pair in
+                                AnswerTile(title: pair.1, on: (answered ?? model.reactions[place.item]) == pair.0) {
+                                    react(place, pair.0)
+                                }
+                            }
+                        }
                     }
-                    .buttonStyle(.plain)
+                    .id(place.item)
+                    .transition(.opacity)
+                    ReactionSpace(text: model.reaction)   // D117: loved / didn't enjoy say something; the rest don't
+                    HStack {
+                        QuietButton("Back") { back() }
+                            .disabled(index == 0)
+                        Spacer()
+                        QuietButton("Not sure, skip") { react(place, "skip") }
+                    }
+                } else {
+                    StepEnd(text: "That's all \(places.count) places. Thank you.",
+                            onBack: { index = max(places.count - 1, 0) }, onDone: onDone)
                 }
-                HStack {
-                    Button("Back") { index -= 1 }
-                        .disabled(index == 0)
-                    Spacer()
-                    Button("Not sure, skip") { react(place, "skip") }
-                }
-                .font(.subheadline)
-                .frame(minHeight: 44)
-                Button("Skip the rest") { Task { await onDone() } }   // D112: the unanswered ones aren't sent
-                    .font(.subheadline)
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .disabled(model.busy)
-            } else {
-                SectionProgress(done: places.count, total: places.count)
-                ReactionLine(text: model.reaction)
-                Spacer()
-                Text("That's all \(places.count) places. Thank you.")
-                    .font(Theme.title3)
-                    .foregroundStyle(Theme.ink)
-                Spacer()
-                PrimaryButton(title: "Next", disabled: model.busy) { Task { await onDone() } }
-                Button("Back") { index = max(places.count - 1, 0) }
-                    .frame(minHeight: 44)
             }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
-        .padding(20)
+        .animation(reduceMotion ? nil : Motion.fade, value: index)
     }
 
+    private func back() {
+        advance?.cancel()
+        answered = nil
+        model.reaction = nil
+        index = max(index - 1, 0)
+        model.stepProgress = index
+    }
+
+    /// The answer shows at once (and its reaction, if it has one); the next place follows by itself.
     private func react(_ place: SwipePlace, _ reaction: String) {
         model.reactions[place.item] = reaction
-        model.react(place.reactions, reaction)   // D117: loved / didn't enjoy say something; the rest don't
-        index += 1
-        model.stepProgress = index
+        model.react(place.reactions, reaction)
+        answered = reaction
+        let wait = model.reaction == nil ? 300 : 1100     // long enough to read a reaction
+        advance?.cancel()
+        advance = Task {
+            try? await Task.sleep(for: .milliseconds(wait))
+            if Task.isCancelled { return }
+            answered = nil
+            model.reaction = nil
+            index += 1
+            model.stepProgress = index
+            if index >= places.count { await onDone() }
+        }
     }
 }
 
@@ -703,92 +844,135 @@ struct PlacesStep: View {
 
 struct ThisOrThatStep: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let tasks: [ConjointTask]
-    let doneText: String
-    let doneButton: String
+    var standalone = false
     let onDone: () async -> Void
     @State private var index = 0
+    @State private var picked: String?
 
     var body: some View {
         let label = model.onboarding?.conjoint?.optionLabel ?? "Example day"
+        let prompt = PromptText.split(model.onboarding?.conjoint?.prompt
+                                      ?? "Which day sounds more like you? There are no wrong answers.")
         ScrollView {
-            VStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 14) {
+                StepHeader(standalone ? "\(min(index + 1, tasks.count)) of \(tasks.count)" : model.questionLabel,
+                           progress: standalone ? Double(index) / Double(max(tasks.count, 1)) : model.questionProgress)
                 if index < tasks.count {
                     let task = tasks[index]
-                    SectionProgress(done: index, total: tasks.count)
-                    ReactionLine(text: model.reaction)   // D117: a pattern, once it has held 3 times
-                    Text(model.onboarding?.conjoint?.prompt ?? "Which day sounds more like you? There's no right answer.")
-                        .font(Theme.title3)
-                        .foregroundStyle(Theme.ink)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    DayOption(label: "\(label) A", text: task.a) { choose(task, "A") }
-                    DayOption(label: "\(label) B", text: task.b) { choose(task, "B") }
+                    PageTitle(text: prompt.0).padding(.top, 6)
+                    if let sub = prompt.1 {
+                        Text(sub).foregroundStyle(Theme.muted)
+                    }
+                    VStack(spacing: 10) {
+                        DayOption(label: "\(label) A", text: task.a, field: index % 2, on: picked == "A") { choose(task, "A") }
+                        Text("or")
+                            .font(Theme.italic(18, relativeTo: .body))
+                            .foregroundStyle(Theme.muted)
+                        DayOption(label: "\(label) B", text: task.b, field: (index + 1) % 2, on: picked == "B") { choose(task, "B") }
+                    }
+                    .id(task.task)
+                    .transition(.opacity)
                     HStack {
-                        Button("Back") { index -= 1 }
-                            .disabled(index == 0)
+                        QuietButton("Back") {
+                            picked = nil
+                            index = max(index - 1, 0)
+                            model.stepProgress = index
+                        }
+                        .disabled(index == 0)
                         Spacer()
-                        Button(model.onboarding?.conjoint?.noPreference ?? "No preference") { choose(task, "N") }
-                            .buttonStyle(.bordered)
+                        QuietButton(model.onboarding?.conjoint?.noPreference ?? "No preference") { choose(task, "N") }
                     }
-                    .frame(minHeight: 44)
+                    ReactionSpace(text: model.reaction)   // D117: a pattern, once it has held 3 times
                 } else {
-                    SectionProgress(done: tasks.count, total: tasks.count)
-                    ReactionLine(text: model.reaction)
-                    Text(doneText)
-                        .font(Theme.title3)
-                        .foregroundStyle(Theme.ink)
-                        .padding(.vertical, 40)
-                    PrimaryButton(title: model.busy ? "One moment…" : doneButton, disabled: model.busy) {
-                        Task { await onDone() }
-                    }
-                    Button("Back") { index = max(tasks.count - 1, 0) }
-                        .frame(minHeight: 44)
+                    StepEnd(text: standalone ? "Thank you. Your next plans will use these." : "That's everything. Next: what I've learned so far.",
+                            onBack: { index = max(tasks.count - 1, 0) }, onDone: onDone)
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
+        .animation(reduceMotion ? nil : Motion.fade, value: index)
     }
 
+    /// Select (250 ms) on the chosen day, then the next pair.
     private func choose(_ task: ConjointTask, _ choice: String) {
+        guard picked == nil else { return }   // one choice per pair, even with a quick second tap
+        picked = choice
         model.choices[task.task] = choice    // "N": no preference (D110), left out of the fit
         model.reactToChoices(tasks)
-        index += 1
-        model.stepProgress = index
+        Task {
+            try? await Task.sleep(for: .milliseconds(280))
+            picked = nil
+            index += 1
+            model.stepProgress = index
+            if index >= tasks.count { await onDone() }
+        }
     }
 }
 
+/// One made-up day: all six details, each with its icon (D95; Abram kept the six, D119), on a field of colour.
+/// The two fields swap from pair to pair, so neither colour belongs to A or B.
 struct DayOption: View {
     let label: String
     let text: String
+    let field: Int
+    var on = false
     let action: () -> Void
 
     var body: some View {
         let parts = text.components(separatedBy: "; ")
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(label).font(.headline).foregroundStyle(Theme.accent)
+        Button {
+            Haptics.light()
+            action()
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(label).font(Theme.serif(22, relativeTo: .title3)).foregroundStyle(Theme.ink)
                     Spacer()
                     Text("Made up").font(.footnote).foregroundStyle(Theme.inkSoft)
                 }
                 ForEach(parts.indices, id: \.self) { i in
-                    Label(parts[i].prefix(1).uppercased() + String(parts[i].dropFirst()),
-                          systemImage: i < Labels.attributeIcons.count ? Labels.attributeIcons[i] : "circle")
-                        .foregroundStyle(Theme.ink)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Image(systemName: i < Labels.attributeIcons.count ? Labels.attributeIcons[i] : "circle")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 22)
+                        Text(parts[i].prefix(1).uppercased() + String(parts[i].dropFirst()))
+                            .foregroundStyle(Theme.ink)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
-            .padding(16)
+            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.outline, lineWidth: 1))
+            .background {
+                ZStack {
+                    if field == 0 {
+                        LinearGradient(stops: [.init(color: Color(hex: 0x1E2A3E), location: 0),
+                                               .init(color: Color(hex: 0x3D5168), location: 0.55),
+                                               .init(color: Color(hex: 0xB8925A), location: 1)],
+                                       startPoint: .top, endPoint: .bottom)
+                    } else {
+                        RadialGradient(colors: [Color(hex: 0xB04A3A), Color(hex: 0x4A1F18), Color(hex: 0x15110F)],
+                                       center: UnitPoint(x: 0.5, y: 0.2), startRadius: 0, endRadius: 300)
+                    }
+                    Color.black.opacity(0.45)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(on ? Theme.accent : Theme.outline, lineWidth: on ? 2 : 1))
+            .contentShape(RoundedRectangle(cornerRadius: 24))
+            .animation(Motion.select, value: on)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .accessibilityHint("Choose this made-up day")
     }
 }
 
-// ---- 12. Improve future plans (D115): "Want us to learn you better?", one question at a time ---------------
+// ---- 12. Improve future plans (D115): one question at a time ---------------------------------------------
 
 /// An invitation, then one quick question per screen: tap an answer and the next one comes. Skip any, stop any time;
 /// what's answered is saved. Nine taps is about 30 seconds. The 4 more places and 5 more example days come after,
@@ -811,33 +995,33 @@ struct ImproveView: View {
                     if current < 0 {
                         invitation
                     } else if current < Q.allCases.count {
-                        SectionProgress(done: current, total: Q.allCases.count)
+                        StepHeader("\(current + 1) of \(Q.allCases.count)",
+                                   progress: Double(current) / Double(Q.allCases.count)) {
+                            QuietButton("Skip") { go(current + 1) }
+                        }
                         question(Q.allCases[current])
                         HStack {
-                            Button("Back") { go(current - 1) }.disabled(current == 0)
+                            QuietButton("Back") { go(current - 1) }.disabled(current == 0)
                             Spacer()
-                            Button("Skip") { go(current + 1) }
+                            QuietButton("Stop here, keep my answers") { Task { await save(done: false) } }
+                                .disabled(model.busy)
                         }
-                        .font(.subheadline)
-                        .frame(minHeight: 44)
-                        Button("Stop here, keep my answers") { Task { await save(done: false) } }
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .disabled(model.busy)
                     } else {
                         finished
                     }
                 }
-                .padding(20)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
             }
             .background(Theme.background)
+            .scrollDismissesKeyboard(.interactively)
             .serifTitle("Improve future plans")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { Button("Close") { dismiss() } }
             }
             .sheet(isPresented: $morePlaces) {
                 NavigationStack {
-                    PlacesStep(places: model.onboarding?.swipePlacesLater ?? []) {
+                    PlacesStep(places: model.onboarding?.swipePlacesLater ?? [], standalone: true) {
                         await model.finishMorePlaces()
                         if model.errorMessage == nil { morePlaces = false }
                     }
@@ -847,8 +1031,7 @@ struct ImproveView: View {
             }
             .sheet(isPresented: $moreTasks) {
                 NavigationStack {
-                    ThisOrThatStep(tasks: model.onboarding?.conjointTasksLater ?? [],
-                                   doneText: "Thank you. Your next plans will use these.", doneButton: "Save") {
+                    ThisOrThatStep(tasks: model.onboarding?.conjointTasksLater ?? [], standalone: true) {
                         await model.finishMoreTasks()
                         if model.errorMessage == nil { moreTasks = false }
                     }
@@ -871,27 +1054,27 @@ struct ImproveView: View {
 
     private var invitation: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Make your next day even better?")   // D118: was "Want us to learn you better?"
-                .font(Theme.title)
-                .foregroundStyle(Theme.ink)
+            ArchGlyph(width: 22).padding(.top, 12)
+            PageTitle(text: "Make your next day even better?")   // D118: was "Want us to learn you better?"
             Text("About 30 seconds. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.")
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(Theme.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
             Text("Your next plans use every answer.")
                 .font(.footnote)
-                .foregroundStyle(Theme.inkSoft)
+                .foregroundStyle(Theme.muted)
             PrimaryButton(title: model.improved ? "Change my answers" : "Start") { go(0) }
-            Button("Not now") { dismiss() }
-                .frame(maxWidth: .infinity, minHeight: 44)
+                .padding(.top, 8)
+            QuietButton("Not now") { dismiss() }
+                .frame(maxWidth: .infinity)
         }
     }
 
     private var finished: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Thank you.")
-                .font(Theme.title)
-                .foregroundStyle(Theme.ink)
+            ArchGlyph(width: 22).padding(.top, 12)
+            PageTitle(text: "Thank you.")
             Text("Your next plans will use these answers.")
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(Theme.inkSoft)
             let later = model.isVisitor ? [] : (model.onboarding?.swipePlacesLater ?? [])   // D116: not London places
             let laterTasks = model.onboarding?.conjointTasksLater ?? []
             if !later.isEmpty || !laterTasks.isEmpty {
@@ -903,18 +1086,19 @@ struct ImproveView: View {
                     Button { morePlaces = true } label: {
                         MoreRow(title: "\(later.count) more places you may have been", done: model.morePlacesDone)
                     }
-                    .surfaceCard()
+                    .buttonStyle(PressStyle())
                 }
                 if !laterTasks.isEmpty {
                     Button { moreTasks = true } label: {
                         MoreRow(title: "\(laterTasks.count) more made-up example days", done: model.moreTasksDone)
                     }
-                    .surfaceCard()
+                    .buttonStyle(PressStyle())
                 }
             }
             PrimaryButton(title: model.busy ? "Saving…" : "Done", disabled: model.busy) {
                 Task { await save(done: true) }
             }
+            .padding(.top, 8)
         }
     }
 
@@ -940,12 +1124,19 @@ struct ImproveView: View {
                 QuestionTitle(fields.question)
                 ForEach(fields.options.filter { $0.key != "none" }) { option in
                     let on = model.profile.fields.contains(option.key)
-                    ChoiceRow(label: option.label, on: on) {
+                    SelectTile(on: on, action: {
                         model.profile.fields.removeAll { $0 == option.key }
                         if !on { model.profile.fields.append(option.key) }
+                    }) {
+                        HStack {
+                            Text(option.label).foregroundStyle(Theme.ink)
+                            Spacer()
+                            TickBox(on: on)
+                        }
+                        .padding(.horizontal, 18)
                     }
                 }
-                Text(fields.note).font(.footnote).foregroundStyle(Theme.inkSoft)
+                Text(fields.note).font(.footnote).foregroundStyle(Theme.muted)
                 PrimaryButton(title: model.profile.fields.isEmpty ? "None of these" : "Next") { go(5) }
             } else {
                 PrimaryButton(title: "Next") { go(5) }
@@ -953,15 +1144,12 @@ struct ImproveView: View {
         case .grewUp:
             QuestionTitle(about["grew_up"]?.text ?? "Where did you grow up?")
             ChoiceList(options: Labels.grewUp, selected: model.profile.grewUp) { model.profile.grewUp = $0; go(6) }
-            if let note = about["grew_up"]?.note { Text(note).font(.footnote).foregroundStyle(Theme.inkSoft) }
+            if let note = about["grew_up"]?.note { Text(note).font(.footnote).foregroundStyle(Theme.muted) }
         case .foods:
             QuestionTitle(about["foods_avoided"]?.text ?? "Any foods or drinks you avoid?")
-            TextField("For example: pork, alcohol", text: Binding(get: { model.profile.foodsAvoided ?? "" },
-                                                              set: { model.profile.foodsAvoided = $0.isEmpty ? nil : $0 }))
-                .padding(12)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.outline, lineWidth: 1))
-            if let note = about["foods_avoided"]?.note { Text(note).font(.footnote).foregroundStyle(Theme.inkSoft) }
+            LineField(placeholder: "For example: pork, alcohol", text: Binding(get: { model.profile.foodsAvoided ?? "" },
+                                                                               set: { model.profile.foodsAvoided = $0.isEmpty ? nil : $0 }))
+            if let note = about["foods_avoided"]?.note { Text(note).font(.footnote).foregroundStyle(Theme.muted) }
             PrimaryButton(title: "Next") { go(7) }
         case .photos:
             QuestionTitle(photos.first?.text ?? "How much do photos and sharing matter on your trips?")
@@ -984,10 +1172,8 @@ struct QuestionTitle: View {
     init(_ text: String) { self.text = text }
 
     var body: some View {
-        Text(text)
-            .font(Theme.title3)
-            .foregroundStyle(Theme.ink)
-            .fixedSize(horizontal: false, vertical: true)
+        PageTitle(text: text, font: Theme.title)
+            .padding(.vertical, 6)
     }
 }
 
@@ -1012,20 +1198,14 @@ struct ChoiceRow: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        SelectTile(on: on, minHeight: 56, action: action) {
             HStack {
-                Text(label)
+                Text(label).foregroundStyle(Theme.ink)
                 Spacer()
-                if on { Image(systemName: "checkmark") }
+                RadioDot(on: on)
             }
-            .foregroundStyle(on ? Theme.onAccent : Theme.ink)
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(on ? Theme.accentFill : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Theme.accentFill : Theme.outline, lineWidth: 1))
+            .padding(.horizontal, 18)
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(on ? .isSelected : [])
     }
 }
 
@@ -1035,32 +1215,18 @@ struct MoreRow: View {
 
     var body: some View {
         HStack {
-            Text(title).foregroundStyle(Theme.ink)
+            Text(title).foregroundStyle(Theme.ink).multilineTextAlignment(.leading)
             Spacer()
             if done {
                 Label("Done", systemImage: "checkmark").labelStyle(.titleAndIcon).font(.footnote)
-                    .foregroundStyle(Theme.inkSoft)
+                    .foregroundStyle(Theme.muted)
             } else {
-                Image(systemName: "chevron.right").foregroundStyle(Theme.inkSoft)
+                Image(systemName: "chevron.right").foregroundStyle(Theme.muted)
             }
         }
-        .frame(minHeight: 44)
-    }
-}
-
-/// A picker that can stay unanswered ("Skip" is always allowed).
-struct OptionalPicker: View {
-    let title: String
-    let options: [(String, String)]
-    @Binding var value: String?
-
-    var body: some View {
-        Picker(title, selection: Binding(get: { value ?? "" }, set: { value = $0.isEmpty ? nil : $0 })) {
-            Text("Skip").tag("")
-            ForEach(options, id: \.0) { pair in
-                Text(pair.1).tag(pair.0)
-            }
-        }
+        .padding(.horizontal, 18)
+        .frame(minHeight: 56)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
     }
 }
 
@@ -1070,10 +1236,8 @@ struct ShotCardSummary: View {
     var label: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label ?? "Example of what you'll get")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.accent)
+        VStack(alignment: .leading, spacing: 10) {
+            Eyebrow(label ?? "Example of what you'll get")
             Label(card.title, systemImage: "camera").font(.headline).foregroundStyle(Theme.ink)
             if let shot = card.shotCard {
                 if let lat = shot.standAt?.lat, let lon = shot.standAt?.lon {
@@ -1083,7 +1247,7 @@ struct ShotCardSummary: View {
                         Marker("Stand here", coordinate: here).tint(Theme.accentFill)
                     }
                     .frame(height: 110)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .allowsHitTesting(false)
                 }
                 InfoBlock(label: "Where to stand", text: shot.standAt?.note ?? "")

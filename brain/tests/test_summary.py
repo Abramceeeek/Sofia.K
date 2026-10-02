@@ -35,6 +35,7 @@ def test_onboarding_carries_the_reactions(client):
     brick = next(p for p in ob["swipe_places"] if p["item"] == 14)
     assert brick["reactions"] == {"loved": "Got it: local food with a bit of history.",
                                   "didnt_enjoy": "Noted: not so much local food with a bit of history."}
+    assert brick["photo_ids"] == ["m_beigel_bake_late"]                           # D119: for its photo
     museums = next(c for c in ob["category_cards"] if c["key"] == "big_museums")
     assert museums["reactions"]["want_yes"] == "Noted: you'd like to try big museums."
     assert set(ob["conjoint_tasks"][0]["levels"]) == {"A", "B"} and len(ob["conjoint_tasks"][0]["levels"]["A"]) == 6

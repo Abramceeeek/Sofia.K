@@ -125,6 +125,7 @@ struct SwipePlace: Codable, Hashable, Identifiable {
     let item: Int
     let name: String
     let reactions: Reactions?          // D117: "Got it: food with a bit of atmosphere."
+    let photoIds: [String]?            // D119: cards at the same place; the first photo the app has is shown
     var id: Int { item }
 }
 
@@ -287,8 +288,18 @@ struct Stop: Codable, Hashable, Identifiable {
     let bestLight: String?         // the card's light line
     let bestWindow: String?        // "16:12–17:12" on the plan's date
     let reasons: [Reason]?         // D115: "Why we picked this for you"
+    let feelWord: String?          // D119: "Awe", "Calm", "Lunch": the kind of moment, from the card (same for everyone)
+    let reveal: Bool?              // D119: the arrival is the moment, so the way in marks "The reveal"
 
     var id: String { momentId + "@" + arrive }
+
+    /// D118: the worth and the price side by side ("Worth about £32 to you · Free entry").
+    var worthLine: String? {
+        worthGbp.map { "Worth about \(Money.text($0)) to you · " + (costGbp == 0 ? "Free entry" : "Costs \(Money.text(costGbp))") }
+    }
+
+    /// The word for this stop on "How the day moves" and its line.
+    var word: String { feelWord ?? (rateable ? "Easy" : "Lunch") }
 }
 
 // ---- requests ---------------------------------------------------------------------------------

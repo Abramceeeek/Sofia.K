@@ -124,10 +124,17 @@ struct FounderVideoView: View {
     @State private var clip: ClipPlayer?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            PageTitle(text: "A hello from Abram")
-            Text("Why this app exists, in half a minute. Skip any time.")
-                .foregroundStyle(Theme.inkSoft)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                AbramAvatar(size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Eyebrow("A hello from Abram")
+                    Text("Why this app exists, in half a minute. Skip any time.")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.muted)
+                }
+            }
+            .padding(.top, 8)
             Group {
                 if let clip {
                     VideoPlayer(player: clip.player) {
@@ -143,15 +150,17 @@ struct FounderVideoView: View {
                 }
             }
             .aspectRatio(9 / 16, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 22))
             .frame(maxWidth: .infinity)
             .accessibilityLabel("Video: a hello from Abram, with captions")
-            PrimaryButton(title: clip?.ended == true ? "Continue" : "Skip") {
-                clip?.pause()
-                model.founderVideoDone(seconds: clip?.watched ?? 0, ended: clip?.ended ?? false)
+            if clip?.ended == true {
+                PrimaryButton(title: "Continue") { done() }
+            } else {
+                SecondaryButton(title: "Skip") { done() }
             }
         }
-        .padding(20)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 12)
         .background(Theme.background)
         .onAppear {
             if clip == nil, let url = BundledVideo.url("founder") {
@@ -160,6 +169,11 @@ struct FounderVideoView: View {
             if UIAccessibility.isVideoAutoplayEnabled { clip?.play() }
         }
         .onDisappear { clip?.pause() }
+    }
+
+    private func done() {
+        clip?.pause()
+        model.founderVideoDone(seconds: clip?.watched ?? 0, ended: clip?.ended ?? false)
     }
 }
 
@@ -181,7 +195,7 @@ struct ClipTile<Content: View>: View {
                             .frame(width: small ? 56 : 104, height: small ? 100 : 185)
                             .clipShape(RoundedRectangle(cornerRadius: small ? 10 : 14))
                         if small {
-                            Text("A note from Abram").font(.caption2).foregroundStyle(Theme.inkSoft)
+                            Text("A note from Abram").font(.caption2).foregroundStyle(Theme.muted)
                                 .multilineTextAlignment(.center).frame(width: 64)
                         }
                     }
@@ -190,7 +204,7 @@ struct ClipTile<Content: View>: View {
                 if let c = clip?.caption {
                     Text(c)
                         .font(.footnote)
-                        .foregroundStyle(Theme.inkSoft)
+                        .foregroundStyle(Theme.muted)
                         .accessibilityHidden(true)   // the same words are read out from the video's own label
                 }
             }
@@ -259,13 +273,13 @@ struct VideoPlaceholder: View {
 
     var body: some View {
         ZStack {
-            Theme.surfaceHigh
+            Theme.surface
             VStack(spacing: 8) {
                 Image(systemName: "play.circle")
                     .font(.system(size: 34))
                     .foregroundStyle(Theme.accent)
                 Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Theme.ink)
-                Text(note).font(.caption2).foregroundStyle(Theme.inkSoft).multilineTextAlignment(.center)
+                Text(note).font(.caption2).foregroundStyle(Theme.muted).multilineTextAlignment(.center)
             }
             .padding(8)
         }
