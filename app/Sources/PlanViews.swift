@@ -24,9 +24,13 @@ struct HomeView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showSafety = true } label: {
                         // D118: the word as well as the shield; a dot when a person has replied
-                        Label("Help", systemImage: "exclamationmark.shield")
-                            .labelStyle(.titleAndIcon)
-                            .overlay(alignment: .topTrailing) {
+                        // an explicit icon and word: toolbar buttons otherwise show a Label's icon only
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.shield")
+                            Text("Help").font(.subheadline.weight(.semibold))
+                        }
+                        .fixedSize()
+                        .overlay(alignment: .topTrailing) {
                                 if model.unreadSafety {
                                     Circle().fill(Theme.danger).frame(width: 8, height: 8).offset(x: 4, y: -2)
                                 }
