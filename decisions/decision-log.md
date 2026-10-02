@@ -2,6 +2,18 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-10-02 — the review of the D117 build
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| D118 | **After four outside reviews of the D117 screens:**<br>1. **Safety replies (13b):** an optional phone or email on the Help & safety form, used only to reply and deleted once it's sorted. The reply also shows in the app.<br>2. **Keep the 14 questions before the first plan** (Test B's personal plan needs the evidence, D112), with a counter that counts every question.<br>3. **Copy (left to Claude):** the worth line becomes "Worth about £X to you · Free entry / Costs £Y", then "A first estimate…"; "Improve future plans" moves to after the first rating; "Flat" and "Why we picked this for you" stay.<br>4. **Add before the friends round:** the person's feeling words in the plan headline; rating reminders; Today / Tomorrow quick picks | D115's worth wording ("…to you, and it's free") and 12a's place right after the plan | Founder decisions, 2 Oct. 13b promised a reply that nothing could deliver: a safety gap, not polish |
+
+**Minor decisions made by Claude under D69 (for the checkpoint list):**
+
+| # | What | Where |
+|---|---|---|
+| m163 | **D118 as built, about 13 h of Claude's time; about 20 min of Abram's** (the screenshot page; try a Help & safety message and a reply).<br>- **Safety:**<br>&nbsp;&nbsp;- Contacts are a separate table: never exported, never logged, deleted when Abram replies with `resolved: true`, and at the latest after 30 days (checked on every start).<br>&nbsp;&nbsp;- A reply is posted with text (`POST /v1/admin/safety/{id}/reply`); the person sees it under Help & safety, with a dot on "Help". The app only checks once someone has sent a message.<br>&nbsp;&nbsp;- The automatic message now says who replies (Abram, or whoever is covering for him) and where. It still never promises faster than a few hours, and 999 comes first.<br>&nbsp;&nbsp;- Consent version `app-2026-10-02`.<br>- **Rating reminders:** one local notification 10 min after each rateable stop on the plan's day, never for a stop already rated, and rescheduled when the plan changes. A tap opens the stop. They can be turned off in Your data, and are cleared by Delete my data. Asked with equal-weight "Yes, nudge me" / "No thanks"; iOS's own prompt follows only a yes. No server push.<br>- **Feeling words** are used only when at least half the day's card stops carry the feeling by their tags (and at least two of them). For example, "peaceful" means a quiet place (crowds tag low) and "restored" means green or awe. They are never used in the blind comparison.<br>- **Not changed, and why:**<br>&nbsp;&nbsp;- 2a reads clearly on screen (each number has its label beneath); the garbled version came from the PDF's text.<br>&nbsp;&nbsp;- The 8 vs 9a dates, 7b vs 10 places and 7 vs 7b patterns were demo-data artefacts; the demo is now one person.<br>&nbsp;&nbsp;- Maps directions were already on each stop card.<br>&nbsp;&nbsp;- The statistics quoted in the reviews were not verified here, so they are direction only.<br>- **Kept from D115:**<br>&nbsp;&nbsp;- "Flat" as the first rating word: one reviewer liked it, and it's Abram's own word for Big Ben.<br>&nbsp;&nbsp;- "Why we picked this for you": "feels like you" claims more than the reasons show.<br>&nbsp;&nbsp;- Reviewers' other ideas went to after-9-Nov #42–#46 | `brain/src/brain/api.py`, `db.py`, `notify.py`, `reasons.py`, `app/Sources/Reminders.swift`, `SafetyAndSettingsViews.swift`, `PlanViews.swift`, `OnboardingViews.swift` |
+
 ## 2026-10-01 — onboarding upgrade before the friends round
 
 | # | Decision | Replaces | Why |

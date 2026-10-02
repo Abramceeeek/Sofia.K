@@ -47,6 +47,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
     - the share who tap "Looks right" (`summary_ok`) versus "Change something" (`summary_changed`);
     - which kinds of line get corrected (`corrections` in the export, with the words shown). Many corrected place lines would mean the place phrases or tags are off.
   - How far people watch Abram's hello (`founder_video`: seconds, and whether it ended).
+- **Test C (D118):** the share who turn on rating reminders (`reminders_on` / `reminders_off`), and ratings per stop with and without them. Descriptive.
   - Time from install to first plan, with and without the video. The video and "So far" add time, so read completion and minutes beside these.
 
 ## Test B — plan quality (blind)

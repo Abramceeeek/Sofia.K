@@ -127,7 +127,22 @@ Run it locally: `CALIBRATION_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.calib
 | For | Endpoints |
 |---|---|
 | The app | `POST /v1/installs` (no login: consent plus an optional tester code, returns a token) · `GET /v1/onboarding` · `POST /v1/me/swipes` · `/conjoint` · `/answers` · `PUT /v1/me/profile` · `GET /v1/me/weights` · `GET /v1/moments` · `POST /v1/me/plans` · `GET /v1/me/plans` · `POST /v1/me/plans/{id}/feedback` · `POST /v1/me/ratings` (refits δ) · `POST /v1/me/events` · `POST /v1/me/safety` · `DELETE /v1/me` |
-| Abram | `POST /v1/admin/moments/reload` (reports drafts and what they're missing) · `POST /v1/admin/users/{id}/plans` (a curated plan for Test B, Wizard of Oz) · `GET /v1/admin/safety` and `POST /v1/admin/safety/{id}/reply` (tracks the "within a few hours" target, D46) · `GET /v1/admin/export` (the Phase 3 data, with no tokens) |
+| Abram | `POST /v1/admin/moments/reload` (reports drafts and what they're missing) · `POST /v1/admin/users/{id}/plans` (a curated plan for Test B, Wizard of Oz) · `GET /v1/admin/safety` and `POST /v1/admin/safety/{id}/reply` (a reply the person sees in the app, D118; tracks the "within a few hours" target, D46) · `GET /v1/admin/export` (the Phase 3 data, with no tokens) |
+
+**Answering a Help & safety message (D118).** The alert reaches you through the webhook (with the phone or email, if the person left one), and `GET /v1/admin/safety` lists those still waiting. Reply by phone or email if there's a contact, and always in the app too, so the person sees it under Help & safety. Run these in Terminal, with the admin token in an environment variable (never paste it anywhere else):
+
+```bash
+export B=https://moments-brain.onrender.com
+export T=...   # the BRAIN_ADMIN_TOKEN value from Render → Environment
+curl -s -H "Authorization: Bearer $T" $B/v1/admin/safety                       # waiting for a first reply
+curl -s -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
+     -d '{"replied_by": "abram", "text": "Hi, it'"'"'s Abram. Are you somewhere safe?"}' $B/v1/admin/safety/12/reply
+curl -s -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
+     -d '{"replied_by": "abram", "resolved": true}' $B/v1/admin/safety/12/reply  # sorted: deletes their contact
+curl -s -H "Authorization: Bearer $T" "$B/v1/admin/safety?all=true"             # every message, with replies
+```
+
+A contact is deleted when you mark the message resolved, and at the latest after 30 days. The first reply is timed against the "within a few hours" target (D46).
 
 **Guardrails in the code:**
 - **No audio** is ever stored.
