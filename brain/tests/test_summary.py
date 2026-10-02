@@ -71,6 +71,10 @@ def test_so_far_then_corrections_are_stored_and_stop_counting(client):
     assert {c["item"]: c["text"] for c in mine}["place:6"] == "Hyde Park wasn't for you." and len(mine) == 3
     users = {u["id"]: u for u in ex["users"]}
     assert users[uid]["profile"]["why_travel"] == ["curious"]
+    # a place name that starts "The" reads mid-sentence
+    client.post("/v1/me/swipes", headers=h, json={"items": [{"item": 11, "reaction": "loved"}]})
+    texts = {i["id"]: i["text"] for i in client.get("/v1/me/summary", headers=h).json()["items"]}
+    assert texts["place:11"] == "You loved the view from the top of Greenwich Park: a climb to a big view."
     # deleting the person deletes their corrections too
     client.delete("/v1/me", headers=h)
     assert not [c for c in client.get("/v1/admin/export", headers=ADMIN).json()["corrections"]

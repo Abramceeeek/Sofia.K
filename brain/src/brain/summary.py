@@ -12,6 +12,7 @@ from __future__ import annotations
 from collections import Counter
 
 from .features import conjoint_plan_features, leg_features
+from .reasons import _mid
 
 # The "this or that" attributes (conjoint_design.csv), in the order the app shows them, and the features each one
 # moves. A corrected "choice:<attribute>" drops those features from every this-or-that answer.
@@ -123,7 +124,7 @@ def items(*, feelings: list[str], swipes: list[tuple[int, str]], places: dict[in
     for item, r in latest.items():
         if r == "loved" and item in places and f"place:{item}" not in corrected:
             name, phrase = places[item]
-            out.append({"id": f"place:{item}", "text": f"You loved {name}" + (f": {phrase}." if phrase else ".")})
+            out.append({"id": f"place:{item}", "text": f"You loved {_mid(name)}" + (f": {phrase}." if phrase else ".")})
     for key, r, want in kinds:
         if f"kind:{key}" in corrected or key not in phrases:
             continue

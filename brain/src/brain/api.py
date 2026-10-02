@@ -10,7 +10,7 @@ import hashlib
 import secrets
 import uuid
 from contextlib import asynccontextmanager
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import yaml
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Response
@@ -86,6 +86,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.travel = LondonEstimate()
         with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
             _reload_moments(s, settings)
+            _purge_contacts(s)           # D118: safety contacts never outlive CONTACT_DAYS
         yield
         engine.dispose()
 
@@ -439,7 +440,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {**plan_out(row), "title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
                 "solver_status": plan.status, "blind": body.blind,
-                "feel_line": None if body.blind else reasons.feel_line(stops, by_id),
+                "feel_line": None if body.blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
                 "basis": None if body.blind else reasons.basis(
                     sum(sw.reaction in ("loved", "fine", "didnt_enjoy", "havent_been") for sw in user.swipes),
                     n_choices, len(rated), len(feelings),
@@ -523,10 +524,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def safety(body: SafetyIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
         alert = db.SafetyAlert(user_id=user.id, message=body.message)
         s.add(alert)
+        s.flush()
+        contact = (body.contact or "").strip() or None
+        if contact:   # D118: only to reply to this message; deleted when resolved
+            s.add(db.SafetyContact(alert_id=alert.id, contact=contact))
         s.commit()
-        alert.notified = notify.send_alert(settings.alert_webhook_url, alert.id, user.id, body.message)
+        alert.notified = notify.send_alert(settings.alert_webhook_url, alert.id, user.id, body.message, contact)
         s.commit()
         return {"alert_id": alert.id, "message": notify.USER_MESSAGE}
+
+    @app.get("/v1/me/safety")
+    def my_safety(user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """D118: the person's Help & safety messages and the replies to them, newest first."""
+        alerts = s.scalars(select(db.SafetyAlert).where(db.SafetyAlert.user_id == user.id)
+                           .order_by(db.SafetyAlert.created_at.desc()))
+        return [{"id": a.id, "message": a.message, "created_at": a.created_at.isoformat(),
+                 "contact_kept": a.contact is not None,
+                 "replies": [{"text": r.text, "created_at": r.created_at.isoformat()} for r in a.replies]}
+                for a in alerts]
 
     # ---- sharing a rated moment (D114) -----------------------------------------------------
     @app.get("/v1/me/referral")
@@ -566,21 +581,33 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return _reload_moments(s, settings)
 
     @app.get("/v1/admin/safety", dependencies=[Depends(admin)])
-    def open_alerts(s: Session = Depends(session)):
-        rows = s.scalars(select(db.SafetyAlert).where(db.SafetyAlert.first_reply_at.is_(None))
-                         .order_by(db.SafetyAlert.created_at))
+    def open_alerts(s: Session = Depends(session), include_replied: bool = Query(default=False, alias="all")):
+        """Alerts with no reply yet (`?all=true`: every alert, with its replies). D118: with the contact, if one is
+        still kept."""
+        _purge_contacts(s)
+        q = select(db.SafetyAlert).order_by(db.SafetyAlert.created_at)
+        rows = s.scalars(q if include_replied else q.where(db.SafetyAlert.first_reply_at.is_(None)))
         return [{"id": a.id, "user_id": a.user_id, "message": a.message, "created_at": a.created_at.isoformat(),
-                 "notified": a.notified} for a in rows]
+                 "notified": a.notified, "contact": a.contact.contact if a.contact else None,
+                 "replies": [{"text": r.text, "by": r.replied_by, "created_at": r.created_at.isoformat()}
+                             for r in a.replies]} for a in rows]
 
     @app.post("/v1/admin/safety/{alert_id}/reply", dependencies=[Depends(admin)])
     def mark_replied(alert_id: int, body: SafetyReplyIn, s: Session = Depends(session)):
         a = s.get(db.SafetyAlert, alert_id)
         if a is None:
             raise HTTPException(404, "no such alert")
-        a.first_reply_at, a.replied_by = datetime.now(timezone.utc), body.replied_by
+        if a.first_reply_at is None:
+            a.first_reply_at, a.replied_by = datetime.now(timezone.utc), body.replied_by
+        if body.text:   # D118: shown to the person under Help & safety
+            s.add(db.SafetyReply(alert_id=a.id, text=body.text, replied_by=body.replied_by))
+        if body.resolved and a.contact is not None:   # D118: the contact goes as soon as it's sorted
+            s.delete(a.contact)
         s.commit()
         created = a.created_at if a.created_at.tzinfo else a.created_at.replace(tzinfo=timezone.utc)
-        return {"id": a.id, "minutes_to_first_reply": round((a.first_reply_at - created).total_seconds() / 60, 1)}
+        first = a.first_reply_at if a.first_reply_at.tzinfo else a.first_reply_at.replace(tzinfo=timezone.utc)
+        return {"id": a.id, "minutes_to_first_reply": round((first - created).total_seconds() / 60, 1),
+                "resolved": body.resolved}
 
     @app.post("/v1/admin/users/{user_id}/plans", status_code=201, dependencies=[Depends(admin)])
     def push_curated_plan(user_id: str, body: CuratedPlanIn, s: Session = Depends(session)):
@@ -614,11 +641,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ("users", db.User), ("swipes", db.Swipe), ("conjoint_choices", db.ConjointChoice),
             ("answers", db.Answer), ("plans", db.Plan), ("ratings", db.Rating), ("events", db.Event),
             ("safety_alerts", db.SafetyAlert), ("referrals", db.Referral), ("link_opens", db.LinkOpen),
-            ("category_answers", db.CategoryAnswer), ("corrections", db.Correction)]} | {
+            ("category_answers", db.CategoryAnswer), ("corrections", db.Correction),
+            ("safety_replies", db.SafetyReply)]} | {   # D118: never the contacts people left
             # D116: visitors from abroad are their own group, left out of the Test B analysis
             "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
 
     return app
+
+
+CONTACT_DAYS = 30   # D118: a contact left with a safety message is deleted when resolved, and at the latest after this
+
+
+def _purge_contacts(s: Session) -> int:
+    cutoff = datetime.now(timezone.utc) - timedelta(days=CONTACT_DAYS)
+    old = [c for c in s.scalars(select(db.SafetyContact))
+           if (c.created_at if c.created_at.tzinfo else c.created_at.replace(tzinfo=timezone.utc)) < cutoff]
+    for c in old:
+        s.delete(c)
+    s.commit()
+    return len(old)
 
 
 def _reload_moments(s: Session, settings: Settings) -> dict:

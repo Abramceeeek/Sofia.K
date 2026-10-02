@@ -148,7 +148,10 @@ class EventIn(BaseModel):
 
 class SafetyIn(BaseModel):
     message: str = Field(default="", max_length=2000)
+    contact: str | None = Field(default=None, max_length=120)   # D118: optional phone or email, only to reply
 
 
 class SafetyReplyIn(BaseModel):
     replied_by: str = Field(max_length=64)
+    text: str | None = Field(default=None, max_length=2000)    # D118: shown to the person in Help & safety
+    resolved: bool = False                                      # D118: deletes the contact they left

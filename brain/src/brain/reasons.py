@@ -170,9 +170,38 @@ def _stop_feel(m: Moment | None, lunch_slot: bool, peak: bool, first: bool, take
     return "one more stop", "other"
 
 
-def feel_line(stops: list[dict], by_id: dict[str, Moment]) -> str:
+# D118: the feelings as words for a day ("A curious, peaceful day: …"), used only when the stops really match
+FEELING_ADJ = {"restored": "restoring", "excited": "lively", "connected": "sociable", "curious": "curious",
+               "peaceful": "peaceful"}
+FIT = 0.75   # a stop fits a feeling when its tags (0-1) score at least this on the feeling's features
+
+
+def _fits(m: Moment, feeling: str) -> bool:
+    """A stop fits a feeling when its own tags carry it: positive features as tagged (0-1), and a negative one (crowds,
+    for "peaceful") as its absence, so a quiet place counts and a crowded one doesn't."""
+    t = {k: v / 2.0 for k, v in _tags(m).items()}
+    score = sum(w * t.get(k, 0.0) if w > 0 else -w * (1.0 - t.get(k, 0.0))
+                for k, w in FEELINGS.get(feeling, {}).items())
+    return score >= FIT
+
+
+def day_feelings(stops: list[dict], by_id: dict[str, Moment], feelings: list[str]) -> list[str]:
+    """The person's own feelings (screen 5) that this day really carries: at least half its stops with a card fit, and
+    at least two of them when there are two or more. Never a feeling they didn't pick."""
+    cards = [by_id[s["moment_id"].split("#")[0]] for s in stops
+             if not s["moment_id"].startswith("lunch@") and s["moment_id"].split("#")[0] in by_id]
+    out = []
+    for f in feelings:
+        n = sum(_fits(m, f) for m in cards)
+        if cards and n * 2 >= len(cards) and n >= min(2, len(cards)):
+            out.append(f)
+    return out
+
+
+def feel_line(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] = ()) -> str:
     """"Some history, one big reveal, good food, then the river": one phrase per stop, the day's high point (the
-    highest predicted stop) marked, the last after "then". Plain words from the cards' own tags."""
+    highest predicted stop) marked, the last after "then". Plain words from the cards' own tags.
+    D118: with the person's feelings, "A curious, peaceful day: some history, …" when the stops really carry them."""
     if not stops:
         return ""
     preds = [(s.get("predicted") if s.get("predicted") is not None else -99, i) for i, s in enumerate(stops)]
@@ -192,4 +221,7 @@ def feel_line(stops: list[dict], by_id: dict[str, Moment]) -> str:
         text = phrases[0]
     else:
         text = ", ".join(phrases[:-1]) + ", then " + phrases[-1]
+    words = [FEELING_ADJ[f] for f in day_feelings(stops, by_id, list(feelings)) if f in FEELING_ADJ]
+    if words:
+        text = f"A {', '.join(words)} day: {text}"
     return text[:1].upper() + text[1:]

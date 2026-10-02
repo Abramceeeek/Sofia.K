@@ -127,6 +127,29 @@ class SafetyAlert(Base):
     first_reply_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     replied_by: Mapped[str | None] = mapped_column(String(64))
 
+    contact = relationship("SafetyContact", cascade="all, delete-orphan", passive_deletes=True, uselist=False)
+    replies = relationship("SafetyReply", cascade="all, delete-orphan", passive_deletes=True,
+                           order_by="SafetyReply.created_at")
+
+
+class SafetyContact(Base):
+    """D118: a phone number or email the person chose to leave with a Help & safety message, so a person can reply.
+    Used for nothing else; deleted when Abram marks the message resolved, and in any case after CONTACT_DAYS."""
+    __tablename__ = "safety_contacts"
+    alert_id: Mapped[int] = mapped_column(ForeignKey("safety_alerts.id", ondelete="CASCADE"), primary_key=True)
+    contact: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class SafetyReply(Base):
+    """D118: a person's reply to a Help & safety message, shown to the person in the app."""
+    __tablename__ = "safety_replies"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    alert_id: Mapped[int] = mapped_column(ForeignKey("safety_alerts.id", ondelete="CASCADE"), index=True)
+    text: Mapped[str] = mapped_column(Text)
+    replied_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
 
 class CategoryAnswer(Base):
     """D116: a visitor's reaction to a kind of place (data/categories.yaml), used like a place swipe."""
