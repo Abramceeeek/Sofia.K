@@ -24,6 +24,7 @@ struct HomeView: View {
             }
             .navigationTitle("Your day")
             .toolbar(.hidden, for: .navigationBar)
+            .statusBarShade()
             .navigationDestination(for: Stop.self) { stop in
                 StopView(stop: stop)
             }
@@ -117,6 +118,8 @@ struct PlanFormView: View {
                     }
                 }
                 .tint(Theme.accent)
+                .environment(\.timeZone, TimeZone(identifier: "Europe/London") ?? .current)   // London times, 24-hour
+                .environment(\.locale, Locale(identifier: "en_GB"))
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
                 .settle(2)
                 Text("From \(AppConfig.startName), by the Trafalgar Square exit. Lunch is in the plan if the day spans midday.")
@@ -880,7 +883,9 @@ struct MomentHero: View {
                     .padding(rounded ? 18 : 24)
                     .padding(.top, 48)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(LinearGradient(colors: [.clear, Theme.background.opacity(rounded ? 0.92 : 1)],
+                    .background(LinearGradient(stops: [.init(color: .clear, location: 0),
+                                                       .init(color: Theme.background.opacity(0.7), location: 0.3),
+                                                       .init(color: Theme.background.opacity(rounded ? 0.92 : 1), location: 1)],
                                                startPoint: .top, endPoint: .bottom))
                     .allowsHitTesting(false)
                 }
@@ -994,7 +999,8 @@ struct MomentCardBody: View {
         let light = stop.bestLight ?? ""
         let window = stop.bestWindow ?? ""
         if light.isEmpty { return "" }
-        return window.isEmpty ? light : "\(light) On your day: \(window)."
+        let sentence = light.hasSuffix(".") ? light : light + "."
+        return window.isEmpty ? sentence : "\(sentence) On your day: \(window)."
     }
 }
 
@@ -1139,12 +1145,8 @@ struct StopView: View {
         }
         }
         .background(Theme.background)
-        .navigationTitle(stop.title)
+        .navigationTitle("")                       // the title is on the picture
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) { EmptyView() }   // the title is on the picture
-        }
-        .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar(.visible, for: .navigationBar)
         .confirmationDialog("Swap \(stop.title) for something else?", isPresented: $confirmSwap,
                             titleVisibility: .visible) {

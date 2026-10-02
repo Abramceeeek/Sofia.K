@@ -48,7 +48,7 @@ struct SafetyView: View {
                                 .background(Theme.background, in: RoundedRectangle(cornerRadius: 14))
                                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.outline, lineWidth: 1))
                             // D118: so a reply can reach you even if you don't open the app again
-                            LineField(placeholder: "Phone or email, so we can reply (optional)", text: $contact)
+                            LineField(placeholder: "Phone or email (optional)", text: $contact)
                                 .textContentType(.telephoneNumber)
                                 .autocorrectionDisabled()
                                 .textInputAutocapitalization(.never)
@@ -79,10 +79,9 @@ struct SafetyView: View {
             }
             .background(Theme.background)
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("Help & safety")
+            .navigationTitle("")                    // the title is the page's own, in the serif
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) { EmptyView() }
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
             }
             .task {
@@ -334,6 +333,7 @@ struct HomeViewForm: View {
         NavigationStack {
             PlanFormView(onHelp: {}, onData: {})
                 .toolbar(.hidden, for: .navigationBar)
+                .statusBarShade()
         }
     }
 }

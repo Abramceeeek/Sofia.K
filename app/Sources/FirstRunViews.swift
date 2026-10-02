@@ -42,6 +42,7 @@ struct WelcomeView: View {
             .padding(.bottom, 16)
         }
         .scrollBounceBehavior(.basedOnSize)
+        .statusBarShade()
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 2) {
                 PrimaryButton(title: "Show me an example day") { model.route = .example }
@@ -179,6 +180,7 @@ struct ExampleDayView: View {
             .padding(.bottom, 24)
         }
         .background(Theme.background)
+        .statusBarShade()
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 6) {
                 PrimaryButton(title: "Make one that fits me") { model.afterExample() }
@@ -308,5 +310,6 @@ struct ConsentView: View {
             .padding(.vertical, 16)
         }
         .background(Theme.background)
+        .statusBarShade()
     }
 }

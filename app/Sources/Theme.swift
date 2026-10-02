@@ -70,8 +70,13 @@ enum Theme {
         bar.shadowColor = .clear
         bar.largeTitleTextAttributes = [.foregroundColor: uiInk]
         bar.titleTextAttributes = [.foregroundColor: uiInk]
+        // at the top of a page the bar is clear, so the moment card's photo runs under it; once scrolled, it's solid
+        let edge = UINavigationBarAppearance()
+        edge.configureWithTransparentBackground()
+        edge.titleTextAttributes = [.foregroundColor: uiInk]
+        edge.largeTitleTextAttributes = [.foregroundColor: uiInk]
         UINavigationBar.appearance().standardAppearance = bar
-        UINavigationBar.appearance().scrollEdgeAppearance = bar
+        UINavigationBar.appearance().scrollEdgeAppearance = edge
         UINavigationBar.appearance().compactAppearance = bar
     }
 }
@@ -124,6 +129,13 @@ extension View {
     /// Lists and forms on the page colour instead of the system grey, with the rows on the card colour.
     func themedList() -> some View {
         scrollContentBackground(.hidden).background(Theme.background)
+    }
+
+    /// On screens without a navigation bar: what scrolls up under the status bar goes behind the page colour.
+    func statusBarShade() -> some View {
+        safeAreaInset(edge: .top, spacing: 0) {
+            Color.clear.frame(height: 0).background(Theme.background)
+        }
     }
 
     /// A rounded card on the surface colour.

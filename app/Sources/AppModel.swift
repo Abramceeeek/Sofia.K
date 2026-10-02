@@ -247,7 +247,7 @@ final class AppModel {
     // ---- D117: short reactions between answers, from the answer itself ------------------------------
 
     static let demoReactions = ["places": "Got it: big museums full of history.",
-                                "categories": "Got it: views from above.",
+                                "categories": "Got it: big museums.",
                                 "thisorthat": "So far you've picked the relaxed day with fewer stops every time."]
 
     /// A place swipe or a kind of place: "loved", "didnt_enjoy" or "want_yes" have words; the rest say nothing.

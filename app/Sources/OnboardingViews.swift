@@ -33,6 +33,7 @@ struct OnboardingView: View {
             .background(Theme.background)
             .navigationTitle(model.stepTitle)
             .toolbar(.hidden, for: .navigationBar)
+            .statusBarShade()
         }
     }
 }
@@ -550,7 +551,7 @@ struct BestHourStep: View {
                 // D117: Abram asking the question himself, as a small tile beside it (left out until the clip exists)
                 ClipTile(name: "ask_moment", label: "Video: Abram asks this question. Tap to play.") {
                     PageTitle(text: q?.text ?? "Tell us about a great moment from a recent day out.",
-                              font: Theme.serif(28, relativeTo: .title))
+                              font: Theme.title2)
                 }
                 .settle(0)
                 if let examples = q?.examples, !examples.isEmpty {
