@@ -1,6 +1,6 @@
 """D114: sharing a rated moment, and the referral funnel for Test C's K.
 
-A person who rates a stop can share a card (the moment's photo, their own rating, "planned with Days out") with a link
+A person who rates a stop can share a card (the moment's photo, their own rating, "Planned with ODYS") with a link
 to `/r/<code>?m=<moment>`. The funnel is: shared (the app's `share_sent` event) → opened (the page's script, so link
 previews don't count) → installed with `src = "ref:<code>"` → onboarded (`onboarding_done`) → first plan.
 
@@ -46,10 +46,10 @@ def page(code: str, known: bool, moment_title: str | None, moment_id: str | None
     title = f"<p class=\"moment\">{esc(moment_title)}</p>" if moment_title else ""
     deep = f"daysout://r/{code}" + (f"?m={esc(moment_id)}" if moment_id else "")
     if testflight_url:
-        get = (f"<a class=\"button\" href=\"{esc(testflight_url)}\">Get Days out</a>"
+        get = (f"<a class=\"button\" href=\"{esc(testflight_url)}\">Get ODYS</a>"
                "<p class=\"small\">It installs through Apple's TestFlight, the app for testing new apps.</p>")
     else:
-        get = ("<p>Days out is in a small closed test for now. Ask the person who sent you this how to join.</p>")
+        get = ("<p>ODYS is in a small closed test for now. Ask the person who sent you this how to join.</p>")
     # counted from the page's script, so link previews (which don't run scripts) don't count; nothing is stored on
     # the reader's device (no cookie, no local storage: PECR), so a reload counts again
     count = (f"<script>try{{fetch('/r/{code}/open',{{method:'POST',headers:{{'Content-Type':'application/json'}},"
@@ -58,25 +58,25 @@ def page(code: str, known: bool, moment_title: str | None, moment_id: str | None
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>A day out for you</title>
 <style>
-:root {{ --bg:#f6f2ea; --ink:#1d1b18; --soft:#5d574e; --accent:#c9822b; --card:#fffdf8; }}
-@media (prefers-color-scheme: dark) {{ :root {{ --bg:#121417; --ink:#f1ece2; --soft:#aaa396; --accent:#e0a458; --card:#1c1f23; }} }}
+:root {{ --bg:#111317; --ink:#F4EBDD; --soft:#A89F92; --accent:#FFC665; --card:#1A1D23; color-scheme:dark; }}
 body {{ margin:0; background:var(--bg); color:var(--ink); font:17px/1.5 -apple-system,system-ui,sans-serif; }}
 main {{ max-width:30rem; margin:0 auto; padding:32px 16px; }}
-h1 {{ font:600 1.6rem/1.25 Georgia,serif; margin:0 0 12px; }}
-.moment {{ font:600 1.2rem/1.3 Georgia,serif; background:var(--card); padding:14px 16px; border-radius:12px;
-           border-left:4px solid var(--accent); }}
-.button {{ display:block; text-align:center; background:var(--accent); color:#1d1b18; font-weight:600;
-           text-decoration:none; padding:14px; border-radius:14px; margin:18px 0 6px; }}
-.second {{ background:transparent; color:var(--ink); border:1px solid var(--soft); }}
+.mark {{ font:400 1.1rem/1 Georgia,serif; letter-spacing:.3em; color:var(--ink); margin:0 0 28px; }}
+h1 {{ font:400 2rem/1.15 Georgia,serif; margin:0 0 14px; }}
+.moment {{ font:400 1.3rem/1.3 Georgia,serif; background:var(--card); padding:16px 18px; border-radius:18px; }}
+.button {{ display:block; text-align:center; background:var(--accent); color:#111317; font-weight:600;
+           text-decoration:none; padding:16px; border-radius:28px; margin:18px 0 6px; }}
+.second {{ background:transparent; color:var(--ink); border:1px solid rgba(244,235,221,.18); }}
 .small {{ color:var(--soft); font-size:.9rem; }}
 a {{ color:var(--accent); }}
 </style></head><body><main>
+<p class="mark">ODYS</p>
 <h1>A friend thinks you'd love this day</h1>
 {title}
-<p>Days out plans a London day around what you enjoy, not a list of famous sights. It's a small research test run
+<p>ODYS plans a London day around what you enjoy, not a list of famous sights. It's a small research test run
 by one person in London. Nothing is sold.</p>
 {get}
-<a class="button second" href="{deep}">Already installed? Open Days out</a>
+<a class="button second" href="{deep}">Already installed? Open ODYS</a>
 <p class="small">This page counts that it was opened. It stores nothing about you: no address, no device details,
 nothing on your device.
 <a href="/privacy">Privacy notice</a></p>

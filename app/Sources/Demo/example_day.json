@@ -24,6 +24,8 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": null,
+   "feel_word": "Curious",
+   "reveal": false,
    "approach_steps": [
     {
      "label": "From",
@@ -113,6 +115,8 @@
    "familiar": false,
    "rateable": false,
    "worth_gbp": null,
+   "feel_word": "Lunch",
+   "reveal": false,
    "approach_steps": [],
    "best_light": "",
    "best_window": "",
@@ -148,6 +152,8 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": null,
+   "feel_word": "Awe",
+   "reveal": false,
    "approach_steps": [
     {
      "label": "From",

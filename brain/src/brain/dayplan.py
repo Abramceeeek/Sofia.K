@@ -354,6 +354,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             m = by_id[_base(st.moment_id)]
             worth = value_gbp(pop, b, m, cond, aspiration_match=asp[m.id])   # "worth about £V to you" (D88, D112)
             stop = {"worth_gbp": round(worth) if worth >= 1 else None,
+                    "feel_word": feel_word(m), "reveal": is_reveal(m),   # D119: "How the day moves", "The reveal"
                     # the moment card's approach line (D112): from where, the path, where you arrive; card text only
                     "approach_steps": [{"label": k, "text": v} for k, v in
                                        (("From", clean(m.approach.from_)), ("The way in", clean(m.approach.path)),
@@ -637,6 +638,37 @@ def _stop_lines(s: dict) -> list[str]:
 # The priors' labels are written for Abram's review ("... inspires them"); the app speaks to the person
 APP_LABELS = {"aspiration_match": "one of your interests"}   # D110: plain words, not "fields that inspire you"
 
+# D119: one word for the kind of moment a stop is, on "How the day moves" and the stop's line. It comes from the
+# card's tags, so it's the same for everyone: a description of the moment, never a prediction about the person.
+# First match wins; a card can set its own (`feel_word`) when the tags pick a poor one.
+FEEL_RULES = (
+    ("Awe", lambda t: t("awe") >= 2),
+    ("Active", lambda t: t("active") >= 2),
+    ("Absorbed", lambda t: t("absorption") >= 2),
+    ("Big views", lambda t: t("movement_views") >= 2),
+    ("Calm", lambda t: t("green_nature") >= 2),
+    ("Lively", lambda t: t("food") >= 2),
+    ("Wonder", lambda t: t("contrast_reveal") >= 2),
+    ("Curious", lambda t: t("history_culture") >= 2),
+)
+
+
+def feel_word(m: Moment | None) -> str:
+    """"Lunch" for a lunch slot; "Wandering" for an area vibe (D72); else the first rule the card's tags meet."""
+    if m is None:
+        return "Lunch"
+    if m.feel_word:
+        return m.feel_word
+    if m.kind == "area":
+        return "Wandering"
+    t = lambda name: m.tag(name) or 0
+    return next((w for w, rule in FEEL_RULES if rule(t)), "Easy")
+
+
+def is_reveal(m: Moment | None) -> bool:
+    """D119: the arrival is the moment (a strong contrast/reveal tag), so the app marks it "The reveal"."""
+    return m is not None and (m.tag("contrast_reveal") or 0) >= 2
+
 
 def stop_point(stop_id: str, by_id: dict[str, Moment], brief: Brief) -> Point | None:
     """Where a stop's map pin goes: the card's start, or for a flexible lunch slot, where it sits."""
@@ -659,6 +691,7 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "lunch": s["lunch"],
             "familiar": s.get("familiar", False), "rateable": not s["moment_id"].startswith("lunch@"),
             "worth_gbp": s.get("worth_gbp"),
+            "feel_word": s.get("feel_word") or "Lunch", "reveal": s.get("reveal", False),   # D119
             "approach_steps": s.get("approach_steps") or [],
             "best_light": s.get("best") or "",     # the card's light line, whatever the stop's time (D112)
             "best_window": next((f"{hhmm(a)}–{hhmm(b)}" for a, b in s.get("best_windows") or []), ""),

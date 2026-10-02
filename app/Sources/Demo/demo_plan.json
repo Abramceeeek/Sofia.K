@@ -26,6 +26,8 @@
    "familiar": false,
    "rateable": false,
    "worth_gbp": null,
+   "feel_word": "Lunch",
+   "reveal": false,
    "approach_steps": [],
    "best_light": "",
    "best_window": "",
@@ -62,6 +64,8 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": 32,
+   "feel_word": "Big views",
+   "reveal": true,
    "approach_steps": [
     {
      "label": "From",
@@ -185,6 +189,8 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": 28,
+   "feel_word": "Calm",
+   "reveal": true,
    "approach_steps": [
     {
      "label": "From",
@@ -303,6 +309,8 @@
    "familiar": true,
    "rateable": true,
    "worth_gbp": 27,
+   "feel_word": "Awe",
+   "reveal": true,
    "approach_steps": [
     {
      "label": "From",
@@ -410,7 +418,7 @@
  "value": 3.126,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-10-02T12:14:20.522447+00:00",
+ "created_at": "2026-10-02T17:10:42.196771+00:00",
  "title": "Saturday 31 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",

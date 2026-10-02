@@ -95,6 +95,7 @@ class Moment(BaseModel):
     id: str
     title: str
     plan_title: str | None = None  # D102: the title shown in plans, when the automatic "Place: title" reads badly
+    feel_word: str | None = None   # D119: the word on "How the day moves" when the tags pick a poor one ("Drifting")
     status: str = "draft"          # draft | ready
     swipe: bool = False            # part of the onboarding swipe set
     # D72: "moment" is one specific experience; "area" is an area vibe (a wander, a street scene)

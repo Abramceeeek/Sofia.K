@@ -10,6 +10,7 @@
 id: m_uber_boat_west_night
 title: "The river at night, from Greenwich to Westminster"
 plan_title: "The Uber Boat at night, from Greenwich to Westminster"   # D102: the place named in the plan
+feel_word: "Drifting"   # D119: the word on "How the day moves" (the tags pick a poorer one)
 status: ready
 swipe: false
 kind: moment

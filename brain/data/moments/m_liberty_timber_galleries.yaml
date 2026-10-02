@@ -7,6 +7,7 @@
 # VERIFIED by Claude from official sources and marked ready, 2026-09-30 (D91). Tags are Claude's judgement.
 id: m_liberty_timber_galleries
 title: "Liberty's wooden galleries, built from two old warships"
+feel_word: "Browsing"   # D119: the word on "How the day moves" (the tags pick a poorer one)
 status: ready
 swipe: false
 kind: moment

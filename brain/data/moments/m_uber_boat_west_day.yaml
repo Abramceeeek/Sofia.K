@@ -7,6 +7,7 @@
 id: m_uber_boat_west_day
 title: "Up the river from Greenwich to Battersea, by day"
 plan_title: "The Uber Boat up the river from Greenwich to Battersea, by day"   # D102: the place named in the plan
+feel_word: "Drifting"   # D119: the word on "How the day moves" (the tags pick a poorer one)
 status: ready
 swipe: false
 kind: moment
