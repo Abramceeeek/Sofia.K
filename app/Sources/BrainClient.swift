@@ -53,12 +53,13 @@ final class BrainClient {
         _ = try? await session.data(from: base.appendingPathComponent("v1/health"))
     }
 
-    /// `src` is "app", or "ref:<code>" for someone who arrived through a share link (D114).
-    func install(research: Bool, src: String = "app") async throws {
+    /// `src` is "app", or "ref:<code>" for someone who arrived through a share link (D114). Build 2: `code` is an
+    /// optional tester code from the welcome screen; the Brain stores it as the source and sets the channel.
+    func install(research: Bool, src: String = "app", code: String? = nil) async throws {
         if demo { return }
         let body = InstallRequest(channel: "stranger", src: src,
                                   consent: ConsentBody(version: AppConfig.consentVersion, research: research,
-                                                       aiProcessing: false))
+                                                       aiProcessing: false), code: code)
         let out: InstallResponse = try await call("POST", "v1/installs", body)
         token = out.token
         Keychain.save(out.token)
@@ -132,6 +133,51 @@ final class BrainClient {
         return try await call("GET", "v1/me/safety")
     }
 
+    // ---- Build 2: the survey and the blind Test B pair ----------------------------------------------------
+
+    func survey(_ body: SurveyBody) async throws {
+        try await send("POST", "v1/me/survey", body)
+    }
+
+    func makePair(_ intent: PairIntent) async throws -> PairResponse {
+        if demo { return try Self.bundled("demo_pair") }
+        return try await call("POST", "v1/me/testb/pair", intent)
+    }
+
+    func pairFeedback(_ body: PairFeedback) async throws -> PairResponse {
+        if demo { return try Self.bundled("demo_pair_done") }
+        return try await call("POST", "v1/me/testb/pair/feedback", body)
+    }
+
+    // ---- D120: trips -----------------------------------------------------------------------------------------
+
+    /// "Flying from": airports and city codes matching what's typed.
+    func places(_ query: String) async throws -> [TripPlace] {
+        if demo {
+            let all: [TripPlace] = try Self.bundled("demo_places")
+            let q = query.lowercased()
+            return q.isEmpty ? all : all.filter { $0.city.lowercased().hasPrefix(q) || $0.code.lowercased() == q }
+        }
+        var parts = URLComponents()
+        parts.queryItems = [URLQueryItem(name: "q", value: query)]
+        return try await call("GET", "v1/trips/places" + (parts.percentEncodedQuery.map { "?" + $0 } ?? ""))
+    }
+
+    func flights(_ search: FlightSearch) async throws -> FlightResults {
+        if demo { return try Self.bundled("demo_flights") }
+        return try await call("POST", "v1/trips/flights", search)
+    }
+
+    func stays(_ search: StaySearch) async throws -> StayResults {
+        if demo { return try Self.bundled("demo_stays") }
+        return try await call("POST", "v1/trips/stays", search)
+    }
+
+    func tripDays(_ request: TripDaysRequest) async throws -> TripDaysResponse {
+        if demo { return try Self.bundled("demo_trip_days") }
+        return try await call("POST", "v1/me/trips/days", request)
+    }
+
     func event(_ name: String, _ props: [String: String] = [:]) async {
         try? await send("POST", "v1/me/events", EventRequest(name: name, props: props))
     }
@@ -158,7 +204,14 @@ final class BrainClient {
     }
 
     private func raw(_ method: String, _ path: String, _ body: Data?) async throws -> Data {
-        var request = URLRequest(url: base.appendingPathComponent(path))
+        // a path with a query ("v1/trips/places?q=tash"): the query is added on its own, so "?" isn't escaped
+        let parts = path.split(separator: "?", maxSplits: 1).map(String.init)
+        var url = base.appendingPathComponent(parts[0])
+        if parts.count == 2, var comps = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            comps.percentEncodedQuery = parts[1]
+            url = comps.url ?? url
+        }
+        var request = URLRequest(url: url)
         request.httpMethod = method
         if path != "v1/installs" {
             guard let token else { throw BrainError.noToken }

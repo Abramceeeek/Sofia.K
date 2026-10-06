@@ -1,37 +1,76 @@
 import MapKit
 import SwiftUI
 
-/// Home: the current plan, or the form to make one. Help & safety and your data are always one tap away (D119: at the
-/// top of the screen, as in the ODYS design, instead of in a navigation bar).
+/// D120 (ODYS Trips): the Trip tab. Home is "Where to next?" (plan a trip, your day, your trips); your day, a trip and
+/// a trip's day open from it. Help & safety and your data stay one tap away at the top (and in the You tab).
 struct HomeView: View {
     @State private var showSafety = false
     @State private var showSettings = false
     @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        NavigationStack(path: $model.path) {   // D118: a rating reminder opens its stop
+            TripHome(onHelp: { showSafety = true }, onData: { showSettings = true })
+                .toolbar(.hidden, for: .navigationBar)
+                .statusBarShade()
+                .navigationDestination(for: TripDest.self) { dest in
+                    switch dest {
+                    case .day: DayView(onHelp: { showSafety = true }, onData: { showSettings = true }, pushed: true)
+                    case .trip(let id): TripOverview(tripId: id, onHelp: { showSafety = true })
+                    case .tripDay(let id, let index): TripDayView(tripId: id, index: index)
+                    }
+                }
+                .navigationDestination(for: Stop.self) { stop in
+                    StopView(stop: stop)
+                }
+        }
+        .sheet(isPresented: $showSafety) { SafetyView() }
+        .sheet(isPresented: $showSettings) { SettingsView() }
+        .fullScreenCover(isPresented: $model.showNow) { NowView() }   // D119: during the day
+    }
+}
+
+/// Your day: the current plan (screen 9), or the form to make one (screen 8).
+struct DayView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    var onHelp: () -> Void = {}
+    var onData: () -> Void = {}
+    var pushed = false
     var layout: String?          // CI screenshots only: "list" or "map"
     var reveal: Double?          // CI screenshots only: the plan reveal frozen part-way (D117)
     var scroll: String?          // CI screenshots only: further down the plan ("stops")
 
     var body: some View {
-        @Bindable var model = model
-        NavigationStack(path: $model.path) {   // D118: a rating reminder opens its stop
-            Group {
-                if let plan = model.plan {
-                    PlanView(plan: plan, forcedLayout: layout, forcedReveal: reveal, demoScroll: scroll,
-                             onHelp: { showSafety = true }, onData: { showSettings = true })
-                } else {
-                    PlanFormView(onHelp: { showSafety = true }, onData: { showSettings = true })
-                }
-            }
-            .navigationTitle("Your day")
-            .toolbar(.hidden, for: .navigationBar)
-            .statusBarShade()
-            .navigationDestination(for: Stop.self) { stop in
-                StopView(stop: stop)
+        Group {
+            if let plan = model.plan {
+                PlanView(plan: plan, forcedLayout: layout, forcedReveal: reveal, demoScroll: scroll,
+                         onHelp: onHelp, onData: onData, onBack: pushed ? { dismiss() } : nil)
+            } else {
+                PlanFormView(onHelp: onHelp, onData: onData)
             }
         }
-        .sheet(isPresented: $showSafety) { SafetyView() }
-        .sheet(isPresented: $showSettings) { SettingsView() }
-        .fullScreenCover(isPresented: $model.showNow) { NowView() }   // D119: during the day
+        .navigationTitle("Your day")
+        .toolbar(.hidden, for: .navigationBar)
+        .statusBarShade()
+    }
+}
+
+/// CI screenshots: the day on its own, as it was before the tabs (screens 8-10).
+struct DayScreen: View {
+    @Environment(AppModel.self) private var model
+    var layout: String?
+    var reveal: Double?
+    var scroll: String?
+
+    var body: some View {
+        @Bindable var model = model
+        NavigationStack {
+            DayView(layout: layout, reveal: reveal, scroll: scroll)
+                .navigationDestination(for: Stop.self) { stop in StopView(stop: stop) }
+        }
+        .fullScreenCover(isPresented: $model.showNow) { NowView() }
     }
 }
 
@@ -217,6 +256,7 @@ struct PlanView: View {
     var demoScroll: String?                    // CI screenshots only: scrolled to this part
     var onHelp: () -> Void = {}
     var onData: () -> Void = {}
+    var onBack: (() -> Void)?                  // D120: opened from the Trip tab's home
     @AppStorage("planLayout") private var savedLayout = "list"
     @State private var reveal: Double = 1      // D117: 0…1 through the reveal; 1 = everything shown
     @State private var showNewPlan = false
@@ -230,6 +270,7 @@ struct PlanView: View {
         ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
+                if let onBack { BackLink(action: onBack) }
                 TopBar(eyebrow: Dates.longDay(plan.date) ?? plan.title ?? "Your day", onHelp: onHelp, onData: onData)
                 header
                 if !model.reminderAsked, !plan.isBlind, shown >= 1 {
@@ -251,7 +292,7 @@ struct PlanView: View {
                 }
                 stopList(fractions)
                     .id("stops")
-                Text("Open a stop to see how you'll arrive, or to swap it.")
+                Text(model.lastRequest == nil ? "Open a stop to see how you'll arrive." : "Open a stop to see how you'll arrive, or to swap it.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                 PrimaryButton(title: "Start the day") { model.startDay() }   // D119: "Now", while you're out
@@ -325,7 +366,7 @@ struct PlanView: View {
             }
             .buttonStyle(PressStyle())
             .contextMenu {
-                if stop.rateable {
+                if stop.rateable, model.lastRequest != nil {   // Build 2: never on the Test B plan
                     Button { Task { await model.swap(stop) } } label: {
                         Label("Swap this stop", systemImage: "arrow.triangle.2.circlepath")
                     }
@@ -371,7 +412,9 @@ struct PlanView: View {
                 QuietButton("A few more questions (optional)") { showImprove = true }
             }
             HStack(spacing: 10) {
-                SecondaryButton(title: "Regenerate", disabled: model.busy) { confirmRegenerate = true }
+                if model.lastRequest != nil {   // Build 2: the Test B plan is rated as it was chosen
+                    SecondaryButton(title: "Regenerate", disabled: model.busy) { confirmRegenerate = true }
+                }
                 SecondaryButton(title: "Another day") {
                     model.planAnotherDay()
                     showNewPlan = true
@@ -1123,7 +1166,7 @@ struct StopView: View {
                                 PrimaryButton(title: "Directions in Apple Maps") { openURL(maps) }
                             }
                         }
-                        if stop.rateable {
+                        if stop.rateable, model.lastRequest != nil {   // Build 2: not on the Test B plan
                             HStack(spacing: 10) {
                                 SecondaryButton(title: "Swap this stop", disabled: model.busy) { confirmSwap = true }
                                 SecondaryButton(title: "Regenerate", disabled: model.busy) { confirmRegenerate = true }
@@ -1190,8 +1233,8 @@ struct StopView: View {
                     ArchGlyph()
                     Text("Rated. Thank you.").foregroundStyle(Theme.inkSoft)
                 }
-                if model.myRatings[stop.momentId] != nil {
-                    // D114: for any rating, so rating high never unlocks anything
+                if model.myRatings[stop.momentId] != nil, !stop.isGeneric {
+                    // D114: for any rating, so rating high never unlocks anything (Build 2: a generic stop has no card)
                     SecondaryButton(title: "Share this moment", icon: "square.and.arrow.up") { sharing = true }
                 }
             }

@@ -30,6 +30,31 @@ struct Onboarding: Codable {
     let categories: CategoriesPrompt?
     let conjointWords: [PatternWords]?            // D117: "So far you've picked less walking every time"
     let summary: SummaryText?                     // D117: "So far, I've learned…"
+    let testb: TestBText?                         // Build 2: the blind Plan 1 / Plan 2 pair
+    let survey: SurveyText?                       // Build 2: the Test A survey
+}
+
+/// Build 2: the words around the Test B pair (brain/data/onboarding.yaml `testb`).
+struct TestBText: Codable, Hashable {
+    let intentTitle: String?
+    let moodPrompt: String?
+    let companyPrompt: String?
+    let wishPrompt: String?
+    let intro: String?
+    let choosePrompt: String?
+    let fitPrompt: String?
+    let fitScale: String?
+    let whyPrompt: String?
+}
+
+/// Build 2: the Test A survey's questions (validation/interview-script.md §8).
+struct SurveyText: Codable, Hashable {
+    let title: String?
+    let understood: String?
+    let likePerson: String?
+    let scale: String?
+    let typedOrSpoke: String?
+    let intrusive: String?
 }
 
 /// D117: one "this or that" attribute's two sides in words (brain/summary.py, the same words as "So far").
@@ -290,6 +315,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let reasons: [Reason]?         // D115: "Why we picked this for you"
     let feelWord: String?          // D119: "Awe", "Calm", "Lunch": the kind of moment, from the card (same for everyone)
     let reveal: Bool?              // D119: the arrival is the moment, so the way in marks "The reveal"
+    let lines: [String]?           // Build 2: the stop as text, in the Test B format (the blind pair shows only these)
 
     var id: String { momentId + "@" + arrive }
 
@@ -308,6 +334,7 @@ struct InstallRequest: Encodable {
     let channel: String
     let src: String?
     let consent: ConsentBody
+    var code: String? = nil        // Build 2: a tester code, if one was typed on the welcome screen
 }
 
 struct ConsentBody: Encodable {
@@ -422,4 +449,62 @@ struct SafetyResponse: Decodable {
 struct EventRequest: Encodable {
     let name: String
     let props: [String: String]
+}
+
+// ---- Build 2: the survey and the blind Test B pair ------------------------------------------------------------
+
+struct SurveyBody: Encodable {
+    let understood: Int?
+    let likePerson: Int?
+    let typedOrSpoke: String?
+    let intrusive: String?
+}
+
+/// Screen 18, trip intent: stored with both plans; it changes neither.
+struct PairIntent: Encodable {
+    var mood: String?
+    var company: String?
+    var wish: String?
+}
+
+/// One plan of the pair, in the shared text format: nothing in it says how it was made.
+struct PairPlan: Codable, Hashable, Identifiable {
+    let id: Int
+    let label: String              // "1" or "2"
+    let title: String
+    let summary: [String]
+    let totals: Totals
+    let stops: [Stop]
+    let fitRating: Int?
+}
+
+struct PairResponse: Codable, Hashable {
+    let title: String
+    let intro: String?
+    let done: Bool
+    let plans: [PairPlan]
+    let personalLabel: String?     // only once they've chosen
+    let chosenLabel: String?
+    let chosen: Plan?              // the chosen plan in full, to use on the day
+    let reveal: [String]?
+}
+
+struct PairFeedback: Encodable {
+    let chosen: String
+    let fit1: Int
+    let fit2: Int
+    let why: String?
+    let inputMode: String
+
+    enum CodingKeys: String, CodingKey {
+        case chosen, why
+        case fit1 = "fit_1"
+        case fit2 = "fit_2"
+        case inputMode = "input_mode"
+    }
+}
+
+extension Stop {
+    /// Build 2: a stop of the generic Test B plan ("generic:<i>"): it can be rated, but it has no card to share.
+    var isGeneric: Bool { momentId.hasPrefix("generic:") }
 }

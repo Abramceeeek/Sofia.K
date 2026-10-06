@@ -1,0 +1,80 @@
+[
+ {
+  "code": "TAS",
+  "city": "Tashkent",
+  "name": "Tashkent Islam Karimov",
+  "country": "UZ"
+ },
+ {
+  "code": "SKD",
+  "city": "Samarkand",
+  "name": "Samarkand",
+  "country": "UZ"
+ },
+ {
+  "code": "LON",
+  "city": "London",
+  "name": "All London airports",
+  "country": "GB"
+ },
+ {
+  "code": "LHR",
+  "city": "London",
+  "name": "Heathrow",
+  "country": "GB"
+ },
+ {
+  "code": "LGW",
+  "city": "London",
+  "name": "Gatwick",
+  "country": "GB"
+ },
+ {
+  "code": "STN",
+  "city": "London",
+  "name": "Stansted",
+  "country": "GB"
+ },
+ {
+  "code": "LTN",
+  "city": "London",
+  "name": "Luton",
+  "country": "GB"
+ },
+ {
+  "code": "LCY",
+  "city": "London",
+  "name": "London City",
+  "country": "GB"
+ },
+ {
+  "code": "SEN",
+  "city": "London",
+  "name": "Southend",
+  "country": "GB"
+ },
+ {
+  "code": "MAN",
+  "city": "Manchester",
+  "name": "Manchester",
+  "country": "GB"
+ },
+ {
+  "code": "IST",
+  "city": "Istanbul",
+  "name": "Istanbul",
+  "country": "TR"
+ },
+ {
+  "code": "SAW",
+  "city": "Istanbul",
+  "name": "Sabiha Gökçen",
+  "country": "TR"
+ },
+ {
+  "code": "DXB",
+  "city": "Dubai",
+  "name": "Dubai International",
+  "country": "AE"
+ }
+]

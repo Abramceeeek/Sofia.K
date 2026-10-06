@@ -68,6 +68,27 @@
   "empty": "You skipped the questions, which is fine. Your first plan starts from what most people enjoy, and it learns from how you rate each stop.",
   "change_note": "Tap anything that isn't right. We'll stop using that answer."
  },
+ "testb": {
+  "intent_title": "Before your plans",
+  "mood_prompt": "Recharge or explore?",
+  "company_prompt": "Who might come?",
+  "wish_prompt": "Anything you'd want in it for sure? (optional)",
+  "intro": "Two plans for the same Saturday afternoon, made in different ways. Which would you rather do?",
+  "choose_prompt": "Which would you rather do? Go with your gut.",
+  "fit_prompt": "This plan fits me",
+  "fit_scale": "1 (not at all) - 5 (completely)",
+  "why_prompt": "Why? (optional)",
+  "reveal_personal": "Plan {personal} was made from your answers. Plan {other} is a strong general day out in London, the kind a friend or a search would suggest.",
+  "reveal_kept": "Your plan is Plan {chosen}, the one you picked. Rate each stop after you've been."
+ },
+ "survey": {
+  "title": "Three quick questions",
+  "understood": "I felt understood.",
+  "like_person": "It felt like talking to a person, not filling in a form.",
+  "scale": "1 (not at all) - 5 (completely)",
+  "typed_or_spoke": "Did you type or speak your answers?",
+  "intrusive": "Was anything intrusive or tedious? (optional)"
+ },
  "about_you": [
   {
    "key": "budget_band",

@@ -106,7 +106,7 @@ jobs:
           xcrun simctl launch "$UDID" "$BID" -demo YES -screen plan >/dev/null
           sleep 25
           # D119: ODYS is dark always, so there is no separate dark-mode pass any more
-          for s in intro welcome example examplecard founder consent based besthour why places categories thisorthat learned learnedchange planform plan plan2 reveal planmap stop stop2 now rating ratingdone sharecard improve improveq safety safetysend safetyreply settings delete; do
+          for s in intro welcome example examplecard founder consent based besthour why places categories thisorthat learned learnedchange planform plan plan2 reveal planmap stop stop2 now rating ratingdone sharecard improve improveq safety safetysend safetyreply settings delete survey pairintent pair pair2 pairreveal triphome tripwhere tripwhen tripfrom tripfeel trip tripday flights flightfilters flight handoff handoffback stays staysmap stayfilters stay you; do
             xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" >/dev/null
             sleep 5
             xcrun simctl io "$UDID" screenshot "shots/$s.png" >/dev/null

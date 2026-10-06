@@ -78,6 +78,25 @@ enum Theme {
         UINavigationBar.appearance().standardAppearance = bar
         UINavigationBar.appearance().scrollEdgeAppearance = edge
         UINavigationBar.appearance().compactAppearance = bar
+
+        // D120 (ODYS Trips): the tab bar, nearly opaque on the page colour with a hairline above; amber when chosen
+        let tab = UITabBarAppearance()
+        tab.configureWithDefaultBackground()
+        tab.backgroundEffect = UIBlurEffect(style: .dark)
+        tab.backgroundColor = uiBackground.withAlphaComponent(0.92)
+        tab.shadowColor = uiInk.withAlphaComponent(0.08)
+        let item = UITabBarItemAppearance()
+        let off = UIColor(hex: 0x8E867A), on = UIColor(hex: 0xFFC665)
+        let font = UIFont.systemFont(ofSize: 11, weight: .medium)
+        item.normal.iconColor = off
+        item.normal.titleTextAttributes = [.foregroundColor: off, .font: font]
+        item.selected.iconColor = on
+        item.selected.titleTextAttributes = [.foregroundColor: on, .font: font]
+        tab.stackedLayoutAppearance = item
+        tab.inlineLayoutAppearance = item
+        tab.compactInlineLayoutAppearance = item
+        UITabBar.appearance().standardAppearance = tab
+        UITabBar.appearance().scrollEdgeAppearance = tab
     }
 }
 

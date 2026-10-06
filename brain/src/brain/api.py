@@ -872,7 +872,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for i in wanted:
             day = body.start_date + timedelta(days=i)
             window = trip_day_window(i, total, body.arrive_time, body.leave_time)
-            entry = {"index": i, "date": day.isoformat(), "kind": window["kind"], "plan": None}
+            entry = {"index": i, "date": day.isoformat(), "kind": window["kind"], "plan": None,
+                     "window": {k: window[k] for k in ("start", "end", "stops")}}   # the app's swap and regenerate
             if window["stops"] == 0:
                 entry["title"] = window["title"]
                 out.append(entry)

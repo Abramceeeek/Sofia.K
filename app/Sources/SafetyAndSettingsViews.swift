@@ -285,9 +285,9 @@ struct DemoScreen: View {
         case "learnedchange":                                                   // 7b, changing something (D117)
             LearnedStep(startChanging: true).background(Theme.background)
         case "planform": HomeViewForm()                                         // 8
-        case "plan2": HomeView(scroll: "stops")                                 // 9b: further down, the stops
-        case "planmap": HomeView(layout: "map")                                 // 9d
-        case "reveal": HomeView(reveal: 0.45)                                   // 9c: the plan reveal, part-way (D117)
+        case "plan2": DayScreen(scroll: "stops")                                // 9b: further down, the stops
+        case "planmap": DayScreen(layout: "map")                                // 9d
+        case "reveal": DayScreen(reveal: 0.45)                                  // 9c: the plan reveal, part-way (D117)
         case "stop":                                                            // 10
             // the stop with the most on its card: a best-light window, then any stop that can be rated
             if let stop = demoStop {
@@ -297,7 +297,7 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
-        case "now": HomeView().onAppear { model.nowIndex = 1; model.showNow = true }   // 10b (D119): during the day
+        case "now": DayScreen().onAppear { model.nowIndex = 1; model.showNow = true }  // 10b (D119): during the day
         case "rating":                                                          // 11
             if let stop = demoStop { RatingView(stop: stop) }
         case "ratingdone":                                                      // 11a (D119): after saving
@@ -314,7 +314,8 @@ struct DemoScreen: View {
         case "safetyreply": SafetyView()                                        // 13c: a reply has come (D118)
         case "settings": SettingsView()                                         // 14a
         case "delete": DeleteConfirmView()                                      // 14b
-        default: HomeView()                                                     // 9a ("plan")
+        case "plan": DayScreen()                                                // 9a
+        default: TripDemoScreen(name: name)                                     // D120 and Build 2 (15-31)
         }
     }
 

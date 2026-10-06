@@ -10,6 +10,9 @@ struct WelcomeView: View {
     @State private var light: CGFloat = WelcomeView.played ? 1 : 0
     @State private var pool: CGFloat = WelcomeView.played ? 1 : 0
     @State private var settled = WelcomeView.played
+    @State private var askCode = false
+    @State private var code = UserDefaults.standard.string(forKey: "testerCode") ?? ""
+    @State private var savedCode = UserDefaults.standard.string(forKey: "testerCode") ?? ""
     private static var played = false     // once per launch
 
     var body: some View {
@@ -46,7 +49,12 @@ struct WelcomeView: View {
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 2) {
                 PrimaryButton(title: "Show me an example day") { model.route = .example }
-                QuietButton("Skip the example") { model.afterExample() }
+                HStack {
+                    QuietButton("Skip the example") { model.afterExample() }
+                    Spacer()
+                    // Build 2: an optional code from whoever invited them; it says where they heard of the test
+                    QuietButton(savedCode.isEmpty ? "Got a tester code?" : "Code: \(savedCode)") { askCode = true }
+                }
             }
             .padding(.horizontal, 28)
             .padding(.top, 8)
@@ -65,6 +73,22 @@ struct WelcomeView: View {
             }
         }
         .task { await play() }
+        .alert("Tester code", isPresented: $askCode) {
+            TextField("Code", text: $code)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+            Button("Save") {
+                savedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+                if savedCode.isEmpty {
+                    UserDefaults.standard.removeObject(forKey: "testerCode")
+                } else {
+                    UserDefaults.standard.set(savedCode, forKey: "testerCode")
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("If someone gave you a code, type it here. It only says where you heard about the test, never who you are.")
+        }
     }
 
     private func play() async {

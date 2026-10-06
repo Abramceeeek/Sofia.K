@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 
 enum AppConfig {
     /// The Brain's address, from Info.plist (`BrainBaseURL` in project.yml).
@@ -77,7 +78,19 @@ final class AppModel {
     var learned: Learned?                  // D117: "So far, I've learned…"
     var revealPlanId: Int?                 // D117: a new plan plays its reveal once
     var stepProgress = 0                   // D118: answers given within the current step, for "Question 7 of 14"
-    var path: [Stop] = []                  // D118: the plan's navigation, so a rating reminder can open its stop
+    var path = NavigationPath()            // D118: the Trip tab's navigation, so a rating reminder can open its stop
+    // ---- D120 (ODYS Trips): three tabs, trips kept on the phone, booking on the providers' own sites ----
+    var tab: MainTab = .trip
+    var trips: [Trip] = []
+    var currentTripId: UUID?               // the trip the Book tab searches for
+    var showCreate = false                 // "Plan a trip": the four questions, full screen
+    var editingTrip: Trip?                 // "Edit" on the Book tab's search: the same questions, filled in
+    let book = BookState()
+    // ---- Build 2: the Test A survey and the blind Test B pair, before the first plan ----
+    var surveyDone = UserDefaults.standard.bool(forKey: "surveyDone")
+    var pairDone = UserDefaults.standard.bool(forKey: "pairDone")
+    var pair: PairResponse?
+    var showPair = false                   // the pair for someone who already had a plan (e.g. an older build)
     var ratedOnce = UserDefaults.standard.bool(forKey: "ratedOnce")   // D118: 12a waits until the first rating
     var safetyThreads: [SafetyThread] = [] // D118: Help & safety messages and the replies to them
     var remindersOn = UserDefaults.standard.bool(forKey: "remindersOn")
@@ -116,6 +129,15 @@ final class AppModel {
             onboarding = try? BrainClient.bundled("demo_onboarding")
             let demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
             plan = demoPlan
+            surveyDone = true
+            pairDone = true
+            if let trip = AppModel.demoTrip() {
+                trips = [trip]
+                currentTripId = trip.id
+                book.flights = try? BrainClient.bundled("demo_flights")
+                book.stays = try? BrainClient.bundled("demo_stays")
+                book.resultsFor = trip.id
+            }
             step = Step.forScreen(screen) ?? .based
             if screen == "categories" { profile.based = "abroad" }   // the visitors' onboarding (D116)
             reaction = Self.demoReactions[screen ?? ""]               // D117: one reaction on the screenshot
@@ -129,6 +151,8 @@ final class AppModel {
             step = Step(rawValue: UserDefaults.standard.integer(forKey: "onboardingStep")) ?? .based
             plan = AppModel.loadCached(Plan.self, "plan.json")
             lastRequest = AppModel.loadCached(PlanRequest.self, "request.json")
+            trips = AppModel.loadCached([Trip].self, "trips.json") ?? []
+            currentTripId = trips.first?.id
             // D116: the answers sent so far, so a later save (e.g. "Improve future plans") doesn't blank them
             if let saved = AppModel.loadCached(Profile.self, "profile.json") {
                 profile = saved
@@ -188,7 +212,8 @@ final class AppModel {
     func agree() async {
         let joined = UserDefaults.standard.string(forKey: "refCode.joined")
         await run {
-            try await self.client.install(research: true, src: joined.map { "ref:\($0)" } ?? "app")
+            try await self.client.install(research: true, src: joined.map { "ref:\($0)" } ?? "app",
+                                          code: UserDefaults.standard.string(forKey: "testerCode"))
             UserDefaults.standard.removeObject(forKey: "refCode.joined")
             if let video = UserDefaults.standard.dictionary(forKey: "founderVideo") as? [String: String] {
                 await self.client.event("founder_video", video)   // D117: watched to the end, or skipped after n s
@@ -503,8 +528,12 @@ final class AppModel {
     func openStop(_ momentId: String) {
         guard let stop = plan?.stops.first(where: { $0.momentId == momentId }) else { return }
         route = .home
+        tab = .trip
         showNow = false
-        path = [stop]
+        var p = NavigationPath()
+        p.append(TripDest.day)
+        p.append(stop)
+        path = p
     }
 
     // ---- D119: "Now", during the day --------------------------------------------------------------------------
@@ -605,7 +634,8 @@ final class AppModel {
             self.reaction = nil
             self.saidPatterns = []
             UserDefaults.standard.removeObject(forKey: "onboardingStep")
-            for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen"] {
+            for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone",
+                        "testerCode"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
             Reminders.clear()
@@ -613,7 +643,15 @@ final class AppModel {
             self.remindersOn = false
             self.reminderAsked = false
             self.safetyThreads = []
-            self.path = []
+            self.path = NavigationPath()
+            AppModel.cache(nil as [Trip]?, "trips.json")
+            self.trips = []
+            self.currentTripId = nil
+            self.book.reset()
+            self.surveyDone = false
+            self.pairDone = false
+            self.pair = nil
+            self.tab = .trip
             self.showNow = false
             self.step = .based
             self.route = .welcome

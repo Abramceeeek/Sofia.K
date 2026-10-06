@@ -14,7 +14,7 @@ struct RootView: View {
                 case .founder: FounderVideoView()
                 case .consent: ConsentView()
                 case .onboarding: OnboardingView()
-                case .home: HomeView()
+                case .home: MainTabs()   // D120: Trip, Book and You; before them, Build 2's survey and pair
                 }
             }
         }
