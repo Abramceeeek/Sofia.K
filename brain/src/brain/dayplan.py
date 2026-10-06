@@ -699,3 +699,25 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "chosen_for": [APP_LABELS.get(w["feature"], w["label"]) for w in s.get("why") or []
                            if w["contribution"] > 0][:2],
             "why": s.get("why") or [], "lines": _stop_lines(s)}
+
+
+def generic_app_stop(i: int, s: dict) -> dict:
+    """Build 2: a stop of the generic Test B plan (testb.generic_stops) as the app shows it. It has no card, so no
+    photo, map pin or feeling word; it can still be rated after the visit, as "generic:<i>"."""
+    out = app_stop({**s, "moment_id": f"generic:{i}", "depart": _leave(s), "travel_text": _travel_line(s)}, None)
+    out["feel_word"] = "Lunch" if s.get("lunch") else None
+    return out
+
+
+# Build 2: what the blind Plan 1 / Plan 2 pair may show of a stop. Both plans are reduced to the same text fields
+# (the Test B plan format), so photos, map pins, feeling words and reasons can't give the personal plan away
+BLIND_FIELDS = ("title", "arrive", "depart", "travel_min", "travel_mode", "travel_text", "approach", "what",
+                "queue_min", "best_text", "cost_gbp", "cost_kind", "cost_text", "rain_swap", "lunch", "lines")
+
+
+def blind_stop(s: dict, label: str, i: int) -> dict:
+    out = {k: s.get(k) for k in BLIND_FIELDS}
+    out.update(moment_id=f"plan{label}-{i}", key=f"plan{label}-{i}", familiar=False, rateable=False, pin=None,
+               chosen_for=[], why=[], reasons=[], card=None, worth_gbp=None, feel_word=None, reveal=False,
+               approach_steps=[], best_light="", best_window="")
+    return out

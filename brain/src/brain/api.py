@@ -7,10 +7,13 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import re
 import secrets
 import uuid
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import yaml
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Response
@@ -18,7 +21,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify, reasons, share, summary, trips
+from . import dayplan, db, notify, reasons, share, summary, testb, trips
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -28,8 +31,8 @@ from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CorrectionsIn, CuratedPlanIn, EventIn, FlightSearchIn, InstallIn,
-                      InstallOut, PlanFeedbackIn, PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn,
-                      StaySearchIn, SwipesIn)
+                      InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest, ProfileIn, RatingIn, SafetyIn,
+                      SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
 from .travel import LondonEstimate
@@ -56,6 +59,17 @@ EXAMPLE_DAY = dict(start_name="Charing Cross station", start=(51.507819, -0.1261
 
 def _hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _tester_code(text: str | None) -> str | None:
+    """Build 2: "ucl hiking " → "UCL-HIKING". Letters, digits and hyphens only."""
+    code = re.sub(r"[^A-Z0-9-]", "", re.sub(r"\s+", "-", (text or "").strip().upper()))
+    return code[:40] or None
+
+
+def _next_saturday(today: date) -> date:
+    """The Test B pair is for "a Saturday" (D105): the coming one, or today if it is Saturday. It sets the sunset."""
+    return today + timedelta(days=(5 - today.weekday()) % 7)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -85,6 +99,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
+        codes = settings.data_dir / "tester_codes.yaml"
+        with open(codes if codes.exists() else DATA_DIR / "tester_codes.yaml", encoding="utf-8") as f:
+            app.state.tester_codes = (yaml.safe_load(f) or {}).get("codes") or {}   # Build 2
         places = settings.data_dir / "airports.yaml"
         airports, dests = trips.load_places(places if places.exists() else DATA_DIR / "airports.yaml")
         app.state.trips = trips.TripSearch(airports, dests, duffel_token=settings.duffel_token,   # D120
@@ -201,9 +218,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not body.consent.research:
             raise HTTPException(400, "consent is needed to take part")
         token = secrets.token_urlsafe(32)
-        user = db.User(id=str(uuid.uuid4()), token_hash=_hash(token), channel=body.channel, src=body.src,
+        channel, src = body.channel, body.src
+        code = _tester_code(body.code)
+        if code:   # Build 2: a known code sets the channel; any code becomes the source unless a share link set it
+            channel = app.state.tester_codes.get(code, {}).get("channel", channel)
+            if not (src or "").startswith("ref:"):   # the share funnel matches "ref:<code>" exactly (D114)
+                src = f"code:{code}"
+        user = db.User(id=str(uuid.uuid4()), token_hash=_hash(token), channel=channel, src=src,
                        consent_version=body.consent.version, consent_ai=body.consent.ai_processing, profile={})
         s.add(user)
+        if code:
+            s.add(db.Event(user_id=user.id, name="tester_code", props={"code": code}))
         s.commit()
         return InstallOut(user_id=user.id, token=token)
 
@@ -375,22 +400,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(404, "no such moment")
         return card(Moment.model_validate(row.record))
 
-    @app.post("/v1/me/plans", status_code=201)
-    def make_plan(body: PlanRequest, user: db.User = Depends(current_user), s: Session = Depends(session),
-                  p: PopulationModel = Depends(pop)):
-        """The person's plan, from the same engine as the Test B plans (brain.dayplan, D107)."""
-        day = date.fromisoformat(body.date) if body.date else None
-        budget = body.budget_gbp if body.budget_gbp is not None else \
-            BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
-        c = body.conditions
-        brief = dayplan.Brief(
-            start_name=body.start_name, start=body.start, start_time=body.start_time, end_time=body.end_time,
-            stops=body.stops, budget_gbp=budget,
-            day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
-            weekday=day.strftime("%a").lower() if day else None,
-            temp_c=c.temp_c if c else None, rain_prob=c.rain_prob if c else None,
-            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
-        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
+    def personal_day(s: Session, user: db.User, p: PopulationModel, brief: dayplan.Brief, ready: list[Moment], *,
+                     must_do: str | None = None, familiar: bool = True, keep: list[str] = (), exclude: list[str] = (),
+                     blind: bool = False, end_window: tuple[int, int] | None = None) -> tuple[dayplan.DayPlan, list[dict], dict]:
+        """The person's plan as the app shows it: (the solver's plan, the app's stops, the plan's header fields).
+        Used by "plan a day" and by the Test B pair (Build 2)."""
         by_id = {m.id: m for m in ready}
         cards_at = app.state.swipe_cards
         fixed = corrected(user)   # D117: answers marked "not right" on "So far" don't count
@@ -398,21 +412,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         kinds = [a for a in user.categories if f"kind:{a.key}" not in fixed]
         loved = [cards_at[sw.item] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at]
         disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
-        must_do = body.intent.get("must_do") if body.intent.get("must_do") in by_id else None
         post = posterior(user, p)
 
         def run(keep: set[str], exclude: set[str]):
             return dayplan.personal_plan(
                 p, post, ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
-                fields=person_fields(user), loved=loved, disliked=disliked, familiar=body.familiar,
+                fields=person_fields(user), end_window=end_window, loved=loved, disliked=disliked, familiar=familiar,
                 keep=keep, exclude=exclude,
                 popularity=app.state.popularity.shares if app.state.popularity else None)
 
         failed = lambda pl: pl.status != "ok" or not pl.stops
-        plan, stops, _, notes = run(set(body.keep), set(body.exclude))
-        if body.keep and failed(plan):      # a swap that can't keep the rest: replan the day without the old stop
-            plan, stops, _, notes = run(set(), set(body.exclude))
-        if body.exclude and failed(plan):   # "Regenerate plan" with nothing new left (D112): the best day again
+        plan, stops, _, notes = run(set(keep), set(exclude))
+        if keep and failed(plan):      # a swap that can't keep the rest: replan the day without the old stop
+            plan, stops, _, notes = run(set(), set(exclude))
+        if exclude and failed(plan):   # "Regenerate plan" with nothing new left (D112): the best day again
             plan, stops, _, notes = run(set(), set())
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
@@ -434,24 +447,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if st["rateable"] and base in by_id:
                 st["card"] = card(by_id[base])
                 m = by_id[base]
-                st["reasons"] = [] if body.blind else reasons.stop_reasons(
+                st["reasons"] = [] if blind else reasons.stop_reasons(
                     p, post.mean, m, loved=loved_places, feelings=feelings, rated=rated,
                     loved_kinds=loved_kinds, wanted=wanted,
                     interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices)
-            if body.blind:
+            if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None
+        head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
+                "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
+                "solver_status": plan.status, "blind": blind,
+                "feel_line": None if blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
+                "basis": None if blind else reasons.basis(
+                    sum(sw.reaction in ("loved", "fine", "didnt_enjoy", "havent_been") for sw in user.swipes),
+                    n_choices, len(rated), len(feelings),
+                    sum(a.reaction != "skip" for a in user.categories))}
+        return plan, out, head
+
+    @app.post("/v1/me/plans", status_code=201)
+    def make_plan(body: PlanRequest, user: db.User = Depends(current_user), s: Session = Depends(session),
+                  p: PopulationModel = Depends(pop)):
+        """The person's plan, from the same engine as the Test B plans (brain.dayplan, D107)."""
+        day = date.fromisoformat(body.date) if body.date else None
+        budget = body.budget_gbp if body.budget_gbp is not None else \
+            BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
+        c = body.conditions
+        brief = dayplan.Brief(
+            start_name=body.start_name, start=body.start, start_time=body.start_time, end_time=body.end_time,
+            stops=body.stops, budget_gbp=budget,
+            day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
+            weekday=day.strftime("%a").lower() if day else None,
+            temp_c=c.temp_c if c else None, rain_prob=c.rain_prob if c else None,
+            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
+        must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
+        plan, out, head = personal_day(s, user, p, brief, ready, must_do=must_do, familiar=body.familiar,
+                                       keep=body.keep, exclude=body.exclude, blind=body.blind)
         intent = {**body.intent, **({"swapped_out": body.exclude} if body.exclude else {})}
         row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
         s.add(row)
         s.commit()
-        return {**plan_out(row), "title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
-                "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
-                "solver_status": plan.status, "blind": body.blind,
-                "feel_line": None if body.blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
-                "basis": None if body.blind else reasons.basis(
-                    sum(sw.reaction in ("loved", "fine", "didnt_enjoy", "havent_been") for sw in user.swipes),
-                    n_choices, len(rated), len(feelings),
-                    sum(a.reaction != "skip" for a in user.categories))}
+        return {**plan_out(row), **head}
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -479,14 +514,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                      "totals": dayplan.plan_totals(stops, app.state.travel)}
         return app.state.example_day
 
+    def in_pair(pl: db.Plan) -> bool:
+        return bool((pl.intent or {}).get("testb_pair"))
+
+    def hidden(pl: db.Plan) -> bool:
+        """Build 2: the pair's plans stay out of the plan list until the person has chosen, so it stays blind."""
+        return in_pair(pl) and pl.status == "offered"
+
     @app.get("/v1/me/plans")
     def my_plans(user: db.User = Depends(current_user)):
-        return [plan_out(pl) for pl in sorted(user.plans, key=lambda x: x.id, reverse=True)]
+        return [plan_out(pl) for pl in sorted(user.plans, key=lambda x: x.id, reverse=True) if not hidden(pl)]
 
     @app.get("/v1/me/plans/{plan_id}")
     def my_plan(plan_id: int, user: db.User = Depends(current_user), s: Session = Depends(session)):
         pl = s.get(db.Plan, plan_id)
-        if pl is None or pl.user_id != user.id:
+        if pl is None or pl.user_id != user.id or hidden(pl):
             raise HTTPException(404, "no such plan")
         return plan_out(pl)
 
@@ -496,8 +538,112 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         pl = s.get(db.Plan, plan_id)
         if pl is None or pl.user_id != user.id:
             raise HTTPException(404, "no such plan")
+        if in_pair(pl):
+            raise HTTPException(409, "the Test B pair takes its answers together: /v1/me/testb/pair/feedback")
         pl.status = "chosen" if body.chosen else "not_chosen"
         pl.fit_rating, pl.reason = body.fit_rating, body.reason
+        s.commit()
+        return Response(status_code=204)
+
+    # ---- Build 2: the in-app Test B pair (screens 18-19) and the survey (screen 16) -------------------------------
+
+    def pair_rows(user: db.User) -> list[db.Plan]:
+        return sorted((pl for pl in user.plans if in_pair(pl)), key=lambda pl: pl.label or "")
+
+    def full_plan(pl: db.Plan) -> dict:
+        intent = pl.intent or {}
+        return {**plan_out(pl), "intent": {k: v for k, v in intent.items() if k != "view"}, **intent.get("view", {})}
+
+    def pair_view(rows: list[db.Plan]) -> dict:
+        """Both plans in the same text format, labelled Plan 1 and Plan 2. Once they've chosen: which was personal,
+        and the chosen plan in full (with the reasons, if it was the personal one)."""
+        text = app.state.onboarding.get("testb") or {}
+        done = rows[0].status != "offered"
+        out = {"title": rows[0].intent["view"]["title"], "intro": text.get("intro"), "done": done,
+               "plans": [{"id": pl.id, "label": pl.label, "title": f"Plan {pl.label}", "date": None, "blind": True,
+                          "summary": pl.intent["view"]["summary"], "totals": pl.intent["view"]["totals"],
+                          "feel_line": None, "basis": None, "fit_rating": pl.fit_rating if done else None,
+                          "stops": [dayplan.blind_stop(st, pl.label, i) for i, st in enumerate(pl.stops)]}
+                         for pl in rows]}
+        if done:
+            personal = next(pl for pl in rows if pl.kind == "personal")
+            chosen = next(pl for pl in rows if pl.status == "chosen")
+            other = next(pl for pl in rows if pl is not personal)
+            out.update(personal_label=personal.label, chosen_label=chosen.label, chosen=full_plan(chosen),
+                       reveal=[text.get("reveal_personal", "").format(personal=personal.label, other=other.label),
+                               text.get("reveal_kept", "").format(chosen=chosen.label)])
+        return out
+
+    @app.get("/v1/me/testb/pair")
+    def get_pair(user: db.User = Depends(current_user)):
+        rows = pair_rows(user)
+        if not rows:
+            raise HTTPException(404, "no pair yet")
+        return pair_view(rows)
+
+    @app.post("/v1/me/testb/pair", status_code=201)
+    def make_pair(body: PairIn | None = Body(default=None), user: db.User = Depends(current_user),
+                  s: Session = Depends(session), p: PopulationModel = Depends(pop)):
+        """The blind Test B pair (validation/test-plan.md): the person's plan and the generic plan on the same brief
+        (data/testb/, a copy of validation/testb-real/), in a random order stored here (m118). Made once per person;
+        asking again returns the same pair. The personal plan uses what they've told us so far, which in the app is
+        the short onboarding (m140); the familiar favourite is off, and it ends within 30 min of the generic plan
+        (D97). Visitors from abroad don't get it (D116)."""
+        if cohort(user.profile) == "visitor":
+            raise HTTPException(409, "the Test B pair is for people based in the UK")
+        rows = pair_rows(user)
+        if rows:
+            return pair_view(rows)
+        folder = settings.data_dir / "testb"
+        folder = folder if (folder / "brief.yaml").exists() else DATA_DIR / "testb"
+        day = _next_saturday(datetime.now(ZoneInfo("Europe/London")).date())
+        brief = dayplan.load_brief(folder / "brief.yaml")
+        brief = replace(brief, sunset=sunset(day) or brief.sunset, time_limit_s=settings.planner_time_limit_s)
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready" and m.in_test_b]   # as the CLI (D105)
+        gen = testb.generic_stops(folder / "generic.yaml", {m.id: m for m in ready}, dayplan._sunset(brief))
+        gen_end = testb.plan_end(gen)
+        window = (gen_end - 30, gen_end + 30) if gen_end is not None else None
+        plan, mine, head = personal_day(s, user, p, brief, ready, familiar=False, end_window=window)
+        generic = [dayplan.generic_app_stop(i, st) for i, st in enumerate(gen)]
+        views = {"personal": head,
+                 "generic": {"title": brief.day_label, "summary": dayplan.summary_lines(brief, gen),
+                             "totals": dayplan.plan_totals(generic, app.state.travel), "blind": False,
+                             "feel_line": None, "basis": None}}
+        personal_label = secrets.choice("12")
+        trip = body.model_dump(exclude_none=True) if body else {}
+        for label in "12":   # rows in label order, so the ids don't hint at which is which
+            kind = "personal" if label == personal_label else "generic"
+            s.add(db.Plan(user_id=user.id, kind=kind, label=label, date=None, stops=mine if kind == "personal" else generic,
+                          value=plan.value if kind == "personal" else None,
+                          intent={"testb_pair": True, "trip": trip, "sunset": brief.sunset, "view": views[kind]}))
+        s.commit()
+        s.refresh(user)
+        return pair_view(pair_rows(user))
+
+    @app.post("/v1/me/testb/pair/feedback")
+    def pair_feedback(body: PairFeedbackIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        rows = pair_rows(user)
+        if not rows:
+            raise HTTPException(404, "no pair yet")
+        if rows[0].status != "offered":
+            raise HTTPException(409, "already answered")
+        why = (body.why or "").strip() or None
+        for pl in rows:
+            pl.status = "chosen" if pl.label == body.chosen else "not_chosen"
+            pl.fit_rating = body.fit_1 if pl.label == "1" else body.fit_2
+            pl.reason = why if pl.label == body.chosen else None
+        s.add(db.Event(user_id=user.id, name="testb_pair_feedback",
+                       props={"input_mode": body.input_mode, "why_given": why is not None}))
+        s.commit()
+        return pair_view(rows)
+
+    @app.post("/v1/me/survey", status_code=204)
+    def survey(body: SurveyIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """Screen 16, the Test A survey. Each answer is a row in `answers`, keyed "survey:<question>"."""
+        for key, value in body.model_dump(exclude_none=True).items():
+            text = str(value).strip()
+            if text:
+                s.add(db.Answer(user_id=user.id, question=f"survey:{key}", text=text, input_mode="typed"))
         s.commit()
         return Response(status_code=204)
 
@@ -505,11 +651,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def rate(body: RatingIn, user: db.User = Depends(current_user), s: Session = Depends(session),
              p: PopulationModel = Depends(pop)):
         moment_id = body.moment_id.split("#")[0]   # "m_x#lunch" (a food card as the lunch stop) is card m_x
-        if s.get(db.MomentRow, moment_id) is None:
+        generic = moment_id.startswith("generic:")   # Build 2: a stop of the generic Test B plan, if they chose it
+        if not generic and s.get(db.MomentRow, moment_id) is None:
             raise HTTPException(404, "no such moment")
-        if body.plan_id is not None:
-            pl = s.get(db.Plan, body.plan_id)
-            if pl is None or pl.user_id != user.id:
+        if body.plan_id is not None or generic:
+            pl = s.get(db.Plan, body.plan_id) if body.plan_id is not None else None
+            if pl is None or pl.user_id != user.id or hidden(pl) or (generic and pl.kind != "generic"):
                 raise HTTPException(404, "no such plan")
         c = body.conditions
         s.add(db.Rating(user_id=user.id, plan_id=body.plan_id, moment_id=moment_id, rating=body.rating,

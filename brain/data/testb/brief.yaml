@@ -1,0 +1,20 @@
+# The app's copy (Build 2): the Brain serves the in-app Test B pair from these. A test checks they match
+# validation/testb-real/ (the tracked copies); change both together.
+# REAL Test B brief (D106). Tracked copy: validation/testb-real/brief.yaml. Working copy that the commands read:
+# validation/raw/testb/brief.yaml (git-ignored). No participant data here. If you change one, copy it over the other.
+# Before each batch of plans, set `sunset` to the Saturday the plans are for (table below).
+# Both plans use this same brief (test-plan.md): same day length, number of stops and budget.
+start_name: "Charing Cross station"       # D104, confirmed by Abram (D105); Trafalgar Square exit
+start: {lat: 51.507819, lon: -0.126137}   # CHECKED: Charing Cross, TfL StopPoint API, 2026-09-28
+start_time: "12:00"                       # D99: the real Test B runs 12:00-17:00, ending around sunset
+end_time: "17:00"                         # (16:47 on 26 Oct, 16:24 on 8 Nov), so river, sunset and evening-light cards can appear
+stops: 4                                  # the generic plan must have the same number
+budget_gbp: 40                            # per person; null for no limit
+day_label: "A Saturday out in London"   # D105: plans are for a Saturday
+temp_c: null                              # leave null unless the day is known
+rain_prob: null
+time_limit_s: 2.0
+weekday: sat                              # D105: leaves out weekday-only cards (the City towers, Horizon 22, the Bank of England)
+sunset: "18:20"                           # D106: the first batch, Sat 10 Oct. UPDATE before each batch, so "Best: Sunset" lines are right.
+                                          # sunrise-sunset.org, central London: 3 Oct 18:36, 10 Oct 18:20, 17 Oct 18:05,
+                                          # 24 Oct 17:50; clocks back 25 Oct; 31 Oct 16:37, 7 Nov 16:25, 14 Nov 16:14

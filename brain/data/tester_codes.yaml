@@ -1,0 +1,7 @@
+# Build 2: tester codes typed on the welcome screen ("Got a code? (optional)"). A code names a group or a place
+# where people heard about the test, never a person. It is stored as the install's source (`src`), so Abram can
+# hand out a new code without a deploy; a code listed here also sets the channel (D43).
+# Codes are matched in capitals, with spaces turned into hyphens. They aren't secret.
+codes:
+  FRIENDS: {channel: friends_family}
+  FAMILY: {channel: friends_family}

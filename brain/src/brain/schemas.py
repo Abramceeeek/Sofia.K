@@ -20,6 +20,9 @@ class InstallIn(BaseModel):
     channel: Literal["stranger", "friends_family"] = "stranger"   # D43
     src: str | None = Field(default=None, max_length=128)          # recruitment source, e.g. fb-ucl-hiking
     consent: Consent
+    # Build 2: an optional tester code typed on the welcome screen. It names a group (where they heard about us),
+    # never a person; data/tester_codes.yaml sets the channel for known codes
+    code: str | None = Field(default=None, max_length=40)
 
 
 class InstallOut(BaseModel):
@@ -131,6 +134,31 @@ class PlanFeedbackIn(BaseModel):
     chosen: bool
     fit_rating: int | None = Field(default=None, ge=1, le=5)
     reason: str | None = Field(default=None, max_length=2000)
+
+
+class PairIn(BaseModel):
+    """Build 2, screen 18 (trip intent, D27): asked just before the Test B pair and stored with both plans.
+    It doesn't change either plan, so the comparison stays fair."""
+    mood: Literal["recharge", "explore", "either"] | None = None
+    company: Literal["solo", "friends", "partner", "family"] | None = None
+    wish: str | None = Field(default=None, max_length=300)   # "Anything you'd want in it for sure?"
+
+
+class PairFeedbackIn(BaseModel):
+    """Build 2, screen 19: which they'd rather do (a gut reaction, D100), "This plan fits me" 1-5 for each, and why."""
+    chosen: Literal["1", "2"]
+    fit_1: int = Field(ge=1, le=5)
+    fit_2: int = Field(ge=1, le=5)
+    why: str | None = Field(default=None, max_length=2000)
+    input_mode: Literal["typed", "voice"] = "typed"
+
+
+class SurveyIn(BaseModel):
+    """Build 2, screen 16: the Test A survey (validation/interview-script.md §8). Every answer is optional."""
+    understood: int | None = Field(default=None, ge=1, le=5)    # "I felt understood."
+    like_person: int | None = Field(default=None, ge=1, le=5)   # "It felt like talking to a person, not filling in a form."
+    typed_or_spoke: Literal["typed", "spoke", "both"] | None = None   # "Did you type or speak?" (D62)
+    intrusive: str | None = Field(default=None, max_length=2000)      # "Was anything intrusive or tedious?"
 
 
 class RatingIn(BaseModel):

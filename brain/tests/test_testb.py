@@ -436,3 +436,12 @@ def test_sunset_lines_follow_the_brief_and_some_cards_stay_out_of_test_b():
     assert testb._best_line({**stop, "best_windows": w.best_windows(parse_hhmm("18:05"))}) == ""   # 17 Oct
     assert testb._best_line({**stop, "best_windows": w.best_windows(parse_hhmm("16:37"))}) == "Best: Sunset"
     assert not ms["m_transport_museum"].in_test_b and ms["m_courtauld_gallery"].in_test_b
+
+
+def test_the_apps_test_b_files_match_the_tracked_copies():
+    """Build 2: the Brain serves the in-app pair from data/testb/; validation/testb-real/ is the tracked copy."""
+    import yaml as _yaml
+    from brain.config import DATA_DIR
+    real = DATA_DIR.parent.parent / "validation" / "testb-real"
+    for name in ("brief.yaml", "generic.yaml"):
+        assert _yaml.safe_load((DATA_DIR / "testb" / name).read_text()) == _yaml.safe_load((real / name).read_text())

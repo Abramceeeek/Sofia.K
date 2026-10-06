@@ -260,3 +260,102 @@ def test_regenerate_leaves_out_the_current_stops_or_falls_back(client):
     every = [m["id"] for m in client.get("/v1/moments", headers=h).json()]
     fallback = client.post("/v1/me/plans", headers=h, json={**body, "exclude": every[:40]}).json()
     assert fallback["stops"]
+
+
+def _onboard(client, h):
+    assert client.put("/v1/me/profile", headers=h, json={"based": "london"}).status_code == 204
+    assert client.post("/v1/me/swipes", headers=h, json={"items": [
+        {"item": 4, "reaction": "loved"}, {"item": 3, "reaction": "didnt_enjoy"}]}).status_code == 204
+
+
+def test_test_b_pair_is_blind_random_once_and_reveals_after_the_choice(client):
+    h, uid = install(client)
+    _onboard(client, h)
+    assert client.get("/v1/me/testb/pair", headers=h).status_code == 404
+    r = client.post("/v1/me/testb/pair", headers=h, json={"mood": "explore", "company": "friends"})
+    assert r.status_code == 201, r.text
+    pair = r.json()
+    assert pair["done"] is False and "personal_label" not in pair and "chosen" not in pair
+    p1, p2 = pair["plans"]
+    assert (p1["label"], p2["label"]) == ("1", "2") and p1["id"] < p2["id"]
+    # identical format: the same fields, no photos, pins, feeling words, reasons or worth on either plan
+    for pl in (p1, p2):
+        assert pl["blind"] and pl["feel_line"] is None and pl["basis"] is None
+        assert pl["summary"][0].startswith("Start: Charing Cross station at 12:00 · 4 stops, including lunch")
+        for i, st in enumerate(pl["stops"]):
+            assert st["moment_id"] == f"plan{pl['label']}-{i}" and st["lines"]
+            assert st["card"] is None and st["pin"] is None and st["feel_word"] is None
+            assert not st["reasons"] and not st["chosen_for"] and st["worth_gbp"] is None and not st["rateable"]
+    assert {tuple(sorted(st)) for pl in (p1, p2) for st in pl["stops"]} == {tuple(sorted(p1["stops"][0]))}
+    titles = {pl["label"]: [st["title"] for st in pl["stops"]] for pl in (p1, p2)}
+    generic = next(k for k, v in titles.items() if v[0] == "The National Gallery")
+    assert client.get("/v1/me/plans", headers=h).json() == []           # hidden until they've chosen
+    assert client.get(f"/v1/me/plans/{p1['id']}", headers=h).status_code == 404
+    assert client.post(f"/v1/me/plans/{p1['id']}/feedback", headers=h, json={"chosen": True}).status_code == 409
+    again = client.post("/v1/me/testb/pair", headers=h, json={})          # made once: the same pair
+    assert [pl["id"] for pl in again.json()["plans"]] == [p1["id"], p2["id"]]
+    # the personal plan ends within 30 min of the generic one (D97)
+    ends = {pl["label"]: pl["totals"]["finish"] for pl in (p1, p2)}
+    mins = lambda t: int(t[:2]) * 60 + int(t[3:])
+    assert abs(mins(ends["1"]) - mins(ends["2"])) <= 30
+
+    r = client.post("/v1/me/testb/pair/feedback", headers=h,
+                    json={"chosen": generic, "fit_1": 4, "fit_2": 2, "why": "  More of a walk.  "})
+    assert r.status_code == 200, r.text
+    done = r.json()
+    personal = "1" if generic == "2" else "2"
+    assert done["done"] and done["personal_label"] == personal and done["chosen_label"] == generic
+    assert done["reveal"][0].startswith(f"Plan {personal} was made from your answers")
+    chosen = done["chosen"]
+    assert chosen["kind"] == "generic" and chosen["title"] == "A Saturday out in London"
+    assert chosen["stops"][0]["moment_id"] == "generic:0" and chosen["stops"][0]["rateable"]
+    assert client.post("/v1/me/testb/pair/feedback", headers=h,
+                       json={"chosen": "1", "fit_1": 1, "fit_2": 1}).status_code == 409
+    plans = {pl["label"]: pl for pl in client.get("/v1/me/plans", headers=h).json()}
+    assert plans["1"]["fit_rating"] == 4 and plans["2"]["fit_rating"] == 2
+    assert plans[generic]["status"] == "chosen" and plans[personal]["status"] == "not_chosen"
+    assert plans[generic]["intent"]["trip"] == {"mood": "explore", "company": "friends"}
+
+    # a generic stop can be rated against the generic plan only, and it never feeds the fit
+    rate = lambda pid: client.post("/v1/me/ratings", headers=h,
+                                   json={"moment_id": "generic:1", "rating": 5, "plan_id": pid})
+    assert rate(plans[personal]["id"]).status_code == 404
+    r = rate(plans[generic]["id"])
+    assert r.status_code == 201 and r.json()["n_observations"] == 2     # the two swipes only: unchanged
+    export = client.get("/v1/admin/export", headers=ADMIN).json()
+    fb = [p for p in export["plans"] if p["user_id"] == uid and p["status"] == "chosen"][0]
+    assert fb["reason"] == "More of a walk."
+    assert any(e["name"] == "testb_pair_feedback" and e["user_id"] == uid for e in export["events"])
+
+
+def test_test_b_pair_order_is_random_and_skips_visitors(client):
+    labels = set()
+    for _ in range(12):
+        h, _ = install(client)
+        _onboard(client, h)
+        done = client.post("/v1/me/testb/pair", headers=h, json={})
+        labels.add(next(pl["label"] for pl in done.json()["plans"] if pl["stops"][0]["title"] != "The National Gallery"))
+        if len(labels) == 2:
+            break
+    assert labels == {"1", "2"}   # chance of failing: 2 × 0.5^12
+    h, _ = install(client)
+    assert client.put("/v1/me/profile", headers=h, json={"based": "abroad"}).status_code == 204
+    assert client.post("/v1/me/testb/pair", headers=h, json={}).status_code == 409
+
+
+def test_survey_and_tester_code(client):
+    h, uid = install(client, code=" friends ")
+    assert client.post("/v1/me/survey", headers=h, json={
+        "understood": 4, "like_person": 5, "typed_or_spoke": "spoke", "intrusive": "  "}).status_code == 204
+    assert client.post("/v1/me/survey", headers=h, json={"understood": 6}).status_code == 422
+    h2, uid2 = install(client, code="ucl hiking")
+    h3, uid3 = install(client, src="ref:abc123", code="FRIENDS")
+    export = client.get("/v1/admin/export", headers=ADMIN).json()
+    users = {u["id"]: u for u in export["users"]}
+    assert (users[uid]["channel"], users[uid]["src"]) == ("friends_family", "code:FRIENDS")
+    assert (users[uid2]["channel"], users[uid2]["src"]) == ("stranger", "code:UCL-HIKING")
+    assert (users[uid3]["channel"], users[uid3]["src"]) == ("friends_family", "ref:abc123")   # the share funnel
+    answers = {a["question"]: a["text"] for a in export["answers"] if a["user_id"] == uid}
+    assert answers == {"survey:understood": "4", "survey:like_person": "5", "survey:typed_or_spoke": "spoke"}
+    assert any(e["name"] == "tester_code" and e["props"] == {"code": "FRIENDS"} and e["user_id"] == uid3
+               for e in export["events"])
