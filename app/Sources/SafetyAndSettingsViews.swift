@@ -154,7 +154,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("What we store") {
-                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", your plans and your ratings, and anything you send in Help & safety. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your trips stay on this phone; flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
                 }
                 .listRowBackground(Theme.surface)
                 Section {
