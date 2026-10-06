@@ -25,7 +25,7 @@ import random
 import re
 import time
 from collections import deque
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable
@@ -453,6 +453,8 @@ def sample_stays(q: StayQuery) -> list[Stay]:
 @dataclass
 class FlightFilters:
     max_stops: int | None = None                 # 0 = direct only
+    stops: list[int] = field(default_factory=list)       # keep these numbers of stops; 2 means "2 or more"
+    out_times: list[str] = field(default_factory=list)   # night / morning / afternoon / evening, leaving
     out_depart: tuple[int, int] | None = None    # minutes after midnight, local
     in_depart: tuple[int, int] | None = None
     max_leg_min: int | None = None               # the longest journey, each way
@@ -480,9 +482,19 @@ def _in_window(minute: int, window: tuple[int, int] | None) -> bool:
     return window is None or window[0] <= minute <= window[1]
 
 
+# The design's "Leaving" times (ODYS Trips): night 00-06, morning 06-12, afternoon 12-18, evening 18-24
+TIME_BUCKETS = {"night": (0, 359), "morning": (360, 719), "afternoon": (720, 1079), "evening": (1080, 1439)}
+
+
+def time_bucket(minute: int) -> str:
+    return next(k for k, (lo, hi) in TIME_BUCKETS.items() if lo <= minute <= hi)
+
+
 def filter_flights(flights: list[Flight], f: FlightFilters) -> list[Flight]:
     keep = [x for x in flights
             if (f.max_stops is None or x.stops <= f.max_stops)
+            and (not f.stops or min(x.stops, 2) in f.stops)
+            and (not f.out_times or time_bucket(x.outbound.depart_minute) in f.out_times)
             and _in_window(x.outbound.depart_minute, f.out_depart)
             and (x.inbound is None or _in_window(x.inbound.depart_minute, f.in_depart))
             and (f.max_leg_min is None or x.longest_leg_min <= f.max_leg_min)
@@ -496,6 +508,21 @@ def filter_flights(flights: list[Flight], f: FlightFilters) -> list[Flight]:
         return sorted(keep, key=lambda x: (x.duration_min, x.price))
     scores = best_scores(flights)
     return sorted(keep, key=lambda x: (scores.get(x.id, 1.0), x.price))
+
+
+FLIGHT_TAGS = {"best": "Best", "cheapest": "Cheapest", "fastest": "Fastest"}
+
+
+def flight_tops(flights: list[Flight], f: FlightFilters) -> tuple[dict, dict[str, list[str]]]:
+    """The design's sort tabs: the top of each sort within the current filters (its price and time, shown on the tab),
+    and each result's tags ("Best · Cheapest")."""
+    tabs, tags = {}, {}
+    for sort, label in FLIGHT_TAGS.items():
+        top = filter_flights(flights, replace(f, sort=sort))
+        tabs[sort] = {"price": top[0].price, "duration_min": top[0].duration_min} if top else None
+        if top:
+            tags.setdefault(top[0].id, []).append(label)
+    return tabs, tags
 
 
 def flight_facets(flights: list[Flight]) -> dict:
@@ -578,6 +605,21 @@ def filter_stays(stays: list[Stay], f: StayFilters) -> list[Stay]:
         return sorted(keep, key=lambda s: (s.distance_km if s.distance_km is not None else math.inf))
     scores = recommended_scores(stays)
     return sorted(keep, key=lambda s: -scores.get(s.id, 0.0))
+
+
+STAY_TAGS = {"recommended": "Best for your days", "price": "Cheapest", "rating": "Top rated"}
+
+
+def stay_tops(stays: list[Stay], f: StayFilters) -> tuple[dict, dict[str, list[str]]]:
+    """As flight_tops, for stays: the top of each sort within the filters, and the tags (not "Top rated" as a tag)."""
+    tabs, tags = {}, {}
+    for sort, label in STAY_TAGS.items():
+        top = filter_stays(stays, replace(f, sort=sort))
+        tabs[sort] = ({"price_night": round(top[0].price_night, 2), "rating": top[0].rating,
+                       "distance_km": top[0].distance_km} if top else None)
+        if top and sort != "rating":
+            tags.setdefault(top[0].id, []).append(label)
+    return tabs, tags
 
 
 def stay_facets(stays: list[Stay]) -> dict:

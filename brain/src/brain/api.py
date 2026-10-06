@@ -32,7 +32,7 @@ from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CorrectionsIn, CuratedPlanIn, EventIn, FlightSearchIn, InstallIn,
                       InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest, ProfileIn, RatingIn, SafetyIn,
-                      SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn)
+                      SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
 from .travel import LondonEstimate
@@ -65,6 +65,31 @@ def _tester_code(text: str | None) -> str | None:
     """Build 2: "ucl hiking " → "UCL-HIKING". Letters, digits and hyphens only."""
     code = re.sub(r"[^A-Z0-9-]", "", re.sub(r"\s+", "-", (text or "").strip().upper()))
     return code[:40] or None
+
+
+MAX_TRIP_DAYS = 7   # D120: days planned in one request (about a second each on the free server)
+
+
+def trip_day_window(i: int, total: int, arrive: str | None, leave: str | None) -> dict:
+    """D120 (GUESSES): a one-day trip is the Test B day (12:00-17:00, 4 stops); full days 10:00-18:00 with 4 stops;
+    the arrival day starts 2½ h after landing (else 14:00) and the last day ends 4 h before the flight (else 13:00),
+    each with 2 stops if at least 3 h (2½ h on the last day) are left, else none."""
+    mins = lambda t: int(t[:2]) * 60 + int(t[3:])
+    hhmm = lambda m: f"{m // 60:02d}:{m % 60:02d}"
+    if total == 1:
+        return {"kind": "one", "start": "12:00", "end": "17:00", "stops": 4}
+    if i == 0:
+        start = max(mins(arrive) + 150, 9 * 60) if arrive else 14 * 60
+        start = (start + 14) // 15 * 15
+        ok = 19 * 60 - start >= 180
+        return {"kind": "arrive", "start": hhmm(min(start, 23 * 60)), "end": "19:00", "stops": 2 if ok else 0,
+                "title": "Arrive and settle in"}
+    if i == total - 1:
+        end = mins(leave) - 240 if leave else 13 * 60
+        ok = end - 10 * 60 >= 150
+        return {"kind": "leave", "start": "10:00", "end": hhmm(max(end, 0)), "stops": 2 if ok else 0,
+                "title": "Travel day: an easy trip to the airport"}
+    return {"kind": "full", "start": "10:00", "end": "18:00", "stops": 4}
 
 
 def _next_saturday(today: date) -> date:
@@ -153,6 +178,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     def refit(s: Session, user: db.User, p: PopulationModel) -> DeltaPosterior:
         """Rebuild δ_person from everything this person has told us (swipes, choices, ratings)."""
+        post = update_person(p, observations(s, user, p))
+        user.delta, user.population_version = post.to_json(), p.version
+        return post
+
+    def observations(s: Session, user: db.User, p: PopulationModel) -> list:
         ms = moments_by_id(s)
         amap, fields = app.state.amap, person_fields(user)
         fixed = corrected(user)
@@ -183,9 +213,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 m = ms[r.moment_id]
                 obs.append(rating_observation(p, m, r.rating, Conditions(r.temp_c, r.rain_prob), r.travel_min,
                                               amap.match(m, fields) if amap else 0.0))
-        post = update_person(p, obs)
-        user.delta, user.population_version = post.to_json(), p.version
-        return post
+        return obs
 
     def card(m: Moment) -> dict:
         start = m.start()
@@ -402,7 +430,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     def personal_day(s: Session, user: db.User, p: PopulationModel, brief: dayplan.Brief, ready: list[Moment], *,
                      must_do: str | None = None, familiar: bool = True, keep: list[str] = (), exclude: list[str] = (),
-                     blind: bool = False, end_window: tuple[int, int] | None = None) -> tuple[dayplan.DayPlan, list[dict], dict]:
+                     blind: bool = False, end_window: tuple[int, int] | None = None,
+                     post: DeltaPosterior | None = None, feelings: list[str] | None = None,
+                     fallback: bool = True) -> tuple[dayplan.DayPlan, list[dict], dict]:
         """The person's plan as the app shows it: (the solver's plan, the app's stops, the plan's header fields).
         Used by "plan a day" and by the Test B pair (Build 2)."""
         by_id = {m.id: m for m in ready}
@@ -412,7 +442,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         kinds = [a for a in user.categories if f"kind:{a.key}" not in fixed]
         loved = [cards_at[sw.item] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at]
         disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
-        post = posterior(user, p)
+        post = post or posterior(user, p)
 
         def run(keep: set[str], exclude: set[str]):
             return dayplan.personal_plan(
@@ -425,13 +455,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         plan, stops, _, notes = run(set(keep), set(exclude))
         if keep and failed(plan):      # a swap that can't keep the rest: replan the day without the old stop
             plan, stops, _, notes = run(set(), set(exclude))
-        if exclude and failed(plan):   # "Regenerate plan" with nothing new left (D112): the best day again
+        if exclude and fallback and failed(plan):   # "Regenerate" with nothing new left (D112): the best day again
             plan, stops, _, notes = run(set(), set())
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
         ms = moments_by_id(s)
-        feelings = [f for f in (user.profile or {}).get("why_travel", []) if f in reasons.FEELINGS]
+        if feelings is None:
+            feelings = [f for f in (user.profile or {}).get("why_travel", []) if f in reasons.FEELINGS]
         loved_places = [(*cards_at[sw.item], app.state.swipe_items[sw.item]) for sw in swipes
                         if sw.reaction == "loved" and sw.item in cards_at and sw.item in app.state.swipe_items]
         rated = [(ms[r.moment_id], r.rating) for r in user.ratings if r.moment_id in ms]
@@ -749,19 +780,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             _trip_event(s, user, "flights", "unavailable", 0, 0, f.sort, [])
             return {"source": "unavailable", "note": "Flights couldn't be searched just now. The links below search "
                     "for real.", "total": 0, "shown": 0, "results": [], "facets": trips.flight_facets([]),
-                    "links": links}
-        shown = trips.filter_flights(found, trips.FlightFilters(
-            max_stops=f.max_stops, out_depart=f.out_depart, in_depart=f.in_depart, max_leg_min=f.max_leg_min,
-            airlines=f.airlines, max_price=f.max_price, checked_bag=f.checked_bag, refundable=f.refundable,
-            sort=f.sort))
+                    "tabs": {}, "links": links, "searched_at": datetime.now(timezone.utc).isoformat()}
+        ff = trips.FlightFilters(
+            max_stops=f.max_stops, stops=f.stops, out_times=f.out_times, out_depart=f.out_depart,
+            in_depart=f.in_depart, max_leg_min=f.max_leg_min, airlines=f.airlines, max_price=f.max_price,
+            checked_bag=f.checked_bag, refundable=f.refundable, sort=f.sort)
+        shown = trips.filter_flights(found, ff)
+        tabs, tags = trips.flight_tops(found, ff)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "flights", source, len(found), len(shown), f.sort, used)
         note = {"sample": trips.SAMPLE_NOTE,
                 "duffel_test": "Test results from Duffel's made-up airline: not real flights. The links below search "
                                "for real."}.get(source)
         return {"source": source, "note": note, "total": len(found), "shown": len(shown),
-                "results": [trips.flight_out(x) for x in shown[:60]], "facets": trips.flight_facets(found),
-                "links": links}
+                "results": [{**trips.flight_out(x), "tags": tags.get(x.id, [])} for x in shown[:60]],
+                "facets": trips.flight_facets(found), "tabs": tabs, "links": links,
+                "searched_at": datetime.now(timezone.utc).isoformat()}
 
     @app.post("/v1/trips/stays")
     def trip_stays(body: StaySearchIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
@@ -787,21 +821,86 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             _trip_event(s, user, "stays", "unavailable", 0, 0, f.sort, [])
             return {"source": "unavailable", "note": "Places to stay couldn't be searched just now. The links below "
                     "search for real.", "total": 0, "shown": 0, "results": [], "facets": trips.stay_facets([]),
-                    "links": links, "centre": dest.centre_name}
-        shown = trips.filter_stays(found, trips.StayFilters(
+                    "tabs": {}, "links": links, "centre": dest.centre_name,
+                    "searched_at": datetime.now(timezone.utc).isoformat()}
+        sf = trips.StayFilters(
             max_night=f.max_night, min_night=f.min_night, min_stars=f.min_stars, min_rating=f.min_rating,
-            kinds=f.kinds, refundable=f.refundable, breakfast=f.breakfast, max_km=f.max_km, sort=f.sort))
+            kinds=f.kinds, refundable=f.refundable, breakfast=f.breakfast, max_km=f.max_km, sort=f.sort)
+        shown = trips.filter_stays(found, sf)
+        tabs, tags = trips.stay_tops(found, sf)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "stays", source, len(found), len(shown), f.sort, used)
         results = []
         for x in shown[:60]:
             d = trips.stay_out(x)
             d["links"] = trips.stay_links(q, stay=x)
+            d["tags"] = tags.get(x.id, [])
             results.append(d)
         note = {"sample": trips.SAMPLE_STAY_NOTE, "liteapi_sandbox": trips.SANDBOX_STAY_NOTE}.get(source)
         return {"source": source, "note": note,
                 "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found),
-                "links": links, "centre": dest.centre_name}
+                "tabs": tabs, "links": links, "centre": dest.centre_name,
+                "searched_at": datetime.now(timezone.utc).isoformat()}
+
+    @app.post("/v1/me/trips/days", status_code=201)
+    def trip_days(body: TripDaysIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                  p: PopulationModel = Depends(pop)):
+        """D120: the days of a trip, each planned like "plan a day", with no moment twice in the trip (D121). Each day
+        starts near the chosen stay (else the destination's centre). The trip's feelings shape the plans as stated
+        choices, for this trip only (the profile isn't changed). Days come back in order; the first MAX_TRIP_DAYS are
+        planned now and the rest with `days`, as the person reaches them."""
+        dest = _destination(body.destination)
+        if not dest.day_plans:
+            raise HTTPException(422, "day plans aren't ready for that destination yet")
+        today = datetime.now(ZoneInfo("Europe/London")).date()
+        if body.start_date < today or body.start_date > today + timedelta(days=330):
+            raise HTTPException(422, "pick a first day from today to about 11 months ahead")
+        total = body.nights + 1
+        wanted = sorted(set(body.days)) if body.days else list(range(min(total, MAX_TRIP_DAYS)))
+        if any(i >= total for i in wanted) or len(wanted) > MAX_TRIP_DAYS:
+            raise HTTPException(422, f"days are 0 to {total - 1}, at most {MAX_TRIP_DAYS} at a time")
+        feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]
+        mine = set((user.profile or {}).get("why_travel", []))
+        obs = observations(s, user, p) + [o for f in feelings if f not in mine
+                                          if (o := reasons.feeling_observation(p, f))]
+        post = update_person(p, obs)
+        start = body.stay or Point(lat=dest.lat, lon=dest.lon)
+        start_name = (body.stay_name or "").strip() or dest.centre_name
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        used = set(body.exclude)
+        out = []
+        for i in wanted:
+            day = body.start_date + timedelta(days=i)
+            window = trip_day_window(i, total, body.arrive_time, body.leave_time)
+            entry = {"index": i, "date": day.isoformat(), "kind": window["kind"], "plan": None}
+            if window["stops"] == 0:
+                entry["title"] = window["title"]
+                out.append(entry)
+                continue
+            brief = dayplan.Brief(start_name=start_name, start=start, start_time=window["start"], end_time=window["end"],
+                                  stops=window["stops"], budget_gbp=BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band")),
+                                  day_label=f"{day:%A} {day.day} {day:%B}", weekday=day.strftime("%a").lower(),
+                                  time_limit_s=settings.planner_time_limit_s, sunset=sunset(day))
+            plan, stops, head = personal_day(s, user, p, brief, ready, familiar=False, exclude=sorted(used), post=post,
+                                             feelings=feelings or None, fallback=False)
+            if not stops:
+                entry["title"] = "A free day: nothing new fits it yet"
+                out.append(entry)
+                continue
+            used |= {st["moment_id"].split("#")[0] for st in stops if st["rateable"]}
+            row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
+                          intent={"trip": True, "day": i, "feelings": feelings})
+            s.add(row)
+            s.flush()
+            entry["title"] = head["feel_line"] or brief.day_label
+            entry["plan"] = {**plan_out(row), **head}
+            out.append(entry)
+        s.add(db.Event(user_id=user.id, name="trip_days",
+                       props={"nights": body.nights, "planned": sum(e["plan"] is not None for e in out),
+                              "stay": body.stay is not None, "feelings": ",".join(feelings)}))
+        s.commit()
+        return {"total_days": total, "days": out, "start": start_name,
+                "used": sorted(used)}   # sent back as `exclude` when planning the later days
 
     # ---- sharing a rated moment (D114) -----------------------------------------------------
     @app.get("/v1/me/referral")

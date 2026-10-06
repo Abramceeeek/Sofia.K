@@ -193,6 +193,8 @@ Minutes = Annotated[int, Field(ge=0, le=1439)]
 
 class FlightFiltersIn(BaseModel):
     max_stops: int | None = Field(default=None, ge=0, le=2)
+    stops: list[Annotated[int, Field(ge=0, le=2)]] = Field(default_factory=list, max_length=3)   # 2 = "2 or more"
+    out_times: list[Literal["night", "morning", "afternoon", "evening"]] = Field(default_factory=list, max_length=4)
     out_depart: tuple[Minutes, Minutes] | None = None      # minutes after midnight, local
     in_depart: tuple[Minutes, Minutes] | None = None
     max_leg_min: int | None = Field(default=None, ge=30, le=4000)
@@ -234,3 +236,17 @@ class StaySearchIn(BaseModel):
     children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
     rooms: int = Field(default=1, ge=1, le=5)
     filters: StayFiltersIn = Field(default_factory=StayFiltersIn)
+
+
+class TripDaysIn(BaseModel):
+    """D120: the days of a multi-day trip (ODYS Trips design: "How long for?", "How should the trip feel?")."""
+    destination: str = "london"
+    start_date: date
+    nights: int = Field(ge=0, le=30)
+    feelings: list[str] = Field(default_factory=list, max_length=2)      # reasons.FEELINGS
+    stay: Point | None = None                                            # the chosen place to stay, if any
+    stay_name: str | None = Field(default=None, max_length=120)
+    arrive_time: str | None = Field(default=None, pattern=r"^\d{2}:\d{2}$")   # landing on day 1, local
+    leave_time: str | None = Field(default=None, pattern=r"^\d{2}:\d{2}$")    # the flight home on the last day
+    days: list[Annotated[int, Field(ge=0, le=30)]] = Field(default_factory=list, max_length=7)   # which days; default the first 7
+    exclude: list[str] = Field(default_factory=list, max_length=200)     # moments already in the trip's other days

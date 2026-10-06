@@ -206,3 +206,70 @@ def test_trip_endpoints_check_their_input(client):
     assert client.post("/v1/trips/stays", headers=h, json={
         "checkin": soon.isoformat(), "checkout": soon.isoformat()}).status_code == 422
     assert client.post("/v1/trips/flights", json={"origin": "TAS", "depart_date": soon.isoformat()}).status_code == 401
+
+
+def test_design_filters_tabs_and_tags():
+    """ODYS Trips design: stops as a multi-choice (2 = 2 or more), leaving-time buckets, and each sort's top."""
+    fl = trips.parse_duffel(DUFFEL)
+    ids = lambda f: [x.id for x in trips.filter_flights(fl, f)]
+    assert ids(trips.FlightFilters(stops=[1])) == ["off_2"] and ids(trips.FlightFilters(stops=[0, 2])) == ["off_1"]
+    assert ids(trips.FlightFilters(out_times=["night"])) == [] and ids(trips.FlightFilters(out_times=["morning"])) \
+        == ids(trips.FlightFilters())
+    assert trips.time_bucket(359) == "night" and trips.time_bucket(1080) == "evening"
+    tabs, tags = trips.flight_tops(fl, trips.FlightFilters())
+    assert tabs["cheapest"]["price"] == 389.0 and tabs["fastest"]["duration_min"] == 14 * 60
+    assert "Cheapest" in tags["off_2"] and "Fastest" in tags["off_1"]
+    tabs, tags = trips.flight_tops(fl, trips.FlightFilters(max_price=100))
+    assert tabs == {"best": None, "cheapest": None, "fastest": None} and tags == {}
+    st = trips.add_distances(trips.parse_liteapi(LITEAPI, _sq()), 51.507819, -0.126137)
+    tabs, tags = trips.stay_tops(st, trips.StayFilters())
+    assert tabs["price"]["price_night"] == 100.0 and tabs["rating"]["rating"] == 9.1
+    assert tags["lp1"] == ["Best for your days", "Cheapest"] and "lp2" not in tags   # "Top rated" isn't a tag
+
+
+def test_flight_and_stay_responses_carry_tabs_and_tags(client):
+    h, _ = install(client)
+    soon = date.today() + timedelta(days=30)
+    d = client.post("/v1/trips/flights", headers=h, json={
+        "origin": "TAS", "depart_date": soon.isoformat(), "return_date": (soon + timedelta(days=7)).isoformat(),
+        "filters": {"stops": [0, 1], "out_times": ["morning", "afternoon"]}}).json()
+    assert set(d["tabs"]) == {"best", "cheapest", "fastest"} and d["searched_at"]
+    assert all(min(x["stops"], 2) in (0, 1) for x in d["results"])
+    assert all(360 <= int(x["outbound"]["depart_at"][11:13]) * 60 + int(x["outbound"]["depart_at"][14:16]) < 1080
+               for x in d["results"])
+    assert sum("Cheapest" in x["tags"] for x in d["results"]) == (1 if d["results"] else 0)
+    s = client.post("/v1/trips/stays", headers=h, json={
+        "checkin": soon.isoformat(), "checkout": (soon + timedelta(days=3)).isoformat()}).json()
+    assert set(s["tabs"]) == {"recommended", "price", "rating"} and s["results"][0]["tags"]
+
+
+def test_trip_days_never_repeat_a_moment_and_shape_the_ends(client):
+    from brain.api import trip_day_window
+    assert trip_day_window(0, 1, None, None)["stops"] == 4
+    assert trip_day_window(0, 5, "11:50", None)["start"] == "14:30"
+    assert trip_day_window(0, 5, "17:30", None)["stops"] == 0          # landing late: settle in
+    assert trip_day_window(4, 5, None, "13:30")["stops"] == 0          # an early flight home: a travel day
+    assert trip_day_window(4, 5, None, "20:00")["end"] == "16:00"
+    assert trip_day_window(2, 5, None, None) == {"kind": "full", "start": "10:00", "end": "18:00", "stops": 4}
+    h, uid = install(client)
+    start = date.today() + timedelta(days=3)
+    r = client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 3,
+                                                          "feelings": ["curious", "nonsense"]})
+    assert r.status_code == 201, r.text
+    d = r.json()
+    assert d["total_days"] == 4 and [x["index"] for x in d["days"]] == [0, 1, 2, 3]
+    assert [x["date"] for x in d["days"]] == [(start + timedelta(days=i)).isoformat() for i in range(4)]
+    seen = [st["moment_id"].split("#")[0] for x in d["days"] if x["plan"] for st in x["plan"]["stops"] if st["rateable"]]
+    assert len(seen) == len(set(seen)) and set(seen) <= set(d["used"])
+    assert all(x["title"] for x in d["days"])
+    planned = [x for x in d["days"] if x["plan"]]
+    assert planned and all(x["plan"]["date"] == x["date"] for x in planned)
+    assert client.get("/v1/me/weights", headers=h).json()["n_observations"] == 0   # the trip's feelings: this trip only
+    later = client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 3,
+                                                              "days": [2], "exclude": d["used"]}).json()
+    again = [st["moment_id"] for x in later["days"] if x["plan"] for st in x["plan"]["stops"] if st["rateable"]]
+    assert not set(again) & set(d["used"])
+    assert client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 3,
+                                                             "days": [4]}).status_code == 422
+    assert client.post("/v1/me/trips/days", headers=h, json={
+        "start_date": (date.today() - timedelta(days=1)).isoformat(), "nights": 2}).status_code == 422
