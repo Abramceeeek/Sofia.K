@@ -17,6 +17,8 @@ class Settings:
     alert_webhook_url: str | None    # where safety alerts are posted (Abram, and the backup helper)
     planner_time_limit_s: float
     testflight_url: str | None = None   # D114: the public TestFlight link a share page offers; unset until external testing
+    duffel_token: str | None = None     # D120: flight search; unset = sample flights, clearly labelled
+    liteapi_key: str | None = None      # D120: places to stay; unset = sample stays, clearly labelled
 
 
 def driver_url(raw: str) -> str:
@@ -35,4 +37,6 @@ def get_settings() -> Settings:
         alert_webhook_url=os.environ.get("BRAIN_ALERT_WEBHOOK_URL") or None,
         planner_time_limit_s=float(os.environ.get("BRAIN_PLANNER_TIME_LIMIT_S", "1.0")),
         testflight_url=os.environ.get("BRAIN_TESTFLIGHT_URL") or None,
+        duffel_token=os.environ.get("DUFFEL_ACCESS_TOKEN") or None,
+        liteapi_key=os.environ.get("LITEAPI_KEY") or None,
     )

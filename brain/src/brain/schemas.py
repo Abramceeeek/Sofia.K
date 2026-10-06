@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from datetime import date
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -155,3 +156,53 @@ class SafetyReplyIn(BaseModel):
     replied_by: str = Field(max_length=64)
     text: str | None = Field(default=None, max_length=2000)    # D118: shown to the person in Help & safety
     resolved: bool = False                                      # D118: deletes the contact they left
+
+
+# ---- D120: trips (flights and stays; links out, never booked here) ------------------------------------------------
+
+Minutes = Annotated[int, Field(ge=0, le=1439)]
+
+
+class FlightFiltersIn(BaseModel):
+    max_stops: int | None = Field(default=None, ge=0, le=2)
+    out_depart: tuple[Minutes, Minutes] | None = None      # minutes after midnight, local
+    in_depart: tuple[Minutes, Minutes] | None = None
+    max_leg_min: int | None = Field(default=None, ge=30, le=4000)
+    airlines: list[str] = Field(default_factory=list, max_length=30)
+    max_price: float | None = Field(default=None, ge=0)
+    checked_bag: bool = False
+    refundable: bool = False
+    sort: Literal["best", "cheapest", "fastest"] = "best"
+
+
+class FlightSearchIn(BaseModel):
+    origin: str = Field(pattern=r"^[A-Za-z]{3}$")           # IATA airport or city code
+    destination: str = "london"                            # a destination key (brain/data/airports.yaml)
+    depart_date: date
+    return_date: date | None = None
+    adults: int = Field(default=1, ge=1, le=9)
+    children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
+    cabin: Literal["economy", "premium_economy", "business", "first"] = "economy"
+    filters: FlightFiltersIn = Field(default_factory=FlightFiltersIn)
+
+
+class StayFiltersIn(BaseModel):
+    max_night: float | None = Field(default=None, ge=0)
+    min_night: float | None = Field(default=None, ge=0)
+    min_stars: float | None = Field(default=None, ge=0, le=5)
+    min_rating: float | None = Field(default=None, ge=0, le=10)
+    kinds: list[str] = Field(default_factory=list, max_length=10)
+    refundable: bool = False
+    breakfast: bool = False
+    max_km: float | None = Field(default=None, gt=0, le=100)
+    sort: Literal["recommended", "price", "rating", "distance"] = "recommended"
+
+
+class StaySearchIn(BaseModel):
+    destination: str = "london"
+    checkin: date
+    checkout: date
+    adults: int = Field(default=2, ge=1, le=9)
+    children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
+    rooms: int = Field(default=1, ge=1, le=5)
+    filters: StayFiltersIn = Field(default_factory=StayFiltersIn)

@@ -9,3 +9,4 @@ numpy==2.5.3
 pyyaml==6.0.3
 psycopg[binary]==3.3.6
 tzdata==2026.4   # sun.py's Europe/London times, in case the host has no system time-zone data
+httpx==0.28.1    # D120: the flight and stay providers (Duffel, LiteAPI), only called when their keys are set

@@ -57,6 +57,11 @@ services:
       - key: BRAIN_ALERT_WEBHOOK_URL
         sync: false            # D118: where safety alerts are posted ({"text": ...}), e.g. a Slack incoming webhook
                                # that Abram and the backup helper both see on their phones. Never committed here
+      - key: DUFFEL_ACCESS_TOKEN
+        sync: false            # D120: flight search. A test token (duffel_test_…) gives Duffel's test results;
+                               # left empty, trips show clearly labelled sample flights. Never committed or chatted
+      - key: LITEAPI_KEY
+        sync: false            # D120: stays search (LiteAPI sandbox or live key). Empty = labelled sample stays
 
 databases:
   - name: london-places-swipe-db

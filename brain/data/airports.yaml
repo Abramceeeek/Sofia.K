@@ -1,0 +1,129 @@
+# D120: airports and city codes for "Flying from" (trips). Standard IATA codes, from Claude's own knowledge; when a
+# Duffel token is set, Duffel's place suggestions are used as well, and they are the authority.
+# `region` only shapes the made-up sample flights (their rough length); it is never shown and never used for people.
+# City codes (LON, PAR, NYC …) search every airport in that city.
+airports:
+  # United Kingdom and Ireland
+  - {code: LON, city: London, name: All London airports, country: GB, region: uk}
+  - {code: LHR, city: London, name: Heathrow, country: GB, region: uk}
+  - {code: LGW, city: London, name: Gatwick, country: GB, region: uk}
+  - {code: STN, city: London, name: Stansted, country: GB, region: uk}
+  - {code: LTN, city: London, name: Luton, country: GB, region: uk}
+  - {code: LCY, city: London, name: London City, country: GB, region: uk}
+  - {code: SEN, city: London, name: Southend, country: GB, region: uk}
+  - {code: MAN, city: Manchester, name: Manchester, country: GB, region: uk}
+  - {code: BHX, city: Birmingham, name: Birmingham, country: GB, region: uk}
+  - {code: EDI, city: Edinburgh, name: Edinburgh, country: GB, region: uk}
+  - {code: GLA, city: Glasgow, name: Glasgow, country: GB, region: uk}
+  - {code: BRS, city: Bristol, name: Bristol, country: GB, region: uk}
+  - {code: NCL, city: Newcastle, name: Newcastle, country: GB, region: uk}
+  - {code: LBA, city: Leeds, name: Leeds Bradford, country: GB, region: uk}
+  - {code: LPL, city: Liverpool, name: Liverpool John Lennon, country: GB, region: uk}
+  - {code: BFS, city: Belfast, name: Belfast International, country: GB, region: uk}
+  - {code: BHD, city: Belfast, name: George Best Belfast City, country: GB, region: uk}
+  - {code: ABZ, city: Aberdeen, name: Aberdeen, country: GB, region: uk}
+  - {code: INV, city: Inverness, name: Inverness, country: GB, region: uk}
+  - {code: EMA, city: East Midlands, name: East Midlands, country: GB, region: uk}
+  - {code: CWL, city: Cardiff, name: Cardiff, country: GB, region: uk}
+  - {code: SOU, city: Southampton, name: Southampton, country: GB, region: uk}
+  - {code: EXT, city: Exeter, name: Exeter, country: GB, region: uk}
+  - {code: NQY, city: Newquay, name: Cornwall Airport Newquay, country: GB, region: uk}
+  - {code: JER, city: Jersey, name: Jersey, country: JE, region: uk}
+  - {code: DUB, city: Dublin, name: Dublin, country: IE, region: uk}
+  # Europe
+  - {code: PAR, city: Paris, name: All Paris airports, country: FR, region: europe}
+  - {code: CDG, city: Paris, name: Charles de Gaulle, country: FR, region: europe}
+  - {code: ORY, city: Paris, name: Orly, country: FR, region: europe}
+  - {code: NCE, city: Nice, name: Nice Côte d'Azur, country: FR, region: europe}
+  - {code: AMS, city: Amsterdam, name: Schiphol, country: NL, region: europe}
+  - {code: BRU, city: Brussels, name: Brussels, country: BE, region: europe}
+  - {code: FRA, city: Frankfurt, name: Frankfurt, country: DE, region: europe}
+  - {code: MUC, city: Munich, name: Munich, country: DE, region: europe}
+  - {code: BER, city: Berlin, name: Berlin Brandenburg, country: DE, region: europe}
+  - {code: HAM, city: Hamburg, name: Hamburg, country: DE, region: europe}
+  - {code: ZRH, city: Zurich, name: Zurich, country: CH, region: europe}
+  - {code: GVA, city: Geneva, name: Geneva, country: CH, region: europe}
+  - {code: VIE, city: Vienna, name: Vienna, country: AT, region: europe}
+  - {code: PRG, city: Prague, name: Václav Havel Prague, country: CZ, region: europe}
+  - {code: BUD, city: Budapest, name: Budapest, country: HU, region: europe}
+  - {code: WAW, city: Warsaw, name: Warsaw Chopin, country: PL, region: europe}
+  - {code: KRK, city: Kraków, name: Kraków, country: PL, region: europe}
+  - {code: CPH, city: Copenhagen, name: Copenhagen, country: DK, region: europe}
+  - {code: ARN, city: Stockholm, name: Stockholm Arlanda, country: SE, region: europe}
+  - {code: OSL, city: Oslo, name: Oslo Gardermoen, country: NO, region: europe}
+  - {code: HEL, city: Helsinki, name: Helsinki, country: FI, region: europe}
+  - {code: MAD, city: Madrid, name: Madrid Barajas, country: ES, region: europe}
+  - {code: BCN, city: Barcelona, name: Barcelona El Prat, country: ES, region: europe}
+  - {code: AGP, city: Málaga, name: Málaga, country: ES, region: europe}
+  - {code: PMI, city: Palma, name: Palma de Mallorca, country: ES, region: europe}
+  - {code: LIS, city: Lisbon, name: Lisbon, country: PT, region: europe}
+  - {code: OPO, city: Porto, name: Porto, country: PT, region: europe}
+  - {code: FAO, city: Faro, name: Faro, country: PT, region: europe}
+  - {code: ROM, city: Rome, name: All Rome airports, country: IT, region: europe}
+  - {code: FCO, city: Rome, name: Fiumicino, country: IT, region: europe}
+  - {code: MIL, city: Milan, name: All Milan airports, country: IT, region: europe}
+  - {code: MXP, city: Milan, name: Malpensa, country: IT, region: europe}
+  - {code: VCE, city: Venice, name: Venice Marco Polo, country: IT, region: europe}
+  - {code: NAP, city: Naples, name: Naples, country: IT, region: europe}
+  - {code: ATH, city: Athens, name: Athens, country: GR, region: europe}
+  - {code: IST, city: Istanbul, name: Istanbul, country: TR, region: europe}
+  - {code: SAW, city: Istanbul, name: Sabiha Gökçen, country: TR, region: europe}
+  - {code: AYT, city: Antalya, name: Antalya, country: TR, region: europe}
+  - {code: OTP, city: Bucharest, name: Henri Coandă, country: RO, region: europe}
+  - {code: SOF, city: Sofia, name: Sofia, country: BG, region: europe}
+  - {code: KEF, city: Reykjavík, name: Keflavík, country: IS, region: europe}
+  # Central Asia and the Caucasus
+  - {code: TAS, city: Tashkent, name: Tashkent Islam Karimov, country: UZ, region: central_asia}
+  - {code: SKD, city: Samarkand, name: Samarkand, country: UZ, region: central_asia}
+  - {code: BHK, city: Bukhara, name: Bukhara, country: UZ, region: central_asia}
+  - {code: UGC, city: Urgench, name: Urgench, country: UZ, region: central_asia}
+  - {code: FEG, city: Fergana, name: Fergana, country: UZ, region: central_asia}
+  - {code: NMA, city: Namangan, name: Namangan, country: UZ, region: central_asia}
+  - {code: ALA, city: Almaty, name: Almaty, country: KZ, region: central_asia}
+  - {code: NQZ, city: Astana, name: Astana, country: KZ, region: central_asia}
+  - {code: FRU, city: Bishkek, name: Manas, country: KG, region: central_asia}
+  - {code: DYU, city: Dushanbe, name: Dushanbe, country: TJ, region: central_asia}
+  - {code: GYD, city: Baku, name: Heydar Aliyev, country: AZ, region: central_asia}
+  - {code: TBS, city: Tbilisi, name: Tbilisi, country: GE, region: central_asia}
+  # Middle East and Africa
+  - {code: DXB, city: Dubai, name: Dubai International, country: AE, region: middle_east}
+  - {code: AUH, city: Abu Dhabi, name: Zayed International, country: AE, region: middle_east}
+  - {code: DOH, city: Doha, name: Hamad International, country: QA, region: middle_east}
+  - {code: RUH, city: Riyadh, name: King Khalid, country: SA, region: middle_east}
+  - {code: CAI, city: Cairo, name: Cairo, country: EG, region: middle_east}
+  - {code: CMN, city: Casablanca, name: Mohammed V, country: MA, region: middle_east}
+  - {code: LOS, city: Lagos, name: Murtala Muhammed, country: NG, region: africa}
+  - {code: NBO, city: Nairobi, name: Jomo Kenyatta, country: KE, region: africa}
+  - {code: JNB, city: Johannesburg, name: O. R. Tambo, country: ZA, region: africa}
+  # Asia and Australia
+  - {code: DEL, city: Delhi, name: Indira Gandhi, country: IN, region: south_asia}
+  - {code: BOM, city: Mumbai, name: Chhatrapati Shivaji Maharaj, country: IN, region: south_asia}
+  - {code: SIN, city: Singapore, name: Changi, country: SG, region: east_asia}
+  - {code: HKG, city: Hong Kong, name: Hong Kong, country: HK, region: east_asia}
+  - {code: BKK, city: Bangkok, name: Suvarnabhumi, country: TH, region: east_asia}
+  - {code: PEK, city: Beijing, name: Beijing Capital, country: CN, region: east_asia}
+  - {code: PVG, city: Shanghai, name: Pudong, country: CN, region: east_asia}
+  - {code: ICN, city: Seoul, name: Incheon, country: KR, region: east_asia}
+  - {code: TYO, city: Tokyo, name: All Tokyo airports, country: JP, region: east_asia}
+  - {code: SYD, city: Sydney, name: Sydney, country: AU, region: east_asia}
+  # The Americas
+  - {code: NYC, city: New York, name: All New York airports, country: US, region: north_america}
+  - {code: JFK, city: New York, name: John F. Kennedy, country: US, region: north_america}
+  - {code: EWR, city: Newark, name: Newark Liberty, country: US, region: north_america}
+  - {code: BOS, city: Boston, name: Logan, country: US, region: north_america}
+  - {code: ORD, city: Chicago, name: O'Hare, country: US, region: north_america}
+  - {code: LAX, city: Los Angeles, name: Los Angeles, country: US, region: north_america}
+  - {code: SFO, city: San Francisco, name: San Francisco, country: US, region: north_america}
+  - {code: MIA, city: Miami, name: Miami, country: US, region: north_america}
+  - {code: YYZ, city: Toronto, name: Pearson, country: CA, region: north_america}
+  - {code: GRU, city: São Paulo, name: Guarulhos, country: BR, region: north_america}
+
+# Where trips can go (D120: London now; then UK cities, then Europe, then further). A destination needs flights and
+# stays (any city works for those) and, for day plans, ready moment cards (London only today, after-9-Nov #38).
+destinations:
+  - key: london
+    name: London
+    country_code: GB
+    airport: LON                     # all London airports
+    centre: {lat: 51.507819, lon: -0.126137, name: Charing Cross}   # the Test B start point (D104)
+    day_plans: true

@@ -18,17 +18,18 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify, reasons, share, summary
+from . import dayplan, db, notify, reasons, share, summary, trips
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
-from .config import Settings, get_settings
+from .config import DATA_DIR, Settings, get_settings
 from .features import Conditions
 from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CorrectionsIn, CuratedPlanIn, EventIn, InstallIn, InstallOut, PlanFeedbackIn,
-                      PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, SwipesIn)
+from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CorrectionsIn, CuratedPlanIn, EventIn, FlightSearchIn, InstallIn,
+                      InstallOut, PlanFeedbackIn, PlanRequest, ProfileIn, RatingIn, SafetyIn, SafetyReplyIn,
+                      StaySearchIn, SwipesIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
 from .travel import LondonEstimate
@@ -84,6 +85,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
         app.state.travel = LondonEstimate()
+        places = settings.data_dir / "airports.yaml"
+        airports, dests = trips.load_places(places if places.exists() else DATA_DIR / "airports.yaml")
+        app.state.trips = trips.TripSearch(airports, dests, duffel_token=settings.duffel_token,   # D120
+                                           liteapi_key=settings.liteapi_key)
         with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
             _reload_moments(s, settings)
             _purge_contacts(s)           # D118: safety contacts never outlive CONTACT_DAYS
@@ -544,6 +549,112 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                  "contact_kept": a.contact is not None,
                  "replies": [{"text": r.text, "created_at": r.created_at.isoformat()} for r in a.replies]}
                 for a in alerts]
+
+    # ---- D120: trips: flights and places to stay, filtered here, booked on the provider's own site ------------------
+
+    def _destination(key: str) -> trips.Destination:
+        dest = app.state.trips.destinations.get(key)
+        if dest is None:
+            raise HTTPException(422, "that destination isn't available yet: London first, then UK cities and Europe")
+        return dest
+
+    def _trip_event(s: Session, user: db.User, kind: str, source: str, total: int, shown: int, sort: str,
+                    used: list[str]) -> None:
+        """For the test: what was searched and which filters were used. Never the origin, dates or names."""
+        s.add(db.Event(user_id=user.id, name="trip_search",
+                       props={"kind": kind, "source": source, "total": total, "shown": shown, "sort": sort,
+                              "filters": ",".join(used)}))
+        s.commit()
+
+    @app.get("/v1/trips/places")
+    def trip_places(q: str = Query(default="", max_length=40), user: db.User = Depends(current_user)):
+        """"Flying from": airports and city codes matching what's typed."""
+        return [{"code": a.code, "city": a.city, "name": a.name, "country": a.country}
+                for a in trips.suggest(app.state.trips.airports, q)]
+
+    @app.get("/v1/trips/destinations")
+    def trip_destinations(user: db.User = Depends(current_user)):
+        return [{"key": d.key, "name": d.name, "airport": d.airport, "centre": d.centre_name, "day_plans": d.day_plans}
+                for d in app.state.trips.destinations.values()]
+
+    @app.post("/v1/trips/flights")
+    def trip_flights(body: FlightSearchIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        dest = _destination(body.destination)
+        today = datetime.now(timezone.utc).date()
+        if body.depart_date < today or body.depart_date > today + timedelta(days=330):
+            raise HTTPException(422, "pick a departure date from today to about 11 months ahead")
+        if body.return_date is not None and body.return_date < body.depart_date:
+            raise HTTPException(422, "the return date is before the departure date")
+        origin = body.origin.upper()
+        if origin == dest.airport:
+            raise HTTPException(422, "that's where the trip goes: pick where you're flying from")
+        q = trips.FlightQuery(origin=origin, destination=dest.airport, depart=body.depart_date, ret=body.return_date,
+                              adults=body.adults, children=tuple(body.children), cabin=body.cabin)
+        f = body.filters
+        links = trips.flight_links(q)
+        ts = app.state.trips
+        try:
+            found = ts.flights(q, user.id)
+            source = ts.flight_source
+        except trips.ProviderError as e:
+            if str(e) == "too_many":
+                raise HTTPException(429, "That's a lot of searches in an hour. Try again in a few minutes.")
+            _trip_event(s, user, "flights", "unavailable", 0, 0, f.sort, [])
+            return {"source": "unavailable", "note": "Flights couldn't be searched just now. The links below search "
+                    "for real.", "total": 0, "shown": 0, "results": [], "facets": trips.flight_facets([]),
+                    "links": links}
+        shown = trips.filter_flights(found, trips.FlightFilters(
+            max_stops=f.max_stops, out_depart=f.out_depart, in_depart=f.in_depart, max_leg_min=f.max_leg_min,
+            airlines=f.airlines, max_price=f.max_price, checked_bag=f.checked_bag, refundable=f.refundable,
+            sort=f.sort))
+        used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
+        _trip_event(s, user, "flights", source, len(found), len(shown), f.sort, used)
+        note = {"sample": trips.SAMPLE_NOTE,
+                "duffel_test": "Test results from Duffel's made-up airline: not real flights. The links below search "
+                               "for real."}.get(source)
+        return {"source": source, "note": note, "total": len(found), "shown": len(shown),
+                "results": [trips.flight_out(x) for x in shown[:60]], "facets": trips.flight_facets(found),
+                "links": links}
+
+    @app.post("/v1/trips/stays")
+    def trip_stays(body: StaySearchIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        dest = _destination(body.destination)
+        today = datetime.now(timezone.utc).date()
+        nights = (body.checkout - body.checkin).days
+        if body.checkin < today or body.checkin > today + timedelta(days=330):
+            raise HTTPException(422, "pick a check-in date from today to about 11 months ahead")
+        if not 1 <= nights <= 30:
+            raise HTTPException(422, "a stay is 1 to 30 nights")
+        q = trips.StayQuery(city=dest.name, country_code=dest.country_code, lat=dest.lat, lon=dest.lon,
+                            checkin=body.checkin, checkout=body.checkout, adults=body.adults,
+                            children=tuple(body.children), rooms=min(body.rooms, body.adults))
+        f = body.filters
+        links = trips.stay_links(q, max_night=f.max_night)
+        ts = app.state.trips
+        try:
+            found = ts.stays(q, user.id)
+            source = ts.stay_source
+        except trips.ProviderError as e:
+            if str(e) == "too_many":
+                raise HTTPException(429, "That's a lot of searches in an hour. Try again in a few minutes.")
+            _trip_event(s, user, "stays", "unavailable", 0, 0, f.sort, [])
+            return {"source": "unavailable", "note": "Places to stay couldn't be searched just now. The links below "
+                    "search for real.", "total": 0, "shown": 0, "results": [], "facets": trips.stay_facets([]),
+                    "links": links, "centre": dest.centre_name}
+        shown = trips.filter_stays(found, trips.StayFilters(
+            max_night=f.max_night, min_night=f.min_night, min_stars=f.min_stars, min_rating=f.min_rating,
+            kinds=f.kinds, refundable=f.refundable, breakfast=f.breakfast, max_km=f.max_km, sort=f.sort))
+        used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
+        _trip_event(s, user, "stays", source, len(found), len(shown), f.sort, used)
+        results = []
+        for x in shown[:60]:
+            d = trips.stay_out(x)
+            d["links"] = trips.stay_links(q, stay=x)
+            results.append(d)
+        note = {"sample": trips.SAMPLE_STAY_NOTE, "liteapi_sandbox": trips.SANDBOX_STAY_NOTE}.get(source)
+        return {"source": source, "note": note,
+                "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found),
+                "links": links, "centre": dest.centre_name}
 
     # ---- sharing a rated moment (D114) -----------------------------------------------------
     @app.get("/v1/me/referral")
