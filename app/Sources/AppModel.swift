@@ -85,6 +85,7 @@ final class AppModel {
     var currentTripId: UUID?               // the trip the Book tab searches for
     var showCreate = false                 // "Plan a trip": the four questions, full screen
     var editingTrip: Trip?                 // "Edit" on the Book tab's search: the same questions, filled in
+    var editStep: Int?                     // D122: which question the edit opens on ("Your days" is 3)
     let book = BookState()
     // ---- Build 2: the Test A survey and the blind Test B pair, before the first plan ----
     var surveyDone = UserDefaults.standard.bool(forKey: "surveyDone")

@@ -1,0 +1,59 @@
+# D122: where a trip to London starts and ends, for the arrival day ("Heathrow → your stay") and the last day ("Leave
+# for Heathrow by …"). Coordinates are TfL StopPoint records (api.tfl.gov.uk/StopPoint/<id>, read 2026-10-06).
+# Rail times are each link's published or reported time (research/sources.csv, 6 Oct); everything else is a GUESS.
+# The app's Directions button opens Apple Maps on the real route; these numbers only set the day's times.
+london:
+  # GUESSES (D122): from landing to the train (passport control and bags), at the airport before a flight, at a
+  # station before a train, from leaving a train to the street, and checking in or leaving bags at the stay.
+  exit_after_flight_min: 60
+  airport_before_flight_min: 120
+  station_before_train_min: 20
+  exit_after_train_min: 10
+  check_in_min: 20
+  check_in_time: "15:00"          # GUESS: a common hotel check-in time; earlier only for people travelling light
+  back_for_bags_min: 30           # GUESS: from the last stop back to the stay before leaving
+  airports:
+    LHR:
+      name: Heathrow
+      maps_name: Heathrow Airport
+      point: {lat: 51.471618, lon: -0.454037}          # Heathrow Terminals 2 & 3 (940GZZLUHRC)
+      hub: {name: Paddington, lat: 51.516981, lon: -0.17616}   # 940GZZLUPAC
+      rail_min: 28                                     # Elizabeth line, 27-29 min; Heathrow Express 15 min
+      link: Elizabeth line or Heathrow Express
+    LGW:
+      name: Gatwick
+      maps_name: Gatwick Airport
+      point: {lat: 51.156699, lon: -0.162821}          # London Gatwick Airport station (910GGTWK)
+      hub: {name: Victoria, lat: 51.495812, lon: -0.143826}    # 940GZZLUVIC
+      rail_min: 31                                     # Gatwick Express, 30 min advertised, 31 min on average
+      link: Gatwick Express
+    STN:
+      name: Stansted
+      maps_name: Stansted Airport
+      point: {lat: 51.890577, lon: 0.260436}           # London Stansted Airport (920GSTN1)
+      hub: {name: Liverpool Street, lat: 51.51794, lon: -0.083162}   # 940GZZLULVT
+      rail_min: 48                                     # Stansted Express
+      link: Stansted Express
+    LTN:
+      name: Luton
+      maps_name: London Luton Airport
+      point: {lat: 51.872438, lon: -0.395881}          # Luton Airport Parkway (910GLUTOAPY); the DART runs to it
+      hub: {name: St Pancras, lat: 51.531683, lon: -0.123538}  # 940GZZLUKSX
+      rail_min: 32                                     # Luton Airport Express with the DART, from 32 min
+      link: Luton Airport Express and the DART
+    LCY:
+      name: London City
+      maps_name: London City Airport
+      point: {lat: 51.503419, lon: 0.048749}           # London City Airport DLR (940GZZDLLCA)
+      hub: {name: Bank, lat: 51.513395, lon: -0.089095}         # 940GZZLUBNK
+      rail_min: 25                                     # DLR, 22-25 min
+      link: DLR
+  stations:
+    KGX: {name: King's Cross St Pancras, maps_name: London King's Cross Station, lat: 51.531683, lon: -0.123538}   # 940GZZLUKSX
+    EUS: {name: Euston, maps_name: London Euston Station, lat: 51.527365, lon: -0.132754}                          # 940GZZLUEUS
+    PAD: {name: Paddington, maps_name: London Paddington Station, lat: 51.516981, lon: -0.17616}                   # 940GZZLUPAC
+    VIC: {name: Victoria, maps_name: London Victoria Station, lat: 51.495812, lon: -0.143826}                      # 940GZZLUVIC
+    WAT: {name: Waterloo, maps_name: London Waterloo Station, lat: 51.504269, lon: -0.113356}                      # 940GZZLUWLO
+    LST: {name: Liverpool Street, maps_name: London Liverpool Street Station, lat: 51.51794, lon: -0.083162}       # 940GZZLULVT
+    LBG: {name: London Bridge, maps_name: London Bridge Station, lat: 51.505881, lon: -0.086807}                   # 940GZZLULNB
+    MYB: {name: Marylebone, maps_name: London Marylebone Station, lat: 51.521602, lon: -0.163013}                  # 940GZZLUMYB

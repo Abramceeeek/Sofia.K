@@ -244,13 +244,6 @@ def test_flight_and_stay_responses_carry_tabs_and_tags(client):
 
 
 def test_trip_days_never_repeat_a_moment_and_shape_the_ends(client):
-    from brain.api import trip_day_window
-    assert trip_day_window(0, 1, None, None)["stops"] == 4
-    assert trip_day_window(0, 5, "11:50", None)["start"] == "14:30"
-    assert trip_day_window(0, 5, "17:30", None)["stops"] == 0          # landing late: settle in
-    assert trip_day_window(4, 5, None, "13:30")["stops"] == 0          # an early flight home: a travel day
-    assert trip_day_window(4, 5, None, "20:00")["end"] == "16:00"
-    assert trip_day_window(2, 5, None, None) == {"kind": "full", "start": "10:00", "end": "18:00", "stops": 4}
     h, uid = install(client)
     start = date.today() + timedelta(days=3)
     r = client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 3,
@@ -273,3 +266,93 @@ def test_trip_days_never_repeat_a_moment_and_shape_the_ends(client):
                                                              "days": [4]}).status_code == 422
     assert client.post("/v1/me/trips/days", headers=h, json={
         "start_date": (date.today() - timedelta(days=1)).isoformat(), "nights": 2}).status_code == 422
+
+
+# ---- D122: the person's own day, and the journeys at each end of the trip ----------------------------------------
+
+from brain import tripdays                       # noqa: E402
+from brain.moments import Point                  # noqa: E402
+from brain.travel import LondonEstimate          # noqa: E402
+
+CFG = tripdays.load_arrivals(DATA_DIR / "arrivals.yaml")["london"]
+STAY = Point(lat=51.5117, lon=-0.1240)           # Covent Garden
+
+
+def _frame(i, total, **kw):
+    args = dict(stay=STAY, stay_name="Sample hotel", stay_chosen=True, day_start="10:00", day_end="18:00", stops=4,
+                arrive=None, leave=None, travel_light=False)
+    args.update(kw)
+    return tripdays.frame_day(i, total, CFG, LondonEstimate(), **args)
+
+
+def test_frames_follow_the_persons_hours_and_places_a_day():
+    f = _frame(2, 5, day_start="09:00", day_end="20:00", stops=5)
+    assert (f.kind, f.main.start_time, f.main.end_time, f.main.stops, f.legs) == ("full", "09:00", "20:00", 6, [])  # 5 + lunch
+    assert _frame(2, 5, day_start="10:00", day_end="12:00", stops=5).main.stops == 1   # a short day holds fewer
+    assert set(CFG.airports) == {"LHR", "LGW", "STN", "LTN", "LCY"} and "KGX" in CFG.stations
+
+
+def test_arrival_day_starts_where_they_land():
+    f = _frame(0, 4, arrive=tripdays.End("flight", "LHR", "09:40"))
+    leg = f.legs[0]
+    assert (leg.slot, leg.title, leg.depart) == ("arrive", "Heathrow → your stay", "10:40")   # an hour to get out
+    assert leg.origin.maps == "Heathrow Airport" and leg.destination.lat == STAY.lat
+    assert leg.how.startswith("Elizabeth line or Heathrow Express to Paddington (28 min)")
+    assert f.before is None and f.main.start_time >= leg.arrive                # the plan starts at the stay
+    # travelling light and early: Paddington, one place, then the stay
+    f = _frame(0, 4, arrive=tripdays.End("flight", "LHR", "09:40"), travel_light=True)
+    assert f.legs[0].title == "Heathrow → Paddington" and f.legs[0].arrive == "11:08"
+    assert (f.before.start_name, f.before.start_time, f.before.stops) == ("Paddington", "11:10", 1)
+    # light but landing after check-in time: the stay first
+    assert _frame(0, 4, arrive=tripdays.End("flight", "LHR", "15:30"), travel_light=True).before is None
+    late = _frame(0, 4, arrive=tripdays.End("flight", "LGW", "17:30"))
+    assert late.main is None and late.title == "Arrive and settle in"
+    car = _frame(0, 4, arrive=tripdays.End("car", None, "12:00"))
+    assert car.legs[0].title == "Drive to your stay" and car.main.start_time == "12:20"
+    train = _frame(0, 4, arrive=tripdays.End("train", "KGX", "10:00"))
+    assert train.legs[0].origin.name == "King's Cross St Pancras" and train.legs[0].depart == "10:10"
+    unknown = _frame(0, 4, arrive=tripdays.End("flight", None, "09:00"))          # the older app: no airport
+    assert unknown.legs[0].title == "the airport → your stay" and unknown.legs[0].origin.maps is None
+
+
+def test_last_day_ends_with_the_way_to_the_airport_or_station():
+    f = _frame(3, 4, leave=tripdays.End("flight", "LGW", "18:00"))
+    leg = f.leave_leg
+    assert leg.title.startswith("Leave for Gatwick by") and leg.destination.maps == "Gatwick Airport"
+    assert 16 * 60 - 5 < tripdays.mins(leg.arrive) <= 16 * 60                   # 2 hours before the flight
+    assert tripdays.mins(f.main.end_time) == f.leave_at - CFG.back_for_bags_min
+    early = _frame(3, 4, leave=tripdays.End("flight", "STN", "11:00"))
+    assert early.main is None and early.title.startswith("Travel day")
+    train = _frame(3, 4, leave=tripdays.End("train", "PAD", "17:00"))
+    assert train.leave_leg.destination.name == "Paddington" and train.leave_leg.note.startswith("At the station 20 min")
+    car = _frame(3, 4, leave=tripdays.End("car", None, "16:00"))
+    assert car.leave_at == 16 * 60 and car.main.end_time == "15:30"
+    one = _frame(0, 1, arrive=tripdays.End("train", "VIC", "09:00"), leave=tripdays.End("train", "VIC", "19:00"))
+    assert one.kind == "one" and one.legs and one.leave_leg and one.main.stops >= 1
+
+
+def test_trip_days_carry_legs_and_the_place_on_the_way(client):
+    h, _ = install(client)
+    start = date.today() + timedelta(days=5)
+    body = {"start_date": start.isoformat(), "nights": 2, "stay": {"lat": STAY.lat, "lon": STAY.lon},
+            "stay_name": "Sample hotel", "day_start": "09:30", "day_end": "19:30", "stops_per_day": 3,
+            "travel_light": True, "arrive": {"mode": "flight", "place": "lhr", "time": "08:30"},
+            "leave": {"mode": "train", "place": "KGX", "time": "19:00"}}
+    r = client.post("/v1/me/trips/days", headers=h, json=body)
+    assert r.status_code == 201, r.text
+    days = r.json()["days"]
+    first, middle, last = days
+    assert first["legs"][0]["slot"] == "arrive" and first["legs"][0]["origin"]["maps"] == "Heathrow Airport"
+    if first["before"]:                                    # one place on the way, then the stay to check in
+        assert len(first["before"]["stops"]) == 1 and first["legs"][1]["slot"] == "to_stay"
+    assert middle["legs"] == [] and middle["window"]["start"] == "09:30"
+    assert middle["plan"] and len(middle["plan"]["stops"]) <= 3 + 1          # 3 places, plus lunch if it's one
+    assert last["legs"][-1]["slot"] == "leave" and last["legs"][-1]["destination"]["name"] == "King's Cross St Pancras"
+    plans = [d[k] for d in days for k in ("before", "plan") if d[k]]
+    seen = [st["moment_id"].split("#")[0] for pl in plans for st in pl["stops"] if st["rateable"]]
+    assert len(seen) == len(set(seen))                     # nothing twice, the place on the way included
+    bad = {**body, "day_start": "12:00", "day_end": "12:30"}
+    assert client.post("/v1/me/trips/days", headers=h, json=bad).status_code == 422
+    old = client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 1,
+                                                            "arrive_time": "10:00", "leave_time": "20:00"}).json()
+    assert old["days"][0]["legs"][0]["origin"]["name"] == "the airport"   # build 41 still works

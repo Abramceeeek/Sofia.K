@@ -619,7 +619,8 @@ struct FlightDetailView: View {
                                 title: "\(flight.airline) · \(flight.outbound.departTime) → \(flight.outbound.arriveTime)",
                                 provider: link.name, price: flight.price, booked: false,
                                 arriveTime: sameDay ? flight.outbound.arriveTime : nil,
-                                leaveTime: back.flatMap { $0.departDay == trip.end ? $0.departTime : nil })
+                                leaveTime: back.flatMap { $0.departDay == trip.end ? $0.departTime : nil },
+                                arrivePlace: flight.outbound.destination, leavePlace: back?.origin)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.nights > 0 ? "Return flight" : "Flight",
                                   price: flight.price, searchedAt: model.book.flights?.searchedAt.flatMap(Self.parseDate),
                                   choice: choice))

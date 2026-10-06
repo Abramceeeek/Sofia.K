@@ -86,6 +86,7 @@ class Brief:
     time_limit_s: float = 2.0
     lunch_gbp: float = 15.0        # D102 (GUESS): the flexible lunch slot's cost per person
     sunset: str | None = None      # D105: "hh:mm" on the day the plans are for; sets the sunset-based "Best" lines
+    lunch: bool = True             # D122: False for a trip's one place on the way from the airport (never lunch)
 
 
 def load_brief(path: Path) -> Brief:
@@ -128,6 +129,13 @@ LUNCH_BONUS = 5.0
 
 
 LUNCH_CARD_MIN = 0.5   # a food card is offered as the lunch stop only if the person is predicted to like it this much
+
+
+def spans_lunch(start_min: int, end_min: int) -> bool:
+    """Whether a day from start to end (minutes) gets a lunch stop (D102)."""
+    lo, hi = LUNCH_START
+    return end_min >= lo + LUNCH_MIN and start_min <= hi
+
 
 
 # D113 (m153, decisions/plan-variety.md): the popularity nudge. A second plan is made with each card's utility lowered
@@ -176,10 +184,10 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
     group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside every place,
     scored as neutral (0). Nothing is added if the day doesn't span lunch. `liked` holds the person's own
     utilities when the planner's are nudged (D113), so a popular food card still counts as liked."""
-    lo, hi = LUNCH_START
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
-    if day_end < lo + LUNCH_MIN or day_start > hi:
+    if not brief.lunch or not spans_lunch(day_start, day_end):
         return [c for c in real if not by_id[c.moment_id].meal]   # meal cards only ever serve as lunch (D104)
+    lo, hi = LUNCH_START
     out = []
     for c in real:
         m = by_id[c.moment_id]

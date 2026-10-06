@@ -238,6 +238,14 @@ class StaySearchIn(BaseModel):
     filters: StayFiltersIn = Field(default_factory=StayFiltersIn)
 
 
+class TripEndIn(BaseModel):
+    """D122: how a trip starts or ends: by flight (an airport code), train (a station code, brain/data/arrivals.yaml)
+    or car, and the local time (landing, the train's arrival, or for the way home, the departure)."""
+    mode: Literal["flight", "train", "car"]
+    place: str | None = Field(default=None, max_length=8)
+    time: str = Field(pattern=r"^\d{2}:\d{2}$")
+
+
 class TripDaysIn(BaseModel):
     """D120: the days of a multi-day trip (ODYS Trips design: "How long for?", "How should the trip feel?")."""
     destination: str = "london"
@@ -250,3 +258,10 @@ class TripDaysIn(BaseModel):
     leave_time: str | None = Field(default=None, pattern=r"^\d{2}:\d{2}$")    # the flight home on the last day
     days: list[Annotated[int, Field(ge=0, le=30)]] = Field(default_factory=list, max_length=7)   # which days; default the first 7
     exclude: list[str] = Field(default_factory=list, max_length=200)     # moments already in the trip's other days
+    # D122 (Abram, 6 Oct): the person's own day, and how the trip starts and ends
+    day_start: str = Field(default="10:00", pattern=r"^\d{2}:\d{2}$")
+    day_end: str = Field(default="18:00", pattern=r"^\d{2}:\d{2}$")
+    stops_per_day: int = Field(default=4, ge=1, le=6)
+    travel_light: bool = False                                           # no big bags on the first day
+    arrive: TripEndIn | None = None                                      # replaces arrive_time when sent
+    leave: TripEndIn | None = None                                       # replaces leave_time when sent

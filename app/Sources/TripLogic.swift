@@ -207,11 +207,14 @@ extension AppModel {
         _ = await makeTrip(fresh)
     }
 
+    /// D122: the person's hours and places a day, and how the trip starts and ends (flight, train or car).
     private func daysRequest(_ trip: Trip, days: [Int], exclude: [String]) -> TripDaysRequest {
-        TripDaysRequest(destination: trip.destination, startDate: trip.start, nights: trip.nights,
-                        feelings: trip.feelings, stay: trip.stay?.point, stayName: trip.stay?.title,
-                        arriveTime: trip.flight?.arriveTime, leaveTime: trip.flight?.leaveTime,
-                        days: days, exclude: exclude)
+        let ends = trip.ends
+        return TripDaysRequest(destination: trip.destination, startDate: trip.start, nights: trip.nights,
+                               feelings: trip.feelings, stay: trip.stay?.point, stayName: trip.stay?.title,
+                               days: days, exclude: exclude, dayStart: trip.dayFrom, dayEnd: trip.dayTo,
+                               stopsPerDay: trip.placesPerDay, travelLight: trip.travelLight,
+                               arrive: ends.arrive, leave: ends.leave)
     }
 
     /// "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and regenerate.
@@ -306,12 +309,21 @@ extension AppModel {
         t.origin = TripPlace(code: "TAS", city: "Tashkent", name: "Tashkent Islam Karimov", country: "UZ")
         t.originGuessed = true
         t.feelings = ["curious", "peaceful"]
+        t.hoursFrom = "09:30"                                   // D122: the demo trip's own day (make_demo.py)
+        t.hoursTo = "19:00"
+        t.places = 3
+        t.light = true
         t.days = days.days
         t.used = days.used
         t.daysFrom = days.start
         if let flights: FlightResults = try? BrainClient.bundled("demo_flights"), let f = flights.results.first {
             t.flight = TripChoice(kind: "flight", title: "\(f.airline) · \(f.outbound.departTime) → \(f.outbound.arriveTime)",
-                                  provider: "Skyscanner", price: f.price, booked: false)
+                                  provider: "Skyscanner", price: f.price, booked: false, arriveTime: "08:30",
+                                  leaveTime: "18:20", arrivePlace: "LHR", leavePlace: "LGW")
+        }
+        if let stays: StayResults = try? BrainClient.bundled("demo_stays"), let s = stays.results.first {
+            t.stay = TripChoice(kind: "stay", title: s.name, provider: "Booking.com", price: s.priceTotal, booked: true,
+                                point: s.point)
         }
         return t
     }

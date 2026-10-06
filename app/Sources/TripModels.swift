@@ -215,6 +215,13 @@ struct StayResults: Codable, Hashable {
 
 // ---- days (POST /v1/me/trips/days) ------------------------------------------------------------------------------
 
+/// D122: how the trip starts or ends: by flight (an airport code), train (a London station code) or car, and when.
+struct TripEnd: Codable, Hashable {
+    let mode: String                       // flight | train | car
+    let place: String?
+    let time: String                       // "09:40": landing or arriving; on the way home, leaving
+}
+
 struct TripDaysRequest: Encodable {
     let destination: String
     let startDate: String
@@ -222,10 +229,15 @@ struct TripDaysRequest: Encodable {
     let feelings: [String]
     let stay: Point?
     let stayName: String?
-    let arriveTime: String?
-    let leaveTime: String?
     let days: [Int]
     let exclude: [String]
+    // D122 (Abram, 6 Oct): the person's own day, and how the trip starts and ends
+    let dayStart: String
+    let dayEnd: String
+    let stopsPerDay: Int
+    let travelLight: Bool
+    let arrive: TripEnd?
+    let leave: TripEnd?
 }
 
 struct TripDayOut: Codable, Hashable {
@@ -235,6 +247,60 @@ struct TripDayOut: Codable, Hashable {
     let title: String
     let plan: Plan?
     let window: DayWindow?                 // the day's times, so "Swap this stop" and "Regenerate" work on it
+    let before: Plan?                      // D122: travelling light, one place on the way from the airport or station
+    let legs: [TripLeg]?                   // D122: the journeys at each end of the trip
+
+    func journeys(_ slot: String) -> [TripLeg] { (self.legs ?? []).filter { $0.slot == slot } }
+}
+
+/// D122: a journey at one end of the trip ("Heathrow → your stay", "Leave for Gatwick by 15:20"). Times are the Brain's
+/// estimates; "Directions" opens Apple Maps on the real route.
+struct TripLeg: Codable, Hashable {
+    let slot: String                       // arrive | to_stay | back | leave
+    let title: String
+    let depart: String?
+    let arrive: String?
+    let minutes: Int?
+    let how: String?
+    let note: String?
+    let mode: String                       // transit | driving | walking
+    let origin: LegSpot?                   // nil: from where the person is
+    let destination: LegSpot?
+
+    /// "10:40 → 11:39 · about 59 min"
+    var times: String? {
+        switch (depart, arrive) {
+        case let (d?, a?): return "\(d) → \(a)" + (minutes.map { " · about \($0) min" } ?? "")
+        case let (d?, nil): return "Leave at \(d)"
+        case let (nil, a?): return "Arrive at \(a)"
+        default: return nil
+        }
+    }
+
+    /// Apple Maps directions (the unified link from iOS 18.4, the older one before). None for "leave by car".
+    var mapsURL: URL? {
+        guard let to = destination?.query else { return nil }
+        if #available(iOS 18.4, *) {
+            var c = URLComponents(string: "https://maps.apple.com/directions")
+            c?.queryItems = (origin?.query.map { [URLQueryItem(name: "source", value: $0)] } ?? [])
+                + [URLQueryItem(name: "destination", value: to), URLQueryItem(name: "mode", value: mode)]
+            return c?.url
+        }
+        var c = URLComponents(string: "http://maps.apple.com/")
+        let flag = ["transit": "r", "driving": "d", "walking": "w"][mode] ?? "r"
+        c?.queryItems = (origin?.query.map { [URLQueryItem(name: "saddr", value: $0)] } ?? [])
+            + [URLQueryItem(name: "daddr", value: to), URLQueryItem(name: "dirflg", value: flag)]
+        return c?.url
+    }
+}
+
+struct LegSpot: Codable, Hashable {
+    let name: String
+    let maps: String?                      // what Maps should look for: "Heathrow Airport", or "51.51,-0.12"
+    let lat: Double?
+    let lon: Double?
+
+    var query: String? { maps ?? lat.flatMap { la in lon.map { "\(la),\($0)" } } }
 }
 
 struct DayWindow: Codable, Hashable {
@@ -262,6 +328,8 @@ struct TripChoice: Codable, Hashable {
     var arriveTime: String?                // a flight's landing on day 1, for the arrival day
     var leaveTime: String?                 // its departure on the last day
     var point: Point?                      // a stay, so the days start near it
+    var arrivePlace: String?               // D122: the airport the flight lands at ("LHR"), for "Heathrow → your stay"
+    var leavePlace: String?                // and the one the flight home leaves from
 }
 
 struct Trip: Codable, Hashable, Identifiable {
@@ -281,6 +349,43 @@ struct Trip: Codable, Hashable, Identifiable {
     var daysStale = false                  // a flight or stay was chosen after the days were planned
     var flight: TripChoice?
     var stay: TripChoice?
+    // D122 (Abram, 6 Oct). Optional, so trips saved by build 41 still open; the getters below give the defaults.
+    var hoursFrom: String?                 // the person's day: from
+    var hoursTo: String?                   // to
+    var places: Int?                       // places a day (lunch comes on top)
+    var light: Bool?                       // travelling light on the first day
+    var travelBy: String?                  // without a flight: train | car | here
+    var station: String?                   // a train's London station (brain/data/arrivals.yaml)
+    var arriveAt: String?                  // a train's or car's arrival on day 1
+    var leaveAt: String?                   // its departure on the last day
+
+    var dayFrom: String { hoursFrom ?? "10:00" }
+    var dayTo: String { hoursTo ?? "18:00" }
+    var placesPerDay: Int { places ?? 3 }
+    var travelLight: Bool { light ?? false }
+    /// flight | train | car | here
+    var arrivingBy: String { needFlight ? "flight" : (travelBy ?? "here") }
+
+    /// "10:00–18:00 · 3 places a day · travelling light"
+    var daysLine: String {
+        "\(dayFrom)–\(dayTo) · \(placesPerDay) place\(placesPerDay == 1 ? "" : "s") a day"
+            + (travelLight && arrivingBy != "here" && arrivingBy != "car" ? " · travelling light" : "")
+    }
+
+    /// How the trip starts and ends, for the Brain: the chosen flight's times and airports, or the train or car times.
+    var ends: (arrive: TripEnd?, leave: TripEnd?) {
+        switch arrivingBy {
+        case "flight":
+            return (flight?.arriveTime.map { TripEnd(mode: "flight", place: flight?.arrivePlace, time: $0) },
+                    flight?.leaveTime.map { TripEnd(mode: "flight", place: flight?.leavePlace, time: $0) })
+        case "train", "car":
+            let place = arrivingBy == "train" ? station : nil
+            return (arriveAt.map { TripEnd(mode: arrivingBy, place: place, time: $0) },
+                    leaveAt.map { TripEnd(mode: arrivingBy, place: place, time: $0) })
+        default:
+            return (nil, nil)
+        }
+    }
 
     var dayCount: Int { nights + 1 }
     var needStay: Bool { nights > 0 }
@@ -310,6 +415,23 @@ struct Trip: Codable, Hashable, Identifiable {
     var feelLine: String {
         let words = feelings.map { TripFeelings.adjective($0) }
         return (words.isEmpty ? "Your trip" : "A \(words.joined(separator: ", ")) trip") + " · " + travellers
+    }
+}
+
+/// D122: London's main stations, for "Arriving by train" (the codes match brain/data/arrivals.yaml).
+enum LondonStations {
+    static let all: [(code: String, name: String)] = [
+        ("KGX", "King's Cross St Pancras"), ("EUS", "Euston"), ("PAD", "Paddington"), ("VIC", "Victoria"),
+        ("WAT", "Waterloo"), ("LST", "Liverpool Street"), ("LBG", "London Bridge"), ("MYB", "Marylebone"),
+    ]
+
+    static func name(_ code: String?) -> String? { all.first { $0.code == code }?.name }
+}
+
+/// "09:30", "10:00" … for the time menus.
+enum HalfHours {
+    static func from(_ start: Int, to end: Int) -> [String] {
+        stride(from: start * 60, through: end * 60, by: 30).map { String(format: "%02d:%02d", $0 / 60, $0 % 60) }
     }
 }
 

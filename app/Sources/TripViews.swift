@@ -1,7 +1,8 @@
 import SwiftUI
 import UIKit
 
-// D120: the ODYS Trips design (Abram's "ODYS Trips" file): three tabs, "Plan a trip" in four questions, the trip as a
+// D120: the ODYS Trips design (Abram's "ODYS Trips" file): three tabs, "Plan a trip" in five questions (D122 added
+// "Your days"), the trip as a
 // checklist (getting there, where you'll stay, your days) and a running total. What differs from the design, and why,
 // is in decisions/decision-log.md (D121).
 
@@ -28,8 +29,9 @@ struct MainTabs: View {
                     .tag(MainTab.you)
             }
             .tint(Theme.accent)
-            .fullScreenCover(isPresented: $model.showCreate, onDismiss: { model.editingTrip = nil }) {
-                TripCreateFlow(trip: model.editingTrip ?? model.newTrip(), editing: model.editingTrip != nil)
+            .fullScreenCover(isPresented: $model.showCreate, onDismiss: { model.editingTrip = nil; model.editStep = nil }) {
+                TripCreateFlow(trip: model.editingTrip ?? model.newTrip(), editing: model.editingTrip != nil,
+                               startAt: model.editStep)
             }
             .fullScreenCover(isPresented: $model.showPair) { PairFlow() }
         }
@@ -373,6 +375,7 @@ struct TripCreateFlow: View {
                     case 0: WhereStep()
                     case 1: WhenStep(trip: $trip, lengthKey: $lengthKey)
                     case 2: FromStep(trip: $trip, showAirports: $showAirports)
+                    case 3: DaysStep(trip: $trip)
                     default: FeelStep(trip: $trip)
                     }
                 }
@@ -414,7 +417,7 @@ struct TripCreateFlow: View {
             .frame(minWidth: 60, minHeight: 44, alignment: .leading)
             Spacer()
             HStack(spacing: 6) {
-                ForEach(0..<4, id: \.self) { i in
+                ForEach(0..<Self.questions, id: \.self) { i in
                     Capsule()
                         .fill(i <= step ? Theme.accent : Color(hex: 0x3A3E46))
                         .frame(width: i == step ? 22 : 6, height: 6)
@@ -422,7 +425,7 @@ struct TripCreateFlow: View {
             }
             .animation(.easeOut(duration: 0.3), value: step)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Question \(step + 1) of 4")
+            .accessibilityLabel("Question \(step + 1) of \(Self.questions)")
             Spacer()
             Color.clear.frame(width: 60, height: 1)
         }
@@ -434,14 +437,16 @@ struct TripCreateFlow: View {
 
     private var backTitle: String { step == 0 || (editing && step == 1) ? "Cancel" : "‹ Back" }
 
+    static let questions = 5
+
     private var buttonTitle: String {
-        if step < 3 { return "Continue" }
+        if step < Self.questions - 1 { return "Continue" }
         if model.busy { return "Planning your days…" }
         return editing ? "Plan the trip again" : "Make my trip"
     }
 
     private func next() {
-        guard step == 3 else {
+        guard step == Self.questions - 1 else {
             step += 1
             return
         }
@@ -616,36 +621,27 @@ struct FromStep: View {
     @Binding var trip: Trip
     @Binding var showAirports: Bool
 
+    /// D122: by plane, train or car, or already in London.
+    static let ways: [(key: String, label: String)] = [
+        ("flight", "Flying"), ("train", "By train"), ("car", "By car"), ("here", "Already in London"),
+    ]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             PageTitle(text: "Getting there", font: Theme.h1)
-            VStack(spacing: 0) {
-                Button { showAirports = true } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Flying from").font(.footnote).foregroundStyle(Theme.muted)
-                            Text(trip.origin?.label ?? "Choose an airport")
-                                .foregroundStyle(trip.needFlight ? Theme.ink : Color(hex: 0x7A746B))
-                        }
-                        Spacer(minLength: 8)
-                        Text(trip.originGuessed ? "From your answers" : "Change")
-                            .font(.footnote)
-                            .foregroundStyle(trip.originGuessed ? Theme.muted : Theme.accent)
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                ForEach(Self.ways, id: \.key) { w in
+                    OptionTile(label: w.label, on: trip.arrivingBy == w.key, offFill: Theme.surface, offStroke: .clear) {
+                        choose(w.key)
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 16)
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                Rectangle().fill(Theme.hairline).frame(height: 1)
-                Toggle(isOn: Binding(get: { !trip.needFlight }, set: { trip.needFlight = !$0 })) {
-                    Text("I don't need a flight").foregroundStyle(Theme.ink)
-                }
-                .tint(Theme.amberDeep)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 12)
             }
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            switch trip.arrivingBy {
+            case "flight": flightCard
+            case "train": trainCard
+            case "car": carCard
+            default: EmptyView()
+            }
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Who's going").font(.footnote).foregroundStyle(Theme.muted)
@@ -661,6 +657,184 @@ struct FromStep: View {
             .padding(.vertical, 12)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
         }
+    }
+
+    private func choose(_ key: String) {
+        trip.needFlight = key == "flight"
+        if key != "flight" { trip.travelBy = key }
+        if key == "train", trip.station == nil { trip.station = "KGX" }
+        if key == "train" || key == "car" {
+            if trip.arriveAt == nil { trip.arriveAt = "11:00" }
+            if trip.leaveAt == nil { trip.leaveAt = "17:00" }
+        }
+    }
+
+    private var flightCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button { showAirports = true } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Flying from").font(.footnote).foregroundStyle(Theme.muted)
+                        Text(trip.origin?.label ?? "Choose an airport").foregroundStyle(Theme.ink)
+                    }
+                    Spacer(minLength: 8)
+                    Text(trip.originGuessed ? "From your answers" : "Change")
+                        .font(.footnote)
+                        .foregroundStyle(trip.originGuessed ? Theme.muted : Theme.accent)
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 16)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            Text("Your first day starts when your flight lands, and your last day ends in time for the flight home.")
+                .font(.footnote)
+                .foregroundStyle(Theme.muted)
+                .padding(.horizontal, 4)
+        }
+    }
+
+    private var trainCard: some View {
+        VStack(spacing: 0) {
+            Menu {
+                Picker("Arriving at", selection: Binding(get: { trip.station ?? "KGX" }, set: { trip.station = $0 })) {
+                    ForEach(LondonStations.all, id: \.code) { Text($0.name).tag($0.code) }
+                }
+            } label: {
+                MenuRow(label: "Arriving at", value: LondonStations.name(trip.station) ?? "Choose a station")
+            }
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+            TimeMenu(label: "Your train arrives", time: time(\.arriveAt, "11:00"), options: HalfHours.from(5, to: 22))
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+            TimeMenu(label: trip.nights == 0 ? "Your train home leaves" : "Your train home leaves, on the last day",
+                     time: time(\.leaveAt, "17:00"), options: HalfHours.from(8, to: 23))
+        }
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var carCard: some View {
+        VStack(spacing: 0) {
+            TimeMenu(label: "You arrive at your stay", time: time(\.arriveAt, "11:00"), options: HalfHours.from(5, to: 22))
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+            TimeMenu(label: trip.nights == 0 ? "You set off home" : "You set off home, on the last day",
+                     time: time(\.leaveAt, "17:00"), options: HalfHours.from(8, to: 23))
+        }
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    private func time(_ key: WritableKeyPath<Trip, String?>, _ fallback: String) -> Binding<String> {
+        Binding(get: { trip[keyPath: key] ?? fallback }, set: { trip[keyPath: key] = $0 })
+    }
+}
+
+/// D122: "Your days": from what time to what time, how many places a day, and travelling light on day 1.
+struct DaysStep: View {
+    @Binding var trip: Trip
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            PageTitle(text: "Your days", font: Theme.h1)
+            Text("Each day runs at these times, from where you're staying.")
+                .foregroundStyle(Theme.muted)
+            VStack(spacing: 0) {
+                TimeMenu(label: "Out from", time: from, options: HalfHours.from(6, to: 14))
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+                TimeMenu(label: "Back by", time: to, options: HalfHours.from(12, to: 23))
+            }
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Places a day").font(.footnote).foregroundStyle(Theme.muted)
+                    Text("\(trip.placesPerDay) place\(trip.placesPerDay == 1 ? "" : "s")").foregroundStyle(Theme.ink)
+                }
+                Spacer()
+                RoundIcon(name: "minus", disabled: trip.placesPerDay <= 1) { trip.places = max(1, trip.placesPerDay - 1) }
+                    .accessibilityLabel("One place fewer")
+                RoundIcon(name: "plus", disabled: trip.placesPerDay >= 6) { trip.places = min(6, trip.placesPerDay + 1) }
+                    .accessibilityLabel("One place more")
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            Text("Lunch comes on top, when a day runs through midday. A short day holds fewer places.")
+                .font(.footnote)
+                .foregroundStyle(Theme.muted)
+                .padding(.horizontal, 4)
+            if trip.arrivingBy == "flight" || trip.arrivingBy == "train" {
+                Toggle(isOn: Binding(get: { trip.travelLight }, set: { trip.light = $0 })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Travelling light on day 1").foregroundStyle(Theme.ink)
+                        Text("No big bags: if you arrive before check-in, one place on the way, then your stay.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .tint(Theme.amberDeep)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 12)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            }
+        }
+    }
+
+    private static func mins(_ t: String) -> Int { (Int(t.prefix(2)) ?? 0) * 60 + (Int(t.suffix(2)) ?? 0) }
+
+    private static func hhmm(_ m: Int) -> String { String(format: "%02d:%02d", m / 60, m % 60) }
+
+    /// Changing the start keeps at least two hours before the end.
+    private var from: Binding<String> {
+        Binding(get: { trip.dayFrom }, set: { v in
+            trip.hoursFrom = v
+            if Self.mins(trip.dayTo) - Self.mins(v) < 120 { trip.hoursTo = Self.hhmm(min(Self.mins(v) + 240, 23 * 60)) }
+        })
+    }
+
+    private var to: Binding<String> {
+        Binding(get: { trip.dayTo }, set: { v in
+            trip.hoursTo = v
+            if Self.mins(v) - Self.mins(trip.dayFrom) < 120 { trip.hoursFrom = Self.hhmm(max(Self.mins(v) - 240, 6 * 60)) }
+        })
+    }
+}
+
+/// D122: a time from a menu of half hours.
+struct TimeMenu: View {
+    let label: String
+    @Binding var time: String
+    var options: [String] = HalfHours.from(6, to: 23)
+
+    var body: some View {
+        Menu {
+            Picker(label, selection: $time) {
+                ForEach(options, id: \.self) { Text($0).tag($0) }
+            }
+        } label: {
+            MenuRow(label: label, value: time)
+        }
+    }
+}
+
+/// A row that opens a menu: its label, the value, and a small chevron.
+struct MenuRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label).font(.footnote).foregroundStyle(Theme.muted)
+                Text(value).foregroundStyle(Theme.ink).monospacedDigit()
+            }
+            Spacer(minLength: 8)
+            Image(systemName: "chevron.up.chevron.down").font(.footnote).foregroundStyle(Theme.accent)
+        }
+        .multilineTextAlignment(.leading)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -801,6 +975,20 @@ struct TripOverview: View {
                 Text("\(trip.dayCount) day\(trip.dayCount == 1 ? "" : "s")").font(.subheadline).foregroundStyle(Theme.muted)
             }
             .padding(.top, 8)
+            Button {
+                model.editingTrip = trip      // D122: straight to "Your days"
+                model.editStep = 3
+                model.showCreate = true
+            } label: {
+                HStack {
+                    Text(trip.daysLine).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                    Spacer(minLength: 8)
+                    Text("Change").font(.footnote).foregroundStyle(Theme.accent)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Your days: \(trip.daysLine). Change")
             if trip.daysStale {
                 SecondaryButton(title: model.busy ? "Planning…" : "Plan the days again from your stay and flight",
                                 disabled: model.busy) {
@@ -1009,8 +1197,20 @@ struct TripDayView: View {
                         .foregroundStyle(Theme.ink)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
+                    if let day {   // D122: from the airport or station, and one place on the way
+                        ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
+                        if let before = day.before {
+                            SectionLabel(text: "On the way · travelling light").padding(.top, 4)
+                            ForEach(before.stops) { stop in TripDayStop(stop: stop) }
+                        }
+                        ForEach(day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
+                    }
                     if let day, let plan = day.plan {
+                        if day.before != nil || !day.journeys("arrive").isEmpty {
+                            SectionLabel(text: "From your stay").padding(.top, 4)
+                        }
                         ForEach(plan.stops) { stop in TripDayStop(stop: stop) }
+                        ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
                         PrimaryButton(title: model.plan?.id == plan.id ? "This is your day" : "Make this my day",
                                       disabled: model.plan?.id == plan.id) {
                             model.useDay(trip, day)
@@ -1026,11 +1226,14 @@ struct TripDayView: View {
                             Task { await model.planDay(tripId, index) }
                         }
                     } else {
-                        Text("A travel day: nothing is planned, so you can take it easy.")
-                            .foregroundStyle(Theme.inkSoft)
-                            .padding(20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+                        ForEach(day?.journeys("leave") ?? [], id: \.self) { JourneyCard(leg: $0) }
+                        if day?.before == nil {
+                            Text("A travel day: nothing is planned, so you can take it easy.")
+                                .foregroundStyle(Theme.inkSoft)
+                                .padding(20)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+                        }
                     }
                 }
             }
@@ -1041,6 +1244,69 @@ struct TripDayView: View {
         .background(Theme.background)
         .toolbar(.hidden, for: .navigationBar)
         .statusBarShade()
+    }
+}
+
+/// D122: one journey at an end of the trip ("Heathrow → your stay"), with Apple Maps for the real route.
+struct JourneyCard: View {
+    @Environment(\.openURL) private var openURL
+    let leg: TripLeg
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 24)
+                    .accessibilityHidden(true)
+                Text(leg.title)
+                    .font(Theme.serif(19, relativeTo: .title3))
+                    .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                if let times = leg.times {
+                    Text(times).font(.subheadline.monospacedDigit()).foregroundStyle(Theme.inkSoft)
+                }
+                if let how = leg.how {
+                    Text(how).font(.subheadline).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
+                }
+                if let note = leg.note {
+                    Text(note).font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+                }
+                if let url = leg.mapsURL {
+                    Button {
+                        Haptics.light()
+                        openURL(url)
+                    } label: {
+                        Label("Directions", systemImage: "arrow.triangle.turn.up.right.diamond")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.accent)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Opens Apple Maps")
+                }
+            }
+            .padding(.leading, 34)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, leg.mapsURL == nil ? 14 : 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+    }
+
+    private var icon: String {
+        let airport = (leg.origin?.maps ?? "").contains("Airport") || (leg.destination?.maps ?? "").contains("Airport")
+        switch leg.slot {
+        case "arrive": return leg.mode == "driving" ? "car.fill" : (airport ? "airplane.arrival" : "tram.fill")
+        case "leave": return leg.mode == "driving" ? "car.fill" : (airport ? "airplane.departure" : "tram.fill")
+        case "to_stay": return "bed.double.fill"
+        default: return "bag.fill"
+        }
     }
 }
 
@@ -1177,17 +1443,18 @@ struct TripDemoScreen: View {
             if let pair = Self.pair("demo_pair") { PairCompare(pair: pair, demoQuestions: true).background(Theme.background) }
         case "pairreveal":                                                                // 18
             if let pair = Self.pair("demo_pair_done") { PairReveal(pair: pair) }
-        case "tripwhere", "tripwhen", "tripfrom", "tripfeel":                             // 20-23
+        case "tripwhere", "tripwhen", "tripfrom", "tripdays", "tripfeel":                 // 20-23, 22a
             if let trip = model.trips.first {
                 TripCreateFlow(trip: trip, editing: false,
-                               startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripfeel": 3][name] ?? 0)
+                               startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4][name] ?? 0)
             }
-        case "trip", "tripday":                                                           // 24, 25
+        case "trip", "tripday", "tripdaylast":                                            // 24, 25, 25a
             MainTabs().onAppear {
-                guard let id = model.trips.first?.id else { return }
+                guard let trip = model.trips.first else { return }
                 var p = NavigationPath()
-                p.append(TripDest.trip(id))
-                if name == "tripday" { p.append(TripDest.tripDay(id, 1)) }
+                p.append(TripDest.trip(trip.id))
+                if name == "tripday" { p.append(TripDest.tripDay(trip.id, 0)) }            // D122: the arrival day
+                if name == "tripdaylast" { p.append(TripDest.tripDay(trip.id, trip.dayCount - 1)) }
                 model.path = p
             }
         case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31

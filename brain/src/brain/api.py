@@ -21,7 +21,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify, reasons, share, summary, testb, trips
+from . import dayplan, db, notify, reasons, share, summary, testb, trips, tripdays
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -70,26 +70,9 @@ def _tester_code(text: str | None) -> str | None:
 MAX_TRIP_DAYS = 7   # D120: days planned in one request (about a second each on the free server)
 
 
-def trip_day_window(i: int, total: int, arrive: str | None, leave: str | None) -> dict:
-    """D120 (GUESSES): a one-day trip is the Test B day (12:00-17:00, 4 stops); full days 10:00-18:00 with 4 stops;
-    the arrival day starts 2½ h after landing (else 14:00) and the last day ends 4 h before the flight (else 13:00),
-    each with 2 stops if at least 3 h (2½ h on the last day) are left, else none."""
-    mins = lambda t: int(t[:2]) * 60 + int(t[3:])
-    hhmm = lambda m: f"{m // 60:02d}:{m % 60:02d}"
-    if total == 1:
-        return {"kind": "one", "start": "12:00", "end": "17:00", "stops": 4}
-    if i == 0:
-        start = max(mins(arrive) + 150, 9 * 60) if arrive else 14 * 60
-        start = (start + 14) // 15 * 15
-        ok = 19 * 60 - start >= 180
-        return {"kind": "arrive", "start": hhmm(min(start, 23 * 60)), "end": "19:00", "stops": 2 if ok else 0,
-                "title": "Arrive and settle in"}
-    if i == total - 1:
-        end = mins(leave) - 240 if leave else 13 * 60
-        ok = end - 10 * 60 >= 150
-        return {"kind": "leave", "start": "10:00", "end": hhmm(max(end, 0)), "stops": 2 if ok else 0,
-                "title": "Travel day: an easy trip to the airport"}
-    return {"kind": "full", "start": "10:00", "end": "18:00", "stops": 4}
+def mins_between(a: str, b: str) -> int:
+    """D122: the length of the person's day in minutes ("10:00", "18:00" → 480), for the trip_days event."""
+    return tripdays.mins(b) - tripdays.mins(a)
 
 
 def _next_saturday(today: date) -> date:
@@ -131,6 +114,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         airports, dests = trips.load_places(places if places.exists() else DATA_DIR / "airports.yaml")
         app.state.trips = trips.TripSearch(airports, dests, duffel_token=settings.duffel_token,   # D120
                                            liteapi_key=settings.liteapi_key)
+        arr = settings.data_dir / "arrivals.yaml"
+        app.state.arrivals = tripdays.load_arrivals(arr if arr.exists() else DATA_DIR / "arrivals.yaml")   # D122
         with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
             _reload_moments(s, settings)
             _purge_contacts(s)           # D118: safety contacts never outlive CONTACT_DAYS
@@ -848,7 +833,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """D120: the days of a trip, each planned like "plan a day", with no moment twice in the trip (D121). Each day
         starts near the chosen stay (else the destination's centre). The trip's feelings shape the plans as stated
         choices, for this trip only (the profile isn't changed). Days come back in order; the first MAX_TRIP_DAYS are
-        planned now and the rest with `days`, as the person reaches them."""
+        planned now and the rest with `days`, as the person reaches them.
+        D122: each day runs at the person's hours with their places a day (lunch extra); the first day starts where
+        they land or arrive (`legs`), with one place on the way if they travel light and land early (`before`); the
+        last day ends with the way back to the stay and on to the airport, station or car (tripdays.py)."""
         dest = _destination(body.destination)
         if not dest.day_plans:
             raise HTTPException(422, "day plans aren't ready for that destination yet")
@@ -864,41 +852,85 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         obs = observations(s, user, p) + [o for f in feelings if f not in mine
                                           if (o := reasons.feeling_observation(p, f))]
         post = update_person(p, obs)
+        if tripdays.mins(body.day_end) - tripdays.mins(body.day_start) < 60:
+            raise HTTPException(422, "a day needs at least an hour between its start and end")
         start = body.stay or Point(lat=dest.lat, lon=dest.lon)
         start_name = (body.stay_name or "").strip() or dest.centre_name
+        # D122: how the trip starts and ends; the older app sends only the flight times
+        end_of = lambda e, t: (tripdays.End(e.mode, (e.place or "").upper() or None, e.time) if e
+                               else tripdays.End("flight", None, t) if t else None)
+        arrive, leave = end_of(body.arrive, body.arrive_time), end_of(body.leave, body.leave_time)
+        cfg = app.state.arrivals.get(dest.key)
+        est = app.state.travel
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
         used = set(body.exclude)
+        budget = BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
         out = []
+
+        def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str) -> tuple[dict, list[dict]] | None:
+            """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all."""
+            for n in dict.fromkeys((part.stops, part.stops - 1)):
+                if n < 1:
+                    continue
+                brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
+                                      end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
+                                      weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
+                                      sunset=sunset(day), lunch=part.lunch)
+                plan, stops, head = personal_day(s, user, p, brief, ready, familiar=False, exclude=sorted(used),
+                                                 post=post, feelings=feelings or None, fallback=False)
+                if not stops:
+                    continue
+                used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
+                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
+                              intent={"trip": True, "day": i, "part": tag, "feelings": feelings})
+                s.add(row)
+                s.flush()
+                return {**plan_out(row), **head}, stops
+            return None
+
         for i in wanted:
             day = body.start_date + timedelta(days=i)
-            window = trip_day_window(i, total, body.arrive_time, body.leave_time)
-            entry = {"index": i, "date": day.isoformat(), "kind": window["kind"], "plan": None,
-                     "window": {k: window[k] for k in ("start", "end", "stops")}}   # the app's swap and regenerate
-            if window["stops"] == 0:
-                entry["title"] = window["title"]
-                out.append(entry)
-                continue
-            brief = dayplan.Brief(start_name=start_name, start=start, start_time=window["start"], end_time=window["end"],
-                                  stops=window["stops"], budget_gbp=BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band")),
-                                  day_label=f"{day:%A} {day.day} {day:%B}", weekday=day.strftime("%a").lower(),
-                                  time_limit_s=settings.planner_time_limit_s, sunset=sunset(day))
-            plan, stops, head = personal_day(s, user, p, brief, ready, familiar=False, exclude=sorted(used), post=post,
-                                             feelings=feelings or None, fallback=False)
-            if not stops:
-                entry["title"] = "A free day: nothing new fits it yet"
-                out.append(entry)
-                continue
-            used |= {st["moment_id"].split("#")[0] for st in stops if st["rateable"]}
-            row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
-                          intent={"trip": True, "day": i, "feelings": feelings})
-            s.add(row)
-            s.flush()
-            entry["title"] = head["feel_line"] or brief.day_label
-            entry["plan"] = {**plan_out(row), **head}
+            label = f"{day:%A} {day.day} {day:%B}"
+            fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name, stay_chosen=body.stay is not None,
+                                    day_start=body.day_start, day_end=body.day_end, stops=body.stops_per_day,
+                                    arrive=arrive, leave=leave, travel_light=body.travel_light)
+            legs = list(fr.legs)
+            entry = {"index": i, "date": day.isoformat(), "kind": fr.kind, "plan": None, "before": None,
+                     "window": None, "title": fr.title}
+            if fr.before and (got := fill(fr.before, day, i, label, "before")):
+                entry["before"] = got[0]
+                leg = tripdays.to_stay_leg(est, got[1][-1], start, start_name, cfg.check_in_min if cfg else 20)
+                legs.append(leg)
+                ready_at = tripdays.up5(tripdays.mins(leg.arrive) + (cfg.check_in_min if cfg else 20))
+                end = tripdays.mins(fr.main.end_time) if fr.main else tripdays.mins(body.day_end)
+                n = tripdays.stops_for(ready_at, end, body.stops_per_day - 1)
+                fr.main = tripdays.Part(start, start_name, tripdays.hhmm(ready_at), tripdays.hhmm(end), n) if n else None
+            elif fr.before:   # nothing fitted on the way: go to the stay first, as with bags
+                fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name,
+                                        stay_chosen=body.stay is not None, day_start=body.day_start,
+                                        day_end=body.day_end, stops=body.stops_per_day, arrive=arrive, leave=leave,
+                                        travel_light=False)
+                legs = list(fr.legs)
+                entry["title"] = fr.title
+            if fr.main:
+                entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
+                if got := fill(fr.main, day, i, label, "main"):
+                    entry["plan"] = got[0]
+                    entry["title"] = got[0]["feel_line"] or label
+                    if fr.leave_leg:   # the last day: back for the bags, then away
+                        legs.append(tripdays.back_leg(est, got[1][-1], start, start_name))
+            if not entry["title"]:
+                entry["title"] = (entry["before"] or {}).get("feel_line") or "A free day: nothing new fits it yet"
+            if fr.leave_leg:
+                legs.append(fr.leave_leg)
+            entry["legs"] = [leg.out() for leg in legs]
             out.append(entry)
         s.add(db.Event(user_id=user.id, name="trip_days",
                        props={"nights": body.nights, "planned": sum(e["plan"] is not None for e in out),
-                              "stay": body.stay is not None, "feelings": ",".join(feelings)}))
+                              "stay": body.stay is not None, "feelings": ",".join(feelings),
+                              # D122: how the person shapes their days (never where or when they travel)
+                              "by": arrive.mode if arrive else "none", "light": body.travel_light,
+                              "places": body.stops_per_day, "hours": mins_between(body.day_start, body.day_end)}))
         s.commit()
         return {"total_days": total, "days": out, "start": start_name,
                 "used": sorted(used)}   # sent back as `exclude` when planning the later days
