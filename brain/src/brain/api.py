@@ -876,7 +876,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
                                       sunset=sunset(day), lunch=part.lunch)
-                plan, stops, head = personal_day(s, user, p, brief, ready, familiar=False, exclude=sorted(used),
+                pool = ready if part.toward is None else [   # D122: the place on the way really is on the way
+                    m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
+                plan, stops, head = personal_day(s, user, p, brief, pool, familiar=False, exclude=sorted(used),
                                                  post=post, feelings=feelings or None, fallback=False)
                 if not stops:
                     continue

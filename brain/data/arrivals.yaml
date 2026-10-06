@@ -11,7 +11,7 @@ london:
   exit_after_train_min: 10
   check_in_min: 20
   check_in_time: "15:00"          # GUESS: a common hotel check-in time; earlier only for people travelling light
-  back_for_bags_min: 30           # GUESS: from the last stop back to the stay before leaving
+  back_for_bags_min: 45           # GUESS: from the last stop back to the stay, and collecting the bags
   airports:
     LHR:
       name: Heathrow

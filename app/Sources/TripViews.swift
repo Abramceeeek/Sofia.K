@@ -1183,63 +1183,71 @@ struct TripDayView: View {
     @Environment(\.dismiss) private var dismiss
     let tripId: UUID
     let index: Int
+    var scrollToEnd = false        // CI screenshots: the last day's way home
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                BackLink { dismiss() }
-                if let trip = model.findTrip(tripId) {
-                    let day = trip.days.first { $0.index == index }
-                    let date = Calendar.london.date(byAdding: .day, value: index, to: trip.startDate) ?? trip.startDate
-                    Eyebrow("Day \(index + 1) · \(Dates.dayShort.string(from: date))")
-                    Text(day?.title ?? "Planned as you go")
-                        .font(Theme.serif(30, relativeTo: .title))
-                        .foregroundStyle(Theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityAddTraits(.isHeader)
-                    if let day {   // D122: from the airport or station, and one place on the way
-                        ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
-                        if let before = day.before {
-                            SectionLabel(text: "On the way · travelling light").padding(.top, 4)
-                            ForEach(before.stops) { stop in TripDayStop(stop: stop) }
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    BackLink { dismiss() }
+                    if let trip = model.findTrip(tripId) {
+                        let day = trip.days.first { $0.index == index }
+                        let date = Calendar.london.date(byAdding: .day, value: index, to: trip.startDate) ?? trip.startDate
+                        Eyebrow("Day \(index + 1) · \(Dates.dayShort.string(from: date))")
+                        Text(day?.title ?? "Planned as you go")
+                            .font(Theme.serif(30, relativeTo: .title))
+                            .foregroundStyle(Theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                        if let day {   // D122: from the airport or station, and one place on the way
+                            ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
+                            if let before = day.before {
+                                SectionLabel(text: "On the way · travelling light").padding(.top, 4)
+                                ForEach(before.stops) { stop in TripDayStop(stop: stop) }
+                            }
+                            ForEach(day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
                         }
-                        ForEach(day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
-                    }
-                    if let day, let plan = day.plan {
-                        if day.before != nil || !day.journeys("arrive").isEmpty {
-                            SectionLabel(text: "From your stay").padding(.top, 4)
-                        }
-                        ForEach(plan.stops) { stop in TripDayStop(stop: stop) }
-                        ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
-                        PrimaryButton(title: model.plan?.id == plan.id ? "This is your day" : "Make this my day",
-                                      disabled: model.plan?.id == plan.id) {
-                            model.useDay(trip, day)
-                            var p = NavigationPath()
-                            p.append(TripDest.day)
-                            model.path = p
-                        }
-                        Text("Your day gets \"Now\", a nudge to rate each stop, and swapping a stop.")
-                            .font(.footnote)
-                            .foregroundStyle(Theme.muted)
-                    } else if day == nil {
-                        PrimaryButton(title: model.busy ? "Planning…" : "Plan this day", disabled: model.busy) {
-                            Task { await model.planDay(tripId, index) }
-                        }
-                    } else {
-                        ForEach(day?.journeys("leave") ?? [], id: \.self) { JourneyCard(leg: $0) }
-                        if day?.before == nil {
-                            Text("A travel day: nothing is planned, so you can take it easy.")
-                                .foregroundStyle(Theme.inkSoft)
-                                .padding(20)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+                        if let day, let plan = day.plan {
+                            if day.before != nil || !day.journeys("arrive").isEmpty {
+                                SectionLabel(text: "From your stay").padding(.top, 4)
+                            }
+                            ForEach(plan.stops) { stop in TripDayStop(stop: stop) }
+                            ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
+                            PrimaryButton(title: model.plan?.id == plan.id ? "This is your day" : "Make this my day",
+                                          disabled: model.plan?.id == plan.id) {
+                                model.useDay(trip, day)
+                                var p = NavigationPath()
+                                p.append(TripDest.day)
+                                model.path = p
+                            }
+                            Text("Your day gets \"Now\", a nudge to rate each stop, and swapping a stop.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                                .id("end")
+                        } else if day == nil {
+                            PrimaryButton(title: model.busy ? "Planning…" : "Plan this day", disabled: model.busy) {
+                                Task { await model.planDay(tripId, index) }
+                            }
+                        } else {
+                            ForEach(day?.journeys("leave") ?? [], id: \.self) { JourneyCard(leg: $0) }
+                            if day?.before == nil {
+                                Text("A travel day: nothing is planned, so you can take it easy.")
+                                    .foregroundStyle(Theme.inkSoft)
+                                    .padding(20)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                .padding(.bottom, 40)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 8)
-            .padding(.bottom, 40)
+            .onAppear {
+                guard scrollToEnd else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { proxy.scrollTo("end", anchor: .bottom) }
+            }
         }
         .background(Theme.background)
         .toolbar(.hidden, for: .navigationBar)
@@ -1448,14 +1456,17 @@ struct TripDemoScreen: View {
                 TripCreateFlow(trip: trip, editing: false,
                                startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4][name] ?? 0)
             }
-        case "trip", "tripday", "tripdaylast":                                            // 24, 25, 25a
+        case "trip", "tripday":                                                           // 24, 25
             MainTabs().onAppear {
                 guard let trip = model.trips.first else { return }
                 var p = NavigationPath()
                 p.append(TripDest.trip(trip.id))
                 if name == "tripday" { p.append(TripDest.tripDay(trip.id, 0)) }            // D122: the arrival day
-                if name == "tripdaylast" { p.append(TripDest.tripDay(trip.id, trip.dayCount - 1)) }
                 model.path = p
+            }
+        case "tripdaylast":                                                               // 25a: the way home
+            if let trip = model.trips.first {
+                NavigationStack { TripDayView(tripId: trip.id, index: trip.dayCount - 1, scrollToEnd: true) }
             }
         case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31
             MainTabs().onAppear {

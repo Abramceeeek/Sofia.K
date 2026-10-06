@@ -18,9 +18,10 @@ import yaml
 
 from .dayplan import spans_lunch
 from .moments import Point
-from .travel import LondonEstimate
+from .travel import LondonEstimate, haversine_m
 
 MIN_PER_STOP = 75   # GUESS: a stop and the journey to it, to cap the stops a short window can hold
+ON_THE_WAY_SLACK_M = 2500   # GUESS: "on the way" = a detour of at most 2.5 km between the station and the stay
 LATEST_START = 22 * 60
 
 
@@ -146,6 +147,7 @@ class Part:
     end_time: str
     stops: int                 # including lunch, when the stretch spans midday
     lunch: bool = True
+    toward: Point | None = None   # the place on the way: only places between `start` and here
 
 
 @dataclass
@@ -157,6 +159,11 @@ class Frame:
     leave_at: int | None = None                         # minutes: when to leave the stay on the last day
     leave_leg: Leg | None = None
     title: str = ""            # when nothing can be planned
+
+
+def on_the_way(p: Point, a: Point, b: Point, slack_m: float = ON_THE_WAY_SLACK_M) -> bool:
+    """Whether p lies on the way from a to b: going via p adds at most `slack_m` (an ellipse around the line)."""
+    return haversine_m(a, p) + haversine_m(p, b) <= haversine_m(a, b) + slack_m
 
 
 def stops_for(start: int, end: int, wanted: int) -> int:
@@ -225,7 +232,7 @@ def frame_day(i: int, total: int, cfg: Arrivals | None, est: LondonEstimate, *, 
                                           how=f"{ap.link} ({ap.rail_min} min)", note=note))
                 b0 = up5(max(at_hub, start))
                 frame.before = Part(light_from.point, light_from.name, hhmm(b0), hhmm(min(b0 + 180, end)), 1,
-                                    lunch=False)
+                                    lunch=False, toward=stay)
             else:
                 arrive_at = out + total_min
                 frame.legs.append(Leg("arrive", f"{where} → your stay", origin, you, "transit", depart=hhmm(out),

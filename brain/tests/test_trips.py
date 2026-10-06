@@ -285,6 +285,12 @@ def _frame(i, total, **kw):
     return tripdays.frame_day(i, total, CFG, LondonEstimate(), **args)
 
 
+def test_on_the_way_is_an_ellipse_between_the_station_and_the_stay():
+    paddington = CFG.airports["LHR"].hub.point
+    assert tripdays.on_the_way(Point(lat=51.5154, lon=-0.1410), paddington, STAY)     # Oxford Circus: on the way
+    assert not tripdays.on_the_way(Point(lat=51.5131, lon=-0.0820), paddington, STAY)  # the City: not on the way
+
+
 def test_frames_follow_the_persons_hours_and_places_a_day():
     f = _frame(2, 5, day_start="09:00", day_end="20:00", stops=5)
     assert (f.kind, f.main.start_time, f.main.end_time, f.main.stops, f.legs) == ("full", "09:00", "20:00", 6, [])  # 5 + lunch
@@ -326,7 +332,7 @@ def test_last_day_ends_with_the_way_to_the_airport_or_station():
     train = _frame(3, 4, leave=tripdays.End("train", "PAD", "17:00"))
     assert train.leave_leg.destination.name == "Paddington" and train.leave_leg.note.startswith("At the station 20 min")
     car = _frame(3, 4, leave=tripdays.End("car", None, "16:00"))
-    assert car.leave_at == 16 * 60 and car.main.end_time == "15:30"
+    assert car.leave_at == 16 * 60 and car.main.end_time == "15:15"          # 45 min to get back and pack the car
     one = _frame(0, 1, arrive=tripdays.End("train", "VIC", "09:00"), leave=tripdays.End("train", "VIC", "19:00"))
     assert one.kind == "one" and one.legs and one.leave_leg and one.main.stops >= 1
 
@@ -345,6 +351,9 @@ def test_trip_days_carry_legs_and_the_place_on_the_way(client):
     assert first["legs"][0]["slot"] == "arrive" and first["legs"][0]["origin"]["maps"] == "Heathrow Airport"
     if first["before"]:                                    # one place on the way, then the stay to check in
         assert len(first["before"]["stops"]) == 1 and first["legs"][1]["slot"] == "to_stay"
+        pin = first["before"]["stops"][0]["pin"]
+        hub = CFG.airports["LHR"].hub.point
+        assert tripdays.on_the_way(Point(**pin), hub, STAY)
     assert middle["legs"] == [] and middle["window"]["start"] == "09:30"
     assert middle["plan"] and len(middle["plan"]["stops"]) <= 3 + 1          # 3 places, plus lunch if it's one
     assert last["legs"][-1]["slot"] == "leave" and last["legs"][-1]["destination"]["name"] == "King's Cross St Pancras"
