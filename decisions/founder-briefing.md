@@ -275,6 +275,8 @@ Your idea had five parts. Here is each one, honestly.
 
 ## 8. What happens next
 
+> **Updated 6 Oct: the current plan is `decisions/roadmap.md`** (what's done, real data source by source, the outside code review, and Stages 1–4 with hours and money). The steps below are the plan as it stood in late September, kept for the record.
+
 **The next three steps:**
 1. **This week (you):**
    - the Apple outside-activities policy check and the IP-clause check in both contracts;

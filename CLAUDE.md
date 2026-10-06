@@ -165,7 +165,7 @@ The same profile matches **people**, not just places. Compatible trip-mates make
     - The first external TestFlight build is about the week of 9 Nov, behind the same gates.
     - The GitHub Actions pipeline builds for the simulator until Abram adds the signing secrets (D70e).
   - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.
-- **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`.
+- **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`. **Roadmap to a real product (6 Oct):** `decisions/roadmap.md`: Stage 1 "real for testers" before strangers (live flights and hotels, TfL times, Met Office weather, a paid server), then the tests, then a public release only if Checkpoint 3 says go. *Proposed, awaiting Abram's go.*
 - **Economics work is paused** unless a decision needs it (D52).
 
 ## Non-negotiable guardrails
