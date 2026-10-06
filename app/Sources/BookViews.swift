@@ -972,6 +972,7 @@ struct StayMap: View {
                 Circle().fill(Theme.accent).frame(width: 10, height: 10)
                     .overlay(Circle().stroke(Theme.background, lineWidth: 2))
             }
+            .annotationTitles(.hidden)
             ForEach(stays.filter { $0.point != nil }) { s in
                 Annotation(s.name, coordinate: s.point!.coordinate) {
                     Button { onOpen(s) } label: {
@@ -985,10 +986,10 @@ struct StayMap: View {
                     }
                     .buttonStyle(.plain)
                 }
+                .annotationTitles(.hidden)          // the prices alone; names would crowd the map
             }
         }
         .mapStyle(.standard(pointsOfInterest: .excludingAll))
-        .annotationTitles(.hidden)              // the prices alone; names would crowd the map
         .accessibilityLabel("Map of \(stays.count) places to stay")
     }
 }
