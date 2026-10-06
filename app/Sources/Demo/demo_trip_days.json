@@ -1,15 +1,15 @@
 {
- "total_days": 7,
+ "total_days": 6,
  "days": [
   {
    "index": 0,
-   "date": "2026-10-20",
+   "date": "2026-10-21",
    "kind": "arrive",
    "plan": {
     "id": 5,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-20",
+    "date": "2026-10-21",
     "intent": {
      "trip": true,
      "day": 0,
@@ -21,14 +21,14 @@
     },
     "stops": [
      {
-      "moment_id": "lunch@m_to_river_somerset",
-      "key": "lunch@m_to_river_somerset",
-      "title": "Lunch near the Strand entrance (Temple or Covent Garden station)",
-      "arrive": "12:41",
-      "depart": "13:26",
-      "travel_min": 6,
+      "moment_id": "lunch@m_waterloo_bridge_sunset",
+      "key": "lunch@m_waterloo_bridge_sunset",
+      "title": "Lunch near Waterloo station",
+      "arrive": "12:28",
+      "depart": "13:13",
+      "travel_min": 13,
       "travel_mode": "walk",
-      "travel_text": "Getting there: about 6 min on foot from Sample apartment R, Covent Garden.",
+      "travel_text": "Getting there: about 13 min on foot from Sample apartment W, South Bank.",
       "approach": "",
       "what": "Pick a café, pub or food stall nearby.",
       "queue_min": 0,
@@ -47,13 +47,13 @@
       "best_light": "",
       "best_window": "",
       "pin": {
-       "lat": 51.5111,
-       "lon": -0.1178
+       "lat": 51.50861,
+       "lon": -0.11694
       },
       "chosen_for": [],
       "why": [],
       "lines": [
-       "Getting there: about 6 min on foot from Sample apartment R, Covent Garden.",
+       "Getting there: about 13 min on foot from Sample apartment W, South Bank.",
        "Pick a café, pub or food stall nearby.",
        "Food: about £15"
       ]
@@ -62,11 +62,11 @@
       "moment_id": "m_garden_at_120",
       "key": "m_garden_at_120",
       "title": "The Garden at 120: a rooftop garden among the City towers",
-      "arrive": "14:02",
-      "depart": "14:52",
+      "arrive": "13:49",
+      "depart": "14:39",
       "travel_min": 26,
       "travel_mode": "transit",
-      "travel_text": "Getting there: about 26 min: walk to Temple station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
+      "travel_text": "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
       "approach": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
       "what": "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
       "queue_min": 0,
@@ -96,7 +96,7 @@
        }
       ],
       "best_light": "At dusk, when the towers light up",
-      "best_window": "17:34–18:34",
+      "best_window": "17:32–18:32",
       "pin": {
        "lat": 51.5121,
        "lon": -0.0815
@@ -123,7 +123,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 26 min: walk to Temple station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
+       "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
        "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
        "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
        "Cost: free",
@@ -222,7 +222,7 @@
        }
       ],
       "best_light": "Sunset and evening",
-      "best_window": "17:29–21:59",
+      "best_window": "17:27–21:57",
       "pin": {
        "lat": 51.5111,
        "lon": -0.1178
@@ -314,18 +314,18 @@
     "value": 2.585,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:43.145156+00:00",
-    "title": "Tuesday 20 October",
+    "created_at": "2026-10-06T18:17:08.533092+00:00",
+    "title": "Wednesday 21 October",
     "summary": [
-     "Start: Sample apartment R, Covent Garden at 12:35 · 3 stops, including lunch",
+     "Start: Sample apartment W, South Bank at 12:15 · 3 stops, including lunch",
      "Costs: about £15 for food and entry, plus about £6 transport"
     ],
     "totals": {
      "cost_gbp": 21.0,
      "spend_gbp": 15.0,
      "transport_gbp": 6.0,
-     "walk_min": 6,
-     "walk_km": 0.5,
+     "walk_min": 13,
+     "walk_km": 1.0,
      "finish": "16:18"
     },
     "pace": "relaxed",
@@ -344,7 +344,7 @@
     "id": 4,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-20",
+    "date": "2026-10-21",
     "intent": {
      "trip": true,
      "day": 0,
@@ -359,8 +359,8 @@
       "moment_id": "m_national_gallery",
       "key": "m_national_gallery",
       "title": "From Trafalgar Square into the quiet of the National Gallery",
-      "arrive": "10:31",
-      "depart": "12:06",
+      "arrive": "10:01",
+      "depart": "11:36",
       "travel_min": 31,
       "travel_mode": "transit",
       "travel_text": "Getting there: about 31 min by Tube or bus from Paddington to Charing Cross station.",
@@ -479,10 +479,10 @@
     "value": 0.175,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:41.527882+00:00",
-    "title": "Tuesday 20 October",
+    "created_at": "2026-10-06T18:17:06.896955+00:00",
+    "title": "Wednesday 21 October",
     "summary": [
-     "Start: Paddington at 10:00 · 1 stops",
+     "Start: Paddington at 09:30 · 1 stops",
      "Costs: free entry, plus about £3 transport"
     ],
     "totals": {
@@ -491,7 +491,7 @@
      "transport_gbp": 3.0,
      "walk_min": 0,
      "walk_km": 0.0,
-     "finish": "12:06"
+     "finish": "11:36"
     },
     "pace": "relaxed",
     "solver_status": "ok",
@@ -506,7 +506,7 @@
     }
    },
    "window": {
-    "start": "12:35",
+    "start": "12:15",
     "end": "19:00",
     "stops": 3
    },
@@ -515,8 +515,8 @@
     {
      "slot": "arrive",
      "title": "Heathrow → Paddington",
-     "depart": "09:30",
-     "arrive": "09:58",
+     "depart": "07:06",
+     "arrive": "07:34",
      "minutes": 28,
      "how": "Elizabeth line or Heathrow Express (28 min)",
      "note": "We've allowed an hour from landing for passport control and bags: a guess, queues vary.",
@@ -537,9 +537,9 @@
     {
      "slot": "to_stay",
      "title": "To your stay: check in",
-     "depart": "12:06",
-     "arrive": "12:14",
-     "minutes": 8,
+     "depart": "11:36",
+     "arrive": "11:52",
+     "minutes": 16,
      "how": null,
      "note": "About 20 min to check in and leave your things.",
      "mode": "walking",
@@ -550,23 +550,23 @@
       "lon": -0.127658
      },
      "destination": {
-      "name": "Sample apartment R, Covent Garden",
-      "maps": "51.50918466923763,-0.12132671765402375",
-      "lat": 51.50918466923763,
-      "lon": -0.12132671765402375
+      "name": "Sample apartment W, South Bank",
+      "maps": "51.50257199892892,-0.12042344350483596",
+      "lat": 51.50257199892892,
+      "lon": -0.12042344350483596
      }
     }
    ]
   },
   {
    "index": 1,
-   "date": "2026-10-21",
+   "date": "2026-10-22",
    "kind": "full",
    "plan": {
     "id": 6,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-21",
+    "date": "2026-10-22",
     "intent": {
      "trip": true,
      "day": 1,
@@ -578,14 +578,14 @@
     },
     "stops": [
      {
-      "moment_id": "lunch@m_waterloo_bridge_sunset",
-      "key": "lunch@m_waterloo_bridge_sunset",
-      "title": "Lunch near Waterloo station",
+      "moment_id": "lunch@m_rfh_foyers_rest",
+      "key": "lunch@m_rfh_foyers_rest",
+      "title": "Lunch near Waterloo or Embankment station",
       "arrive": "11:30",
       "depart": "12:15",
-      "travel_min": 6,
+      "travel_min": 8,
       "travel_mode": "walk",
-      "travel_text": "Getting there: about 6 min on foot from Sample apartment R, Covent Garden.",
+      "travel_text": "Getting there: about 8 min on foot from Sample apartment W, South Bank.",
       "approach": "",
       "what": "Pick a café, pub or food stall nearby.",
       "queue_min": 0,
@@ -604,13 +604,13 @@
       "best_light": "",
       "best_window": "",
       "pin": {
-       "lat": 51.50861,
-       "lon": -0.11694
+       "lat": 51.505768,
+       "lon": -0.1168
       },
       "chosen_for": [],
       "why": [],
       "lines": [
-       "Getting there: about 6 min on foot from Sample apartment R, Covent Garden.",
+       "Getting there: about 8 min on foot from Sample apartment W, South Bank.",
        "Pick a café, pub or food stall nearby.",
        "Food: about £15"
       ]
@@ -623,7 +623,7 @@
       "depart": "13:04",
       "travel_min": 21,
       "travel_mode": "transit",
-      "travel_text": "Getting there: about 21 min: walk to Waterloo station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).",
+      "travel_text": "Getting there: about 21 min: walk to Waterloo or Embankment station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).",
       "approach": "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
       "what": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
       "queue_min": 0,
@@ -653,7 +653,7 @@
        }
       ],
       "best_light": "At dusk, when the dome is lit",
-      "best_window": "17:42–19:27",
+      "best_window": "17:40–19:25",
       "pin": {
        "lat": 51.5078,
        "lon": -0.0994
@@ -680,7 +680,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 21 min: walk to Waterloo station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).",
+       "Getting there: about 21 min: walk to Waterloo or Embankment station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).",
        "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
        "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
        "Cost: free",
@@ -900,7 +900,7 @@
        }
       ],
       "best_light": "Sunset",
-      "best_window": "17:17–18:17",
+      "best_window": "17:15–18:15",
       "pin": {
        "lat": 51.50526,
        "lon": -0.07008
@@ -991,18 +991,18 @@
     "value": 3.132,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:44.773248+00:00",
-    "title": "Wednesday 21 October",
+    "created_at": "2026-10-06T18:17:10.139990+00:00",
+    "title": "Thursday 22 October",
     "summary": [
-     "Start: Sample apartment R, Covent Garden at 09:30 · 4 stops, including lunch",
+     "Start: Sample apartment W, South Bank at 09:30 · 4 stops, including lunch",
      "Costs: about £15 for food and entry, plus about £6 transport"
     ],
     "totals": {
      "cost_gbp": 21.0,
      "spend_gbp": 15.0,
      "transport_gbp": 6.0,
-     "walk_min": 25,
-     "walk_km": 1.9,
+     "walk_min": 27,
+     "walk_km": 2.0,
      "finish": "17:04"
     },
     "pace": "relaxed",
@@ -1028,13 +1028,13 @@
   },
   {
    "index": 2,
-   "date": "2026-10-22",
+   "date": "2026-10-23",
    "kind": "full",
    "plan": {
     "id": 7,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-22",
+    "date": "2026-10-23",
     "intent": {
      "trip": true,
      "day": 2,
@@ -1051,9 +1051,9 @@
       "title": "Level 58: the City from Horizon 22",
       "arrive": "10:00",
       "depart": "10:55",
-      "travel_min": 27,
+      "travel_min": 28,
       "travel_mode": "transit",
-      "travel_text": "Getting there: about 27 min by Tube or bus from Sample apartment R, Covent Garden to Liverpool Street or Bank station.",
+      "travel_text": "Getting there: about 28 min by Tube or bus from Sample apartment W, South Bank to Liverpool Street or Bank station.",
       "approach": "Go to the Horizon 22 entrance at 22 Bishopsgate and pass security.",
       "what": "A fast lift takes you 254 m up to level 58 and a 300-degree view over the City's towers and far beyond.",
       "queue_min": 0,
@@ -1083,7 +1083,7 @@
        }
       ],
       "best_light": "Near sunset on a clear day",
-      "best_window": "17:00–18:00",
+      "best_window": "16:58–17:58",
       "pin": {
        "lat": 51.5145,
        "lon": -0.0829
@@ -1110,7 +1110,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 27 min by Tube or bus from Sample apartment R, Covent Garden to Liverpool Street or Bank station.",
+       "Getting there: about 28 min by Tube or bus from Sample apartment W, South Bank to Liverpool Street or Bank station.",
        "Go to the Horizon 22 entrance at 22 Bishopsgate and pass security.",
        "A fast lift takes you 254 m up to level 58 and a 300-degree view over the City's towers and far beyond.",
        "Cost: free"
@@ -1375,7 +1375,7 @@
        }
       ],
       "best_light": "Late afternoon on a clear day",
-      "best_window": "15:55–18:10",
+      "best_window": "15:53–18:08",
       "pin": {
        "lat": 51.481675,
        "lon": -0.010802
@@ -1465,13 +1465,13 @@
       ]
      }
     ],
-    "value": 2.467,
+    "value": 2.457,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:46.378102+00:00",
-    "title": "Thursday 22 October",
+    "created_at": "2026-10-06T18:17:11.739152+00:00",
+    "title": "Friday 23 October",
     "summary": [
-     "Start: Sample apartment R, Covent Garden at 09:30 · 4 stops, including lunch",
+     "Start: Sample apartment W, South Bank at 09:30 · 4 stops, including lunch",
      "Costs: about £15 for food and entry, plus about £8.90 transport"
     ],
     "totals": {
@@ -1505,13 +1505,13 @@
   },
   {
    "index": 3,
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "kind": "full",
    "plan": {
     "id": 8,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-23",
+    "date": "2026-10-24",
     "intent": {
      "trip": true,
      "day": 3,
@@ -1523,14 +1523,51 @@
     },
     "stops": [
      {
+      "moment_id": "lunch@start",
+      "key": "lunch@start",
+      "title": "Lunch near Sample apartment W, South Bank",
+      "arrive": "11:30",
+      "depart": "12:15",
+      "travel_min": 0,
+      "travel_mode": "walk",
+      "travel_text": "",
+      "approach": "",
+      "what": "Pick a café, pub or food stall nearby.",
+      "queue_min": 0,
+      "best_text": "",
+      "cost_gbp": 15.0,
+      "cost_kind": "food",
+      "cost_text": "Food: about £15",
+      "rain_swap": "",
+      "lunch": true,
+      "familiar": false,
+      "rateable": false,
+      "worth_gbp": null,
+      "feel_word": "Lunch",
+      "reveal": false,
+      "approach_steps": [],
+      "best_light": "",
+      "best_window": "",
+      "pin": {
+       "lat": 51.50257199892892,
+       "lon": -0.12042344350483596
+      },
+      "chosen_for": [],
+      "why": [],
+      "lines": [
+       "Pick a café, pub or food stall nearby.",
+       "Food: about £15"
+      ]
+     },
+     {
       "moment_id": "m_rfh_foyers_rest",
       "key": "m_rfh_foyers_rest",
       "title": "A rest in the Royal Festival Hall's free foyers by the river",
-      "arrive": "10:00",
-      "depart": "10:50",
-      "travel_min": 9,
+      "arrive": "12:28",
+      "depart": "13:18",
+      "travel_min": 8,
       "travel_mode": "walk",
-      "travel_text": "Getting there: about 9 min on foot from Sample apartment R, Covent Garden.",
+      "travel_text": "Getting there: about 8 min on foot from Sample apartment W, South Bank.",
       "approach": "Walk to the Southbank Centre by the river and go into the Royal Festival Hall.",
       "what": "You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.",
       "queue_min": 0,
@@ -1587,7 +1624,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 9 min on foot from Sample apartment R, Covent Garden.",
+       "Getting there: about 8 min on foot from Sample apartment W, South Bank.",
        "Walk to the Southbank Centre by the river and go into the Royal Festival Hall.",
        "You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.",
        "Cost: free"
@@ -1650,167 +1687,122 @@
       ]
      },
      {
-      "moment_id": "lunch@m_evensong_st_pauls",
-      "key": "lunch@m_evensong_st_pauls",
-      "title": "Lunch near St Paul's station",
-      "arrive": "11:49",
-      "depart": "12:34",
-      "travel_min": 22,
-      "travel_mode": "transit",
-      "travel_text": "Getting there: about 22 min: walk to Waterloo or Embankment station, then take the Tube or bus to St Paul's station.",
-      "approach": "",
-      "what": "Pick a café, pub or food stall nearby.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 15.0,
-      "cost_kind": "food",
-      "cost_text": "Food: about £15",
-      "rain_swap": "",
-      "lunch": true,
-      "familiar": false,
-      "rateable": false,
-      "worth_gbp": null,
-      "feel_word": "Lunch",
-      "reveal": false,
-      "approach_steps": [],
-      "best_light": "",
-      "best_window": "",
-      "pin": {
-       "lat": 51.5138,
-       "lon": -0.0983
-      },
-      "chosen_for": [],
-      "why": [],
-      "lines": [
-       "Getting there: about 22 min: walk to Waterloo or Embankment station, then take the Tube or bus to St Paul's station.",
-       "Pick a café, pub or food stall nearby.",
-       "Food: about £15"
-      ]
-     },
-     {
-      "moment_id": "m_city_towers_walk",
-      "key": "m_city_towers_walk",
-      "title": "Through the City towers, Bank to Liverpool Street",
-      "arrive": "13:50",
-      "depart": "14:27",
-      "travel_min": 11,
+      "moment_id": "m_courtauld_gallery",
+      "key": "m_courtauld_gallery",
+      "title": "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid",
+      "arrive": "13:42",
+      "depart": "15:02",
+      "travel_min": 10,
       "travel_mode": "walk",
-      "travel_text": "Getting there: about 11 min on foot from St Paul's station.",
-      "approach": "Walk east along Cornhill and turn right into Gracechurch Street.",
-      "what": "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+      "travel_text": "Getting there: about 10 min on foot from Royal Festival Hall.",
+      "approach": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
+      "what": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
       "queue_min": 0,
       "best_text": "",
-      "cost_gbp": 0.0,
+      "cost_gbp": 12.0,
       "cost_kind": "entry",
-      "cost_text": "Cost: free",
-      "rain_swap": "Leadenhall Market: Victorian arches on the site of Roman London, about 10 min away on foot.",
+      "cost_text": "Entry: £12",
+      "rain_swap": "",
       "lunch": false,
       "familiar": false,
       "rateable": true,
-      "worth_gbp": 6,
-      "feel_word": "Wonder",
-      "reveal": true,
+      "worth_gbp": 8,
+      "feel_word": "Curious",
+      "reveal": false,
       "approach_steps": [
        {
         "label": "From",
-        "text": "Bank station"
+        "text": "Temple or Covent Garden station"
        },
        {
         "label": "The way in",
-        "text": "Walk east along Cornhill and turn right into Gracechurch Street"
+        "text": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery"
        },
        {
         "label": "You arrive",
-        "text": "City of London towers between Bank and Liverpool Street"
+        "text": "The Courtauld Gallery, Somerset House"
        }
       ],
       "best_light": "",
       "best_window": "",
       "pin": {
-       "lat": 51.5133,
-       "lon": -0.08975
+       "lat": 51.510734,
+       "lon": -0.116912
       },
       "chosen_for": [
-       "movement and views",
-       "reveals and contrast"
+       "one of your interests",
+       "awe"
       ],
       "why": [
        {
-        "feature": "crowds",
-        "label": "crowds",
-        "contribution": -0.404
+        "feature": "cost_per_10gbp",
+        "label": "cost (per £10)",
+        "contribution": -0.321
        },
        {
-        "feature": "movement_views",
-        "label": "movement and views",
-        "contribution": 0.226
+        "feature": "aspiration_match",
+        "label": "places tied to a field that inspires them",
+        "contribution": 0.25
        },
        {
-        "feature": "contrast_reveal",
-        "label": "reveals and contrast",
-        "contribution": 0.199
+        "feature": "awe",
+        "label": "awe",
+        "contribution": 0.145
        }
       ],
       "lines": [
-       "Getting there: about 11 min on foot from St Paul's station.",
-       "Walk east along Cornhill and turn right into Gracechurch Street.",
-       "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
-       "Cost: free",
-       "If it rains: Leadenhall Market: Victorian arches on the site of Roman London, about 10 min away on foot."
+       "Getting there: about 10 min on foot from Royal Festival Hall.",
+       "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
+       "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
+       "Entry: £12"
       ],
       "card": {
-       "id": "m_city_towers_walk",
-       "title": "Through the City towers, Bank to Liverpool Street",
+       "id": "m_courtauld_gallery",
+       "title": "Van Gogh's bandaged ear and Manet's barmaid at the Courtauld",
        "status": "ready",
        "place": {
-        "name": "City of London towers between Bank and Liverpool Street",
+        "name": "The Courtauld Gallery, Somerset House",
         "overture_id": null,
-        "lat": 51.51381,
-        "lon": -0.08229
+        "lat": 51.510734,
+        "lon": -0.116912
        },
        "approach": {
-        "from": "Bank station",
-        "path": "Walk east along Cornhill and turn right into Gracechurch Street",
+        "from": "Temple or Covent Garden station",
+        "path": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery",
         "step_free": null,
         "start_point": {
-         "lat": 51.5133,
-         "lon": -0.08975
+         "lat": 51.510734,
+         "lon": -0.116912
         }
        },
-       "what_happens": "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+       "what_happens": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
        "best_time": {
         "time_of_day": [
-         "08:00-19:00"
+         "10:00-18:00"
         ],
         "light": null,
         "weather": [
          "any"
         ],
         "company": null,
-        "crowd_window": "Weekdays, when the offices are full",
-        "opening_hours": "Public streets; always open",
-        "days": [
-         "mon",
-         "tue",
-         "wed",
-         "thu",
-         "fri"
-        ],
+        "crowd_window": null,
+        "opening_hours": "Open daily 10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site, 2026-09-28",
+        "days": [],
         "best_window": [],
         "best_around_sunset": null
        },
-       "cost_gbp": 0.0,
+       "cost_gbp": 12.0,
        "shot_card": null,
        "plannable": true
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has views too.",
-        "me": "I loved Uber Boat on the Thames, and this has views too."
+        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
+        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
        },
        {
-        "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
+        "you": "You go out to feel curious, and this has history.",
+        "me": "I go out to feel curious, and this has history."
        }
       ]
      },
@@ -1818,11 +1810,11 @@
       "moment_id": "m_waterloo_bridge_sunset",
       "key": "m_waterloo_bridge_sunset",
       "title": "Waterloo Bridge at sunset, both ways",
-      "arrive": "16:04",
-      "depart": "16:42",
-      "travel_min": 27,
-      "travel_mode": "transit",
-      "travel_text": "Getting there: about 27 min: walk to Liverpool Street station, then take the Tube or bus to Waterloo station.",
+      "arrive": "16:12",
+      "depart": "16:50",
+      "travel_min": 5,
+      "travel_mode": "walk",
+      "travel_text": "Getting there: about 5 min on foot from The Courtauld Gallery.",
       "approach": "Walk to the south end of the bridge by the Southbank Centre and up to the middle.",
       "what": "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.",
       "queue_min": 0,
@@ -1830,7 +1822,7 @@
       "cost_gbp": 0.0,
       "cost_kind": "entry",
       "cost_text": "Cost: free",
-      "rain_swap": "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot.",
+      "rain_swap": "Sir John Soane's house of curiosities, top-lit and full of mirrors, about 20 min away on foot.",
       "lunch": false,
       "familiar": false,
       "rateable": true,
@@ -1852,7 +1844,7 @@
        }
       ],
       "best_light": "Sunset; late autumn and winter skies are the best",
-      "best_window": "17:13–18:13",
+      "best_window": "17:11–18:11",
       "pin": {
        "lat": 51.50861,
        "lon": -0.11694
@@ -1879,11 +1871,11 @@
        }
       ],
       "lines": [
-       "Getting there: about 27 min: walk to Liverpool Street station, then take the Tube or bus to Waterloo station.",
+       "Getting there: about 5 min on foot from The Courtauld Gallery.",
        "Walk to the south end of the bridge by the Southbank Centre and up to the middle.",
        "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.",
        "Cost: free",
-       "If it rains: The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot."
+       "If it rains: Sir John Soane's house of curiosities, top-lit and full of mirrors, about 20 min away on foot."
       ],
       "card": {
        "id": "m_waterloo_bridge_sunset",
@@ -1951,27 +1943,27 @@
       ]
      }
     ],
-    "value": 1.668,
+    "value": 1.573,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:47.967890+00:00",
-    "title": "Friday 23 October",
+    "created_at": "2026-10-06T18:17:13.310690+00:00",
+    "title": "Saturday 24 October",
     "summary": [
-     "Start: Sample apartment R, Covent Garden at 09:30 · 4 stops, including lunch",
-     "Costs: about £15 for food and entry, plus about £6 transport"
+     "Start: Sample apartment W, South Bank at 09:30 · 4 stops, including lunch",
+     "Costs: about £27 for food and entry, all on foot"
     ],
     "totals": {
-     "cost_gbp": 21.0,
-     "spend_gbp": 15.0,
-     "transport_gbp": 6.0,
-     "walk_min": 20,
-     "walk_km": 1.5,
-     "finish": "16:42"
+     "cost_gbp": 27.0,
+     "spend_gbp": 27.0,
+     "transport_gbp": 0.0,
+     "walk_min": 23,
+     "walk_km": 1.7,
+     "finish": "16:50"
     },
     "pace": "relaxed",
     "solver_status": "ok",
     "blind": false,
-    "feel_line": "A curious, peaceful day: the river, lunch, a reveal, then one big wow",
+    "feel_line": "A curious, peaceful day: lunch to start, the river, some history, then one big wow",
     "basis": {
      "places": 3,
      "choices": 5,
@@ -1986,18 +1978,18 @@
     "end": "19:00",
     "stops": 4
    },
-   "title": "A curious, peaceful day: the river, lunch, a reveal, then one big wow",
+   "title": "A curious, peaceful day: lunch to start, the river, some history, then one big wow",
    "legs": []
   },
   {
    "index": 4,
-   "date": "2026-10-24",
+   "date": "2026-10-25",
    "kind": "full",
    "plan": {
     "id": 9,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-24",
+    "date": "2026-10-25",
     "intent": {
      "trip": true,
      "day": 4,
@@ -2009,14 +2001,135 @@
     },
     "stops": [
      {
-      "moment_id": "lunch@start",
-      "key": "lunch@start",
-      "title": "Lunch near Sample apartment R, Covent Garden",
-      "arrive": "11:30",
-      "depart": "12:15",
-      "travel_min": 0,
+      "moment_id": "m_park_break_embankment",
+      "key": "m_park_break_embankment",
+      "title": "A park break in Victoria Embankment Gardens",
+      "arrive": "10:00",
+      "depart": "10:48",
+      "travel_min": 10,
       "travel_mode": "walk",
-      "travel_text": "",
+      "travel_text": "Getting there: about 10 min on foot from Sample apartment W, South Bank.",
+      "approach": "Walk into the gardens beside the station.",
+      "what": "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.",
+      "queue_min": 0,
+      "best_text": "",
+      "cost_gbp": 0.0,
+      "cost_kind": "entry",
+      "cost_text": "Cost: free",
+      "rain_swap": "Centuries of British faces at the National Portrait Gallery, about 10 min away on foot.",
+      "lunch": false,
+      "familiar": false,
+      "rateable": true,
+      "worth_gbp": null,
+      "feel_word": "Calm",
+      "reveal": false,
+      "approach_steps": [
+       {
+        "label": "From",
+        "text": "Embankment station"
+       },
+       {
+        "label": "The way in",
+        "text": "Walk into the gardens beside the station"
+       },
+       {
+        "label": "You arrive",
+        "text": "Victoria Embankment Gardens, by Embankment station"
+       }
+      ],
+      "best_light": "",
+      "best_window": "",
+      "pin": {
+       "lat": 51.507058,
+       "lon": -0.122666
+      },
+      "chosen_for": [
+       "green spaces and nature",
+       "awe"
+      ],
+      "why": [
+       {
+        "feature": "crowds",
+        "label": "crowds",
+        "contribution": -0.404
+       },
+       {
+        "feature": "green_nature",
+        "label": "green spaces and nature",
+        "contribution": 0.18
+       },
+       {
+        "feature": "awe",
+        "label": "awe",
+        "contribution": 0.145
+       }
+      ],
+      "lines": [
+       "Getting there: about 10 min on foot from Sample apartment W, South Bank.",
+       "Walk into the gardens beside the station.",
+       "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.",
+       "Cost: free",
+       "If it rains: Centuries of British faces at the National Portrait Gallery, about 10 min away on foot."
+      ],
+      "card": {
+       "id": "m_park_break_embankment",
+       "title": "A park break in Victoria Embankment Gardens",
+       "status": "ready",
+       "place": {
+        "name": "Victoria Embankment Gardens, by Embankment station",
+        "overture_id": null,
+        "lat": 51.507058,
+        "lon": -0.122666
+       },
+       "approach": {
+        "from": "Embankment station",
+        "path": "Walk into the gardens beside the station",
+        "step_free": null,
+        "start_point": {
+         "lat": 51.507058,
+         "lon": -0.122666
+        }
+       },
+       "what_happens": "A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.",
+       "best_time": {
+        "time_of_day": [
+         "10:00-16:00"
+        ],
+        "light": null,
+        "weather": [
+         "dry"
+        ],
+        "company": null,
+        "crowd_window": null,
+        "opening_hours": "07:30 to 18:00 (16 Oct to end of BST), 16:30 after; free. Westminster City Council via search, 2026-09-28",
+        "days": [],
+        "best_window": [],
+        "best_around_sunset": null
+       },
+       "cost_gbp": 0.0,
+       "shot_card": null,
+       "plannable": true
+      },
+      "reasons": [
+       {
+        "you": "You loved the view from the top of Greenwich Park, and this has green space too.",
+        "me": "I loved the view from the top of Greenwich Park, and this has green space too."
+       },
+       {
+        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
+        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
+       }
+      ]
+     },
+     {
+      "moment_id": "lunch@m_transport_museum",
+      "key": "lunch@m_transport_museum",
+      "title": "Lunch near Covent Garden station",
+      "arrive": "11:38",
+      "depart": "12:23",
+      "travel_min": 11,
+      "travel_mode": "walk",
+      "travel_text": "Getting there: about 11 min on foot from Victoria Embankment Gardens.",
       "approach": "",
       "what": "Pick a café, pub or food stall nearby.",
       "queue_min": 0,
@@ -2035,145 +2148,26 @@
       "best_light": "",
       "best_window": "",
       "pin": {
-       "lat": 51.50918466923763,
-       "lon": -0.12132671765402375
+       "lat": 51.512125,
+       "lon": -0.121222
       },
       "chosen_for": [],
       "why": [],
       "lines": [
+       "Getting there: about 11 min on foot from Victoria Embankment Gardens.",
        "Pick a café, pub or food stall nearby.",
        "Food: about £15"
-      ]
-     },
-     {
-      "moment_id": "m_courtauld_gallery",
-      "key": "m_courtauld_gallery",
-      "title": "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid",
-      "arrive": "12:27",
-      "depart": "13:47",
-      "travel_min": 7,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 7 min on foot from Sample apartment R, Covent Garden.",
-      "approach": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
-      "what": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 12.0,
-      "cost_kind": "entry",
-      "cost_text": "Entry: £12",
-      "rain_swap": "",
-      "lunch": false,
-      "familiar": false,
-      "rateable": true,
-      "worth_gbp": 8,
-      "feel_word": "Curious",
-      "reveal": false,
-      "approach_steps": [
-       {
-        "label": "From",
-        "text": "Temple or Covent Garden station"
-       },
-       {
-        "label": "The way in",
-        "text": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery"
-       },
-       {
-        "label": "You arrive",
-        "text": "The Courtauld Gallery, Somerset House"
-       }
-      ],
-      "best_light": "",
-      "best_window": "",
-      "pin": {
-       "lat": 51.510734,
-       "lon": -0.116912
-      },
-      "chosen_for": [
-       "one of your interests",
-       "awe"
-      ],
-      "why": [
-       {
-        "feature": "cost_per_10gbp",
-        "label": "cost (per £10)",
-        "contribution": -0.321
-       },
-       {
-        "feature": "aspiration_match",
-        "label": "places tied to a field that inspires them",
-        "contribution": 0.25
-       },
-       {
-        "feature": "awe",
-        "label": "awe",
-        "contribution": 0.145
-       }
-      ],
-      "lines": [
-       "Getting there: about 7 min on foot from Sample apartment R, Covent Garden.",
-       "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
-       "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
-       "Entry: £12"
-      ],
-      "card": {
-       "id": "m_courtauld_gallery",
-       "title": "Van Gogh's bandaged ear and Manet's barmaid at the Courtauld",
-       "status": "ready",
-       "place": {
-        "name": "The Courtauld Gallery, Somerset House",
-        "overture_id": null,
-        "lat": 51.510734,
-        "lon": -0.116912
-       },
-       "approach": {
-        "from": "Temple or Covent Garden station",
-        "path": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery",
-        "step_free": null,
-        "start_point": {
-         "lat": 51.510734,
-         "lon": -0.116912
-        }
-       },
-       "what_happens": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
-       "best_time": {
-        "time_of_day": [
-         "10:00-18:00"
-        ],
-        "light": null,
-        "weather": [
-         "any"
-        ],
-        "company": null,
-        "crowd_window": null,
-        "opening_hours": "Open daily 10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site, 2026-09-28",
-        "days": [],
-        "best_window": [],
-        "best_around_sunset": null
-       },
-       "cost_gbp": 12.0,
-       "shot_card": null,
-       "plannable": true
-      },
-      "reasons": [
-       {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
-       },
-       {
-        "you": "You go out to feel curious, and this has history.",
-        "me": "I go out to feel curious, and this has history."
-       }
       ]
      },
      {
       "moment_id": "m_soane_museum",
       "key": "m_soane_museum",
       "title": "Sir John Soane's house of curiosities, top-lit and full of mirrors",
-      "arrive": "14:05",
-      "depart": "15:21",
-      "travel_min": 13,
+      "arrive": "12:39",
+      "depart": "13:55",
+      "travel_min": 11,
       "travel_mode": "walk",
-      "travel_text": "Getting there: about 13 min on foot from The Courtauld Gallery.",
+      "travel_text": "Getting there: about 11 min on foot from Covent Garden station.",
       "approach": "Walk south to Lincoln's Inn Fields and number 13.",
       "what": "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
       "queue_min": 10.0,
@@ -2229,7 +2223,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 13 min on foot from The Courtauld Gallery.",
+       "Getting there: about 11 min on foot from Covent Garden station.",
        "Walk south to Lincoln's Inn Fields and number 13.",
        "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
        "Allow about 10 min to queue.",
@@ -2295,8 +2289,8 @@
       "moment_id": "m_bm_great_court",
       "key": "m_bm_great_court",
       "title": "British Museum: Egypt galleries, the Great Court, then the King's Library",
-      "arrive": "15:38",
-      "depart": "16:48",
+      "arrive": "14:12",
+      "depart": "15:22",
       "travel_min": 12,
       "travel_mode": "walk",
       "travel_text": "Getting there: about 12 min on foot from Sir John Soane's Museum.",
@@ -2412,27 +2406,27 @@
       ]
      }
     ],
-    "value": 1.09,
+    "value": 0.988,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:49.537054+00:00",
-    "title": "Saturday 24 October",
+    "created_at": "2026-10-06T18:17:14.872236+00:00",
+    "title": "Sunday 25 October",
     "summary": [
-     "Start: Sample apartment R, Covent Garden at 09:30 · 4 stops, including lunch",
-     "Costs: about £27 for food and entry, all on foot"
+     "Start: Sample apartment W, South Bank at 09:30 · 4 stops, including lunch",
+     "Costs: about £15 for food and entry, all on foot"
     ],
     "totals": {
-     "cost_gbp": 27.0,
-     "spend_gbp": 27.0,
+     "cost_gbp": 15.0,
+     "spend_gbp": 15.0,
      "transport_gbp": 0.0,
-     "walk_min": 32,
-     "walk_km": 2.4,
-     "finish": "16:48"
+     "walk_min": 44,
+     "walk_km": 3.3,
+     "finish": "15:22"
     },
     "pace": "relaxed",
     "solver_status": "ok",
     "blind": false,
-    "feel_line": "A curious day: lunch to start, some history, a wow moment, then one big reveal",
+    "feel_line": "A curious day: a green break, lunch, a wow moment, then one big reveal",
     "basis": {
      "places": 3,
      "choices": 5,
@@ -2447,18 +2441,18 @@
     "end": "19:00",
     "stops": 4
    },
-   "title": "A curious day: lunch to start, some history, a wow moment, then one big reveal",
+   "title": "A curious day: a green break, lunch, a wow moment, then one big reveal",
    "legs": []
   },
   {
    "index": 5,
-   "date": "2026-10-25",
-   "kind": "full",
+   "date": "2026-10-26",
+   "kind": "leave",
    "plan": {
     "id": 10,
     "kind": "personal",
     "label": null,
-    "date": "2026-10-25",
+    "date": "2026-10-26",
     "intent": {
      "trip": true,
      "day": 5,
@@ -2470,14 +2464,14 @@
     },
     "stops": [
      {
-      "moment_id": "lunch@a_soho_chinatown_evening",
-      "key": "lunch@a_soho_chinatown_evening",
-      "title": "Lunch near Leicester Square station",
+      "moment_id": "lunch@m_evensong_st_pauls",
+      "key": "lunch@m_evensong_st_pauls",
+      "title": "Lunch near St Paul's station",
       "arrive": "11:30",
       "depart": "12:15",
-      "travel_min": 14,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 14 min on foot from Sample apartment R, Covent Garden.",
+      "travel_min": 24,
+      "travel_mode": "transit",
+      "travel_text": "Getting there: about 24 min by Tube or bus from Sample apartment W, South Bank to St Paul's station.",
       "approach": "",
       "what": "Pick a café, pub or food stall nearby.",
       "queue_min": 0,
@@ -2496,588 +2490,13 @@
       "best_light": "",
       "best_window": "",
       "pin": {
-       "lat": 51.5117,
-       "lon": -0.1311
+       "lat": 51.5138,
+       "lon": -0.0983
       },
       "chosen_for": [],
       "why": [],
       "lines": [
-       "Getting there: about 14 min on foot from Sample apartment R, Covent Garden.",
-       "Pick a café, pub or food stall nearby.",
-       "Food: about £15"
-      ]
-     },
-     {
-      "moment_id": "m_liberty_timber_galleries",
-      "key": "m_liberty_timber_galleries",
-      "title": "Liberty's wooden galleries, built from two old warships",
-      "arrive": "12:33",
-      "depart": "13:38",
-      "travel_min": 13,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 13 min on foot from Leicester Square station.",
-      "approach": "Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front.",
-      "what": "You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 0.0,
-      "cost_kind": "entry",
-      "cost_text": "Cost: free",
-      "rain_swap": "",
-      "lunch": false,
-      "familiar": false,
-      "rateable": true,
-      "worth_gbp": null,
-      "feel_word": "Browsing",
-      "reveal": false,
-      "approach_steps": [
-       {
-        "label": "From",
-        "text": "Oxford Circus station"
-       },
-       {
-        "label": "The way in",
-        "text": "Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front"
-       },
-       {
-        "label": "You arrive",
-        "text": "Liberty, Great Marlborough Street"
-       }
-      ],
-      "best_light": "",
-      "best_window": "",
-      "pin": {
-       "lat": 51.51383,
-       "lon": -0.14016
-      },
-      "chosen_for": [
-       "awe"
-      ],
-      "why": [
-       {
-        "feature": "crowds",
-        "label": "crowds",
-        "contribution": -0.404
-       },
-       {
-        "feature": "awe",
-        "label": "awe",
-        "contribution": 0.145
-       },
-       {
-        "feature": "absorption",
-        "label": "absorbing activities",
-        "contribution": -0.133
-       }
-      ],
-      "lines": [
-       "Getting there: about 13 min on foot from Leicester Square station.",
-       "Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front.",
-       "You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.",
-       "Cost: free"
-      ],
-      "card": {
-       "id": "m_liberty_timber_galleries",
-       "title": "Liberty's wooden galleries, built from two old warships",
-       "status": "ready",
-       "place": {
-        "name": "Liberty, Great Marlborough Street",
-        "overture_id": null,
-        "lat": 51.51383,
-        "lon": -0.14016
-       },
-       "approach": {
-        "from": "Oxford Circus station",
-        "path": "Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front",
-        "step_free": null,
-        "start_point": {
-         "lat": 51.51383,
-         "lon": -0.14016
-        }
-       },
-       "what_happens": "You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.",
-       "best_time": {
-        "time_of_day": [
-         "12:00-18:00"
-        ],
-        "light": null,
-        "weather": [
-         "any"
-        ],
-        "company": null,
-        "crowd_window": "Weekend afternoons are busiest (GUESS)",
-        "opening_hours": "Mon-Sat 10:00-20:00, Sun 12:00-18:00 (Liberty help centre, via search, 2026-09-30). Free to browse.",
-        "days": [],
-        "best_window": [],
-        "best_around_sunset": null
-       },
-       "cost_gbp": 0.0,
-       "shot_card": null,
-       "plannable": true
-      },
-      "reasons": [
-       {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
-       },
-       {
-        "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
-       }
-      ]
-     },
-     {
-      "moment_id": "m_burlington_arcade",
-      "key": "m_burlington_arcade",
-      "title": "Burlington Arcade: a covered shopping street from 1819",
-      "arrive": "13:53",
-      "depart": "14:24",
-      "travel_min": 10,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 10 min on foot from Liberty.",
-      "approach": "Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy.",
-      "what": "You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 0.0,
-      "cost_kind": "entry",
-      "cost_text": "Cost: free",
-      "rain_swap": "",
-      "lunch": false,
-      "familiar": false,
-      "rateable": true,
-      "worth_gbp": null,
-      "feel_word": "Browsing",
-      "reveal": false,
-      "approach_steps": [
-       {
-        "label": "From",
-        "text": "Green Park or Piccadilly Circus station"
-       },
-       {
-        "label": "The way in",
-        "text": "Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy"
-       },
-       {
-        "label": "You arrive",
-        "text": "Burlington Arcade"
-       }
-      ],
-      "best_light": "",
-      "best_window": "",
-      "pin": {
-       "lat": 51.50901,
-       "lon": -0.1402
-      },
-      "chosen_for": [
-       "photo spots"
-      ],
-      "why": [
-       {
-        "feature": "crowds",
-        "label": "crowds",
-        "contribution": -0.404
-       },
-       {
-        "feature": "photo_potential",
-        "label": "photo spots",
-        "contribution": 0.132
-       },
-       {
-        "feature": "local_novel",
-        "label": "local, new-to-you places",
-        "contribution": -0.131
-       }
-      ],
-      "lines": [
-       "Getting there: about 10 min on foot from Liberty.",
-       "Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy.",
-       "You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.",
-       "Cost: free"
-      ],
-      "card": {
-       "id": "m_burlington_arcade",
-       "title": "Burlington Arcade: a covered shopping street from 1819",
-       "status": "ready",
-       "place": {
-        "name": "Burlington Arcade",
-        "overture_id": null,
-        "lat": 51.50901,
-        "lon": -0.1402
-       },
-       "approach": {
-        "from": "Green Park or Piccadilly Circus station",
-        "path": "Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy",
-        "step_free": null,
-        "start_point": {
-         "lat": 51.50901,
-         "lon": -0.1402
-        }
-       },
-       "what_happens": "You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.",
-       "best_time": {
-        "time_of_day": [
-         "11:00-18:00"
-        ],
-        "light": null,
-        "weather": [
-         "any"
-        ],
-        "company": null,
-        "crowd_window": null,
-        "opening_hours": "Mon-Fri 08:00-19:00, Sat 09:00-19:00, Sun 11:00-18:00 (burlingtonarcade.com, 2026-09-30). Free to walk through.",
-        "days": [],
-        "best_window": [],
-        "best_around_sunset": null
-       },
-       "cost_gbp": 0.0,
-       "shot_card": null,
-       "plannable": true
-      },
-      "reasons": [
-       {
-        "you": "You loved Uber Boat on the Thames, and this has a big reveal too.",
-        "me": "I loved Uber Boat on the Thames, and this has a big reveal too."
-       },
-       {
-        "you": "You go out to feel curious, and this has history.",
-        "me": "I go out to feel curious, and this has history."
-       }
-      ]
-     },
-     {
-      "moment_id": "m_park_break_st_james",
-      "key": "m_park_break_st_james",
-      "title": "A park break: St James's Park and its pelicans",
-      "arrive": "14:45",
-      "depart": "15:53",
-      "travel_min": 16,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 16 min on foot from Burlington Arcade.",
-      "approach": "Walk into the park.",
-      "what": "A slow loop round the lake: water birds, and the pelicans on their rocks or at their afternoon feed.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 0.0,
-      "cost_kind": "entry",
-      "cost_text": "Cost: free",
-      "rain_swap": "Centuries of British faces at the National Portrait Gallery, about 20 min away on foot.",
-      "lunch": false,
-      "familiar": false,
-      "rateable": true,
-      "worth_gbp": null,
-      "feel_word": "Calm",
-      "reveal": false,
-      "approach_steps": [
-       {
-        "label": "From",
-        "text": "St James's Park station"
-       },
-       {
-        "label": "The way in",
-        "text": "Walk into the park"
-       },
-       {
-        "label": "You arrive",
-        "text": "St James's Park, around the lake"
-       }
-      ],
-      "best_light": "Daylight; spring and summer are best",
-      "best_window": "",
-      "pin": {
-       "lat": 51.50246,
-       "lon": -0.13382
-      },
-      "chosen_for": [
-       "green spaces and nature",
-       "awe"
-      ],
-      "why": [
-       {
-        "feature": "crowds",
-        "label": "crowds",
-        "contribution": -0.404
-       },
-       {
-        "feature": "green_nature",
-        "label": "green spaces and nature",
-        "contribution": 0.18
-       },
-       {
-        "feature": "awe",
-        "label": "awe",
-        "contribution": 0.145
-       }
-      ],
-      "lines": [
-       "Getting there: about 16 min on foot from Burlington Arcade.",
-       "Walk into the park.",
-       "A slow loop round the lake: water birds, and the pelicans on their rocks or at their afternoon feed.",
-       "Cost: free",
-       "If it rains: Centuries of British faces at the National Portrait Gallery, about 20 min away on foot."
-      ],
-      "card": {
-       "id": "m_park_break_st_james",
-       "title": "A park break: St James's Park and its pelicans",
-       "status": "ready",
-       "place": {
-        "name": "St James's Park, around the lake",
-        "overture_id": null,
-        "lat": 51.50246,
-        "lon": -0.13382
-       },
-       "approach": {
-        "from": "St James's Park station",
-        "path": "Walk into the park",
-        "step_free": null,
-        "start_point": {
-         "lat": 51.50246,
-         "lon": -0.13382
-        }
-       },
-       "what_happens": "A slow loop round the lake: water birds, and the pelicans on their rocks or at their afternoon feed.",
-       "best_time": {
-        "time_of_day": [
-         "10:00-16:00"
-        ],
-        "light": "Daylight; spring and summer are best (FOUNDER)",
-        "weather": [
-         "dry"
-        ],
-        "company": null,
-        "crowd_window": null,
-        "opening_hours": "Pedestrian gates 05:00-midnight. Pelicans since 1664; fed about 14:30. Royal Parks, read 2026-09-26/27",
-        "days": [],
-        "best_window": [],
-        "best_around_sunset": null
-       },
-       "cost_gbp": 0.0,
-       "shot_card": null,
-       "plannable": true
-      },
-      "reasons": [
-       {
-        "you": "You loved the view from the top of Greenwich Park, and this has green space too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has green space too."
-       },
-       {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
-       }
-      ]
-     }
-    ],
-    "value": 0.375,
-    "status": "offered",
-    "fit_rating": null,
-    "created_at": "2026-10-06T18:03:51.092051+00:00",
-    "title": "Sunday 25 October",
-    "summary": [
-     "Start: Sample apartment R, Covent Garden at 09:30 · 4 stops, including lunch",
-     "Costs: about £15 for food and entry, all on foot"
-    ],
-    "totals": {
-     "cost_gbp": 15.0,
-     "spend_gbp": 15.0,
-     "transport_gbp": 0.0,
-     "walk_min": 53,
-     "walk_km": 4.0,
-     "finish": "15:53"
-    },
-    "pace": "relaxed",
-    "solver_status": "ok",
-    "blind": false,
-    "feel_line": "A curious day: lunch to start, a photo spot, a reveal, then a long green break",
-    "basis": {
-     "places": 3,
-     "choices": 5,
-     "ratings": 0,
-     "feelings": 2,
-     "kinds": 0
-    }
-   },
-   "before": null,
-   "window": {
-    "start": "09:30",
-    "end": "19:00",
-    "stops": 4
-   },
-   "title": "A curious day: lunch to start, a photo spot, a reveal, then a long green break",
-   "legs": []
-  },
-  {
-   "index": 6,
-   "date": "2026-10-26",
-   "kind": "leave",
-   "plan": {
-    "id": 11,
-    "kind": "personal",
-    "label": null,
-    "date": "2026-10-26",
-    "intent": {
-     "trip": true,
-     "day": 6,
-     "part": "main",
-     "feelings": [
-      "curious",
-      "peaceful"
-     ]
-    },
-    "stops": [
-     {
-      "moment_id": "m_national_portrait_gallery",
-      "key": "m_national_portrait_gallery",
-      "title": "Centuries of British faces at the National Portrait Gallery",
-      "arrive": "10:30",
-      "depart": "11:36",
-      "travel_min": 9,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 9 min on foot from Sample apartment R, Covent Garden.",
-      "approach": "Walk to St Martin's Place, beside the National Gallery, and go in.",
-      "what": "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 0.0,
-      "cost_kind": "entry",
-      "cost_text": "Cost: free",
-      "rain_swap": "",
-      "lunch": false,
-      "familiar": false,
-      "rateable": true,
-      "worth_gbp": null,
-      "feel_word": "Curious",
-      "reveal": false,
-      "approach_steps": [
-       {
-        "label": "From",
-        "text": "Charing Cross or Leicester Square station"
-       },
-       {
-        "label": "The way in",
-        "text": "Walk to St Martin's Place, beside the National Gallery, and go in"
-       },
-       {
-        "label": "You arrive",
-        "text": "National Portrait Gallery, St Martin's Place"
-       }
-      ],
-      "best_light": "",
-      "best_window": "",
-      "pin": {
-       "lat": 51.509399,
-       "lon": -0.128453
-      },
-      "chosen_for": [
-       "one of your interests",
-       "awe"
-      ],
-      "why": [
-       {
-        "feature": "crowds",
-        "label": "crowds",
-        "contribution": -0.404
-       },
-       {
-        "feature": "aspiration_match",
-        "label": "places tied to a field that inspires them",
-        "contribution": 0.25
-       },
-       {
-        "feature": "awe",
-        "label": "awe",
-        "contribution": 0.145
-       }
-      ],
-      "lines": [
-       "Getting there: about 9 min on foot from Sample apartment R, Covent Garden.",
-       "Walk to St Martin's Place, beside the National Gallery, and go in.",
-       "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.",
-       "Cost: free"
-      ],
-      "card": {
-       "id": "m_national_portrait_gallery",
-       "title": "Centuries of British faces at the National Portrait Gallery",
-       "status": "ready",
-       "place": {
-        "name": "National Portrait Gallery, St Martin's Place",
-        "overture_id": null,
-        "lat": 51.509399,
-        "lon": -0.128453
-       },
-       "approach": {
-        "from": "Charing Cross or Leicester Square station",
-        "path": "Walk to St Martin's Place, beside the National Gallery, and go in",
-        "step_free": null,
-        "start_point": {
-         "lat": 51.509399,
-         "lon": -0.128453
-        }
-       },
-       "what_happens": "You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.",
-       "best_time": {
-        "time_of_day": [
-         "10:30-18:00"
-        ],
-        "light": null,
-        "weather": [
-         "any"
-        ],
-        "company": null,
-        "crowd_window": null,
-        "opening_hours": "Sun-Thu 10:30-18:00, Fri-Sat to 21:00; free. Official site via search, 2026-09-28",
-        "days": [],
-        "best_window": [],
-        "best_around_sunset": null
-       },
-       "cost_gbp": 0.0,
-       "shot_card": null,
-       "plannable": true
-      },
-      "reasons": [
-       {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
-       },
-       {
-        "you": "You go out to feel curious, and this has history.",
-        "me": "I go out to feel curious, and this has history."
-       }
-      ]
-     },
-     {
-      "moment_id": "lunch@m_st_martin_crypt_lunch",
-      "key": "lunch@m_st_martin_crypt_lunch",
-      "title": "Lunch near Charing Cross station",
-      "arrive": "11:44",
-      "depart": "12:29",
-      "travel_min": 3,
-      "travel_mode": "walk",
-      "travel_text": "Getting there: about 3 min on foot from National Portrait Gallery.",
-      "approach": "",
-      "what": "Pick a café, pub or food stall nearby.",
-      "queue_min": 0,
-      "best_text": "",
-      "cost_gbp": 15.0,
-      "cost_kind": "food",
-      "cost_text": "Food: about £15",
-      "rain_swap": "",
-      "lunch": true,
-      "familiar": false,
-      "rateable": false,
-      "worth_gbp": null,
-      "feel_word": "Lunch",
-      "reveal": false,
-      "approach_steps": [],
-      "best_light": "",
-      "best_window": "",
-      "pin": {
-       "lat": 51.509174,
-       "lon": -0.126747
-      },
-      "chosen_for": [],
-      "why": [],
-      "lines": [
-       "Getting there: about 3 min on foot from National Portrait Gallery.",
+       "Getting there: about 24 min by Tube or bus from Sample apartment W, South Bank to St Paul's station.",
        "Pick a café, pub or food stall nearby.",
        "Food: about £15"
       ]
@@ -3086,11 +2505,11 @@
       "moment_id": "m_bank_of_england_gold",
       "key": "m_bank_of_england_gold",
       "title": "Lift a real gold bar at the Bank of England Museum",
-      "arrive": "13:06",
-      "depart": "14:00",
-      "travel_min": 27,
-      "travel_mode": "transit",
-      "travel_text": "Getting there: about 27 min: walk to Charing Cross station, then take the Tube or bus to Bank station.",
+      "arrive": "12:33",
+      "depart": "13:37",
+      "travel_min": 13,
+      "travel_mode": "walk",
+      "travel_text": "Getting there: about 13 min on foot from St Paul's station.",
       "approach": "Walk round the Bank of England to the museum entrance on Bartholomew Lane.",
       "what": "You walk through three centuries of money and banking, then put your arm through a secure hatch and lift a real gold bar of about 13 kg.",
       "queue_min": 0,
@@ -3146,7 +2565,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 27 min: walk to Charing Cross station, then take the Tube or bus to Bank station.",
+       "Getting there: about 13 min on foot from St Paul's station.",
        "Walk round the Bank of England to the museum entrance on Bartholomew Lane.",
        "You walk through three centuries of money and banking, then put your arm through a secure hatch and lift a real gold bar of about 13 kg.",
        "Cost: free"
@@ -3208,14 +2627,140 @@
       ]
      },
      {
+      "moment_id": "m_city_towers_walk",
+      "key": "m_city_towers_walk",
+      "title": "Through the City towers, Bank to Liverpool Street",
+      "arrive": "13:45",
+      "depart": "14:22",
+      "travel_min": 3,
+      "travel_mode": "walk",
+      "travel_text": "Getting there: about 3 min on foot from Bank of England Museum.",
+      "approach": "Walk east along Cornhill and turn right into Gracechurch Street.",
+      "what": "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+      "queue_min": 0,
+      "best_text": "",
+      "cost_gbp": 0.0,
+      "cost_kind": "entry",
+      "cost_text": "Cost: free",
+      "rain_swap": "",
+      "lunch": false,
+      "familiar": false,
+      "rateable": true,
+      "worth_gbp": 6,
+      "feel_word": "Wonder",
+      "reveal": true,
+      "approach_steps": [
+       {
+        "label": "From",
+        "text": "Bank station"
+       },
+       {
+        "label": "The way in",
+        "text": "Walk east along Cornhill and turn right into Gracechurch Street"
+       },
+       {
+        "label": "You arrive",
+        "text": "City of London towers between Bank and Liverpool Street"
+       }
+      ],
+      "best_light": "",
+      "best_window": "",
+      "pin": {
+       "lat": 51.5133,
+       "lon": -0.08975
+      },
+      "chosen_for": [
+       "movement and views",
+       "reveals and contrast"
+      ],
+      "why": [
+       {
+        "feature": "crowds",
+        "label": "crowds",
+        "contribution": -0.404
+       },
+       {
+        "feature": "movement_views",
+        "label": "movement and views",
+        "contribution": 0.226
+       },
+       {
+        "feature": "contrast_reveal",
+        "label": "reveals and contrast",
+        "contribution": 0.199
+       }
+      ],
+      "lines": [
+       "Getting there: about 3 min on foot from Bank of England Museum.",
+       "Walk east along Cornhill and turn right into Gracechurch Street.",
+       "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+       "Cost: free"
+      ],
+      "card": {
+       "id": "m_city_towers_walk",
+       "title": "Through the City towers, Bank to Liverpool Street",
+       "status": "ready",
+       "place": {
+        "name": "City of London towers between Bank and Liverpool Street",
+        "overture_id": null,
+        "lat": 51.51381,
+        "lon": -0.08229
+       },
+       "approach": {
+        "from": "Bank station",
+        "path": "Walk east along Cornhill and turn right into Gracechurch Street",
+        "step_free": null,
+        "start_point": {
+         "lat": 51.5133,
+         "lon": -0.08975
+        }
+       },
+       "what_happens": "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+       "best_time": {
+        "time_of_day": [
+         "08:00-19:00"
+        ],
+        "light": null,
+        "weather": [
+         "any"
+        ],
+        "company": null,
+        "crowd_window": "Weekdays, when the offices are full",
+        "opening_hours": "Public streets; always open",
+        "days": [
+         "mon",
+         "tue",
+         "wed",
+         "thu",
+         "fri"
+        ],
+        "best_window": [],
+        "best_around_sunset": null
+       },
+       "cost_gbp": 0.0,
+       "shot_card": null,
+       "plannable": true
+      },
+      "reasons": [
+       {
+        "you": "You loved Uber Boat on the Thames, and this has views too.",
+        "me": "I loved Uber Boat on the Thames, and this has views too."
+       },
+       {
+        "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
+        "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
+       }
+      ]
+     },
+     {
       "moment_id": "m_leadenhall_market",
       "key": "m_leadenhall_market",
       "title": "Leadenhall Market: Victorian arches on the site of Roman London",
-      "arrive": "14:12",
-      "depart": "14:40",
-      "travel_min": 7,
+      "arrive": "14:38",
+      "depart": "15:13",
+      "travel_min": 11,
       "travel_mode": "walk",
-      "travel_text": "Getting there: about 7 min on foot from Bank of England Museum.",
+      "travel_text": "Getting there: about 11 min on foot from Liverpool Street station.",
       "approach": "Walk along Gracechurch Street and turn in under the market's arches.",
       "what": "You walk in under painted Victorian arches to a covered market street of shops, pubs and restaurants, on the spot that was the centre of Roman London.",
       "queue_min": 0,
@@ -3271,7 +2816,7 @@
        }
       ],
       "lines": [
-       "Getting there: about 7 min on foot from Bank of England Museum.",
+       "Getting there: about 11 min on foot from Liverpool Street station.",
        "Walk along Gracechurch Street and turn in under the market's arches.",
        "You walk in under painted Victorian arches to a covered market street of shops, pubs and restaurants, on the spot that was the centre of Roman London.",
        "Cost: free"
@@ -3333,27 +2878,27 @@
       ]
      }
     ],
-    "value": 0.299,
+    "value": 1.084,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-06T18:03:53.140815+00:00",
+    "created_at": "2026-10-06T18:17:16.426687+00:00",
     "title": "Monday 26 October",
     "summary": [
-     "Start: Sample apartment R, Covent Garden at 09:30 · 4 stops, including lunch",
+     "Start: Sample apartment W, South Bank at 09:30 · 4 stops, including lunch",
      "Costs: about £15 for food and entry, plus about £3 transport"
     ],
     "totals": {
      "cost_gbp": 18.0,
      "spend_gbp": 15.0,
      "transport_gbp": 3.0,
-     "walk_min": 19,
-     "walk_km": 1.4,
-     "finish": "14:40"
+     "walk_min": 27,
+     "walk_km": 2.0,
+     "finish": "15:13"
     },
     "pace": "relaxed",
     "solver_status": "ok",
     "blind": false,
-    "feel_line": "A curious day: some history, lunch, somewhere new, then one great photo",
+    "feel_line": "A curious day: lunch to start, some history, one big reveal, then a photo spot",
     "basis": {
      "places": 3,
      "choices": 5,
@@ -3365,16 +2910,16 @@
    "before": null,
    "window": {
     "start": "09:30",
-    "end": "14:40",
+    "end": "16:35",
     "stops": 4
    },
-   "title": "A curious day: some history, lunch, somewhere new, then one great photo",
+   "title": "A curious day: lunch to start, some history, one big reveal, then a photo spot",
    "legs": [
     {
      "slot": "back",
      "title": "Back to your stay for your bags",
-     "depart": "14:40",
-     "arrive": "15:07",
+     "depart": "15:13",
+     "arrive": "15:40",
      "minutes": 27,
      "how": null,
      "note": null,
@@ -3386,30 +2931,30 @@
       "lon": -0.0834
      },
      "destination": {
-      "name": "Sample apartment R, Covent Garden",
-      "maps": "51.50918466923763,-0.12132671765402375",
-      "lat": 51.50918466923763,
-      "lon": -0.12132671765402375
+      "name": "Sample apartment W, South Bank",
+      "maps": "51.50257199892892,-0.12042344350483596",
+      "lat": 51.50257199892892,
+      "lon": -0.12042344350483596
      }
     },
     {
      "slot": "leave",
-     "title": "Leave for Gatwick by 15:25",
-     "depart": "15:25",
-     "arrive": "16:20",
-     "minutes": 55,
-     "how": "About 24 min to Victoria, then the Gatwick Express (31 min)",
-     "note": "At the airport 2 hours before your 18:20 flight: check your airline's advice.",
+     "title": "Leave for Heathrow by 17:20",
+     "depart": "17:20",
+     "arrive": "18:21",
+     "minutes": 61,
+     "how": "About 33 min to Paddington, then the Elizabeth line or Heathrow Express (28 min)",
+     "note": "At the airport 2 hours before your 20:25 flight: check your airline's advice.",
      "mode": "transit",
      "origin": {
-      "name": "Sample apartment R, Covent Garden",
-      "maps": "51.50918466923763,-0.12132671765402375",
-      "lat": 51.50918466923763,
-      "lon": -0.12132671765402375
+      "name": "Sample apartment W, South Bank",
+      "maps": "51.50257199892892,-0.12042344350483596",
+      "lat": 51.50257199892892,
+      "lon": -0.12042344350483596
      },
      "destination": {
-      "name": "Gatwick",
-      "maps": "Gatwick Airport",
+      "name": "Heathrow",
+      "maps": "Heathrow Airport",
       "lat": null,
       "lon": null
      }
@@ -3417,12 +2962,11 @@
    ]
   }
  ],
- "start": "Sample apartment R, Covent Garden",
+ "start": "Sample apartment W, South Bank",
  "used": [
   "m_alderman_stairs_sunset",
   "m_bank_of_england_gold",
   "m_bm_great_court",
-  "m_burlington_arcade",
   "m_city_towers_walk",
   "m_courtauld_gallery",
   "m_garden_at_120",
@@ -3430,11 +2974,9 @@
   "m_greenwich_wolfe_view",
   "m_horizon_22",
   "m_leadenhall_market",
-  "m_liberty_timber_galleries",
   "m_millennium_bridge_dome",
   "m_national_gallery",
-  "m_national_portrait_gallery",
-  "m_park_break_st_james",
+  "m_park_break_embankment",
   "m_rfh_foyers_rest",
   "m_soane_museum",
   "m_st_dunstan_garden",

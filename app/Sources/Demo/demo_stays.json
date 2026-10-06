@@ -1,38 +1,38 @@
 {
  "source": "sample",
  "note": "Sample results, made up for testing: not real places or prices. The links below search for real.",
- "total": 27,
- "shown": 27,
+ "total": 26,
+ "shown": 26,
  "results": [
   {
-   "id": "sample-17",
-   "name": "Sample apartment R, Covent Garden",
+   "id": "sample-22",
+   "name": "Sample apartment W, South Bank",
    "kind": "apartment",
    "stars": null,
-   "rating": 9.0,
-   "reviews": 976,
-   "address": "Covent Garden, London",
-   "lat": 51.50918466923763,
-   "lon": -0.12132671765402375,
+   "rating": 8.8,
+   "reviews": 527,
+   "address": "South Bank, London",
+   "lat": 51.50257199892892,
+   "lon": -0.12042344350483596,
    "photo": null,
-   "price_total": 1318.36,
+   "price_total": 1146.11,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
    "refundable": true,
-   "distance_km": 0.37,
+   "distance_km": 0.7,
    "sample": true,
-   "price_night": 219.73,
+   "price_night": 229.22,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+R%2C+Covent+Garden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+W%2C+South+Bank%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+R%2C+Covent+Garden+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+apartment+W%2C+South+Bank+London+official+site"
     }
    ],
    "tags": [
@@ -40,663 +40,67 @@
    ]
   },
   {
-   "id": "sample-19",
-   "name": "Sample hotel T, Covent Garden",
-   "kind": "hotel",
-   "stars": 4.0,
-   "rating": 9.1,
-   "reviews": 1419,
-   "address": "Covent Garden, London",
-   "lat": 51.510956967397334,
-   "lon": -0.1269215217891722,
-   "photo": null,
-   "price_total": 1773.59,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 0.35,
-   "sample": true,
-   "price_night": 295.6,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+T%2C+Covent+Garden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+T%2C+Covent+Garden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-20",
-   "name": "Sample hostel U, South Bank",
+   "id": "sample-14",
+   "name": "Sample hostel O, Kensington",
    "kind": "hostel",
-   "stars": 3.0,
-   "rating": 8.3,
-   "reviews": 2041,
-   "address": "South Bank, London",
-   "lat": 51.504772338949046,
-   "lon": -0.11879465827116927,
+   "stars": 4.0,
+   "rating": 9.2,
+   "reviews": 980,
+   "address": "Kensington, London",
+   "lat": 51.49902890837943,
+   "lon": -0.19067359328290004,
    "photo": null,
-   "price_total": 1232.01,
+   "price_total": 1168.66,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
    "refundable": true,
-   "distance_km": 0.61,
+   "distance_km": 4.57,
    "sample": true,
-   "price_night": 205.34,
+   "price_night": 233.73,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+U%2C+South+Bank%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+O%2C+Kensington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hostel+U%2C+South+Bank+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+hostel+O%2C+Kensington+London+official+site"
     }
    ],
    "tags": []
   },
   {
    "id": "sample-15",
-   "name": "Sample hostel P, Camden",
-   "kind": "hostel",
-   "stars": 5.0,
-   "rating": 9.8,
-   "reviews": 1569,
-   "address": "Camden, London",
-   "lat": 51.542018289069674,
-   "lon": -0.1429264820498707,
-   "photo": null,
-   "price_total": 2045.41,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": false,
-   "distance_km": 3.98,
-   "sample": true,
-   "price_night": 340.9,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+P%2C+Camden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hostel+P%2C+Camden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-11",
-   "name": "Sample hotel L, King's Cross",
-   "kind": "hotel",
-   "stars": 4.0,
-   "rating": 9.2,
-   "reviews": 777,
-   "address": "King's Cross, London",
-   "lat": 51.52903420849422,
-   "lon": -0.12455832210149942,
-   "photo": null,
-   "price_total": 1764.96,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Breakfast included",
-   "breakfast": true,
-   "refundable": true,
-   "distance_km": 2.36,
-   "sample": true,
-   "price_night": 294.16,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+L%2C+King%27s+Cross%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+L%2C+King%27s+Cross+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-1",
-   "name": "Sample apartment B, Camden",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 8.8,
-   "reviews": 1391,
-   "address": "Camden, London",
-   "lat": 51.53735761707552,
-   "lon": -0.14670606673253644,
-   "photo": null,
-   "price_total": 1302.92,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 3.58,
-   "sample": true,
-   "price_night": 217.15,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+B%2C+Camden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+B%2C+Camden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-2",
-   "name": "Sample hostel C, Canary Wharf",
-   "kind": "hostel",
-   "stars": 4.0,
-   "rating": 8.9,
-   "reviews": 782,
-   "address": "Canary Wharf, London",
-   "lat": 51.505590240988184,
-   "lon": -0.01738875190216934,
-   "photo": null,
-   "price_total": 1062.05,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 7.53,
-   "sample": true,
-   "price_night": 177.01,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+C%2C+Canary+Wharf%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hostel+C%2C+Canary+Wharf+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-4",
-   "name": "Sample apartment E, Shoreditch",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 9.0,
-   "reviews": 1569,
-   "address": "Shoreditch, London",
-   "lat": 51.52972643012787,
-   "lon": -0.07803693371584988,
-   "photo": null,
-   "price_total": 1601.61,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 4.12,
-   "sample": true,
-   "price_night": 266.94,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+E%2C+Shoreditch%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+E%2C+Shoreditch+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-26",
-   "name": "Sample hotel A, Paddington",
-   "kind": "hotel",
-   "stars": 5.0,
-   "rating": 9.1,
-   "reviews": 437,
-   "address": "Paddington, London",
-   "lat": 51.513104970369156,
-   "lon": -0.17681403292975245,
-   "photo": null,
-   "price_total": 1784.31,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 3.56,
-   "sample": true,
-   "price_night": 297.38,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+A%2C+Paddington%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+A%2C+Paddington+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-0",
-   "name": "Sample guest house A, Covent Garden",
-   "kind": "guest house",
-   "stars": null,
-   "rating": 8.5,
-   "reviews": 1095,
-   "address": "Covent Garden, London",
-   "lat": 51.51067989127541,
-   "lon": -0.1227746057947349,
-   "photo": null,
-   "price_total": 1710.79,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 0.39,
-   "sample": true,
-   "price_night": 285.13,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+guest+house+A%2C+Covent+Garden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+guest+house+A%2C+Covent+Garden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-21",
-   "name": "Sample apartment V, Covent Garden",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 8.3,
-   "reviews": 179,
-   "address": "Covent Garden, London",
-   "lat": 51.51172506086223,
-   "lon": -0.12157726514775218,
-   "photo": null,
-   "price_total": 1589.07,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 0.54,
-   "sample": true,
-   "price_night": 264.84,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+V%2C+Covent+Garden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+V%2C+Covent+Garden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-3",
-   "name": "Sample hostel D, Westminster",
-   "kind": "hostel",
-   "stars": 4.0,
-   "rating": 8.3,
-   "reviews": 434,
-   "address": "Westminster, London",
-   "lat": 51.499728986706224,
-   "lon": -0.12973651404535488,
-   "photo": null,
-   "price_total": 1547.4,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": false,
-   "distance_km": 0.93,
-   "sample": true,
-   "price_night": 257.9,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+D%2C+Westminster%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hostel+D%2C+Westminster+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-13",
-   "name": "Sample apartment N, King's Cross",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 8.1,
-   "reviews": 1018,
-   "address": "King's Cross, London",
-   "lat": 51.52891710886726,
-   "lon": -0.12783706857432245,
-   "photo": null,
-   "price_total": 1254.2,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 2.35,
-   "sample": true,
-   "price_night": 209.03,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+N%2C+King%27s+Cross%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+N%2C+King%27s+Cross+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-18",
-   "name": "Sample hostel S, Covent Garden",
-   "kind": "hostel",
-   "stars": 2.0,
-   "rating": 7.2,
-   "reviews": 440,
-   "address": "Covent Garden, London",
-   "lat": 51.51288324130355,
-   "lon": -0.118899427418388,
-   "photo": null,
-   "price_total": 835.91,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 0.75,
-   "sample": true,
-   "price_night": 139.32,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+S%2C+Covent+Garden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hostel+S%2C+Covent+Garden+London+official+site"
-    }
-   ],
-   "tags": [
-    "Cheapest"
-   ]
-  },
-  {
-   "id": "sample-23",
-   "name": "Sample hotel X, Kensington",
-   "kind": "hotel",
-   "stars": 5.0,
-   "rating": 9.8,
-   "reviews": 85,
-   "address": "Kensington, London",
-   "lat": 51.50145882833961,
-   "lon": -0.18946494139037529,
-   "photo": null,
-   "price_total": 2497.23,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Breakfast included",
-   "breakfast": true,
-   "refundable": false,
-   "distance_km": 4.44,
-   "sample": true,
-   "price_night": 416.2,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+X%2C+Kensington%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+X%2C+Kensington+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-16",
-   "name": "Sample hotel Q, Bloomsbury",
-   "kind": "hotel",
-   "stars": 4.0,
-   "rating": 8.3,
-   "reviews": 892,
-   "address": "Bloomsbury, London",
-   "lat": 51.51969672796912,
-   "lon": -0.128053906313753,
-   "photo": null,
-   "price_total": 1677.18,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 1.33,
-   "sample": true,
-   "price_night": 279.53,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+Q%2C+Bloomsbury%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+Q%2C+Bloomsbury+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-7",
-   "name": "Sample apartment H, Covent Garden",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 8.1,
-   "reviews": 403,
-   "address": "Covent Garden, London",
-   "lat": 51.50924996884987,
-   "lon": -0.12324262831530286,
-   "photo": null,
-   "price_total": 1719.07,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": false,
-   "distance_km": 0.26,
-   "sample": true,
-   "price_night": 286.51,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+H%2C+Covent+Garden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+H%2C+Covent+Garden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-10",
-   "name": "Sample hotel K, Camden",
-   "kind": "hotel",
-   "stars": 5.0,
-   "rating": 8.9,
-   "reviews": 1101,
-   "address": "Camden, London",
-   "lat": 51.53623526922161,
-   "lon": -0.14614661188153025,
-   "photo": null,
-   "price_total": 1995.13,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": false,
-   "distance_km": 3.45,
-   "sample": true,
-   "price_night": 332.52,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+K%2C+Camden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+K%2C+Camden+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-25",
-   "name": "Sample apartment Z, South Bank",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 7.9,
-   "reviews": 2108,
-   "address": "South Bank, London",
-   "lat": 51.501982769908665,
-   "lon": -0.12136863976677284,
-   "photo": null,
-   "price_total": 1540.86,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": false,
-   "distance_km": 0.73,
-   "sample": true,
-   "price_night": 256.81,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+Z%2C+South+Bank%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+Z%2C+South+Bank+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-14",
-   "name": "Sample hotel O, Westminster",
-   "kind": "hotel",
-   "stars": 2.0,
-   "rating": 7.5,
-   "reviews": 861,
-   "address": "Westminster, London",
-   "lat": 51.49818268809885,
-   "lon": -0.1299544112550155,
-   "photo": null,
-   "price_total": 1219.88,
-   "currency": "GBP",
-   "nights": 6,
-   "room": "Double room",
-   "board": "Room only",
-   "breakfast": false,
-   "refundable": true,
-   "distance_km": 1.1,
-   "sample": true,
-   "price_night": 203.31,
-   "links": [
-    {
-     "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+O%2C+Westminster%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
-    },
-    {
-     "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+O%2C+Westminster+London+official+site"
-    }
-   ],
-   "tags": []
-  },
-  {
-   "id": "sample-5",
-   "name": "Sample hotel F, King's Cross",
+   "name": "Sample hotel P, South Bank",
    "kind": "hotel",
    "stars": 3.0,
-   "rating": 8.0,
-   "reviews": 1716,
-   "address": "King's Cross, London",
-   "lat": 51.52736243387427,
-   "lon": -0.12106580763090204,
+   "rating": 8.5,
+   "reviews": 1491,
+   "address": "South Bank, London",
+   "lat": 51.502934573041955,
+   "lon": -0.1175728014520022,
    "photo": null,
-   "price_total": 1511.2,
+   "price_total": 1072.84,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
-   "board": "Breakfast included",
-   "breakfast": true,
-   "refundable": true,
-   "distance_km": 2.2,
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": false,
+   "distance_km": 0.8,
    "sample": true,
-   "price_night": 251.87,
+   "price_night": 214.57,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+F%2C+King%27s+Cross%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+P%2C+South+Bank%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+F%2C+King%27s+Cross+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+hotel+P%2C+South+Bank+London+official+site"
     }
    ],
    "tags": []
@@ -705,27 +109,27 @@
    "id": "sample-6",
    "name": "Sample hotel G, Bloomsbury",
    "kind": "hotel",
-   "stars": 2.0,
-   "rating": 7.2,
-   "reviews": 660,
+   "stars": 3.0,
+   "rating": 8.2,
+   "reviews": 139,
    "address": "Bloomsbury, London",
-   "lat": 51.522835197916095,
-   "lon": -0.12211587123459317,
+   "lat": 51.52456983940627,
+   "lon": -0.12510292025064948,
    "photo": null,
-   "price_total": 995.42,
+   "price_total": 1068.67,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
-   "refundable": true,
-   "distance_km": 1.69,
+   "refundable": false,
+   "distance_km": 1.86,
    "sample": true,
-   "price_night": 165.9,
+   "price_night": 213.73,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+G%2C+Bloomsbury%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+G%2C+Bloomsbury%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
@@ -735,166 +139,729 @@
    "tags": []
   },
   {
-   "id": "sample-22",
-   "name": "Sample hotel W, Camden",
-   "kind": "hotel",
-   "stars": 4.0,
-   "rating": 8.6,
-   "reviews": 498,
-   "address": "Camden, London",
-   "lat": 51.54256482413275,
-   "lon": -0.14145024673213102,
+   "id": "sample-19",
+   "name": "Sample apartment T, South Bank",
+   "kind": "apartment",
+   "stars": null,
+   "rating": 8.2,
+   "reviews": 1830,
+   "address": "South Bank, London",
+   "lat": 51.50202898373329,
+   "lon": -0.11418003959363819,
    "photo": null,
-   "price_total": 1854.83,
+   "price_total": 1167.11,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
-   "board": "Breakfast included",
-   "breakfast": true,
+   "board": "Room only",
+   "breakfast": false,
    "refundable": true,
-   "distance_km": 4.01,
+   "distance_km": 1.05,
    "sample": true,
-   "price_night": 309.14,
+   "price_night": 233.42,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+W%2C+Camden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+T%2C+South+Bank%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+W%2C+Camden+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+apartment+T%2C+South+Bank+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-13",
+   "name": "Sample hotel N, Covent Garden",
+   "kind": "hotel",
+   "stars": 3.0,
+   "rating": 7.9,
+   "reviews": 2049,
+   "address": "Covent Garden, London",
+   "lat": 51.51303030545869,
+   "lon": -0.11919549660369769,
+   "photo": null,
+   "price_total": 1037.41,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Breakfast included",
+   "breakfast": true,
+   "refundable": false,
+   "distance_km": 0.75,
+   "sample": true,
+   "price_night": 207.48,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+N%2C+Covent+Garden%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+N%2C+Covent+Garden+London+official+site"
     }
    ],
    "tags": []
   },
   {
    "id": "sample-9",
-   "name": "Sample apartment J, Kensington",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 8.4,
-   "reviews": 2113,
+   "name": "Sample hotel J, Kensington",
+   "kind": "hotel",
+   "stars": 5.0,
+   "rating": 9.8,
+   "reviews": 1596,
    "address": "Kensington, London",
-   "lat": 51.4980881383086,
-   "lon": -0.1968561977888359,
+   "lat": 51.50278079663698,
+   "lon": -0.19844681445665666,
    "photo": null,
-   "price_total": 1670.31,
+   "price_total": 1790.66,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
    "refundable": false,
-   "distance_km": 5.01,
+   "distance_km": 5.04,
    "sample": true,
-   "price_night": 278.38,
+   "price_night": 358.13,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+J%2C+Kensington%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+J%2C+Kensington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+J%2C+Kensington+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+hotel+J%2C+Kensington+London+official+site"
     }
    ],
    "tags": []
   },
   {
-   "id": "sample-12",
-   "name": "Sample hotel M, Shoreditch",
+   "id": "sample-1",
+   "name": "Sample hotel B, Paddington",
    "kind": "hotel",
-   "stars": 2.0,
-   "rating": 7.4,
-   "reviews": 1385,
-   "address": "Shoreditch, London",
-   "lat": 51.524429810055324,
-   "lon": -0.08135274734142559,
+   "stars": 3.0,
+   "rating": 8.3,
+   "reviews": 1896,
+   "address": "Paddington, London",
+   "lat": 51.51968082153903,
+   "lon": -0.1704130107985276,
    "photo": null,
-   "price_total": 1096.7,
+   "price_total": 1157.25,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
    "refundable": true,
-   "distance_km": 3.61,
+   "distance_km": 3.34,
    "sample": true,
-   "price_night": 182.78,
+   "price_night": 231.45,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+M%2C+Shoreditch%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+B%2C+Paddington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+M%2C+Shoreditch+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+hotel+B%2C+Paddington+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-5",
+   "name": "Sample guest house F, South Bank",
+   "kind": "guest house",
+   "stars": null,
+   "rating": 8.5,
+   "reviews": 618,
+   "address": "South Bank, London",
+   "lat": 51.50762412520562,
+   "lon": -0.11205317035733935,
+   "photo": null,
+   "price_total": 1447.75,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 0.97,
+   "sample": true,
+   "price_night": 289.55,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+guest+house+F%2C+South+Bank%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+guest+house+F%2C+South+Bank+London+official+site"
     }
    ],
    "tags": []
   },
   {
    "id": "sample-24",
-   "name": "Sample apartment Y, Kensington",
-   "kind": "apartment",
-   "stars": null,
-   "rating": 8.3,
-   "reviews": 1659,
+   "name": "Sample hotel Y, Kensington",
+   "kind": "hotel",
+   "stars": 5.0,
+   "rating": 9.8,
+   "reviews": 820,
    "address": "Kensington, London",
-   "lat": 51.49912669834386,
-   "lon": -0.1922528890570182,
+   "lat": 51.49652148141416,
+   "lon": -0.1898082456651916,
    "photo": null,
-   "price_total": 1762.99,
+   "price_total": 1907.99,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
    "refundable": true,
-   "distance_km": 4.68,
+   "distance_km": 4.58,
    "sample": true,
-   "price_night": 293.83,
+   "price_night": 381.6,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+Y%2C+Kensington%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+Y%2C+Kensington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+apartment+Y%2C+Kensington+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+hotel+Y%2C+Kensington+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-16",
+   "name": "Sample hostel Q, South Bank",
+   "kind": "hostel",
+   "stars": 3.0,
+   "rating": 7.5,
+   "reviews": 1869,
+   "address": "South Bank, London",
+   "lat": 51.504497963089825,
+   "lon": -0.12180926244372246,
+   "photo": null,
+   "price_total": 971.53,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 0.48,
+   "sample": true,
+   "price_night": 194.31,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hostel+Q%2C+South+Bank%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hostel+Q%2C+South+Bank+London+official+site"
+    }
+   ],
+   "tags": [
+    "Cheapest"
+   ]
+  },
+  {
+   "id": "sample-23",
+   "name": "Sample hotel X, Westminster",
+   "kind": "hotel",
+   "stars": 3.0,
+   "rating": 7.7,
+   "reviews": 823,
+   "address": "Westminster, London",
+   "lat": 51.499547395014254,
+   "lon": -0.1360148442719459,
+   "photo": null,
+   "price_total": 1038.21,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": false,
+   "distance_km": 1.15,
+   "sample": true,
+   "price_night": 207.64,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+X%2C+Westminster%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+X%2C+Westminster+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-4",
+   "name": "Sample guest house E, Shoreditch",
+   "kind": "guest house",
+   "stars": null,
+   "rating": 8.2,
+   "reviews": 2286,
+   "address": "Shoreditch, London",
+   "lat": 51.52352809141395,
+   "lon": -0.0728310977921566,
+   "photo": null,
+   "price_total": 1169.04,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": false,
+   "distance_km": 4.08,
+   "sample": true,
+   "price_night": 233.81,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+guest+house+E%2C+Shoreditch%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+guest+house+E%2C+Shoreditch+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-18",
+   "name": "Sample hotel S, Greenwich",
+   "kind": "hotel",
+   "stars": 5.0,
+   "rating": 9.8,
+   "reviews": 351,
+   "address": "Greenwich, London",
+   "lat": 51.48231158889646,
+   "lon": -0.007379329415812221,
+   "photo": null,
+   "price_total": 1710.12,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Breakfast included",
+   "breakfast": true,
+   "refundable": true,
+   "distance_km": 8.7,
+   "sample": true,
+   "price_night": 342.02,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+S%2C+Greenwich%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+S%2C+Greenwich+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-21",
+   "name": "Sample apartment V, Covent Garden",
+   "kind": "apartment",
+   "stars": null,
+   "rating": 7.9,
+   "reviews": 30,
+   "address": "Covent Garden, London",
+   "lat": 51.51119103527052,
+   "lon": -0.1225289110615867,
+   "photo": null,
+   "price_total": 1262.03,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": false,
+   "distance_km": 0.45,
+   "sample": true,
+   "price_night": 252.41,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+V%2C+Covent+Garden%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+apartment+V%2C+Covent+Garden+London+official+site"
     }
    ],
    "tags": []
   },
   {
    "id": "sample-8",
-   "name": "Sample hotel I, Camden",
+   "name": "Sample apartment I, King's Cross",
+   "kind": "apartment",
+   "stars": null,
+   "rating": 7.8,
+   "reviews": 1752,
+   "address": "King's Cross, London",
+   "lat": 51.53081434962464,
+   "lon": -0.12158459307221436,
+   "photo": null,
+   "price_total": 1101.41,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 2.58,
+   "sample": true,
+   "price_night": 220.28,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+I%2C+King%27s+Cross%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+apartment+I%2C+King%27s+Cross+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-7",
+   "name": "Sample hotel H, Clerkenwell",
    "kind": "hotel",
    "stars": 3.0,
-   "rating": 7.6,
-   "reviews": 117,
-   "address": "Camden, London",
-   "lat": 51.53961704996417,
-   "lon": -0.1439343030148155,
+   "rating": 8.0,
+   "reviews": 90,
+   "address": "Clerkenwell, London",
+   "lat": 51.52006874356225,
+   "lon": -0.11050883460469553,
    "photo": null,
-   "price_total": 1482.33,
+   "price_total": 1274.5,
    "currency": "GBP",
-   "nights": 6,
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 1.74,
+   "sample": true,
+   "price_night": 254.9,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+H%2C+Clerkenwell%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+H%2C+Clerkenwell+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-25",
+   "name": "Sample hotel Z, South Bank",
+   "kind": "hotel",
+   "stars": 3.0,
+   "rating": 7.7,
+   "reviews": 1795,
+   "address": "South Bank, London",
+   "lat": 51.5023712920566,
+   "lon": -0.1130075268252165,
+   "photo": null,
+   "price_total": 1161.36,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Breakfast included",
+   "breakfast": true,
+   "refundable": true,
+   "distance_km": 1.09,
+   "sample": true,
+   "price_night": 232.27,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+Z%2C+South+Bank%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+Z%2C+South+Bank+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-2",
+   "name": "Sample hotel C, Camden",
+   "kind": "hotel",
+   "stars": 4.0,
+   "rating": 8.0,
+   "reviews": 1797,
+   "address": "Camden, London",
+   "lat": 51.5401137897094,
+   "lon": -0.1387431808903489,
+   "photo": null,
+   "price_total": 1206.51,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Breakfast included",
+   "breakfast": true,
+   "refundable": false,
+   "distance_km": 3.7,
+   "sample": true,
+   "price_night": 241.3,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+C%2C+Camden%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+C%2C+Camden+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-11",
+   "name": "Sample apartment L, Camden",
+   "kind": "apartment",
+   "stars": null,
+   "rating": 8.2,
+   "reviews": 810,
+   "address": "Camden, London",
+   "lat": 51.53757059519508,
+   "lon": -0.13704886154439955,
+   "photo": null,
+   "price_total": 1355.98,
+   "currency": "GBP",
+   "nights": 5,
    "room": "Double room",
    "board": "Room only",
    "breakfast": false,
    "refundable": false,
-   "distance_km": 3.74,
+   "distance_km": 3.39,
    "sample": true,
-   "price_night": 247.05,
+   "price_night": 271.2,
    "links": [
     {
      "name": "Booking.com",
-     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+I%2C+Camden%2C+London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+L%2C+Camden%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
     },
     {
      "name": "The place's own website",
-     "url": "https://www.google.com/search?q=Sample+hotel+I%2C+Camden+London+official+site"
+     "url": "https://www.google.com/search?q=Sample+apartment+L%2C+Camden+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-10",
+   "name": "Sample apartment K, Bloomsbury",
+   "kind": "apartment",
+   "stars": null,
+   "rating": 7.8,
+   "reviews": 1292,
+   "address": "Bloomsbury, London",
+   "lat": 51.5219838198889,
+   "lon": -0.12543602625040975,
+   "photo": null,
+   "price_total": 1287.44,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 1.58,
+   "sample": true,
+   "price_night": 257.49,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+K%2C+Bloomsbury%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+apartment+K%2C+Bloomsbury+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-0",
+   "name": "Sample apartment A, Paddington",
+   "kind": "apartment",
+   "stars": null,
+   "rating": 8.3,
+   "reviews": 2260,
+   "address": "Paddington, London",
+   "lat": 51.515809760206544,
+   "lon": -0.17350385970362384,
+   "photo": null,
+   "price_total": 1438.29,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 3.4,
+   "sample": true,
+   "price_night": 287.66,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+apartment+A%2C+Paddington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+apartment+A%2C+Paddington+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-17",
+   "name": "Sample guest house R, Camden",
+   "kind": "guest house",
+   "stars": null,
+   "rating": 8.0,
+   "reviews": 1605,
+   "address": "Camden, London",
+   "lat": 51.53513418515478,
+   "lon": -0.1405855410179575,
+   "photo": null,
+   "price_total": 1297.74,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": true,
+   "distance_km": 3.2,
+   "sample": true,
+   "price_night": 259.55,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+guest+house+R%2C+Camden%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+guest+house+R%2C+Camden+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-12",
+   "name": "Sample hotel M, Westminster",
+   "kind": "hotel",
+   "stars": 5.0,
+   "rating": 8.8,
+   "reviews": 1295,
+   "address": "Westminster, London",
+   "lat": 51.498865181505764,
+   "lon": -0.13931062199795943,
+   "photo": null,
+   "price_total": 1872.36,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Breakfast included",
+   "breakfast": true,
+   "refundable": true,
+   "distance_km": 1.35,
+   "sample": true,
+   "price_night": 374.47,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+hotel+M%2C+Westminster%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+hotel+M%2C+Westminster+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-20",
+   "name": "Sample guest house U, Kensington",
+   "kind": "guest house",
+   "stars": null,
+   "rating": 7.9,
+   "reviews": 685,
+   "address": "Kensington, London",
+   "lat": 51.50135436853983,
+   "lon": -0.19752110364499945,
+   "photo": null,
+   "price_total": 1170.31,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": false,
+   "distance_km": 4.99,
+   "sample": true,
+   "price_night": 234.06,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+guest+house+U%2C+Kensington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+guest+house+U%2C+Kensington+London+official+site"
+    }
+   ],
+   "tags": []
+  },
+  {
+   "id": "sample-3",
+   "name": "Sample guest house D, Kensington",
+   "kind": "guest house",
+   "stars": null,
+   "rating": 7.9,
+   "reviews": 289,
+   "address": "Kensington, London",
+   "lat": 51.501131753452704,
+   "lon": -0.19008929302174332,
+   "photo": null,
+   "price_total": 1319.05,
+   "currency": "GBP",
+   "nights": 5,
+   "room": "Double room",
+   "board": "Room only",
+   "breakfast": false,
+   "refundable": false,
+   "distance_km": 4.49,
+   "sample": true,
+   "price_night": 263.81,
+   "links": [
+    {
+     "name": "Booking.com",
+     "url": "https://www.booking.com/searchresults.html?ss=Sample+guest+house+D%2C+Kensington%2C+London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+    },
+    {
+     "name": "The place's own website",
+     "url": "https://www.google.com/search?q=Sample+guest+house+D%2C+Kensington+London+official+site"
     }
    ],
    "tags": []
@@ -902,21 +869,17 @@
  ],
  "facets": {
   "price_night": [
-   139.32,
-   416.2
+   194.31,
+   381.6
   ],
   "stars": [
    {
-    "stars": 2.0,
-    "count": 4
-   },
-   {
     "stars": 3.0,
-    "count": 3
+    "count": 8
    },
    {
     "stars": 4.0,
-    "count": 6
+    "count": 2
    },
    {
     "stars": 5.0,
@@ -930,46 +893,46 @@
    },
    {
     "kind": "apartment",
-    "count": 9
-   },
-   {
-    "kind": "hostel",
-    "count": 5
+    "count": 7
    },
    {
     "kind": "guest house",
-    "count": 1
+    "count": 5
+   },
+   {
+    "kind": "hostel",
+    "count": 2
    }
   ],
-  "max_km": 7.5
+  "max_km": 8.7
  },
  "tabs": {
   "recommended": {
-   "price_night": 219.73,
-   "rating": 9.0,
-   "distance_km": 0.37
+   "price_night": 229.22,
+   "rating": 8.8,
+   "distance_km": 0.7
   },
   "price": {
-   "price_night": 139.32,
-   "rating": 7.2,
-   "distance_km": 0.75
+   "price_night": 194.31,
+   "rating": 7.5,
+   "distance_km": 0.48
   },
   "rating": {
-   "price_night": 340.9,
+   "price_night": 342.02,
    "rating": 9.8,
-   "distance_km": 3.98
+   "distance_km": 8.7
   }
  },
  "links": [
   {
    "name": "Booking.com",
-   "url": "https://www.booking.com/searchresults.html?ss=London&checkin=2026-10-20&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
+   "url": "https://www.booking.com/searchresults.html?ss=London&checkin=2026-10-21&checkout=2026-10-26&group_adults=1&no_rooms=1&group_children=0&selected_currency=GBP"
   },
   {
    "name": "Airbnb",
-   "url": "https://www.airbnb.co.uk/s/London/homes?checkin=2026-10-20&checkout=2026-10-26&adults=1"
+   "url": "https://www.airbnb.co.uk/s/London/homes?checkin=2026-10-21&checkout=2026-10-26&adults=1"
   }
  ],
  "centre": "Charing Cross",
- "searched_at": "2026-10-06T18:03:41.482687+00:00"
+ "searched_at": "2026-10-06T18:17:06.814803+00:00"
 }

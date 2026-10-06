@@ -107,7 +107,7 @@ SCREENS = [
     ("tripday", "25", "Trips (Abram's ODYS Trips design)", "The first day",
      "D122: from the airport (\"Heathrow → Paddington\", with Directions), one place on the way when travelling light, the stay, then the day. No moment twice in a trip."),
     ("tripdaylast", "25a", "Trips (Abram's ODYS Trips design)", "The last day",
-     "D122: the day, back to the stay for the bags, then \"Leave for Gatwick by 15:20\" with Directions in Apple Maps."),
+     "D122: the day, back to the stay for the bags, then \"Leave for Heathrow by 17:20\" with Directions in Apple Maps."),
     ("flights", "26", "Trips (Abram's ODYS Trips design)", "Flights",
      "The search pinned at the top; Best, Cheapest and Fastest with their tops; one-tap chips. Sample prices until the keys are in."),
     ("flightfilters", "27", "Trips (Abram's ODYS Trips design)", "Flight filters",

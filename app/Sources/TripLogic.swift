@@ -318,8 +318,8 @@ extension AppModel {
         t.daysFrom = days.start
         if let flights: FlightResults = try? BrainClient.bundled("demo_flights"), let f = flights.results.first {
             t.flight = TripChoice(kind: "flight", title: "\(f.airline) · \(f.outbound.departTime) → \(f.outbound.arriveTime)",
-                                  provider: "Skyscanner", price: f.price, booked: false, arriveTime: "08:30",
-                                  leaveTime: "18:20", arrivePlace: "LHR", leavePlace: "LGW")
+                                  provider: "Skyscanner", price: f.price, booked: false, arriveTime: f.outbound.arriveTime,
+                                  leaveTime: f.inbound?.departTime, arrivePlace: "LHR", leavePlace: "LHR")
         }
         if let stays: StayResults = try? BrainClient.bundled("demo_stays"), let s = stays.results.first {
             t.stay = TripChoice(kind: "stay", title: s.name, provider: "Booking.com", price: s.priceTotal, booked: true,
