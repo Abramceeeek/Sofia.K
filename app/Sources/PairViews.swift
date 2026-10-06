@@ -234,7 +234,7 @@ struct PairCompare: View {
                 chosen = "2"
                 fit1 = 3
                 fit2 = 4
-                DispatchQueue.main.async { proxy.scrollTo("questions", anchor: .top) }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { proxy.scrollTo("questions", anchor: .top) }
             }
         }
         .statusBarShade()

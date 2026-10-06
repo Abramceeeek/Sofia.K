@@ -567,14 +567,17 @@ struct DateStrip: View {
     }
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(Array(days.enumerated()), id: \.offset) { i, day in
-                    dayButton(day, first: i == 0)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(days.enumerated()), id: \.offset) { i, day in
+                        dayButton(day, first: i == 0).id(Dates.isoDay.string(from: day))
+                    }
                 }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 4)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 4)
+            .onAppear { proxy.scrollTo(trip.start, anchor: .leading) }   // the first day in view, not today
         }
     }
 

@@ -14,9 +14,10 @@ struct TripPlace: Codable, Hashable, Identifiable {
     let country: String
     var id: String { code }
 
-    /// "Tashkent (TAS)", or "London, all airports (LON)" for a city code.
+    /// "Tashkent (TAS)", "London Heathrow (LHR)", or "London, all airports (LON)" for a city code.
     var label: String {
-        name.hasPrefix("All ") ? "\(city), all airports (\(code))" : (name == city ? "\(city) (\(code))" : "\(city) \(name) (\(code))")
+        if name.hasPrefix("All ") { return "\(city), all airports (\(code))" }
+        return name.hasPrefix(city) ? "\(city) (\(code))" : "\(city) \(name) (\(code))"
     }
 }
 
@@ -366,6 +367,6 @@ extension Dates {
 }
 
 extension Money {
-    /// £398, rounded to the pound for prices that aren't ours to promise.
-    static func whole(_ gbp: Double) -> String { "£\(Int(gbp.rounded()))" }
+    /// £398, or £1,318: rounded to the pound for prices that aren't ours to promise.
+    static func whole(_ gbp: Double) -> String { "£" + Int(gbp.rounded()).formatted(.number.grouping(.automatic)) }
 }

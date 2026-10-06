@@ -889,7 +889,7 @@ struct StayCard: View {
                 .overlay(alignment: .topLeading) {
                     if let tags = stay.tags, !tags.isEmpty { pill(tags.joined(separator: " · "), Theme.accent) }
                 }
-                .overlay(alignment: .topTrailing) { pill(stay.kind, Theme.ink) }
+                .overlay(alignment: .topTrailing) { pill(stay.kind.capitalizedFirst, Theme.ink) }
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .top, spacing: 10) {
                     Text(stay.name)
@@ -939,11 +939,16 @@ struct StayCard: View {
             .padding(12)
     }
 
+    /// The first part of the address ("Covent Garden").
+    static func area(_ stay: StayResult) -> String {
+        stay.address.split(separator: ",").first.map(String.init) ?? stay.address
+    }
+
     /// "1 Strand · 0.3 km from Charing Cross"
     static func where_(_ stay: StayResult, _ centre: String) -> String {
-        let area = stay.address.split(separator: ",").first.map(String.init) ?? stay.address
+        let place = Self.area(stay)
         let km = stay.distanceKm.map { String(format: "%.1f km from %@", $0, centre) }
-        return [area.isEmpty ? nil : area, km].compactMap { $0 }.joined(separator: " · ")
+        return [place.isEmpty ? nil : place, km].compactMap { $0 }.joined(separator: " · ")
     }
 
     static func perks(_ stay: StayResult) -> String {
@@ -983,6 +988,7 @@ struct StayMap: View {
             }
         }
         .mapStyle(.standard(pointsOfInterest: .excludingAll))
+        .annotationTitles(.hidden)              // the prices alone; names would crowd the map
         .accessibilityLabel("Map of \(stays.count) places to stay")
     }
 }
@@ -1003,7 +1009,7 @@ struct StayDetailView: View {
                     .clipped()
                     .overlay(alignment: .bottomLeading) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("\(stay.kind) · \(StayCard.where_(stay, results?.centre ?? "the centre"))")
+                            Text([stay.kind.capitalizedFirst, StayCard.area(stay)].filter { !$0.isEmpty }.joined(separator: " · "))
                                 .font(.subheadline)
                                 .foregroundStyle(Theme.amberDeep)
                             Text(stay.name)
@@ -1404,7 +1410,7 @@ struct StayFilterSheet: View {
                     FilterTitle(text: "Type of place")
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
                         ForEach(kinds, id: \.kind) { k in
-                            OptionTile(label: k.kind, sub: "\(k.count) place\(k.count == 1 ? "" : "s")",
+                            OptionTile(label: k.kind.capitalizedFirst, sub: "\(k.count) place\(k.count == 1 ? "" : "s")",
                                        on: f.kinds.contains(k.kind)) {
                                 if let i = f.kinds.firstIndex(of: k.kind) { book.stayFilters.kinds.remove(at: i) }
                                 else { book.stayFilters.kinds.append(k.kind) }
