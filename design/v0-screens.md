@@ -110,7 +110,7 @@ From Abram's Google Stitch explorations, applied as a **theme on standard SwiftU
 | 13 | **Help & safety** (13a, 13b just sent, 13c a reply) | 1 | **D119: the emergency card is the one red thing (Call 999); the second card says a real person replies within a few hours; "Your data" at the foot.** **D118: the form also asks "Phone or email, so we can reply (optional)", used only to reply and deleted once sorted (30 days at most); replies show under the message, and "Help" on the plan gets a dot. It says who replies: Abram, or whoever is covering for him.** **Emergency:** "call 999 now", with a red Call 999 button. **Not an emergency:** "I feel unsafe / something's wrong" leads to an optional message and "Tell a person"; a person replies within a few hours, and the Emergency section stays on screen. An email address as text. **Never promise a faster reply** |
 | 14 | **Your data** (14a, 14b delete) | 1 | **D118: lists Help & safety messages; a "Rating reminders" switch.** What we store, where and for how long, "About this test", the privacy notice. **Delete my data**: type DELETE to confirm. The version number |
 
-## F. Build 2 (not built yet)
+## F. Build 2 (built 6 Oct; the screenshots are numbered 15–18 on the review page)
 
 | # | Screen | Build | What's on it |
 |---|---|---|---|
@@ -122,6 +122,17 @@ From Abram's Google Stitch explorations, applied as a **theme on standard SwiftU
 | 20 | **Before the notification permission** | 2 | "We'll ask for one tap after each stop." **Allow** and **Not now** carry equal weight |
 | 21 | **Bring a friend** | 2 | The share sheet with a referral link; after a stop with a shot card, "Got a shot you like? Share it." We never ask for the photo |
 | 22 | **States** | 1–2 | Loading ("Waking up the planner"), empty and errors ("Couldn't reach us. Your plan is saved on this phone.") |
+
+## G. Trips (D120, D121: Abram's "ODYS Trips" design, built 6 Oct; review page 19–33)
+
+| # | Screen | What's on it |
+|---|---|---|
+| 19 | **Trip tab home** | "Where to next?", Plan a trip, your day, your trips; the tab bar (Trip, Book, You) |
+| 20–23 | **Plan a trip** | Where (London ready; UK cities next; Europe later), how long (one day to two weeks, or custom) with the date strip, getting there (the airport from the town or city they gave; "I don't need a flight"; who's going), how it should feel (one or two) |
+| 24–25 | **The trip and a day** | The checklist (getting there, where you'll stay, your days) with a coloured status each and the running total; a day's stops and "Make this my day" |
+| 26–28b | **Flights** | The pinned search, Best / Cheapest / Fastest with their tops, chips, the filter sheet with "Show N", a flight's legs and bags, where to book, and the hand-off ("You're going to…", "Did you book it?") |
+| 29–32 | **Stays** | List or map, the filter sheet, a place's page with its price and where to book |
+| 33 | **You** | 999, a person, what the app has learned, your data |
 
 ## Also needed
 
