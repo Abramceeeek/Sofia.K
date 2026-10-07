@@ -75,6 +75,7 @@ def _sq():
 
 
 def test_duffel_offers_become_flights():
+    assert trips.duffel_body(_fq())["data"]["max_connections"] == 2   # 1-stop and 2-stop flights too
     fl = trips.parse_duffel(DUFFEL)
     ba, tk = fl
     assert (ba.airline, ba.price, ba.stops, ba.checked_bags, ba.refundable, ba.changeable) == \

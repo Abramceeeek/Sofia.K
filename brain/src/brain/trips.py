@@ -295,7 +295,9 @@ def duffel_body(q: FlightQuery) -> dict:
     if q.ret:
         slices.append({"origin": q.destination, "destination": q.origin, "departure_date": q.ret.isoformat()})
     passengers = [{"type": "adult"} for _ in range(q.adults)] + [{"age": a} for a in q.children]
-    return {"data": {"slices": slices, "passengers": passengers, "cabin_class": q.cabin}}
+    # max_connections: Duffel's default is 1 (direct and 1-stop only; duffel.com/docs/api/v2/offer-requests, read
+    # 2026-10-07). 2 lets the "2+ stops" filter find something, as on Skyscanner; the person filters them out
+    return {"data": {"slices": slices, "passengers": passengers, "cabin_class": q.cabin, "max_connections": 2}}
 
 
 def search_duffel(q: FlightQuery, token: str, fetch: Fetch) -> list[Flight]:
