@@ -35,6 +35,7 @@ import yaml
 
 DUFFEL_URL = "https://api.duffel.com/air/offer_requests"
 LITEAPI_URL = "https://api.liteapi.travel/v3.0/hotels/rates"
+LITEAPI_LIMIT = 400   # hotels asked for per search (7 Oct: was 150; more, to reach budget chains)
 CACHE_SECONDS = 15 * 60
 LITEAPI_MARKET = "GB"        # LiteAPI's required "guestNationality": a fixed market, never the person's
 SAMPLE_NOTE = "Sample results, made up for testing: not real flights or prices. The links below search for real."
@@ -314,7 +315,7 @@ def liteapi_body(q: StayQuery) -> dict:
     occ[0]["children"] = list(q.children)
     return {"checkin": q.checkin.isoformat(), "checkout": q.checkout.isoformat(), "currency": "GBP",
             "guestNationality": LITEAPI_MARKET, "occupancies": occ, "cityName": q.city, "countryCode": q.country_code,
-            "limit": 150, "timeout": 12, "maxRatesPerHotel": 1, "includeHotelData": True}
+            "limit": LITEAPI_LIMIT, "timeout": 12, "maxRatesPerHotel": 1, "includeHotelData": True}
 
 
 def parse_liteapi(resp: dict, q: StayQuery) -> list[Stay]:
