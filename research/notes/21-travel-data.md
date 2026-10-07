@@ -27,6 +27,28 @@
 - Tiqets opened its Partner API to affiliates on 28 Nov 2025 (self-service tokens); the Booking API needs about 200 orders a month.
 - Ticketmaster's Discovery API: 5,000 calls a day and 5 a second by default (one aggregator says 2 a second).
 
+## Other services like Duffel and LiteAPI (checked 7 Oct)
+
+| Service | Kind | Access | Fit for ODYS now |
+|---|---|---|---|
+| **Duffel** (in use) | Flights: search and book, real fares | Self-serve sign-up | The only self-serve flight booking API in the comparisons found |
+| Amadeus Self-Service | Flights, hotels | **Closed 17 Jul 2026**; only Amadeus Enterprise (accreditation) | No |
+| Kiwi.com Tequila | Flights incl. low-cost | Invitation only | No |
+| Sabre Dev Studio | GDS flights (Bargain Finder Max) | Free developer account and test environment; production needs a commercial agreement and certification | Not before a company and agency set-up |
+| Travelport | GDS flights | Trial request, then sales onboarding | No |
+| **Travelfusion** | 150+ low-cost and scheduled airlines; an approved Ryanair aggregator | Licence agreement and fees before use; bookings from an agency credit account | The way to Ryanair-type airlines, after the company (contract) |
+| Atlas | Low-cost airlines (Ryanair, AJet) for sellers | Contract | Same as Travelfusion |
+| Mystifly | 600+ airlines (its claim) | Sales onboarding, quote-based | No |
+| Ignav | Flight prices and booking links, no ticketing | Free account; per-request pricing | **Data source not stated (UNVERIFIED)**: if it copies other sites, it carries the scraping risk |
+| **LiteAPI** (in use) | Hotels | Self-serve | Keep |
+| Hotelbeds | Hotels | Self-serve evaluation, 50 requests a day; production by contract | Too few requests for testing |
+| RateHawk (ETG) | Hotels, 2.5M+ properties | Contract first; sandbox after; new entrants face more scrutiny | After the company |
+| Agoda | Hotels (Search API for affiliates and metasearch) | Become a partner, then certification | After the company |
+| Expedia Rapid, Booking.com Demand | Hotels | Partner-only, case by case | No |
+| Duffel Stays | Hotels, 1M+ properties (Duffel dashboard, 7 Oct) | "Contact sales" | Ask when going live with Duffel |
+
+**So:** no other self-serve service adds much for the tests. The real gains (Ryanair- and AJet-type airlines through Travelfusion or Atlas; more hotels through RateHawk or Agoda) all need a company and a contract: Stage 3 of `decisions/roadmap.md`.
+
 ## Gaps we'd have to fill ourselves
 
 - **Ryanair and Wizz Air** fares in the app: no route without a contract. The Skyscanner link covers them.
