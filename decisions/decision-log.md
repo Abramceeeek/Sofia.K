@@ -7,6 +7,7 @@ Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log a
 | # | Decision | Replaces | Why |
 |---|---|---|---|
 | m172 | **Duffel (test) and LiteAPI (sandbox) keys are in Render** (Abram, 7 Oct). The live Brain's health check reports `flights: duffel_test`, `stays: liteapi_sandbox`; a throwaway search (deleted after) returned 7 test flights from Tashkent and 144 London hotels with photos. Both stay labelled as test results in the app. **Scraping Skyscanner, Booking.com or Airbnb: advised against** (their terms forbid it; App Review 5.2.2), Abram asked on 7 Oct | — | Next: Duffel's answer on search-only use, then "Go live" (roadmap decision 3) |
+| m173 | **Other flight, hotel and experience sources** (Abram asked, 7 Oct): keep Duffel and LiteAPI for the tests. Live flight results now say some low-cost airlines, such as Ryanair, may be missing (not found on Duffel; Ryanair sells only through its own site and approved partners) and point to Skyscanner. Abram can request easyJet in Duffel's "Sources". Ticketmaster events, Tiqets/Viator ticket prices and Travelpayouts cached fares go to after-9-Nov #54–56 | — | `research/notes/21-travel-data.md`. Claude ~1.5 h (research and the note) |
 
 ## 2026-10-06 — trips, the ODYS Trips design and Build 2
 

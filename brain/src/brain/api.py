@@ -780,7 +780,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _trip_event(s, user, "flights", source, len(found), len(shown), f.sort, used)
         note = {"sample": trips.SAMPLE_NOTE,
                 "duffel_test": "Test results from Duffel's test mode: not real flights or prices. The links below search "
-                               "for real."}.get(source)
+                               "for real.",
+                # 7 Oct: Ryanair sells only on its own site and through approved partners, and isn't confirmed on
+                # Duffel (research/notes/21-travel-data.md), so say so rather than look complete
+                "duffel": "Some low-cost airlines, such as Ryanair, sell only on their own sites and a few partners, so "
+                          "they may be missing here. Skyscanner, below, shows them."}.get(source)
         return {"source": source, "note": note, "total": len(found), "shown": len(shown),
                 "results": [{**trips.flight_out(x), "tags": tags.get(x.id, [])} for x in shown[:60]],
                 "facets": trips.flight_facets(found), "tabs": tabs, "links": links,
