@@ -779,7 +779,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "flights", source, len(found), len(shown), f.sort, used)
         note = {"sample": trips.SAMPLE_NOTE,
-                "duffel_test": "Test results from Duffel's made-up airline: not real flights. The links below search "
+                "duffel_test": "Test results from Duffel's test mode: not real flights or prices. The links below search "
                                "for real."}.get(source)
         return {"source": source, "note": note, "total": len(found), "shown": len(shown),
                 "results": [{**trips.flight_out(x), "tags": tags.get(x.id, [])} for x in shown[:60]],

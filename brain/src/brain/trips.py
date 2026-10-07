@@ -5,8 +5,8 @@ provider's own site with the same search. No affiliate IDs while testing: commis
 
 Where results come from:
 - **flights:** Duffel's offer search (duffel.com/docs/api/v2/offer-requests, read 2026-10-06) when
-  `DUFFEL_ACCESS_TOKEN` is set. A test token returns Duffel's made-up airline only; a live token, after Duffel's account
-  checks, returns real fares;
+  `DUFFEL_ACCESS_TOKEN` is set. A test token returns test offers only (made-up flights, some under real
+  airline names: checked 7 Oct); a live token, after Duffel's account checks, returns real fares;
 - **stays:** LiteAPI's rate search (docs.liteapi.travel/reference/post_hotels-rates, read 2026-10-06) when
   `LITEAPI_KEY` is set. LiteAPI requires a "guest nationality" for its prices: we always send the fixed market `GB` and
   never ask the person (CLAUDE.md: never nationality);
