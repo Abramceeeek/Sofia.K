@@ -120,7 +120,8 @@ def test_links_out_carry_the_same_search():
     assert "origin=TAS" in sky["url"] and "inboundDate=2026-11-27" in sky["url"] and "childrenv2=4%7C9" in sky["url"]
     assert "mediaPartnerId" not in sky["url"]          # no commission while testing (D120)
     assert google["url"].startswith("https://www.google.com/travel/flights?")
-    booking, airbnb = trips.stay_links(_sq(), max_night=150)
+    booking, airbnb, premier, travelodge = trips.stay_links(_sq(), max_night=150)
+    assert premier["name"] == "Premier Inn" and travelodge["note"].startswith("Sells mostly on its own site")
     assert "checkin=2026-11-20" in booking["url"] and "group_adults=2" in booking["url"]
     assert airbnb["url"].startswith("https://www.airbnb.co.uk/s/London/homes?") and "price_max=150" in airbnb["url"]
     one = trips.stay_links(_sq(), stay=trips.parse_liteapi(LITEAPI, _sq())[0])

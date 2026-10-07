@@ -414,7 +414,10 @@ struct FlightList: View {
                         book.flightFilters = book.flightFilters.cleared()
                     }
                 }
-                if r.source == "unavailable" { LinksOut(links: r.links) }
+                if !r.links.isEmpty {   // 7 Oct: always, for what isn't in these results (Ryanair, Premier Inn…)
+                    SectionLabel(text: "Also search").padding(.top, 8)
+                    LinksOut(links: r.links)
+                }
             } else if let error = book.error {
                 ErrorCard(text: error) { Task { await model.search() } }
             } else {
@@ -753,7 +756,7 @@ struct LinksOut: View {
     var body: some View {
         VStack(spacing: 8) {
             ForEach(links, id: \.name) { link in
-                ProviderRow(name: link.name, note: "Search there with the same dates") {
+                ProviderRow(name: link.name, note: link.note ?? "Search there with the same dates") {
                     if let url = URL(string: link.url) { openURL(url) }
                 }
             }
@@ -827,7 +830,10 @@ struct StayList: View {
                         book.stayFilters = book.stayFilters.cleared()
                     }
                 }
-                if r.source == "unavailable" { LinksOut(links: r.links) }
+                if !r.links.isEmpty {   // 7 Oct: always, for what isn't in these results (Ryanair, Premier Inn…)
+                    SectionLabel(text: "Also search").padding(.top, 8)
+                    LinksOut(links: r.links)
+                }
             } else if let error = book.error {
                 ErrorCard(text: error) { Task { await model.search() } }
             } else {

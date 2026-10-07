@@ -24,6 +24,7 @@ struct TripPlace: Codable, Hashable, Identifiable {
 struct TripLink: Codable, Hashable {
     let name: String
     let url: String
+    var note: String? = nil                // "Sells mostly on its own site, so it isn't in these results"
 }
 
 // ---- flights (POST /v1/trips/flights) ---------------------------------------------------------------------------

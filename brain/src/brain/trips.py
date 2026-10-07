@@ -660,6 +660,12 @@ def flight_links(q: FlightQuery) -> list[dict]:
              "url": "https://www.google.com/travel/flights?" + urlencode({"q": words, "hl": "en-GB", "curr": "GBP"})}]
 
 
+# Budget chains that sell mostly on their own sites (Premier Inn: ~94-97% direct; Travelodge: its cheapest rates
+# only direct; research/notes/21-travel-data.md). Links to their home pages: their search links aren't documented.
+UK_DIRECT_CHAINS = (("Premier Inn", "https://www.premierinn.com/gb/en/home.html"),
+                    ("Travelodge", "https://www.travelodge.co.uk/"))
+
+
 def stay_links(q: StayQuery, stay: Stay | None = None, max_night: float | None = None) -> list[dict]:
     """Booking.com's and Airbnb's search pages with the same dates and guests; for one place, its name on Booking.com
     and a search for its own website (hotels' own sites have no shared search to link to)."""
@@ -675,6 +681,9 @@ def stay_links(q: StayQuery, stay: Stay | None = None, max_night: float | None =
         if max_night:
             air.append(("price_max", int(max_night)))
         links.append({"name": "Airbnb", "url": f"https://www.airbnb.co.uk/s/{quote(q.city)}/homes?" + urlencode(air)})
+        if q.country_code == "GB":   # 7 Oct: they sell mostly on their own sites, so LiteAPI doesn't carry them
+            links += [{"name": name, "url": url, "note": "Sells mostly on its own site, so it isn't in these results"}
+                      for name, url in UK_DIRECT_CHAINS]
     else:
         links.append({"name": "The place's own website",
                       "url": "https://www.google.com/search?" + urlencode({"q": f"{stay.name} {q.city} official site"})})
