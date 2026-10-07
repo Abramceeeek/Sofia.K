@@ -35,7 +35,8 @@ import yaml
 
 DUFFEL_URL = "https://api.duffel.com/air/offer_requests"
 LITEAPI_URL = "https://api.liteapi.travel/v3.0/hotels/rates"
-LITEAPI_LIMIT = 250   # hotels asked for per search (7 Oct: 150 missed most budget chains; 400 took 13-16 s)
+LITEAPI_LIMIT = 400   # hotels per search. 7 Oct, live sandbox: 400 found 365-386 London hotels (ibis, easyHotel, Point A…) in
+                      # 13-16 s; 250 with an 8 s timeout took 11-14 s and once returned 49. Repeat searches come from the cache
 CACHE_SECONDS = 15 * 60
 LITEAPI_MARKET = "GB"        # LiteAPI's required "guestNationality": a fixed market, never the person's
 SAMPLE_NOTE = "Sample results, made up for testing: not real flights or prices. The links below search for real."
@@ -315,7 +316,7 @@ def liteapi_body(q: StayQuery) -> dict:
     occ[0]["children"] = list(q.children)
     return {"checkin": q.checkin.isoformat(), "checkout": q.checkout.isoformat(), "currency": "GBP",
             "guestNationality": LITEAPI_MARKET, "occupancies": occ, "cityName": q.city, "countryCode": q.country_code,
-            "limit": LITEAPI_LIMIT, "timeout": 8, "maxRatesPerHotel": 1, "includeHotelData": True}
+            "limit": LITEAPI_LIMIT, "timeout": 12, "maxRatesPerHotel": 1, "includeHotelData": True}
 
 
 def parse_liteapi(resp: dict, q: StayQuery) -> list[Stay]:

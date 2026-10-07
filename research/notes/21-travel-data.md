@@ -17,6 +17,9 @@
 
 ## What the evidence says
 
+- **Checked on the live Brain (7 Oct, LiteAPI sandbox, London):** with 400 hotels per search, ibis (6 branches), easyHotel, Point A, Z Hotel, Holiday Inn Express, Moxy, Zedwell and Best Western come back; **Travelodge and Premier Inn never do**. A fresh search takes 13–16 s (repeats come from the 15-minute cache). Duffel's airline directory has **Turkish Airlines and Pegasus**; **AJet, Uzbekistan Airways, Wizz Air and Ryanair have no page** (404).
+- Premier Inn sells ~94–97% direct (Booking.com was named as its only online agent, 2016–17 sources); Travelodge's cheapest Saver rates are direct only (Dec 2025). AJet's newest NDC connection went live first through Atlas, a B2B aggregator.
+
 - Duffel's own airline pages say "300+ airlines"; a Duffel blog post says 380+ with partner agreements. easyJet is requested from the dashboard. None of the results list Ryanair or Wizz Air on Duffel.
 - Ryanair sells through its own site and an "Approved OTA" programme of named partners and aggregators, each by agreement.
 - Travelpayouts' data API returns cached prices from users' past searches, meant for content pages; partners are asked to cache for 24 h.
