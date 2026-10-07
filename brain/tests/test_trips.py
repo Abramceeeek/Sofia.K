@@ -167,6 +167,7 @@ def test_cache_and_hourly_cap():
 
 
 def test_trip_endpoints_in_sample_mode(client):
+    assert client.get("/v1/health").json() | {"flights": "sample", "stays": "sample"} == client.get("/v1/health").json()
     h, uid = install(client)
     assert client.get("/v1/trips/places?q=tash", headers=h).json()[0]["code"] == "TAS"
     assert client.get("/v1/trips/destinations", headers=h).json()[0]["key"] == "london"

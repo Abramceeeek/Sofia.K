@@ -219,7 +219,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # ---- public -------------------------------------------------------------------
     @app.get("/v1/health")
     def health():
-        return {"ok": True, "population_version": app.state.pop.version}
+        # D120: which flight and stay source is live ("sample", "duffel_test", "liteapi_sandbox"…), so a key put into
+        # Render can be checked without anyone seeing it
+        ts = app.state.trips
+        return {"ok": True, "population_version": app.state.pop.version,
+                "flights": ts.flight_source, "stays": ts.stay_source}
 
     @app.get("/privacy", response_class=HTMLResponse)
     def privacy():
