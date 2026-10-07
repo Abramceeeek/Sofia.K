@@ -316,6 +316,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let feelWord: String?          // D119: "Awe", "Calm", "Lunch": the kind of moment, from the card (same for everyone)
     let reveal: Bool?              // D119: the arrival is the moment, so the way in marks "The reveal"
     let lines: [String]?           // Build 2: the stop as text, in the Test B format (the blind pair shows only these)
+    let bookAhead: String?         // journey audit: a booking the visit needs, from the card's checked source
 
     var id: String { momentId + "@" + arrive }
 
@@ -415,7 +416,7 @@ struct PlanRequest: Codable, Hashable {
     var exclude: [String] = []
 }
 
-struct RatingRequest: Encodable {
+struct RatingRequest: Codable {   // Codable: kept on the phone while there is no signal (journey audit)
     let momentId: String
     let rating: Int
     let planId: Int?

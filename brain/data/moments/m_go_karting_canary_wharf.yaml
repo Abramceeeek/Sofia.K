@@ -37,6 +37,7 @@ best_time:
   company: "Best with friends (GUESS)"
   crowd_window: "Book ahead: places per session are limited (CHECKED)"
   opening_hours: "Mon-Fri 12:00-21:00, Sat 08:30-22:00, Sun 08:30-21:00. Adults 14+, 145 cm+. Official site, read 2026-09-27"
+  book_ahead: "Booking on k1speed.com/uk is advised: places per session are limited"   # CHECKED: official site, read 2026-09-27
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 0, photo_potential: 1}

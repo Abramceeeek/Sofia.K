@@ -734,10 +734,14 @@ struct WhyStep: View {
                 // D117: what we take from it, in their own words
                 ReactionSpace(text: model.why.isEmpty ? nil
                               : "Got it: you want to feel " + model.why.joined(separator: " and ") + ".")
-                PrimaryButton(title: "Continue", disabled: model.why.isEmpty) { model.next() }
+                PrimaryButton(title: "Continue", disabled: model.why.isEmpty) {
+                    model.keepFeelings()             // journey audit: kept even if the app is closed before the end
+                    model.next()
+                }
                 // D118: opting out is a quiet link, not the loudest button on the screen
                 QuietButton("None of these") {
                     model.why = []
+                    model.keepFeelings()
                     model.next()
                 }
                 .frame(maxWidth: .infinity)

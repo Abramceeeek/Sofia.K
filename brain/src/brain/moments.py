@@ -61,6 +61,9 @@ class BestTime(BaseModel):
     company: str | None = None
     crowd_window: str | None = None
     opening_hours: str | None = None
+    # Journey audit (7 Oct): a booking the visit needs, said to the person on the stop ("Book a timed ticket…").
+    # Only from the card's checked source; empty means none is needed or none was found.
+    book_ahead: str | None = None
     # Days the card can be planned ("mon".."sun"); empty means every day. Keeps weekday-only
     # museums out of weekend plans. Different hours on different days still wait (after-9-nov #7).
     days: list[str] = Field(default_factory=list)

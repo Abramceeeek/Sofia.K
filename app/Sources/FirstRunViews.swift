@@ -271,7 +271,7 @@ struct ConsentView: View {
 
     private let summary = [
         ("person", "A research test run by Abram, one person in London. Nothing is sold."),
-        ("list.bullet", "A few quick questions and some London places, then your day plan."),
+        ("list.bullet", "A few quick questions and some places, then your plans: a day out, or a whole trip."),
         ("lock", "We keep your answers to plan your days and to test the idea. We don't ask for your name, email or phone number."),
         ("hand.raised", "Skip any question and stop any time. \"Your data\" → Delete my data removes everything."),
     ]

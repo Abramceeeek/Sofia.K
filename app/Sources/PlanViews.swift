@@ -1019,6 +1019,7 @@ struct MomentCardBody: View {
             DetailRows(rows: [
                 ("Best time and light", bestText),
                 ("What happens", stop.what),
+                ("Book ahead", stop.bookAhead ?? ""),   // journey audit: Horizon 22, the Transport Museum, karting
                 ("Queue", (stop.queueMin ?? 0) > 0 ? "Allow about \(Int(stop.queueMin ?? 0)) min to queue." : ""),
                 ("Cost", stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst),
                 ("If it rains", stop.rainSwap),
@@ -1159,7 +1160,9 @@ struct StopView: View {
                             PrimaryButton(title: "Been here? How did it feel?") { showRating = true }
                         }
                         if let pin = stop.pin {
-                            let maps = URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=w")!
+                            // journey audit: by Tube or bus when the plan's leg is, else walking
+                            let mode = stop.travelMode == "transit" ? "r" : "w"
+                            let maps = URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=\(mode)")!
                             if canRate {
                                 SecondaryButton(title: "Directions in Apple Maps") { openURL(maps) }
                             } else {

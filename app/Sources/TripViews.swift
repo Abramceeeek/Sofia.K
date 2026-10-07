@@ -164,8 +164,11 @@ struct StatusLabel: View {
     let fill: Color
     let color: Color
 
-    static func of(_ choice: TripChoice?) -> StatusLabel {
+    static func of(_ choice: TripChoice?, fits: Bool = true) -> StatusLabel {
         guard let choice else { return StatusLabel(text: "To do", fill: Theme.surfaceHigh, color: Theme.inkSoft) }
+        if !fits {   // journey audit: the trip's dates changed after this was chosen
+            return StatusLabel(text: "For other dates", fill: Color(hex: 0x3A1F1C), color: Color(hex: 0xF0A090))
+        }
         return choice.booked ? StatusLabel(text: "Booked", fill: Color(hex: 0x1F3A2A), color: Color(hex: 0x9BE0B0))
                              : StatusLabel(text: "Saved, not booked", fill: Color(hex: 0x3A2F1C), color: Theme.accent)
     }
@@ -205,6 +208,9 @@ struct TripHome: View {
             VStack(alignment: .leading, spacing: 22) {
                 TopBar(eyebrow: AppModel.greeting, onHelp: onHelp, onData: onData)
                 PageTitle(text: "Where to next?", font: Theme.display).settle(0)
+                if let today = model.todayInTrip {   // journey audit: during a trip, today comes first
+                    TodayInTripCard(trip: today.trip, index: today.index, day: today.day).settle(1)
+                }
                 PlanTripCard { model.showCreate = true }.settle(1)
                 if !model.pairDone, !model.isVisitor, !model.client.demo {
                     PairInviteRow { model.showPair = true }.settle(2)
@@ -233,6 +239,39 @@ struct TripHome: View {
             .padding(.bottom, 32)
         }
         .background(Theme.background)
+    }
+}
+
+/// Journey audit (7 Oct): "Today · Day 3 of your London trip", one tap to make it your day (and plan it first if it's
+/// one of the later days planned as you go). Nothing to find in the trip each morning.
+struct TodayInTripCard: View {
+    @Environment(AppModel.self) private var model
+    let trip: Trip
+    let index: Int
+    let day: TripDayOut?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Eyebrow("Today · Day \(index + 1) of \(trip.dayCount)")
+            Text(day?.title ?? "Your \(trip.city) trip")
+                .font(Theme.serif(24, relativeTo: .title2))
+                .foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            if let first = day?.plan?.stops.first {
+                Text("First: \(first.title), around \(first.arrive)")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            PrimaryButton(title: model.busy ? "Planning…" : (day == nil ? "Plan today" : "Start today"),
+                          disabled: model.busy) {
+                Task {
+                    await model.goToTripDay(trip.id, index)
+                    if model.plan?.date == Dates.isoDay.string(from: .now) { model.path.append(TripDest.day) }
+                }
+            }
+        }
+        .surfaceCard(padding: 20)
     }
 }
 
@@ -958,13 +997,14 @@ struct TripOverview: View {
             PageTitle(text: trip.city, font: Theme.display)
             Text(trip.feelLine).font(.subheadline).foregroundStyle(Theme.inkSoft)
             if trip.needFlight {
-                TripStepCard(label: "1 · Getting there", status: .of(trip.flight),
+                TripStepCard(label: "1 · Getting there", status: .of(trip.flight, fits: trip.fits(trip.flight)),
                              title: trip.flight?.title ?? "Choose your flight", sub: flightSub(trip)) {
                     openBook(trip, .flights)
                 }
             }
             if trip.needStay {
-                TripStepCard(label: "\(trip.needFlight ? 2 : 1) · Where you'll stay", status: .of(trip.stay),
+                TripStepCard(label: "\(trip.needFlight ? 2 : 1) · Where you'll stay",
+                             status: .of(trip.stay, fits: trip.fits(trip.stay)),
                              title: trip.stay?.title ?? "Choose where to stay", sub: staySub(trip)) {
                     openBook(trip, .stays)
                 }
@@ -1010,6 +1050,9 @@ struct TripOverview: View {
     }
 
     private func flightSub(_ trip: Trip) -> String {
+        if let f = trip.flight, !trip.fits(f) {
+            return "Chosen for other dates: check it on \(f.provider), or choose again"
+        }
         if let f = trip.flight { return "\(f.provider) · \(Money.whole(f.price))" }
         guard let origin = trip.origin else { return "Choose where you're flying from" }
         if model.book.resultsFor == trip.id, let r = model.book.flights, let low = r.facets.price?.first {
@@ -1019,6 +1062,9 @@ struct TripOverview: View {
     }
 
     private func staySub(_ trip: Trip) -> String {
+        if let s = trip.stay, !trip.fits(s) {
+            return "Chosen for other dates: check it on \(s.provider), or choose again"
+        }
         if let s = trip.stay { return "\(s.provider) · \(Money.whole(s.price)) for \(trip.lengthLabel)" }
         if model.book.resultsFor == trip.id, let r = model.book.stays, let low = r.facets.priceNight?.first {
             return "From \(Money.whole(low)) a night · \(r.total) places"
@@ -1126,7 +1172,9 @@ struct TripTotal: View {
     private var rows: [(String, String, Double?)] {
         var out: [(String, String, Double?)] = []
         if trip.needFlight {
-            if let f = trip.flight {
+            if let f = trip.flight, !trip.fits(f) {   // journey audit: chosen for other dates, so not counted
+                out.append(("Flight", "for other dates", nil))
+            } else if let f = trip.flight {
                 out.append(("Flight", Money.whole(f.price), f.price))
             } else if let low = flights?.facets.price?.first {
                 out.append(("Flight", "from \(Money.whole(low))", low))
@@ -1135,7 +1183,9 @@ struct TripTotal: View {
             }
         }
         if trip.needStay {
-            if let s = trip.stay {
+            if let s = trip.stay, !trip.fits(s) {
+                out.append(("Stay · \(trip.lengthLabel)", "for other dates", nil))
+            } else if let s = trip.stay {
                 out.append(("Stay · \(trip.lengthLabel)", Money.whole(s.price), s.price))
             } else if let low = stays?.facets.priceNight?.first {
                 let total = low * Double(trip.nights)

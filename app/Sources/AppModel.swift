@@ -108,8 +108,11 @@ final class AppModel {
     var reactions: [Int: String] = [:]
     var choices: [Int: String] = [:]
     var profile = Profile()
-    var rated: Set<String> = []            // moment ids rated in this plan
+    var rated: Set<String> = []            // moment ids rated in this plan (kept per plan on the phone)
     var myRatings: [String: Int] = [:]     // their own 1–5, for the share card (D114)
+    /// Journey audit (7 Oct): ratings made without signal (on the Tube), kept on the phone and sent when it's back.
+    var pendingRatings: [RatingRequest] = []
+    var lastRatingQueued = false           // the last rating is waiting for signal ("It'll send when you're back online")
     var improved = UserDefaults.standard.bool(forKey: "improved")
     var morePlacesDone = UserDefaults.standard.bool(forKey: "morePlacesDone")   // D112: the 4 later places
     var moreTasksDone = UserDefaults.standard.bool(forKey: "moreTasksDone")     // and the 5 later tasks
@@ -152,6 +155,8 @@ final class AppModel {
             step = Step(rawValue: UserDefaults.standard.integer(forKey: "onboardingStep")) ?? .based
             plan = AppModel.loadCached(Plan.self, "plan.json")
             lastRequest = AppModel.loadCached(PlanRequest.self, "request.json")
+            (rated, myRatings) = AppModel.savedRatings(for: plan)   // journey audit: rated stops survive a restart
+            pendingRatings = AppModel.loadCached([RatingRequest].self, "pending_ratings.json") ?? []
             trips = AppModel.loadCached([Trip].self, "trips.json") ?? []
             currentTripId = trips.first?.id
             // D116: the answers sent so far, so a later save (e.g. "Improve future plans") doesn't blank them
@@ -159,6 +164,7 @@ final class AppModel {
                 profile = saved
                 why = saved.whyTravel
             }
+            restoreHandoff()                  // journey audit: "Did you book it?" after iOS closed the app
         }
     }
 
@@ -173,6 +179,12 @@ final class AppModel {
         }
         do {
             try await work()
+        } catch BrainError.status(401) where !client.demo {
+            // Journey audit: the Brain no longer knows this phone (its data was deleted there), so nothing else can
+            // work. Start again from Welcome instead of a dead end.
+            clearLocal()
+            client.forget()
+            errorMessage = "This phone's answers are no longer on the planner, so let's start again."
         } catch {
             errorMessage = AppModel.message(for: error)
         }
@@ -368,6 +380,13 @@ final class AppModel {
         }
     }
 
+    /// Journey audit: the feelings are kept on the phone as soon as they're chosen, so closing the app before the
+    /// end of "this or that" (when they're sent) doesn't lose them.
+    func keepFeelings() {
+        profile.whyTravel = why
+        if !client.demo { AppModel.cache(profile, "profile.json") }
+    }
+
     /// The last onboarding step: straight on to the first plan (D110).
     func finishThisOrThat() async {
         profile.whyTravel = why
@@ -483,9 +502,11 @@ final class AppModel {
             self.plan = plan
             self.lastRequest = request
             if !swap {
-                self.rated = []
+                (self.rated, self.myRatings) = AppModel.savedRatings(for: plan)
                 self.swappedIn = nil
                 self.revealPlanId = plan.id   // D117: a new plan appears line by line, once
+            } else {
+                AppModel.saveRatings(self.myRatings, for: plan)   // a swap is a new plan id: the ratings carry over
             }
             AppModel.cache(plan, "plan.json")
             AppModel.cache(request, "request.json")
@@ -494,15 +515,60 @@ final class AppModel {
     }
 
     func rate(_ stop: Stop, rating: Int, wouldBring: Bool?) async {
+        let request = RatingRequest(momentId: stop.momentId, rating: rating, planId: plan?.id, wouldBring: wouldBring)
+        lastRatingQueued = false
         await run {
-            try await self.client.rate(RatingRequest(momentId: stop.momentId, rating: rating, planId: self.plan?.id,
-                                                     wouldBring: wouldBring))
+            do {
+                try await self.client.rate(request)
+            } catch let e as URLError where AppModel.noSignal(e) {
+                // journey audit: no signal (the Tube, a basement): kept on the phone and sent when it's back
+                self.pendingRatings.removeAll { $0.planId == request.planId && $0.momentId == request.momentId }
+                self.pendingRatings.append(request)
+                AppModel.cache(self.pendingRatings, "pending_ratings.json")
+                self.lastRatingQueued = true
+            }
             self.rated.insert(stop.momentId)
             self.myRatings[stop.momentId] = rating
+            if let plan = self.plan { AppModel.saveRatings(self.myRatings, for: plan) }
             self.ratedOnce = true                                  // D118: now "Improve future plans" is offered
             UserDefaults.standard.set(true, forKey: "ratedOnce")
             Reminders.cancel(stop: stop)                           // rated already: no nudge for it
         }
+        if !lastRatingQueued { await sendPendingRatings() }
+    }
+
+    /// Sends the ratings kept while there was no signal; each is removed once the Brain has it (or no longer has its
+    /// plan). Stops at the first one that still can't be sent. Rating a stop twice replaces it on the Brain.
+    func sendPendingRatings() async {
+        guard !client.demo, client.token != nil else { return }
+        while let next = pendingRatings.first {
+            do {
+                try await client.rate(next)
+            } catch BrainError.status(let code) where code == 404 || code == 422 {
+                // the plan or the stop is gone: nothing left to send it to
+            } catch {
+                return
+            }
+            pendingRatings.removeFirst()
+            AppModel.cache(pendingRatings.isEmpty ? nil : pendingRatings, "pending_ratings.json")
+        }
+    }
+
+    /// No connection, or the server didn't answer in time: worth keeping a rating to send later.
+    static func noSignal(_ e: URLError) -> Bool {
+        [.notConnectedToInternet, .networkConnectionLost, .dataNotAllowed, .timedOut, .cannotFindHost,
+         .cannotConnectToHost, .internationalRoamingOff, .callIsActive].contains(e.code)
+    }
+
+    /// Journey audit: which stops of a plan were rated, and how, kept on the phone per plan.
+    static func savedRatings(for plan: Plan?) -> (Set<String>, [String: Int]) {
+        guard let plan, !AppConfig.demo,
+              let saved = UserDefaults.standard.dictionary(forKey: "ratings.\(plan.id)") as? [String: Int] else { return ([], [:]) }
+        return (Set(saved.keys), saved)
+    }
+
+    static func saveRatings(_ ratings: [String: Int], for plan: Plan) {
+        if !AppConfig.demo { UserDefaults.standard.set(ratings, forKey: "ratings.\(plan.id)") }
     }
 
     // ---- D118: rating reminders, asked once, right after a plan is made ---------------------------------------
@@ -609,54 +675,68 @@ final class AppModel {
     func deleteMyData() async {
         await run {
             try await self.client.deleteMe()
-            UserDefaults.standard.removeObject(forKey: "onboardingDone")
-            UserDefaults.standard.removeObject(forKey: "improved")
-            UserDefaults.standard.removeObject(forKey: "morePlacesDone")
-            UserDefaults.standard.removeObject(forKey: "moreTasksDone")
-            AppModel.cache(nil as Plan?, "plan.json")
-            AppModel.cache(nil as PlanRequest?, "request.json")
-            AppModel.cache(nil as Profile?, "profile.json")
-            self.plan = nil
-            self.lastRequest = nil
-            self.improved = false
-            self.morePlacesDone = false
-            self.moreTasksDone = false
-            self.swappedIn = nil
-            self.rated = []
-            self.onboarding = nil
-            self.reactions = [:]
-            self.choices = [:]
-            self.profile = Profile()
-            self.why = []
-            self.bestHour = ""
-            self.bestHourMore = ""
-            self.categoryAnswers = [:]
-            self.learned = nil
-            self.reaction = nil
-            self.saidPatterns = []
-            UserDefaults.standard.removeObject(forKey: "onboardingStep")
-            for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone",
-                        "testerCode"] {
-                UserDefaults.standard.removeObject(forKey: key)
-            }
-            Reminders.clear()
-            self.ratedOnce = false
-            self.remindersOn = false
-            self.reminderAsked = false
-            self.safetyThreads = []
-            self.path = NavigationPath()
-            AppModel.cache(nil as [Trip]?, "trips.json")
-            self.trips = []
-            self.currentTripId = nil
-            self.book.reset()
-            self.surveyDone = false
-            self.pairDone = false
-            self.pair = nil
-            self.tab = .trip
-            self.showNow = false
-            self.step = .based
-            self.route = .welcome
+            self.clearLocal()
         }
+    }
+
+    /// Everything about the person kept on this phone, removed; back to Welcome. Used by "Delete my data" and when
+    /// the Brain no longer knows this phone.
+    func clearLocal() {
+        UserDefaults.standard.removeObject(forKey: "onboardingDone")
+        UserDefaults.standard.removeObject(forKey: "improved")
+        UserDefaults.standard.removeObject(forKey: "morePlacesDone")
+        UserDefaults.standard.removeObject(forKey: "moreTasksDone")
+        AppModel.cache(nil as Plan?, "plan.json")
+        AppModel.cache(nil as PlanRequest?, "request.json")
+        AppModel.cache(nil as Profile?, "profile.json")
+        self.plan = nil
+        self.lastRequest = nil
+        self.improved = false
+        self.morePlacesDone = false
+        self.moreTasksDone = false
+        self.swappedIn = nil
+        self.rated = []
+        self.onboarding = nil
+        self.reactions = [:]
+        self.choices = [:]
+        self.profile = Profile()
+        self.why = []
+        self.bestHour = ""
+        self.bestHourMore = ""
+        self.categoryAnswers = [:]
+        self.learned = nil
+        self.reaction = nil
+        self.saidPatterns = []
+        UserDefaults.standard.removeObject(forKey: "onboardingStep")
+        for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone",
+                    "testerCode"] {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+        Reminders.clear()
+        self.ratedOnce = false
+        self.remindersOn = false
+        self.reminderAsked = false
+        self.safetyThreads = []
+        self.path = NavigationPath()
+        AppModel.cache(nil as [Trip]?, "trips.json")
+        self.trips = []
+        self.currentTripId = nil
+        self.book.reset()
+        self.surveyDone = false
+        self.pairDone = false
+        self.pair = nil
+        self.tab = .trip
+        self.showNow = false
+        self.step = .based
+        self.route = .welcome
+        for key in UserDefaults.standard.dictionaryRepresentation().keys
+        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+        self.myRatings = [:]
+        self.pendingRatings = []
+        AppModel.cache(nil as [RatingRequest]?, "pending_ratings.json")
+        AppModel.cache(nil as SavedHandoff?, "handoff.json")
     }
 
     // ---- the current plan and its request stay on the phone ("Your plan is saved on this phone") -------

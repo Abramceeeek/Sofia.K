@@ -47,7 +47,17 @@ struct NowView: View {
                     Spacer(minLength: 12)
                     BreathingArch().frame(maxWidth: .infinity)
                     Spacer(minLength: 12)
-                    PrimaryButton(title: "See the whole day") { dismiss() }
+                    if let next = model.nextTripDay {   // journey audit: a trip goes on to its next day
+                        PrimaryButton(title: model.busy ? "Planning…" : "Tomorrow: Day \(next.index + 1)",
+                                      disabled: model.busy) {
+                            Task {
+                                await model.goToTripDay(next.trip.id, next.index)
+                                dismiss()
+                            }
+                        }
+                    } else {
+                        PrimaryButton(title: "See the whole day") { dismiss() }
+                    }
                 }
                 HStack {
                     QuietButton("See the whole day") { dismiss() }
@@ -68,10 +78,10 @@ struct NowView: View {
         .sheet(isPresented: $showSafety) { SafetyView() }
     }
 
-    /// Rated stops, lunch slots and stops whose rating hasn't opened yet simply move on.
+    /// "I'm done here" says the visit is over, so an unrated stop asks for its rating whatever the planned time
+    /// (journey audit: people ahead of the plan lost their ratings). Rated stops and lunch slots simply move on.
     private func done(_ stop: Stop) {
-        let opens = stop.ratingOpens(on: model.plan?.date)
-        if stop.rateable, !model.rated.contains(stop.momentId), opens == nil || opens! <= .now {
+        if stop.rateable, !model.rated.contains(stop.momentId) {
             rating = stop
         } else {
             withAnimation(Motion.settle) { model.advanceNow() }
@@ -176,7 +186,15 @@ struct RatingView: View {
                 .foregroundStyle(Theme.inkSoft)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
-            PrimaryButton(title: "Share this moment") { sharing = true }
+            if model.lastRatingQueued {   // journey audit: no signal; kept on the phone
+                Text("Saved on your phone. It'll send when you're back online.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            } else {
+                PrimaryButton(title: "Share this moment") { sharing = true }
+            }
             SecondaryButton(title: onNext == nil ? "Done" : "On to the next stop") {
                 onNext?()
                 dismiss()

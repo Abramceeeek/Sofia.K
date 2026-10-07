@@ -43,7 +43,7 @@ struct BookView: View {
             .presentationDetents([.large])
             .presentationCornerRadius(28)
         }
-        .sheet(item: $book.handoff) { _ in
+        .sheet(item: $book.handoff, onDismiss: { AppModel.cache(nil as SavedHandoff?, "handoff.json") }) { _ in
             HandoffSheet()
                 .presentationDetents([.medium])
                 .presentationCornerRadius(28)

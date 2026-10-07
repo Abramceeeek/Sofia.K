@@ -182,6 +182,12 @@ final class BrainClient {
         try? await send("POST", "v1/me/events", EventRequest(name: name, props: props))
     }
 
+    /// Journey audit: the Brain no longer knows this phone's token, so it's dropped and the person starts again.
+    func forget() {
+        token = nil
+        Keychain.delete()
+    }
+
     func deleteMe() async throws {
         if !demo { _ = try await raw("DELETE", "v1/me", nil) }
         token = nil

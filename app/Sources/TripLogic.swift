@@ -27,6 +27,19 @@ struct Handoff: Identifiable {
     var back = false               // they went, and came back
 }
 
+/// Journey audit (7 Oct): a hand-off the person is on, kept on the phone while they're on the provider's site, so
+/// "Did you book it?" still comes if iOS closes the app meanwhile. Asked once at the next open, then removed.
+struct SavedHandoff: Codable {
+    let provider: String
+    let url: URL
+    let what: String
+    let price: Double?
+    let searchedAt: Date?
+    let choice: TripChoice
+    let tripId: UUID
+    let at: Date
+}
+
 /// The Book tab: the search for the current trip, its filters and results. Filters are searched again on the Brain
 /// (which keeps the provider's results for 15 minutes), a moment after the last change.
 @MainActor
@@ -114,7 +127,7 @@ extension AppModel {
         UserDefaults.standard.set(true, forKey: "pairDone")
         plan = chosen
         lastRequest = nil
-        rated = []
+        (rated, myRatings) = AppModel.savedRatings(for: chosen)
         revealPlanId = chosen.id
         AppModel.cache(chosen, "plan.json")
         AppModel.cache(nil as PlanRequest?, "request.json")
@@ -228,17 +241,59 @@ extension AppModel {
         request.exclude = trip.used.filter { !mine.contains($0) }   // the trip's other days
         plan = dayPlan
         lastRequest = request
-        rated = []
+        (rated, myRatings) = AppModel.savedRatings(for: dayPlan)   // a day used before keeps its ratings
         swappedIn = nil
         AppModel.cache(dayPlan, "plan.json")
         AppModel.cache(request, "request.json")
-        if remindersOn { Task { await Reminders.schedule(dayPlan, rated: []) } }
+        let done = rated
+        if remindersOn { Task { await Reminders.schedule(dayPlan, rated: done) } }
+    }
+
+    // ---- journey audit (7 Oct): the trip carried day by day ---------------------------------------------------
+
+    /// During a trip: today's day (planned or not), unless today's plan is already "your day".
+    var todayInTrip: (trip: Trip, index: Int, day: TripDayOut?)? {
+        let today = Dates.isoDay.string(from: .now)
+        if client.demo || plan?.date == today { return nil }   // the CI screenshots stay the same whatever the date
+        for trip in trips {
+            guard let i = Calendar.london.dateComponents([.day], from: trip.startDate,
+                                                         to: Dates.isoDay.date(from: today) ?? .now).day,
+                  (0..<trip.dayCount).contains(i) else { continue }
+            return (trip, i, trip.days.first { $0.index == i && $0.plan != nil })
+        }
+        return nil
+    }
+
+    /// At the end of a trip's day ("That's the day"): the next day of the same trip, if there is one.
+    var nextTripDay: (trip: Trip, index: Int, day: TripDayOut?)? {
+        guard let plan else { return nil }
+        for trip in trips {
+            guard let current = trip.days.first(where: { $0.plan?.id == plan.id })
+                    ?? (trip.id == currentTripId ? trip.days.first(where: { $0.date == plan.date }) : nil) else { continue }
+            let i = current.index + 1
+            guard i < trip.dayCount else { return nil }
+            return (trip, i, trip.days.first { $0.index == i && $0.plan != nil })
+        }
+        return nil
+    }
+
+    /// "Start today's day" / "Tomorrow: Day 3": plans the day first if it's one of the later, "as you go" days.
+    func goToTripDay(_ tripId: UUID, _ index: Int) async {
+        if findTrip(tripId)?.days.first(where: { $0.index == index })?.plan == nil { await planDay(tripId, index) }
+        guard let trip = findTrip(tripId), let day = trip.days.first(where: { $0.index == index }), day.plan != nil else { return }
+        currentTripId = trip.id
+        useDay(trip, day)
+        Task { await client.event("trip_day_started", ["day": "\(index + 1)", "of": "\(trip.dayCount)"]) }
     }
 
     /// The person said they booked it (or saved it for later) on the provider's site.
     func keep(_ choice: TripChoice, in tripId: UUID) {
         guard var trip = findTrip(tripId) else { return }
+        var choice = choice
+        choice.forStart = trip.start          // journey audit: so a later change of dates is noticed
+        choice.forNights = trip.nights
         if choice.kind == "flight" { trip.flight = choice } else { trip.stay = choice }
+        AppModel.cache(nil as SavedHandoff?, "handoff.json")   // answered: nothing left to ask after a restart
         trip.daysStale = !trip.days.isEmpty
         save(trip)
         Task { await client.event("handoff_answer", ["kind": choice.kind, "provider": choice.provider,
@@ -298,6 +353,22 @@ extension AppModel {
         Task { await client.event("handoff_open", ["kind": h.choice.kind, "provider": h.provider]) }
         openURL(h.url)
         book.handoff?.back = true
+        if let trip = currentTrip {
+            AppModel.cache(SavedHandoff(provider: h.provider, url: h.url, what: h.what, price: h.price,
+                                        searchedAt: h.searchedAt, choice: h.choice, tripId: trip.id, at: .now),
+                           "handoff.json")
+        }
+    }
+
+    /// At the next open: the question they didn't get to answer, for a hand-off in the last day.
+    func restoreHandoff() {
+        guard let saved = AppModel.loadCached(SavedHandoff.self, "handoff.json") else { return }
+        AppModel.cache(nil as SavedHandoff?, "handoff.json")
+        guard route == .home, Date.now.timeIntervalSince(saved.at) < 24 * 3600, findTrip(saved.tripId) != nil else { return }
+        currentTripId = saved.tripId
+        tab = .book
+        book.handoff = Handoff(provider: saved.provider, url: saved.url, what: saved.what, price: saved.price,
+                               searchedAt: saved.searchedAt, choice: saved.choice, back: true)
     }
 
     // ---- CI screenshots ------------------------------------------------------------------------------------------

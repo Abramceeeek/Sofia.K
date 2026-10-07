@@ -32,6 +32,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Daily 10:00-18:00, last entry 17:00; timed tickets booked ahead; adult annual pass £18.50. Official site via search, 2026-09-28"
+  book_ahead: "Book a timed ticket on ltmuseum.co.uk beforehand"   # CHECKED: official site via search, 2026-09-28
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 0, photo_potential: 1}

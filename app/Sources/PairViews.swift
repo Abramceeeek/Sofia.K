@@ -35,7 +35,7 @@ struct SurveyView: View {
         let text = model.onboarding?.survey
         ScrollView {
             VStack(alignment: .leading, spacing: 26) {
-                Eyebrow("Before your plan")
+                Eyebrow(model.isVisitor ? "Before your trip" : "Before your plan")   // journey audit: visitors plan a trip next
                 VStack(alignment: .leading, spacing: 8) {
                     PageTitle(text: text?.title ?? "Three quick questions")
                     Text("About the questions you've just answered. Every one is optional.")

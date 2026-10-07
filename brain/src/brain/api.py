@@ -633,7 +633,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         trip = body.model_dump(exclude_none=True) if body else {}
         for label in "12":   # rows in label order, so the ids don't hint at which is which
             kind = "personal" if label == personal_label else "generic"
-            s.add(db.Plan(user_id=user.id, kind=kind, label=label, date=None, stops=mine if kind == "personal" else generic,
+            # dated for the Saturday it was planned for, so the chosen plan's rating reminders can fire (the blind view
+            # shows no date)
+            s.add(db.Plan(user_id=user.id, kind=kind, label=label, date=day.isoformat(),
+                          stops=mine if kind == "personal" else generic,
                           value=plan.value if kind == "personal" else None,
                           intent={"testb_pair": True, "trip": trip, "sunset": brief.sunset, "view": views[kind]}))
         s.commit()
@@ -679,6 +682,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if pl is None or pl.user_id != user.id or hidden(pl) or (generic and pl.kind != "generic"):
                 raise HTTPException(404, "no such plan")
         c = body.conditions
+        if body.plan_id is not None:   # one rating per stop of a plan: rating it again (after a restart) replaces it
+            for old in [r for r in user.ratings if r.plan_id == body.plan_id and r.moment_id == moment_id]:
+                s.delete(old)
         s.add(db.Rating(user_id=user.id, plan_id=body.plan_id, moment_id=moment_id, rating=body.rating,
                         would_bring=body.would_bring, temp_c=c.temp_c if c else None,
                         rain_prob=c.rain_prob if c else None, travel_min=body.travel_min))
@@ -849,7 +855,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not dest.day_plans:
             raise HTTPException(422, "day plans aren't ready for that destination yet")
         today = datetime.now(ZoneInfo("Europe/London")).date()
-        if body.start_date < today or body.start_date > today + timedelta(days=330):
+        if body.start_date + timedelta(days=body.nights) < today:   # a trip under way can still plan its later days
+            raise HTTPException(422, "this trip has ended")
+        if body.start_date > today + timedelta(days=330):
             raise HTTPException(422, "pick a first day from today to about 11 months ahead")
         total = body.nights + 1
         wanted = sorted(set(body.days)) if body.days else list(range(min(total, MAX_TRIP_DAYS)))

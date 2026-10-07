@@ -369,6 +369,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                                         ("You arrive", clean(m.place.name))) if v],
                     "title": m.display_title(), "approach": approach_text(m, walked_from_stop=True),
                     "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),
+                    "book_ahead": clean(m.best_time.book_ahead),   # journey audit: said on the stop
                     "best_windows": m.best_windows(_sunset(brief)), "queue": m.experience.queue_min or 0,
                     "moment_id": m.id, "predicted": round(u_hat[m.id], 3),
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
@@ -701,6 +702,7 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "worth_gbp": s.get("worth_gbp"),
             "feel_word": s.get("feel_word") or "Lunch", "reveal": s.get("reveal", False),   # D119
             "approach_steps": s.get("approach_steps") or [],
+            "book_ahead": s.get("book_ahead") or "",
             "best_light": s.get("best") or "",     # the card's light line, whatever the stop's time (D112)
             "best_window": next((f"{hhmm(a)}–{hhmm(b)}" for a, b in s.get("best_windows") or []), ""),
             "pin": point.model_dump() if point else None,

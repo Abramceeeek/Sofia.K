@@ -22,6 +22,7 @@ struct FaceApp: App {
                     if phase == .active {
                         Task {
                             await model.wake()
+                            await model.sendPendingRatings()   // journey audit: ratings made without signal
                             await model.loadSafety()   // D118: a reply to a Help & safety message shows on the plan
                         }
                     }

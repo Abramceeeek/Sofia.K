@@ -267,8 +267,15 @@ def test_trip_days_never_repeat_a_moment_and_shape_the_ends(client):
     assert not set(again) & set(d["used"])
     assert client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 3,
                                                              "days": [4]}).status_code == 422
-    assert client.post("/v1/me/trips/days", headers=h, json={
-        "start_date": (date.today() - timedelta(days=1)).isoformat(), "nights": 2}).status_code == 422
+    ended = client.post("/v1/me/trips/days", headers=h, json={
+        "start_date": (date.today() - timedelta(days=3)).isoformat(), "nights": 2})
+    assert ended.status_code == 422 and "ended" in ended.text
+    # a long trip under way still plans its later days ("planned as you go"), and today's
+    under_way = client.post("/v1/me/trips/days", headers=h, json={
+        "start_date": (date.today() - timedelta(days=8)).isoformat(), "nights": 9, "days": [8, 9]})
+    assert under_way.status_code == 201, under_way.text
+    assert [x["date"] for x in under_way.json()["days"]] == [date.today().isoformat(),
+                                                             (date.today() + timedelta(days=1)).isoformat()]
 
 
 # ---- D122: the person's own day, and the journeys at each end of the trip ----------------------------------------

@@ -331,6 +331,10 @@ struct TripChoice: Codable, Hashable {
     var point: Point?                      // a stay, so the days start near it
     var arrivePlace: String?               // D122: the airport the flight lands at ("LHR"), for "Heathrow → your stay"
     var leavePlace: String?                // and the one the flight home leaves from
+    // Journey audit (7 Oct): the trip's dates when it was chosen, so a later change of dates can't silently carry
+    // an old flight's times or an old stay's price onto new days. Optional: choices saved by older builds have none.
+    var forStart: String? = nil
+    var forNights: Int? = nil
 }
 
 struct Trip: Codable, Hashable, Identifiable {
@@ -373,10 +377,18 @@ struct Trip: Codable, Hashable, Identifiable {
             + (travelLight && arrivingBy != "here" && arrivingBy != "car" ? " · travelling light" : "")
     }
 
+    /// Journey audit: a saved or booked choice still matches the trip's dates (older choices are taken as matching).
+    func fits(_ choice: TripChoice?) -> Bool {
+        guard let choice, let from = choice.forStart else { return true }
+        return from == start && choice.forNights == nights
+    }
+
     /// How the trip starts and ends, for the Brain: the chosen flight's times and airports, or the train or car times.
+    /// A flight chosen for other dates doesn't set them.
     var ends: (arrive: TripEnd?, leave: TripEnd?) {
         switch arrivingBy {
         case "flight":
+            let flight = fits(self.flight) ? self.flight : nil
             return (flight?.arriveTime.map { TripEnd(mode: "flight", place: flight?.arrivePlace, time: $0) },
                     flight?.leaveTime.map { TripEnd(mode: "flight", place: flight?.leavePlace, time: $0) })
         case "train", "car":

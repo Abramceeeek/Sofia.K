@@ -1,4 +1,5 @@
 import shutil
+from datetime import date
 
 import pytest
 import yaml
@@ -248,6 +249,29 @@ def test_example_day_needs_no_install_and_holds_nothing_personal(client):
     assert client.get("/v1/example-day").json() == day   # built once, then kept
 
 
+def test_a_stop_that_needs_booking_says_so(tmp_path, test_moments):
+    """Journey audit (7 Oct): Horizon 22 needs a booked slot; the stop says so, and stops without one say nothing."""
+    data = tmp_path / "data"
+    (data / "moments").mkdir(parents=True)
+    for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv", "swipe_items.yaml", "aspiration.yaml",
+              "privacy_app.html", "categories.yaml"):
+        shutil.copy(DATA / f, data / f)
+    shutil.copy(DATA / "moments" / "m_horizon_22.yaml", data / "moments")
+    for m in test_moments:
+        (data / "moments" / f"{m.id}.yaml").write_text(yaml.safe_dump(m.model_dump(by_alias=True)))
+    settings = Settings(database_url=f"sqlite:///{tmp_path / 'b.db'}", data_dir=data, admin_token="x",
+                        alert_webhook_url=None, planner_time_limit_s=0.3)
+    with TestClient(create_app(settings)) as client:
+        h, _ = install(client)
+        body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "12:00", "end_time": "17:00", "stops": 3,
+                "date": "2026-10-12", "familiar": False, "intent": {"must_do": "m_horizon_22"}}   # a Monday
+        r = client.post("/v1/me/plans", headers=h, json=body)
+        assert r.status_code == 201, r.text
+        by_id = {st["moment_id"]: st for st in r.json()["stops"]}
+    assert by_id["m_horizon_22"]["book_ahead"].startswith("Book a free time slot on horizon22.co.uk")
+    assert all(st["book_ahead"] == "" for k, st in by_id.items() if k != "m_horizon_22")
+
+
 def test_regenerate_leaves_out_the_current_stops_or_falls_back(client):
     """D112, "Regenerate plan": the app sends the current stops in `exclude`; with nothing new left, the best day."""
     h, _ = install(client)
@@ -308,6 +332,8 @@ def test_test_b_pair_is_blind_random_once_and_reveals_after_the_choice(client):
     assert done["reveal"][0].startswith(f"Plan {personal} was made from your answers")
     chosen = done["chosen"]
     assert chosen["kind"] == "generic" and chosen["title"] == "A Saturday out in London"
+    # dated for the Saturday it was planned for, so its rating reminders can fire; the blind view shows no date
+    assert date.fromisoformat(chosen["date"]).weekday() == 5 and all(pl["date"] is None for pl in done["plans"])
     assert chosen["stops"][0]["moment_id"] == "generic:0" and chosen["stops"][0]["rateable"]
     assert client.post("/v1/me/testb/pair/feedback", headers=h,
                        json={"chosen": "1", "fit_1": 1, "fit_2": 1}).status_code == 409
@@ -322,9 +348,14 @@ def test_test_b_pair_is_blind_random_once_and_reveals_after_the_choice(client):
     assert rate(plans[personal]["id"]).status_code == 404
     r = rate(plans[generic]["id"])
     assert r.status_code == 201 and r.json()["n_observations"] == 2     # the two swipes only: unchanged
+    # rating the same stop again (the app restarted, or an offline rating sent late) replaces it
+    again = client.post("/v1/me/ratings", headers=h,
+                        json={"moment_id": "generic:1", "rating": 3, "plan_id": plans[generic]["id"]})
+    assert again.status_code == 201
     export = client.get("/v1/admin/export", headers=ADMIN).json()
     fb = [p for p in export["plans"] if p["user_id"] == uid and p["status"] == "chosen"][0]
     assert fb["reason"] == "More of a walk."
+    assert [r["rating"] for r in export["ratings"] if r["user_id"] == uid] == [3]
     assert any(e["name"] == "testb_pair_feedback" and e["user_id"] == uid for e in export["events"])
 
 
