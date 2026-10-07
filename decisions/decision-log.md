@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-10-07 — provider keys live
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m172 | **Duffel (test) and LiteAPI (sandbox) keys are in Render** (Abram, 7 Oct). The live Brain's health check reports `flights: duffel_test`, `stays: liteapi_sandbox`; a throwaway search (deleted after) returned 7 test flights from Tashkent and 144 London hotels with photos. Both stay labelled as test results in the app. **Scraping Skyscanner, Booking.com or Airbnb: advised against** (their terms forbid it; App Review 5.2.2), Abram asked on 7 Oct | — | Next: Duffel's answer on search-only use, then "Go live" (roadmap decision 3) |
+
 ## 2026-10-06 — trips, the ODYS Trips design and Build 2
 
 | # | Decision | Replaces | Why |
