@@ -67,6 +67,9 @@
 | 61 | **"Now" on the lock screen:** a Live Activity with the next stop, the leave-by time and a one-tap "How was it?" | 2026-10-08 | Competitor gaps (Citymapper, Flighty, Wallet) | GUESS: Claude ~8 h; Abram ~30 min (an App ID and profile for the widget extension in GitHub Secrets) | `decisions/competitor-gaps-plan.md` #7. Signing a second target could break the upload pipeline, so not before the tests |
 | 62 | **Price alerts** for a saved flight or stay, checked once a day | 2026-10-08 | Competitor gaps (TripIt Pro, Google) | GUESS: Claude ~10 h | Needs push notifications and a server job; search fees once Duffel is live |
 | 63 | **"People who like what you like rated this 4.6"**, from ODYS's own ratings | 2026-10-08 | Competitor gaps (reviews on Google and Tripadvisor) | GUESS: Claude ~6 h | Only after 50+ raters, and never below a minimum count per moment (privacy) |
+| 64 | **The evening before:** one quiet note at about 19:00 with tomorrow's first stop, when to leave and anything to book | 2026-10-08 | Journey audit round 2 (ChatGPT Pulse does morning cards, $200/month) | GUESS: Claude ~2 h | A local notification, no server; builds on "Preview tomorrow" (m177). Weather once the Met Office feed is in |
+| 65 | **Start from a saved reel or link:** match a TikTok or Instagram place to a checked moment and fit it into a day | 2026-10-08 | Journey audit round 2 (Rhyme £14.99/month, Travio £39.99/year, UK App Store) | GUESS: Claude ~6 h | AI on the person's link: a consent change (`ai_processing` is off). Only checked moments go into plans |
+| 66 | **Book a table for the lunch slot:** links to OpenTable or TheFork for the lunch stop | 2026-10-08 | Journey audit round 2 (Google AI Mode, UK, Apr 2026) | GUESS: Claude ~2 h | Links out only; never holds money. Affiliate terms would be a money gate |
 
 ## Rejected for now (D114, 30 Sep)
 
