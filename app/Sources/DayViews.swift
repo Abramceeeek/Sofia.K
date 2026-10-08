@@ -24,7 +24,12 @@ struct NowView: View {
                     LocationAsk()
                 }
                 if i == 0, let day = tripDay {   // m176: the trip's first journeys come before the first stop
-                    ForEach(day.journeys("arrive") + day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
+                    ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
+                    if let before = day.before {   // the place on the way, when travelling light (as on the day's page)
+                        SectionLabel(text: "On the way · travelling light")
+                        ForEach(before.stops) { stop in TripDayStop(stop: stop) }
+                    }
+                    ForEach(day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
                 }
                 if i < stops.count {
                     let stop = stops[i]
