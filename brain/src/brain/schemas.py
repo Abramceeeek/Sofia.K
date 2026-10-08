@@ -28,6 +28,7 @@ class InstallIn(BaseModel):
 class InstallOut(BaseModel):
     user_id: str
     token: str
+    channel: str | None = None   # journey round 2: so the app can say when a tester code isn't known
 
 
 class SwipeItem(BaseModel):
@@ -111,7 +112,9 @@ class PlanRequest(BaseModel):
     # D110, "swap this stop": the app sends the same request again with the other stops in `keep` and the
     # swapped-out cards (this one and any before it) in `exclude`
     keep: list[str] = Field(default_factory=list, max_length=6)
-    exclude: list[str] = Field(default_factory=list, max_length=40)
+    exclude: list[str] = Field(default_factory=list, max_length=120)   # journey round 2: long trips exclude more
+    # journey round 2: a trip day's feelings, so swap and regenerate plan it like the trip did (this plan only)
+    feelings: list[str] = Field(default_factory=list, max_length=5)
     # D115: the blind Test B comparison: no reasons, no feeling line, no "worth to you", nothing that gives it away
     blind: bool = False
 

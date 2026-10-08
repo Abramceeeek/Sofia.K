@@ -318,6 +318,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let lines: [String]?           // Build 2: the stop as text, in the Test B format (the blind pair shows only these)
     let bookAhead: String?         // journey audit: a booking the visit needs, from the card's checked source
     let hours: String?             // m176: opening hours as people read them, from the card's checked source
+    let checked: String?           // journey round 2: when the card's facts were last checked ("2026-10-08")
 
     var id: String { momentId + "@" + arrive }
 
@@ -348,6 +349,7 @@ struct ConsentBody: Encodable {
 struct InstallResponse: Decodable {
     let userId: String
     let token: String
+    let channel: String?                   // journey round 2: which channel the install was counted in
 }
 
 /// D114: the person's share code and the words that go with the link.
@@ -416,6 +418,13 @@ struct PlanRequest: Codable, Hashable {
     var keep: [String] = []
     var exclude: [String] = []
     var intent: [String: String]? = nil    // m176: {"must_do": card id}, a place they want in the day
+    var feelings: [String]? = nil          // journey round 2: a trip day's feelings, so swaps plan it like the trip
+    var conditions: PlanConditions? = nil  // journey round 2: "it's raining" when re-planning the rest of today
+}
+
+/// The weather the planner should assume (rain makes the rain swaps win).
+struct PlanConditions: Codable, Hashable {
+    var rainProb: Double?
 }
 
 /// m176: a ready moment, for "Must include" on "Plan a day" (GET /v1/moments).

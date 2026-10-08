@@ -633,14 +633,18 @@ struct FlightDetailView: View {
     private func open(_ link: TripLink, _ trip: Trip?) {
         guard let url = URL(string: link.url), let trip else { return }
         let back = flight.inbound
-        let sameDay = String(flight.outbound.arriveAt.prefix(10)) == trip.start
+        let landing = String(flight.outbound.arriveAt.prefix(10))
+        let sameDay = landing == trip.start
+        // journey round 2: an overnight flight lands the next day; keeping it moves the trip's first day to then
+        let nextDay = landing == Dates.isoDay.string(from: Calendar.london.date(byAdding: .day, value: 1,
+                                                                                to: trip.startDate) ?? trip.startDate)
         let choice = TripChoice(kind: "flight",
                                 title: "\(flight.airline) · \(flight.outbound.departTime) → \(flight.outbound.arriveTime)",
                                 provider: link.name, price: flight.price, booked: false,
-                                arriveTime: sameDay ? flight.outbound.arriveTime : nil,
+                                arriveTime: sameDay || nextDay ? flight.outbound.arriveTime : nil,
                                 leaveTime: back.flatMap { $0.departDay == trip.end ? $0.departTime : nil },
                                 arrivePlace: flight.outbound.destination, leavePlace: back?.origin,
-                                sample: flight.sample)
+                                sample: flight.sample, landsNextDay: nextDay && trip.nights >= 1 ? true : nil)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.nights > 0 ? "Return flight" : "Flight",
                                   price: flight.price, searchedAt: model.book.flights?.searchedAt.flatMap(Self.parseDate),
                                   choice: choice))

@@ -247,7 +247,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if code:
             s.add(db.Event(user_id=user.id, name="tester_code", props={"code": code}))
         s.commit()
-        return InstallOut(user_id=user.id, token=token)
+        return InstallOut(user_id=user.id, token=token, channel=channel)
 
     @app.get("/v1/onboarding")
     def onboarding(user: db.User = Depends(current_user), s: Session = Depends(session)):
@@ -509,8 +509,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
+        feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]
+        post = None
+        if feelings:   # journey round 2: a trip day's feelings, as the trip planned it (the profile isn't changed)
+            mine = set((user.profile or {}).get("why_travel", []))
+            post = update_person(p, observations(s, user, p) + [
+                o for f in feelings if f not in mine if (o := reasons.feeling_observation(p, f))])
         plan, out, head = personal_day(s, user, p, brief, ready, must_do=must_do, familiar=body.familiar,
-                                       keep=body.keep, exclude=body.exclude, blind=body.blind)
+                                       keep=body.keep, exclude=body.exclude, blind=body.blind, post=post,
+                                       feelings=feelings or None)
         intent = {**body.intent, **({"swapped_out": body.exclude} if body.exclude else {})}
         row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
         s.add(row)

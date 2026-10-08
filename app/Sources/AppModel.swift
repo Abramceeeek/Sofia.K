@@ -152,9 +152,17 @@ final class AppModel {
             reaction = Self.demoReactions[screen ?? ""]               // D117: one reaction on the screenshot
             lastRequest = PlanRequest(start: AppConfig.start, startName: AppConfig.startName, startTime: "12:00",
                                       endTime: "17:00", date: demoPlan?.date, stops: 4, familiar: true)
+        } else if brain.token != nil, AppModel.reinstalled {
+            // Decision 2 (8 Oct): the app was deleted and installed again, and iOS kept its code. Start afresh: the
+            // old answers are deleted from the server (now, or the next time the app is online) and consent is asked
+            // again. The privacy notice says so.
+            if let old = brain.token { Keychain.save(old, account: Keychain.pendingDelete) }
+            brain.forget()
+            route = .welcome
         } else if brain.token == nil {
             route = .welcome
         } else {
+            UserDefaults.standard.set(true, forKey: "installMarker")   // older builds: mark this install as known
             route = UserDefaults.standard.bool(forKey: "onboardingDone") ? .home : .onboarding
             // D117: back to the step they were on (each step's answers are already sent)
             step = Step(rawValue: UserDefaults.standard.integer(forKey: "onboardingStep")) ?? .based
@@ -226,12 +234,26 @@ final class AppModel {
 
     // ---- first run ---------------------------------------------------------------------------
 
+    /// Decision 2: a code in the Keychain but nothing at all in this install's settings means the app was deleted
+    /// and installed again (iOS deletes the settings with the app, not the Keychain).
+    static var reinstalled: Bool {
+        let d = UserDefaults.standard
+        return d.object(forKey: "installMarker") == nil && d.object(forKey: "onboardingStep") == nil
+            && !d.bool(forKey: "onboardingDone")
+    }
+
     /// Registers the phone, then shows onboarding, which loads its own questions (one request, one place).
     func agree() async {
         let joined = UserDefaults.standard.string(forKey: "refCode.joined")
         await run {
-            try await self.client.install(research: true, src: joined.map { "ref:\($0)" } ?? "app",
-                                          code: UserDefaults.standard.string(forKey: "testerCode"))
+            let code = UserDefaults.standard.string(forKey: "testerCode")
+            let channel = try await self.client.install(research: true, src: joined.map { "ref:\($0)" } ?? "app",
+                                                        code: code)
+            UserDefaults.standard.set(true, forKey: "installMarker")
+            if let code, !code.isEmpty, channel == "stranger" {   // journey round 2: say so, kindly
+                self.notice = ("We don't know that code",
+                               "That's fine: you're in as a new tester. If a friend sent you, the test still counts you.")
+            }
             UserDefaults.standard.removeObject(forKey: "refCode.joined")
             if let video = UserDefaults.standard.dictionary(forKey: "founderVideo") as? [String: String] {
                 await self.client.event("founder_video", video)   // D117: watched to the end, or skipped after n s
@@ -509,6 +531,67 @@ final class AppModel {
     }
 
     /// "Swap this stop" (D110): the other stops stay; this card, and any swapped out before, are left out.
+    // ---- journey round 2: the day as it happens ------------------------------------------------------------------
+
+    /// "Free from 15:56 until 18:00": a day that ends at least an hour before the person's end time.
+    func freeTime(_ plan: Plan) -> (from: String, to: String)? {
+        guard let request = lastRequest, let last = plan.stops.last,
+              AppModel.minutes(request.endTime) - AppModel.minutes(last.depart) >= 60 else { return nil }
+        return (last.depart, request.endTime)
+    }
+
+    /// "Add a place": the same day with one more stop, keeping every stop it has.
+    func addPlace() async {
+        guard var request = lastRequest, let current = plan, request.stops < 6 else { return }
+        request = PlanRequest(start: request.start, startName: request.startName, startTime: request.startTime,
+                              endTime: request.endTime, date: request.date, stops: request.stops + 1,
+                              familiar: request.familiar, keep: current.stops.map { $0.key ?? $0.momentId },
+                              exclude: request.exclude, intent: request.intent, feelings: request.feelings)
+        await fetchPlan(request, swap: true)
+        await client.event("add_place", ["stops": "\(request.stops)"])
+    }
+
+    /// Decision 3 (8 Oct): plans changed on the day (rain, a closed place, tired): the rest of today from where they
+    /// are (or the stop they're at), from about ten minutes from now, without the stops already done. Never on the
+    /// Test B plan, which is rated as it was chosen.
+    func replanRest(_ reason: String) async {
+        guard let old = lastRequest, let current = plan else { return }
+        let now = Calendar.london.dateComponents([.hour, .minute], from: .now)
+        let start = ((now.hour ?? 0) * 60 + (now.minute ?? 0) + 14) / 5 * 5
+        guard AppModel.minutes(old.endTime) - start >= 60 else {
+            notice = ("Not much of the day left", "There's less than an hour before your day ends, so there's nothing to re-plan.")
+            return
+        }
+        let done = current.stops.prefix(min(nowIndex, current.stops.count)).filter(\.rateable).map(\.momentId)
+        var skip = done
+        if reason == "closed", nowIndex < current.stops.count { skip.append(current.stops[nowIndex].momentId) }
+        let left = current.stops.count - min(nowIndex, current.stops.count)
+        let fromHere = location.usable ? location.roundedHere : nil
+        let at = nowIndex < current.stops.count ? current.stops[nowIndex] : current.stops.last
+        var request = PlanRequest(start: fromHere ?? at?.pin ?? old.start,
+                                  startName: fromHere != nil ? "where you are" : (at?.title ?? old.startName),
+                                  startTime: String(format: "%02d:%02d", start / 60, start % 60), endTime: old.endTime,
+                                  date: Dates.isoDay.string(from: .now),
+                                  stops: max(2, min(6, reason == "tired" ? left - 1 : left)), familiar: false,
+                                  exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings)
+        if reason == "rain" { request.conditions = PlanConditions(rainProb: 0.9) }
+        let tripId = currentTripDay?.trip.id
+        await fetchPlan(request, sameDay: false)   // the trip keeps the day as planned; this is today's version
+        guard let new = plan, new.id != current.id else { return }
+        nowIndex = 0
+        UserDefaults.standard.set(0, forKey: "nowIndex.\(new.id)")
+        if let tripId, var trip = findTrip(tripId) {   // later days won't repeat this afternoon's places
+            trip.used = Array(Set(trip.used).union(new.stops.filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] })).sorted()
+            save(trip)
+        }
+        await client.event("replan_rest", ["reason": reason, "stops": "\(request.stops)"])
+    }
+
+    static func minutes(_ hhmm: String) -> Int {
+        let p = hhmm.prefix(5).split(separator: ":").compactMap { Int($0) }
+        return p.count == 2 ? p[0] * 60 + p[1] : 0
+    }
+
     func swap(_ stop: Stop) async {
         guard var request = lastRequest, let current = plan else { return }
         request.keep = current.stops.filter { $0.id != stop.id }.map { $0.key ?? $0.momentId }
@@ -552,8 +635,10 @@ final class AppModel {
         }
     }
 
-    func rate(_ stop: Stop, rating: Int, wouldBring: Bool?) async {
-        let request = RatingRequest(momentId: stop.momentId, rating: rating, planId: plan?.id, wouldBring: wouldBring)
+    /// `planId`: another plan the stop belongs to (journey round 2: the place on the way on an arrival day).
+    func rate(_ stop: Stop, rating: Int, wouldBring: Bool?, planId: Int? = nil) async {
+        let request = RatingRequest(momentId: stop.momentId, rating: rating, planId: planId ?? plan?.id,
+                                    wouldBring: wouldBring)
         lastRatingQueued = false
         await run {
             do {
@@ -620,6 +705,10 @@ final class AppModel {
         UserDefaults.standard.set(true, forKey: "reminderAsked")
         remindersOn = yes ? await Reminders.ask() : false
         UserDefaults.standard.set(remindersOn, forKey: "remindersOn")
+        if yes, !remindersOn {   // journey round 2: a refused permission said nothing
+            notice = ("Notifications are off for ODYS",
+                      "To get the nudge to rate a stop, turn on notifications for ODYS in your phone's Settings.")
+        }
         if remindersOn, let plan { await Reminders.schedule(plan, rated: rated) }
         await client.event(remindersOn ? "reminders_on" : "reminders_off")
     }
@@ -722,7 +811,8 @@ final class AppModel {
                 if let token = self.client.token { Keychain.save(token, account: Keychain.pendingDelete) }
                 self.client.forget()
                 self.clearLocal()
-                self.errorMessage = "Deleted from this phone. The rest is deleted from the planner the next time you're online."
+                self.notice = ("Deleted from this phone",
+                               "The rest is deleted from the planner the next time ODYS is online.")
                 return
             }
             self.clearLocal()

@@ -148,6 +148,7 @@ struct AbramCard: View {
 /// answers and bundled with the app, so nothing is sent and nothing is stored. One stop's card is shown in full.
 struct ExampleDayView: View {
     @Environment(AppModel.self) private var model
+    @ScaledMetric(relativeTo: .subheadline) private var timeWidth: CGFloat = 48   // journey round 2: large text
 
     var body: some View {
         let plan = ExampleDay.plan
@@ -176,7 +177,7 @@ struct ExampleDayView: View {
                                 Text(s.arrive)
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(Theme.muted)
-                                    .frame(width: 48, alignment: .leading)
+                                    .frame(width: timeWidth, alignment: .leading)
                                 Text(s.title).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                                 Spacer(minLength: 8)
                                 Text(s.word).font(Theme.italic(16, relativeTo: .callout)).foregroundStyle(Theme.accent)
@@ -235,7 +236,8 @@ struct FeaturedStop: View {
                         Text(stop.title)
                             .font(Theme.serif(24, relativeTo: .title2))
                             .foregroundStyle(Theme.ink)
-                            .lineLimit(2)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
                         Text("\(stop.arrive) · \(stop.word.lowercased())")
                             .font(.subheadline)
                             .foregroundStyle(Theme.inkSoft)
@@ -268,6 +270,8 @@ struct ConsentView: View {
     @State private var adult = false
     @State private var agree = false
     @State private var showDetails = false
+    @State private var askCode = false        // journey round 2: the tester code was only on Welcome
+    @State private var code = UserDefaults.standard.string(forKey: "testerCode") ?? ""
 
     private let summary = [
         ("person", "A research test run by Abram, one person in London. Nothing is sold."),
@@ -330,11 +334,25 @@ struct ConsentView: View {
                 PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: !(adult && agree) || model.busy) {
                     Task { await model.agree() }
                 }
+                QuietButton(code.isEmpty ? "Got a tester code?" : "Tester code: \(code)") { askCode = true }
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
         }
         .background(Theme.background)
         .statusBarShade()
+        .alert("Tester code", isPresented: $askCode) {
+            TextField("Code", text: $code)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+            Button("Save") {
+                code = code.trimmingCharacters(in: .whitespacesAndNewlines)
+                if code.isEmpty { UserDefaults.standard.removeObject(forKey: "testerCode") }
+                else { UserDefaults.standard.set(code, forKey: "testerCode") }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("If someone gave you a code, type it here. It only says where you heard about the test, never who you are.")
+        }
     }
 }

@@ -341,6 +341,7 @@ struct TripChoice: Codable, Hashable {
     var forStart: String? = nil
     var forNights: Int? = nil
     var sample: Bool? = nil                // journey round 2: a sample result (no search keys yet), never a real price
+    var landsNextDay: Bool? = nil          // journey round 2: an overnight flight; the trip starts the day it lands
 }
 
 struct Trip: Codable, Hashable, Identifiable {
@@ -372,6 +373,7 @@ struct Trip: Codable, Hashable, Identifiable {
     // Journey round 2: a flight booked elsewhere: its London airport, with the times in arriveAt and leaveAt
     var ownFlight: Bool?
     var flightAirport: String?
+    var changedDays: [Int]?                // journey round 2: days changed by hand, kept when the trip is re-planned
 
     var dayFrom: String { hoursFrom ?? "10:00" }
     var dayTo: String { hoursTo ?? "18:00" }

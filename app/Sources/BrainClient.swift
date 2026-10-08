@@ -55,14 +55,17 @@ final class BrainClient {
 
     /// `src` is "app", or "ref:<code>" for someone who arrived through a share link (D114). Build 2: `code` is an
     /// optional tester code from the welcome screen; the Brain stores it as the source and sets the channel.
-    func install(research: Bool, src: String = "app", code: String? = nil) async throws {
-        if demo { return }
+    /// Returns the channel the Brain counted the install in (journey round 2: an unknown tester code stays "stranger").
+    @discardableResult
+    func install(research: Bool, src: String = "app", code: String? = nil) async throws -> String? {
+        if demo { return nil }
         let body = InstallRequest(channel: "stranger", src: src,
                                   consent: ConsentBody(version: AppConfig.consentVersion, research: research,
                                                        aiProcessing: false), code: code)
         let out: InstallResponse = try await call("POST", "v1/installs", body)
         token = out.token
         Keychain.save(out.token)
+        return out.channel
     }
 
     func onboarding() async throws -> Onboarding {

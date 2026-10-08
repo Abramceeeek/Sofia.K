@@ -11,6 +11,8 @@ struct NowView: View {
     @State private var rating: Stop?
     @State private var showSafety = false
     @State private var card: Stop?
+    @State private var onTheWay: Stop?               // journey round 2: rating the place on the way (its own plan)
+    @State private var replanning = false            // decision 3: "Re-plan the rest of today"
     @State private var arrived: Set<String> = []     // D123: stops the phone saw them reach, this session
     @State private var asked: Set<String> = []       // and the ones already asked about after leaving
 
@@ -28,7 +30,12 @@ struct NowView: View {
                     ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
                     if let before = day.before {   // the place on the way, when travelling light (as on the day's page)
                         SectionLabel(text: "On the way · travelling light")
-                        ForEach(before.stops) { stop in TripDayStop(stop: stop) }
+                        ForEach(before.stops) { stop in
+                            TripDayStop(stop: stop)
+                            if stop.rateable, !model.rated.contains(stop.momentId) {   // journey round 2: rated too
+                                QuietButton("Been there? How was it?", color: Theme.accent) { onTheWay = stop }
+                            }
+                        }
                     }
                     ForEach(day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
                 }
@@ -68,6 +75,9 @@ struct NowView: View {
                     PrimaryButton(title: "I'm done here") { done(stop) }
                     if lookAhead == nil {   // journey round 2: a closed place or a long queue needn't be rated to move on
                         QuietButton("Didn't go? Skip this stop") { skip(stop) }
+                        if model.lastRequest != nil {   // decision 3; never on the Test B plan
+                            QuietButton("Plans changed? Re-plan the rest of today", color: Theme.accent) { replanning = true }
+                        }
                     }
                 } else {
                     if let day = tripDay {   // m176: the way back for bags, and on to the airport or station
@@ -120,6 +130,10 @@ struct NowView: View {
             RatingView(stop: stop, onNext: { model.advanceNow() }).brainFeedback()
         }
         .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
+        .sheet(item: $onTheWay) { stop in
+            RatingView(stop: stop, planId: model.currentTripDay?.day.before?.id).brainFeedback()
+        }
+        .replanRest(isPresented: $replanning)
         .onAppear { model.location.start() }
         .onDisappear { model.location.stop() }
         .onChange(of: model.location.here?.latitude) { _, _ in noticeArrival(stops, i) }
@@ -228,6 +242,7 @@ struct RatingView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let stop: Stop
+    var planId: Int?                 // journey round 2: the stop's own plan (the place on the way), if not "your day"
     var onNext: (() -> Void)?
     var savedRating: Int?            // CI screenshots only: the thank-you, after saving
     @State private var rating: Int?
@@ -315,7 +330,7 @@ struct RatingView: View {
     private func save() {
         guard let rating else { return }
         Task {
-            await model.rate(stop, rating: rating, wouldBring: bring.isEmpty ? nil : bring == "yes")
+            await model.rate(stop, rating: rating, wouldBring: bring.isEmpty ? nil : bring == "yes", planId: planId)
             if model.errorMessage == nil {
                 withAnimation(Motion.settle) { saved = true }
                 mote += 1

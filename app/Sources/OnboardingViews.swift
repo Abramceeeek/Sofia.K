@@ -278,7 +278,7 @@ struct CategoryStep: View {
                     .transition(.opacity)
                     ReactionSpace(text: model.reaction)
                     HStack {
-                        QuietButton("Back") { back() }
+                        QuietButton("Previous") { back() }
                             .disabled(index == 0 && !askingWant)
                         Spacer()
                         QuietButton("Not sure, skip") { answer(card, "skip") }
@@ -818,7 +818,7 @@ struct PlacesStep: View {
                     .transition(.opacity)
                     ReactionSpace(text: model.reaction)   // D117: loved / didn't enjoy say something; the rest don't
                     HStack {
-                        QuietButton("Back") { back() }
+                        QuietButton("Previous") { back() }
                             .disabled(index == 0)
                         Spacer()
                         QuietButton("Not sure, skip") { react(place, "skip") }
@@ -887,23 +887,31 @@ struct ThisOrThatStep: View {
                         Text(sub).foregroundStyle(Theme.muted)
                     }
                     VStack(spacing: 10) {
-                        DayOption(label: "\(label) A", text: task.a, field: index % 2, on: picked == "A") { choose(task, "A") }
+                        DayOption(label: "\(label) A", text: task.a, field: index % 2,
+                                  on: (picked ?? model.choices[task.task]) == "A") { choose(task, "A") }
                         Text("or")
                             .font(Theme.italic(18, relativeTo: .body))
                             .foregroundStyle(Theme.muted)
-                        DayOption(label: "\(label) B", text: task.b, field: (index + 1) % 2, on: picked == "B") { choose(task, "B") }
+                        DayOption(label: "\(label) B", text: task.b, field: (index + 1) % 2,
+                                  on: (picked ?? model.choices[task.task]) == "B") { choose(task, "B") }
                     }
                     .id(task.task)
                     .transition(.opacity)
                     HStack {
-                        QuietButton("Back") {
+                        QuietButton("Previous") {
                             picked = nil
                             index = max(index - 1, 0)
                             model.stepProgress = index
                         }
                         .disabled(index == 0)
                         Spacer()
-                        QuietButton(model.onboarding?.conjoint?.noPreference ?? "No preference") { choose(task, "N") }
+                        if picked == nil, let earlier = model.choices[task.task] {   // journey round 2: answered before
+                            QuietButton("Keep \(earlier == "N" ? "no preference" : earlier), next", color: Theme.accent) {
+                                choose(task, earlier)
+                            }
+                        } else {
+                            QuietButton(model.onboarding?.conjoint?.noPreference ?? "No preference") { choose(task, "N") }
+                        }
                     }
                     ReactionSpace(text: model.reaction)   // D117: a pattern, once it has held 3 times
                 } else {
@@ -915,6 +923,14 @@ struct ThisOrThatStep: View {
             .padding(.bottom, 24)
         }
         .animation(reduceMotion ? nil : Motion.fade, value: index)
+        .onAppear {   // journey round 2: back from "So far", pick up at the first pair not answered
+            if index == 0, let first = tasks.firstIndex(where: { model.choices[$0.task] == nil }), first > 0 {
+                index = first
+                model.stepProgress = first
+            } else if index == 0, !tasks.isEmpty, tasks.allSatisfy({ model.choices[$0.task] != nil }) {
+                index = tasks.count
+            }
+        }
     }
 
     /// Select (250 ms) on the chosen day, then the next pair.
@@ -1023,7 +1039,7 @@ struct ImproveView: View {
                         }
                         question(Q.allCases[current])
                         HStack {
-                            QuietButton("Back") { go(current - 1) }.disabled(current == 0)
+                            QuietButton("Previous") { go(current - 1) }.disabled(current == 0)
                             Spacer()
                             QuietButton("Stop here, keep my answers") { Task { await save(done: false) } }
                                 .disabled(model.busy)
@@ -1039,7 +1055,7 @@ struct ImproveView: View {
             .scrollDismissesKeyboard(.interactively)
             .serifTitle("Improve future plans")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Close") {   // journey round 2: closing keeps what was answered (Test A's scales too)
                         if current >= 0 { Task { await model.saveImprovements(done: false); dismiss() } } else { dismiss() }
                     }
@@ -1053,6 +1069,7 @@ struct ImproveView: View {
                     }
                     .background(Theme.background)
                     .serifTitle("More places")
+                    .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { morePlaces = false } } }
                 }
             }
             .sheet(isPresented: $moreTasks) {
@@ -1063,6 +1080,7 @@ struct ImproveView: View {
                     }
                     .background(Theme.background)
                     .serifTitle("More example days")
+                    .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { moreTasks = false } } }
                 }
             }
         }
@@ -1070,6 +1088,7 @@ struct ImproveView: View {
 
     private func go(_ next: Int) {
         withAnimation { step = max(0, next) }
+        // journey round 2: saved here at the end; "Done" then only closes (it sent "improve_done" twice)
         if next >= Q.allCases.count { Task { await model.saveImprovements(done: true) } }
     }
 
@@ -1122,7 +1141,8 @@ struct ImproveView: View {
                 }
             }
             PrimaryButton(title: model.busy ? "Saving…" : "Done", disabled: model.busy) {
-                Task { await save(done: true) }
+                // already saved on reaching this screen; saved again only if that failed (journey round 2)
+                if model.improved { dismiss() } else { Task { await save(done: true) } }
             }
             .padding(.top, 8)
         }

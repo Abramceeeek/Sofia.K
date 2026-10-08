@@ -431,3 +431,18 @@ def test_a_day_with_only_lunch_left_is_a_free_day(client):
     assert r.status_code == 201, r.text
     day = r.json()["days"][0]
     assert day["plan"] is None and day["title"].startswith("A free day")
+
+
+def test_journeys_past_midnight_say_so():
+    """Journey round 2: a 22:45 landing reached London after midnight but showed "23:59"; a 01:30 flight home said
+    "leave by 00:00". Times now say "next day" or "the night before", with a note when trains may not run."""
+    late = _frame(0, 3, arrive=tripdays.End("flight", "LHR", "22:45"))
+    leg = late.legs[0]
+    assert "(next day)" in (leg.arrive or "") and tripdays.NIGHT_NOTE in (leg.note or "")
+    assert late.main is None and late.title == "Arrive and settle in"
+    early = _frame(2, 3, leave=tripdays.End("flight", "LHR", "01:30"))
+    assert "(the night before)" in early.leave_leg.title and early.main is None
+    dawn = _frame(2, 3, leave=tripdays.End("flight", "LHR", "06:00"))   # at the airport by 04:00: no trains yet
+    assert tripdays.NIGHT_NOTE in dawn.leave_leg.note
+    day = _frame(2, 3, leave=tripdays.End("flight", "LHR", "18:00"))
+    assert "next day" not in day.leave_leg.title and tripdays.NIGHT_NOTE not in (day.leave_leg.note or "")

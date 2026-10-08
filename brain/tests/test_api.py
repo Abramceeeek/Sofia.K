@@ -409,3 +409,15 @@ def test_survey_and_tester_code(client):
     assert answers == {"survey:understood": "4", "survey:like_person": "5", "survey:typed_or_spoke": "spoke"}
     assert any(e["name"] == "tester_code" and e["props"] == {"code": "FRIENDS"} and e["user_id"] == uid3
                for e in export["events"])
+
+
+def test_a_trip_days_feelings_and_checked_dates_reach_the_plan(client):
+    """Journey round 2: swap and regenerate on a trip day send the trip's feelings (this plan only, the profile isn't
+    changed); every stop says when its card was last checked; long trips can exclude more than 40 places."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "12:00", "end_time": "17:00", "stops": 3,
+            "familiar": False, "feelings": ["curious", "nonsense"], "exclude": [f"m_none_{i}" for i in range(60)]}
+    r = client.post("/v1/me/plans", headers=h, json=body)
+    assert r.status_code == 201, r.text
+    assert all("checked" in st for st in r.json()["stops"])
+    assert client.get("/v1/me/weights", headers=h).json()["n_observations"] == 0

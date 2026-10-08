@@ -357,6 +357,7 @@ struct PlanView: View {
     @State private var showNewPlan = false
     @State private var showImprove = false
     @State private var confirmRegenerate = false
+    @State private var replanning = false
 
     var body: some View {
         let layout = Binding(get: { forcedLayout ?? savedLayout }, set: { savedLayout = $0 })
@@ -387,6 +388,10 @@ struct PlanView: View {
                 }
                 stopList(fractions)
                     .id("stops")
+                if let free = model.freeTime(plan), shown >= 1 {   // journey round 2: free time, said plainly
+                    FreeTimeRow(from: free.from, to: free.to,
+                                canAdd: (model.lastRequest?.stops ?? 6) < 6) { Task { await model.addPlace() } }
+                }
                 Text(model.lastRequest == nil ? "Open a stop to see how you'll arrive." : "Open a stop to see how you'll arrive, or to swap it.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
@@ -413,12 +418,13 @@ struct PlanView: View {
             NavigationStack {
                 PlanFormView(onDone: { showNewPlan = false })
                     .toolbar {
-                        ToolbarItem(placement: .topBarLeading) { Button("Close") { showNewPlan = false } }
+                        ToolbarItem(placement: .topBarTrailing) { Button("Close") { showNewPlan = false } }
                     }
             }
             .brainFeedback()
         }
         .sheet(isPresented: $showImprove) { ImproveView().brainFeedback() }
+        .replanRest(isPresented: $replanning)
         .task(id: plan.id) { await runReveal() }
     }
 
@@ -506,6 +512,9 @@ struct PlanView: View {
                 .buttonStyle(PressStyle())
             } else {
                 QuietButton("A few more questions (optional)") { showImprove = true }
+            }
+            if model.lastRequest != nil, plan.date == Dates.isoDay.string(from: .now) {   // decision 3
+                SecondaryButton(title: "Plans changed? Re-plan the rest of today", disabled: model.busy) { replanning = true }
             }
             HStack(spacing: 10) {
                 if model.lastRequest != nil {   // Build 2: the Test B plan is rated as it was chosen
@@ -746,12 +755,14 @@ struct DayCurve: View {
     var peak: Int?
     @State private var pulse = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @ScaledMetric(relativeTo: .callout) private var rowHeight: CGFloat = 40   // journey round 2: grows with the text
 
     private static let curveHeight: CGFloat = 104
-    private static let rowHeight: CGFloat = 40
 
     var body: some View {
-        let rows = points.count >= 4 ? 2 : 1
+        // journey round 2: with large text, each stop's word gets its own row, so labels never overlap
+        let rows = typeSize.isAccessibilitySize ? max(points.count, 1) : (points.count >= 4 ? 2 : 1)
         GeometryReader { g in
             let w = g.size.width
             let lo = (points.map(\.minute).min() ?? 600) - 35
@@ -792,12 +803,12 @@ struct DayCurve: View {
                     }
                     .fixedSize()
                     .position(x: min(max(px, 34), w - 34),
-                              y: Self.curveHeight + 18 + CGFloat(rows == 2 ? i % 2 : 0) * Self.rowHeight)
+                              y: Self.curveHeight + 18 + CGFloat(rows == points.count && rows > 2 ? i : (rows == 2 ? i % 2 : 0)) * rowHeight)
                     .opacity(reached ? 1 : 0)
                 }
             }
         }
-        .frame(height: Self.curveHeight + CGFloat(rows) * Self.rowHeight + 2)
+        .frame(height: Self.curveHeight + CGFloat(rows) * rowHeight + 2)
         .onChange(of: progress >= 1, initial: true) { _, done in
             guard done, peak != nil, !reduceMotion, !AppConfig.demo else { return }
             Task {
@@ -1048,6 +1059,12 @@ struct MomentCardBody: View {
     var showWhy = true             // D115: never in the blind Test B comparison or the example day
     @State private var showShot = false
 
+    /// Decision 4: "Hours, prices and the way in last checked on 27 Sep, from the place's own site."
+    private var checkedText: String {
+        guard let iso = stop.checked, let day = Dates.isoDay.date(from: iso) else { return "" }
+        return "Hours, prices and the way in last checked on \(Dates.dayMonth.string(from: day)), from the place's own site."
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 26) {
             if stop.familiar {
@@ -1117,6 +1134,7 @@ struct MomentCardBody: View {
                 ("What happens", stop.what),
                 ("Opening hours", stop.hours ?? ""),     // m176: checked on the card's own source
                 ("Book ahead", stop.bookAhead ?? ""),   // journey audit: Horizon 22, the Transport Museum, karting
+                ("Checked", checkedText),               // decision 4: when the card's facts were last checked
                 ("Queue", (stop.queueMin ?? 0) > 0 ? "Allow about \(Int(stop.queueMin ?? 0)) min to queue." : ""),
                 ("Cost", stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst),
                 ("If it rains", stop.rainSwap),
@@ -1375,4 +1393,55 @@ struct ReminderAsk: View {
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.outline, lineWidth: 1))
     }
+}
+
+/// Journey round 2: a day that ends early says so, with one tap to add a place.
+struct FreeTimeRow: View {
+    @Environment(AppModel.self) private var model
+    let from: String
+    let to: String
+    let canAdd: Bool
+    let add: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Free from \(from) until \(to)").foregroundStyle(Theme.ink)
+                Text("Rest, wander, or add one more place.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            if canAdd {
+                QuietButton(model.busy ? "Adding…" : "Add a place", color: Theme.accent, action: add)
+                    .disabled(model.busy)
+            }
+        }
+        .surfaceCard(padding: 16)
+    }
+}
+
+/// Decision 3 (8 Oct): "Re-plan the rest of today": why, then the rest of the day from about ten minutes from now.
+struct ReplanRest: ViewModifier {
+    @Environment(AppModel.self) private var model
+    @Binding var isPresented: Bool
+
+    func body(content: Content) -> some View {
+        content.confirmationDialog("Re-plan the rest of today?", isPresented: $isPresented, titleVisibility: .visible) {
+            Button("It's raining") { go("rain") }
+            Button("A place is closed or too busy") { go("closed") }
+            Button("I'm tired: fewer stops") { go("tired") }
+            Button("Something else") { go("other") }
+            Button("Keep my day", role: .cancel) {}
+        } message: {
+            Text("From where you are, starting in about ten minutes, without the places you've done.")
+        }
+    }
+
+    private func go(_ reason: String) { Task { await model.replanRest(reason) } }
+}
+
+extension View {
+    func replanRest(isPresented: Binding<Bool>) -> some View { modifier(ReplanRest(isPresented: isPresented)) }
 }

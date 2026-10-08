@@ -205,16 +205,40 @@ extension AppModel {
 
     /// "Make my trip": plans the first days (up to 7) and keeps the trip on the phone. A one-day trip is also "your
     /// day", so it can be rated stop by stop.
-    func makeTrip(_ draft: Trip) async -> Bool {
+    /// Journey round 2: `keepFrom`, the trip as it was before an edit. Days already lived (and, with `keepChanged`,
+    /// days changed by hand) stay as they were when the dates are the same; only the rest is planned again.
+    func makeTrip(_ draft: Trip, keepFrom old: Trip? = nil, keepChanged: Bool = true) async -> Bool {
         var trip = draft
         var ok = false
+        let today = Dates.isoDay.string(from: .now)
+        var kept: [TripDayOut] = []
+        if let old, old.start == trip.start, old.nights == trip.nights {
+            let changed = keepChanged ? Set(old.changedDays ?? []) : []
+            kept = old.days.filter { $0.date < today || changed.contains($0.index) }
+            trip.changedDays = old.changedDays?.filter { changed.contains($0) }
+        } else {
+            trip.changedDays = nil
+        }
+        let keptIndex = Set(kept.map(\.index))
+        let todo = Array((0..<trip.dayCount).filter { !keptIndex.contains($0) }.prefix(7))
+        let base = { (p: Plan?) in (p?.stops ?? []).filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] } }
+        let exclude = Array(Set(kept.flatMap { base($0.plan) + base($0.before) })).sorted()
+        let wasYourDay = old?.days.first { $0.plan?.id != nil && $0.plan?.id == plan?.id }
         await run {
-            let out = try await self.client.tripDays(self.daysRequest(trip, days: [], exclude: []))
-            trip.days = out.days
-            trip.used = out.used
-            trip.daysFrom = out.start
+            if kept.isEmpty || !todo.isEmpty {
+                let out = try await self.client.tripDays(self.daysRequest(trip, days: kept.isEmpty ? [] : todo,
+                                                                          exclude: exclude))
+                trip.days = (kept + out.days).sorted { $0.index < $1.index }
+                trip.used = out.used
+                trip.daysFrom = out.start
+            }
             trip.daysStale = false
             self.save(trip)
+            // "your day" follows its day when that day was planned again
+            if let was = wasYourDay, !keptIndex.contains(was.index),
+               let now = trip.days.first(where: { $0.index == was.index }), now.plan != nil {
+                self.useDay(trip, now)
+            }
             self.currentTripId = trip.id
             if self.book.resultsFor != trip.id { self.book.flights = nil; self.book.stays = nil }
             if trip.nights == 0, let day = out.days.first, day.plan != nil { self.useDay(trip, day) }
@@ -243,10 +267,7 @@ extension AppModel {
     /// The days again, from the chosen stay and around the flight's times.
     func replanDays(_ tripId: UUID) async {
         guard let trip = findTrip(tripId) else { return }
-        var fresh = trip
-        fresh.days = []
-        fresh.used = []
-        _ = await makeTrip(fresh)
+        _ = await makeTrip(trip, keepFrom: trip, keepChanged: false)   // journey round 2: days already lived stay
     }
 
     /// D122: the person's hours and places a day, and how the trip starts and ends (flight, train or car).
@@ -270,6 +291,7 @@ extension AppModel {
                                   startName: trip.daysFrom ?? AppConfig.startName, startTime: window.start,
                                   endTime: window.end, date: day.date, stops: max(2, min(window.stops, 6)), familiar: false)
         request.exclude = trip.used.filter { !mine.contains($0) }   // the trip's other days
+        request.feelings = trip.feelings.isEmpty ? nil : trip.feelings   // journey round 2: as the trip planned it
         plan = dayPlan
         lastRequest = request
         (rated, myRatings) = AppModel.savedRatings(for: dayPlan)   // a day used before keeps its ratings
@@ -372,6 +394,7 @@ extension AppModel {
             trip.days.append(new)
             trip.days.sort { $0.index < $1.index }
             trip.used = out.used
+            trip.changedDays = Array(Set((trip.changedDays ?? []) + [index])).sorted()   // kept on a re-plan
             self.save(trip)
             if let was = old?.plan, self.plan?.id == was.id, new.plan != nil { self.useDay(trip, new) }
             await self.client.event("trip_day_changed", ["day": "\(index + 1)", "from": from, "to": to,
@@ -394,6 +417,14 @@ extension AppModel {
     func keep(_ choice: TripChoice, in tripId: UUID) {
         guard var trip = findTrip(tripId) else { return }
         var choice = choice
+        if choice.kind == "flight", choice.landsNextDay == true, trip.nights >= 1 {
+            // journey round 2: an overnight flight lands the next day; the trip's days start then (the flight home
+            // stays on the same last day), so day 1 isn't planned while they're in the air
+            trip.start = Dates.isoDay.string(from: Calendar.london.date(byAdding: .day, value: 1, to: trip.startDate) ?? trip.startDate)
+            trip.nights -= 1
+            notice = ("Your trip now starts on \(Dates.shortDay(trip.start))",
+                      "That's the day your flight lands, so your first day starts when you arrive. Plan the days again from the trip.")
+        }
         choice.forStart = trip.start          // journey audit: so a later change of dates is noticed
         choice.forNights = trip.nights
         if choice.kind == "flight" { trip.flight = choice } else { trip.stay = choice }

@@ -251,7 +251,7 @@ struct TripHome: View {
             NavigationStack {
                 PlanFormView(onDone: { planningDay = false })
                     .toolbar {
-                        ToolbarItem(placement: .topBarLeading) { Button("Close") { planningDay = false } }
+                        ToolbarItem(placement: .topBarTrailing) { Button("Close") { planningDay = false } }
                     }
             }
             .brainFeedback()
@@ -356,8 +356,14 @@ struct TripGoodToKnow: View {
                          links: [KnowLink(label: "Check if you need a visa or an ETA", url: "https://www.gov.uk/check-uk-visa"),
                                  KnowLink(label: "About the ETA", url: "https://www.gov.uk/eta")])
             }
+            if fromAbroad {   // journey round 2: from nhs.uk, GOV.UK and TfL (read 8 Oct 2026), the same for everyone
+                KnowItem(title: "Health and emergencies",
+                         text: "In an emergency, call 999 or 112. For urgent help that isn't life-threatening, call NHS 111. A&E is free for everyone; if you're admitted to hospital, that care can be charged, so GOV.UK advises visitors to have travel or health insurance. Visitors from the EU can use an EHIC.",
+                         links: [KnowLink(label: "NHS: using the NHS as a visitor",
+                                          url: "https://www.nhs.uk/nhs-services/visiting-or-moving-to-england/how-to-access-nhs-services-in-england-if-you-are-visiting-from-abroad/")])
+            }
             KnowItem(title: "Getting around London",
-                     text: "Tap in and out with the same contactless card or phone on the Tube, buses and trains: one card per person. A daily cap stops you paying more than a set amount (£8.90 in zones 1–2). The Heathrow Express and river buses aren't in the cap, and overseas cards may charge a fee.",
+                     text: "Contactless cards, phones and watches work on buses, the Tube, DLR, Overground, the Elizabeth line and most trains. Touch in and out with the same one, one per person: then a daily cap stops you paying more than a set amount (£8.90 in zones 1–2). The Heathrow Express and river buses aren't in the cap, and your bank may charge a fee on each tap with a card from abroad.",
                      links: [KnowLink(label: "TfL: paying with contactless",
                                       url: "https://tfl.gov.uk/fares/how-to-pay-and-where-to-buy-tickets-and-oyster/pay-as-you-go/contactless-and-mobile-pay-as-you-go")])
             if trip.needStay {
@@ -617,6 +623,16 @@ struct TripCreateFlow: View {
 
     private var backTitle: String { step == 0 || (editing && step == 1) ? "Cancel" : "‹ Back" }
 
+    /// Journey round 2: who's going and the airport you fly from change the searches, not the days.
+    static func onlySearchChanged(_ old: Trip, _ new: Trip) -> Bool {
+        var a = old, b = new
+        a.adults = 0; b.adults = 0
+        a.origin = nil; b.origin = nil
+        a.originGuessed = false; b.originGuessed = false
+        a.days = []; b.days = []
+        return a == b && (old.adults != new.adults || old.origin != new.origin)
+    }
+
     static let questions = 5
 
     private var buttonTitle: String {
@@ -631,9 +647,15 @@ struct TripCreateFlow: View {
             return
         }
         Task {
-            var t = trip
-            if editing { t.days = []; t.used = [] }
-            if await model.makeTrip(t) {
+            let t = trip
+            let old = editing ? model.findTrip(trip.id) : nil
+            if let old, Self.onlySearchChanged(old, t) {   // journey round 2: travellers or airport only: days stay
+                model.save(t)
+                model.book.resultsFor = nil
+                dismiss()
+                return
+            }
+            if await model.makeTrip(t, keepFrom: old) {
                 if editing { model.book.resultsFor = nil }
                 dismiss()
                 model.tab = .trip
@@ -994,7 +1016,7 @@ struct FromStep: View {
             TimeMenu(label: "Your train arrives", time: time(\.arriveAt, "11:00"), options: HalfHours.from(5, to: 22))
             Rectangle().fill(Theme.hairline).frame(height: 1)
             TimeMenu(label: trip.nights == 0 ? "Your train home leaves" : "Your train home leaves, on the last day",
-                     time: time(\.leaveAt, "17:00"), options: HalfHours.from(8, to: 23))
+                     time: time(\.leaveAt, "17:00"), options: HalfHours.from(5, to: 23))
         }
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
     }
@@ -1570,6 +1592,15 @@ struct TripDayView: View {
                                 SectionLabel(text: "From your stay").padding(.top, 4)
                             }
                             ForEach(plan.stops) { stop in TripDayStop(stop: stop) }
+                            if let end = day.window?.end, let last = plan.stops.last,   // journey round 2: free time
+                               AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
+                                FreeTimeRow(from: last.depart, to: end, canAdd: trip.placesPerDay < 6) {
+                                    Task {
+                                        _ = await model.changeTripDay(trip.id, index, from: day.window?.start ?? trip.dayFrom,
+                                                                      to: end, places: min(6, trip.placesPerDay + 1))
+                                    }
+                                }
+                            }
                             ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
                             PrimaryButton(title: model.plan?.id == plan.id ? "This is your day" : "Make this my day",
                                           disabled: model.plan?.id == plan.id) {
