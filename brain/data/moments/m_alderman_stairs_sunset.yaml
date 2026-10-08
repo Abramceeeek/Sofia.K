@@ -34,6 +34,7 @@ best_time:
   company: null
   crowd_window: "Usually quiet (GUESS)"
   opening_hours: "Public riverside path. Stay on the terrace: the stairs lead down to the tidal foreshore"
+  hours: "Public riverside path: always open. Stay on the terrace; the stairs lead down to the tidal foreshore"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 2,
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}

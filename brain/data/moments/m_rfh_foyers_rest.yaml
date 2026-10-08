@@ -34,6 +34,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Tue-Sun 10:00-23:00, closed Monday; foyers free. Southbank Centre via search, 2026-09-28"
+  hours: "Tue–Sun 10:00–23:00, closed Mondays. Foyers free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}

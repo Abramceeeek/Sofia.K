@@ -34,6 +34,8 @@ targets:
         # D115: "Tell it instead" (screen 4): speech becomes text on the phone; the sound is never saved or sent
         NSMicrophoneUsageDescription: "Only when you tap Tell it instead: your phone turns what you say into text. The sound is never saved or sent."
         NSSpeechRecognitionUsageDescription: "Your phone turns what you say into text, on the phone itself. Only the text is sent, as if you'd typed it."
+        # D123: location while you're out, on the phone only (never in the background)
+        NSLocationWhenInUseUsageDescription: "While you're out, ODYS shows how far your next stop is and notices when you've arrived and left, so it can ask how it felt. Your location stays on your phone, unless you choose to start a plan from where you are."
         CFBundleURLTypes:                      # D114: share links open the app as daysout://r/<code>
           - CFBundleURLName: daysout.share
             CFBundleURLSchemes: [daysout]

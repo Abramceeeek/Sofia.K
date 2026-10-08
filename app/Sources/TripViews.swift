@@ -249,6 +249,7 @@ struct TodayInTripCard: View {
     let trip: Trip
     let index: Int
     let day: TripDayOut?
+    @State private var confirm = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -265,13 +266,99 @@ struct TodayInTripCard: View {
             }
             PrimaryButton(title: model.busy ? "Planning…" : (day == nil ? "Plan today" : "Start today"),
                           disabled: model.busy) {
-                Task {
-                    await model.goToTripDay(trip.id, index)
-                    if model.plan?.date == Dates.isoDay.string(from: .now) { model.path.append(TripDest.day) }
-                }
+                if model.testBPlanAtRisk { confirm = true } else { start() }
             }
         }
         .surfaceCard(padding: 20)
+        .confirmReplacingTestBPlan($confirm) { start() }
+    }
+
+    private func start() {
+        Task {
+            await model.goToTripDay(trip.id, index)
+            if model.plan?.date == Dates.isoDay.string(from: .now) { model.path.append(TripDest.day) }
+        }
+    }
+}
+
+/// D123: "Good to know" on a trip: entry rules for flights from abroad, getting around London, bags and signal.
+/// Entry rules are general information and links to GOV.UK, the same for everyone flying in from abroad (decided by
+/// the departure airport, never by nationality). It never says whether this person needs a visa: that would be
+/// immigration advice, which is regulated (Immigration Advice Authority practice note, July 2025).
+struct TripGoodToKnow: View {
+    let trip: Trip
+
+    private var fromAbroad: Bool { trip.needFlight && (trip.origin?.country ?? "") != "GB" }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel(text: "Good to know")
+            if fromAbroad {
+                KnowItem(title: "Before you fly",
+                         text: "Depending on nationality, most visitors to the UK need either a visa or an electronic travel authorisation (ETA, £20 for each traveller, babies included). Check what applies to you on GOV.UK before you book.",
+                         links: [KnowLink(label: "Check if you need a visa or an ETA", url: "https://www.gov.uk/check-uk-visa"),
+                                 KnowLink(label: "About the ETA", url: "https://www.gov.uk/eta")])
+            }
+            KnowItem(title: "Getting around London",
+                     text: "Tap in and out with the same contactless card or phone on the Tube, buses and trains: one card per person. A daily cap stops you paying more than a set amount (£8.90 in zones 1–2). The Heathrow Express and river buses aren't in the cap, and overseas cards may charge a fee.",
+                     links: [KnowLink(label: "TfL: paying with contactless",
+                                      url: "https://tfl.gov.uk/fares/how-to-pay-and-where-to-buy-tickets-and-oyster/pay-as-you-go/contactless-and-mobile-pay-as-you-go")])
+            if trip.needStay {
+                KnowItem(title: "Bags", text: "Most places will hold your bags before check-in and after check-out: ask your stay.", links: [])
+            }
+            KnowItem(title: "Without signal",
+                     text: "Your days and this trip stay on your phone, and ratings wait until you're back online. New plans, Book and directions need data.",
+                     links: [])
+        }
+        .padding(.top, 8)
+    }
+}
+
+private struct KnowLink: Hashable {
+    let label: String
+    let url: String
+}
+
+private struct KnowItem: View {
+    let title: String
+    let text: String
+    let links: [KnowLink]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.headline).foregroundStyle(Theme.ink)
+            Text(text).font(.subheadline).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
+            ForEach(links, id: \.self) { link in
+                if let url = URL(string: link.url) {
+                    Link(destination: url) {
+                        Text("\(link.label) ↗").font(.subheadline).foregroundStyle(Theme.accent)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .surfaceCard(padding: 16)
+    }
+}
+
+/// m176: before a new day replaces the unrated Test B plan ("your Saturday plan").
+struct ReplaceTestBPlan: ViewModifier {
+    @Binding var isPresented: Bool
+    let replace: () -> Void
+
+    func body(content: Content) -> some View {
+        content.confirmationDialog("Replace your Saturday plan?", isPresented: $isPresented, titleVisibility: .visible) {
+            Button("Replace it") { replace() }
+            Button("Keep my Saturday plan", role: .cancel) {}
+        } message: {
+            Text("You haven't rated it yet. Going on that day and rating each stop helps the test most.")
+        }
+    }
+}
+
+extension View {
+    func confirmReplacingTestBPlan(_ isPresented: Binding<Bool>, replace: @escaping () -> Void) -> some View {
+        modifier(ReplaceTestBPlan(isPresented: isPresented, replace: replace))
     }
 }
 
@@ -600,20 +687,21 @@ struct WhenStep: View {
     }
 }
 
-/// The next 40 days in a strip: the first and last day in amber, the days between warm.
+/// The days ahead in a strip (as far as the Brain plans, about 11 months): the first and last day in amber, the days
+/// between warm. Drawn lazily, so the long strip costs nothing.
 struct DateStrip: View {
     @Binding var trip: Trip
     let custom: Bool
 
     private var days: [Date] {
         let today = Calendar.london.startOfDay(for: .now)
-        return (0..<40).compactMap { Calendar.london.date(byAdding: .day, value: $0, to: today) }
+        return (0..<330).compactMap { Calendar.london.date(byAdding: .day, value: $0, to: today) }
     }
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                LazyHStack(spacing: 8) {
                     ForEach(Array(days.enumerated()), id: \.offset) { i, day in
                         dayButton(day, first: i == 0).id(Dates.isoDay.string(from: day))
                     }
@@ -907,6 +995,8 @@ struct AirportPicker: View {
     let onPick: (TripPlace) -> Void
     @State private var query = ""
     @State private var found: [TripPlace] = []
+    @State private var searching = false
+    @State private var failed = false
 
     var body: some View {
         NavigationStack {
@@ -914,6 +1004,19 @@ struct AirportPicker: View {
                 LineField(placeholder: "A town, city or airport", text: $query)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
+                if searching && found.isEmpty {   // the free server may be waking (up to about a minute)
+                    HStack(spacing: 10) {
+                        ProgressView()
+                        Text("Searching… the first search can take up to a minute.")
+                            .font(.footnote).foregroundStyle(Theme.muted)
+                    }
+                } else if failed {
+                    Text("Couldn't reach the planner. Check your connection, then type again.")
+                        .font(.footnote).foregroundStyle(Theme.muted)
+                } else if !query.isEmpty && found.isEmpty {
+                    Text("No airports found for that. Try a city name or a three-letter code.")
+                        .font(.footnote).foregroundStyle(Theme.muted)
+                }
                 ScrollView {
                     VStack(spacing: 0) {
                         ForEach(found) { place in
@@ -947,7 +1050,16 @@ struct AirportPicker: View {
             }
             .task(id: query) {
                 try? await Task.sleep(for: .milliseconds(250))
-                if !Task.isCancelled, let places = try? await model.client.places(query) { found = places }
+                guard !Task.isCancelled else { return }
+                searching = true
+                failed = false
+                do {
+                    let places = try await model.client.places(query)
+                    if !Task.isCancelled { found = places }
+                } catch {
+                    if !Task.isCancelled && !(error is CancellationError) { failed = true; found = [] }
+                }
+                if !Task.isCancelled { searching = false }
             }
         }
     }
@@ -1001,12 +1113,18 @@ struct TripOverview: View {
                              title: trip.flight?.title ?? "Choose your flight", sub: flightSub(trip)) {
                     openBook(trip, .flights)
                 }
+                if trip.flight != nil {   // m176: a choice can be taken off the trip
+                    QuietButton("Remove this flight from the trip") { model.removeChoice("flight", from: trip.id) }
+                }
             }
             if trip.needStay {
                 TripStepCard(label: "\(trip.needFlight ? 2 : 1) · Where you'll stay",
                              status: .of(trip.stay, fits: trip.fits(trip.stay)),
                              title: trip.stay?.title ?? "Choose where to stay", sub: staySub(trip)) {
                     openBook(trip, .stays)
+                }
+                if trip.stay != nil {
+                    QuietButton("Remove this stay from the trip") { model.removeChoice("stay", from: trip.id) }
                 }
             }
             HStack(alignment: .firstTextBaseline) {
@@ -1042,6 +1160,7 @@ struct TripOverview: View {
             }
             TripTotal(trip: trip, flights: model.book.resultsFor == trip.id ? model.book.flights : nil,
                       stays: model.book.resultsFor == trip.id ? model.book.stays : nil)
+            TripGoodToKnow(trip: trip)
             QuietButton("Delete this trip") { confirmDelete = true }
         }
         .padding(.horizontal, 24)
@@ -1234,12 +1353,18 @@ struct TripDayView: View {
     let tripId: UUID
     let index: Int
     var scrollToEnd = false        // CI screenshots: the last day's way home
+    @State private var confirm = false
+    @State private var showSafety = false
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    BackLink { dismiss() }
+                    HStack {
+                        BackLink { dismiss() }
+                        Spacer()
+                        HelpPill { showSafety = true }   // m176: Help on every trip page
+                    }
                     if let trip = model.findTrip(tripId) {
                         let day = trip.days.first { $0.index == index }
                         let date = Calendar.london.date(byAdding: .day, value: index, to: trip.startDate) ?? trip.startDate
@@ -1265,11 +1390,9 @@ struct TripDayView: View {
                             ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
                             PrimaryButton(title: model.plan?.id == plan.id ? "This is your day" : "Make this my day",
                                           disabled: model.plan?.id == plan.id) {
-                                model.useDay(trip, day)
-                                var p = NavigationPath()
-                                p.append(TripDest.day)
-                                model.path = p
+                                if model.testBPlanAtRisk { confirm = true } else { use(trip, day) }
                             }
+                            .confirmReplacingTestBPlan($confirm) { use(trip, day) }
                             Text("Your day gets \"Now\", a nudge to rate each stop, and swapping a stop.")
                                 .font(.footnote)
                                 .foregroundStyle(Theme.muted)
@@ -1302,6 +1425,14 @@ struct TripDayView: View {
         .background(Theme.background)
         .toolbar(.hidden, for: .navigationBar)
         .statusBarShade()
+        .sheet(isPresented: $showSafety) { SafetyView() }
+    }
+
+    private func use(_ trip: Trip, _ day: TripDayOut) {
+        model.useDay(trip, day)
+        var p = NavigationPath()
+        p.append(TripDest.day)
+        model.path = p
     }
 }
 

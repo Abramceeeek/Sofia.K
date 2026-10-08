@@ -121,6 +121,16 @@ struct PairFlow: View {
             }
         }
         .background(Theme.background)
+        .overlay(alignment: .topTrailing) {
+            // m176: opened from home, it can be left for later (the comparison stays open on the Trip tab)
+            if model.showPair && !(model.pair?.done ?? false) {
+                Button("Not now") { model.showPair = false }
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.accent)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+            }
+        }
     }
 }
 

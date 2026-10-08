@@ -106,6 +106,18 @@ struct SafetyView: View {
                 Label("Call 999", systemImage: "phone.fill")
             }
             .buttonStyle(PillStyle(kind: .danger, height: 54))
+            // D123: urgent medical help that isn't an emergency (nhs.uk: "call 111 and ask for an interpreter")
+            Text("Urgent medical help that isn't an emergency: call NHS 111. You can ask for an interpreter.")
+                .font(.subheadline)
+                .foregroundStyle(Theme.emergencyText)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 4)
+            Button {
+                if let url = URL(string: "tel:111") { openURL(url) }
+            } label: {
+                Label("Call 111", systemImage: "cross.case")
+            }
+            .buttonStyle(PillStyle(kind: .secondary, height: 48))
         }
         .padding(18)
         .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
@@ -154,7 +166,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("What we store") {
-                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your trips stay on this phone; flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your location is never stored. Your trips stay on this phone; flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
                 }
                 .listRowBackground(Theme.surface)
                 Section {
@@ -167,6 +179,25 @@ struct SettingsView: View {
                     Text("Reminders")
                 } footer: {
                     Text("Set on your phone for the day of your plan. Nothing is sent.")
+                }
+                .listRowBackground(Theme.surface)
+                Section {
+                    // D123: location while you're out, on the phone only
+                    Toggle("Use my location while I'm out", isOn: Binding(
+                        get: { model.location.wanted },
+                        set: { on in
+                            if on { model.location.turnOn() } else { model.location.turnOff() }
+                            Task { await model.client.event(on ? "location_on" : "location_off") }
+                        }))
+                        .tint(Theme.accent)
+                    if model.location.wanted && model.location.deniedBySettings {
+                        Text("Location is off for ODYS in your phone's Settings, so the app can't use it.")
+                            .font(.footnote).foregroundStyle(Theme.muted)
+                    }
+                } header: {
+                    Text("Location")
+                } footer: {
+                    Text("Only while \"Now\" or \"Plan a day\" is open: how far your next stop is, and asking how it felt once you've left. It stays on your phone, except a start point you choose for a plan, sent rounded to about 100 m and not kept.")
                 }
                 .listRowBackground(Theme.surface)
                 Section("Where, and for how long") {

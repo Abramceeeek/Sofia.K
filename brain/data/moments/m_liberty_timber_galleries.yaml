@@ -33,6 +33,7 @@ best_time:
   company: null
   crowd_window: "Weekend afternoons are busiest (GUESS)"
   opening_hours: "Mon-Sat 10:00-20:00, Sun 12:00-18:00 (Liberty help centre, via search, 2026-09-30). Free to browse."
+  hours: "Mon–Sat 10:00–20:00, Sun 12:00–18:00. Free to browse"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}

@@ -36,6 +36,7 @@ best_time:
   company: null
   crowd_window: "Saturdays are the busiest; late weekday mornings are calmer (GUESS)"
   opening_hours: "Tue-Fri 10:00-17:00, Sat 09:00-17:00, Sun 10:00-16:00; closed Mondays (open daily in December). Checked 2026-09-27 via search"
+  hours: "Tue–Fri 10:00–17:00, Sat 09:00–17:00, Sun 10:00–16:00; closed Mondays (open daily in December)"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,
           crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}

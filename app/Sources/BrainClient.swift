@@ -105,6 +105,12 @@ final class BrainClient {
         return try await call("POST", "v1/me/plans", request)
     }
 
+    /// m176: the moments a plan can include, for "Must include".
+    func moments() async throws -> [MomentSummary] {
+        if demo { return [] }
+        return try await call("GET", "v1/moments?plannable_only=true")
+    }
+
     func referral() async throws -> ReferralResponse {
         if demo { return ReferralResponse(code: "DEMOCARD", text: "I think you'd love this day — try it") }
         return try await call("GET", "v1/me/referral")
@@ -188,6 +194,18 @@ final class BrainClient {
         Keychain.delete()
     }
 
+    /// m176: finishes a deletion made with no signal, with the old token. True once the Brain no longer holds the
+    /// data (deleted now, or already gone).
+    func deleteOld(token old: String) async -> Bool {
+        if demo { return true }
+        var request = URLRequest(url: base.appendingPathComponent("v1/me"))
+        request.httpMethod = "DELETE"
+        request.setValue("Bearer \(old)", forHTTPHeaderField: "Authorization")
+        guard let result = try? await session.data(for: request),
+              let code = (result.1 as? HTTPURLResponse)?.statusCode else { return false }
+        return (200..<300).contains(code) || code == 401 || code == 404
+    }
+
     func deleteMe() async throws {
         if !demo { _ = try await raw("DELETE", "v1/me", nil) }
         token = nil
@@ -246,22 +264,26 @@ final class BrainClient {
 
 /// The install token is a credential, so it lives in the Keychain, not in UserDefaults.
 enum Keychain {
-    private static let base: [String: Any] = [
-        kSecClass as String: kSecClassGenericPassword,
-        kSecAttrService as String: "days-out.brain",
-        kSecAttrAccount as String: "install-token",
-    ]
+    private static func base(_ account: String) -> [String: Any] {
+        [kSecClass as String: kSecClassGenericPassword,
+         kSecAttrService as String: "days-out.brain",
+         kSecAttrAccount as String: account]
+    }
 
-    static func save(_ value: String) {
-        SecItemDelete(base as CFDictionary)
-        var add = base
+    /// m176: the token of a "Delete my data" made with no signal, kept until the Brain has deleted it too.
+    static let pendingDelete = "pending-delete"
+
+    static func save(_ value: String, account: String = "install-token") {
+        let item = base(account)
+        SecItemDelete(item as CFDictionary)
+        var add = item
         add[kSecValueData as String] = Data(value.utf8)
         add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         SecItemAdd(add as CFDictionary, nil)
     }
 
-    static func load() -> String? {
-        var query = base
+    static func load(account: String = "install-token") -> String? {
+        var query = base(account)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var out: AnyObject?
@@ -271,7 +293,7 @@ enum Keychain {
         return String(data: data, encoding: .utf8)
     }
 
-    static func delete() {
-        SecItemDelete(base as CFDictionary)
+    static func delete(account: String = "install-token") {
+        SecItemDelete(base(account) as CFDictionary)
     }
 }

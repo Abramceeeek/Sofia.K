@@ -10,6 +10,21 @@ struct OnboardingView: View {
 
     var body: some View {
         NavigationStack {
+            VStack(spacing: 0) {
+            if model.step != .based, model.onboarding != nil, let previous = Step(rawValue: model.step.rawValue - 1) {
+                // m176: a way back to the step before (places and this-or-that also step back one at a time inside)
+                HStack {
+                    Button { withAnimation(Motion.settle) { model.back() } } label: {
+                        Text("‹ \(previous == .places && model.isVisitor ? "Kinds of places" : previous.title)")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.accent)
+                            .frame(minHeight: 36)
+                    }
+                    .accessibilityLabel("Back to \(previous.title)")
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+            }
             Group {
                 if let onboarding = model.onboarding {
                     switch model.step {
@@ -29,6 +44,7 @@ struct OnboardingView: View {
                 } else {
                     OnboardingLoading()
                 }
+            }
             }
             .background(Theme.background)
             .navigationTitle(model.stepTitle)
@@ -990,7 +1006,8 @@ struct ImproveView: View {
     @State private var morePlaces = false
     @State private var moreTasks = false
 
-    private enum Q: CaseIterable { case budget, company, chronotype, activity, fields, grewUp, foods, photos, shotCard }
+    // D123: "where did you grow up" and "foods you avoid" are no longer asked: the plans never used them
+    private enum Q: CaseIterable { case budget, company, chronotype, activity, fields, photos, shotCard }
 
     var body: some View {
         let current = step == -2 ? startAt : step
@@ -1064,7 +1081,7 @@ struct ImproveView: View {
             Text("About 30 seconds. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.")
                 .foregroundStyle(Theme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Your next plans use every answer.")
+            Text("Your budget and interests shape your next plans; the other answers help us test the idea.")   // D123: honest
                 .font(.footnote)
                 .foregroundStyle(Theme.muted)
             PrimaryButton(title: model.improved ? "Change my answers" : "Start") { go(0) }
@@ -1078,7 +1095,7 @@ struct ImproveView: View {
         VStack(alignment: .leading, spacing: 16) {
             ArchGlyph(width: 22).padding(.top, 12)
             PageTitle(text: "Thank you.")
-            Text("Your next plans will use these answers.")
+            Text("Your next plans will use your budget and interests.")
                 .foregroundStyle(Theme.inkSoft)
             let later = model.isVisitor ? [] : (model.onboarding?.swipePlacesLater ?? [])   // D116: not London places
             let laterTasks = model.onboarding?.conjointTasksLater ?? []
@@ -1146,20 +1163,10 @@ struct ImproveView: View {
             } else {
                 PrimaryButton(title: "Next") { go(5) }
             }
-        case .grewUp:
-            QuestionTitle(about["grew_up"]?.text ?? "Where did you grow up?")
-            ChoiceList(options: Labels.grewUp, selected: model.profile.grewUp) { model.profile.grewUp = $0; go(6) }
-            if let note = about["grew_up"]?.note { Text(note).font(.footnote).foregroundStyle(Theme.muted) }
-        case .foods:
-            QuestionTitle(about["foods_avoided"]?.text ?? "Any foods or drinks you avoid?")
-            LineField(placeholder: "For example: pork, alcohol", text: Binding(get: { model.profile.foodsAvoided ?? "" },
-                                                                               set: { model.profile.foodsAvoided = $0.isEmpty ? nil : $0 }))
-            if let note = about["foods_avoided"]?.note { Text(note).font(.footnote).foregroundStyle(Theme.muted) }
-            PrimaryButton(title: "Next") { go(7) }
         case .photos:
             QuestionTitle(photos.first?.text ?? "How much do photos and sharing matter on your trips?")
             ScaleRow(low: "Not at all", high: "A lot", value: $model.profile.photosMatter)
-            PrimaryButton(title: "Next", disabled: model.profile.photosMatter == nil) { go(8) }
+            PrimaryButton(title: "Next", disabled: model.profile.photosMatter == nil) { go(6) }
         case .shotCard:
             QuestionTitle(photos.count > 1 ? photos[1].text : "Some stops come with a shot card: where to stand for the best photo. Would that make you more likely to go?")
             if let card = model.onboarding?.exampleShotCard {
@@ -1167,7 +1174,7 @@ struct ImproveView: View {
                     .surfaceCard()
             }
             ScaleRow(low: "No", high: "Definitely", value: $model.profile.shotCardAppeal)
-            PrimaryButton(title: "Finish", disabled: model.profile.shotCardAppeal == nil) { go(9) }
+            PrimaryButton(title: "Finish", disabled: model.profile.shotCardAppeal == nil) { go(7) }
         }
     }
 }

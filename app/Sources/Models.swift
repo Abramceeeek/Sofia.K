@@ -317,6 +317,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let reveal: Bool?              // D119: the arrival is the moment, so the way in marks "The reveal"
     let lines: [String]?           // Build 2: the stop as text, in the Test B format (the blind pair shows only these)
     let bookAhead: String?         // journey audit: a booking the visit needs, from the card's checked source
+    let hours: String?             // m176: opening hours as people read them, from the card's checked source
 
     var id: String { momentId + "@" + arrive }
 
@@ -414,6 +415,15 @@ struct PlanRequest: Codable, Hashable {
     let familiar: Bool
     var keep: [String] = []
     var exclude: [String] = []
+    var intent: [String: String]? = nil    // m176: {"must_do": card id}, a place they want in the day
+}
+
+/// m176: a ready moment, for "Must include" on "Plan a day" (GET /v1/moments).
+struct MomentSummary: Codable, Hashable, Identifiable {
+    let id: String
+    let title: String
+    let status: String
+    let plannable: Bool?
 }
 
 struct RatingRequest: Codable {   // Codable: kept on the phone while there is no signal (journey audit)

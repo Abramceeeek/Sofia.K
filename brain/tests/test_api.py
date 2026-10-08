@@ -249,6 +249,18 @@ def test_example_day_needs_no_install_and_holds_nothing_personal(client):
     assert client.get("/v1/example-day").json() == day   # built once, then kept
 
 
+def test_answering_again_replaces_the_earlier_answer(client):
+    """m176: onboarding's Back lets people answer a place or a made-up day again; the fit counts each once."""
+    h, uid = install(client)
+    post = lambda r: client.post("/v1/me/swipes", headers=h, json={"items": [{"item": 4, "reaction": r}]})
+    assert post("loved").status_code == 204
+    n1 = client.get("/v1/me/weights", headers=h).json()["n_observations"]
+    assert post("didnt_enjoy").status_code == 204
+    assert client.get("/v1/me/weights", headers=h).json()["n_observations"] == n1
+    export = client.get("/v1/admin/export", headers=ADMIN).json()
+    assert [sw["reaction"] for sw in export["swipes"] if sw["user_id"] == uid] == ["didnt_enjoy"]
+
+
 def test_a_stop_that_needs_booking_says_so(tmp_path, test_moments):
     """Journey audit (7 Oct): Horizon 22 needs a booked slot; the stop says so, and stops without one say nothing."""
     data = tmp_path / "data"
@@ -269,6 +281,7 @@ def test_a_stop_that_needs_booking_says_so(tmp_path, test_moments):
         assert r.status_code == 201, r.text
         by_id = {st["moment_id"]: st for st in r.json()["stops"]}
     assert by_id["m_horizon_22"]["book_ahead"].startswith("Book a free time slot on horizon22.co.uk")
+    assert by_id["m_horizon_22"]["hours"].startswith("Mon–Fri 10:00–18:00")
     assert all(st["book_ahead"] == "" for k, st in by_id.items() if k != "m_horizon_22")
 
 

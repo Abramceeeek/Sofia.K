@@ -66,8 +66,6 @@ about_you:
   - {key: company, text: "Who do you usually go with?"}
   - {key: chronotype, text: "Morning person or night person?"}
   - {key: activity, text: "How active do you like a day to be?"}
-  - {key: grew_up, text: "What kind of place did you grow up in?", note: "Optional. Only used to guess what will feel new to you."}
-  - {key: foods_avoided, text: "Any foods or drinks you avoid?", note: "Optional. Only used to choose food stops, and you can skip it."}
 # D110: two separate questions; the example shot card sits with the second, labelled as an example, and isn't shown again
 photos:
   - {key: photos_matter, text: "How much do photos and sharing matter on your trips?", scale: "1 (not at all) - 5 (a lot)"}

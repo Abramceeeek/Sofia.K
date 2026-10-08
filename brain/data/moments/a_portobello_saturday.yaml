@@ -36,6 +36,7 @@ best_time:
   company: null
   crowd_window: "Saturday is the busiest day (CHECKED)"
   opening_hours: "Antique arcades Saturdays only, most 07:00 to about 16:00; traders usually 08:30-18:00 (visitportobello.com, 2026-09-30)."
+  hours: "Antique arcades Saturdays only, most about 07:00–16:00; stalls usually 08:30–18:00"   # shown on the stop (journey audit), from opening_hours above
   days: [sat]            # CHECKED: the antiques market is Saturday only
 features:
   place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,

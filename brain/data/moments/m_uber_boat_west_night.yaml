@@ -48,14 +48,18 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "RB1 river bus, daily; see best_time. Checked 2026-09-26"
+  hours: "River bus, every day"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
   moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
-# CHECKED: contactless adult single, "Central & East", fares from March 2026 (valid to 31 Oct 2026).
+# CHECKED (thamesclippers.com/prices, read 2026-10-08): contactless adult single, "Central & East", PEAK £13.70
+# (off-peak £11.40). Peak is Mon-Fri 09:27-06:35 and all day at weekends and bank holidays, so every daytime
+# plan pays peak. The TfL daily cap doesn't cover river buses. "These fares will remain effective until 31 October
+# 2026, after which revised fares will be issued": re-check on 1 Nov.
 # UNVERIFIED: that Greenwich -> Westminster is Central & East. Abram checks the charge next time (2026-09-27).
-cost_gbp: 11.40
+cost_gbp: 13.70
 cost_kind: ticket   # D100
 shot_card: null
 source: founder
-last_checked: "2026-09-27"
+last_checked: "2026-10-08"

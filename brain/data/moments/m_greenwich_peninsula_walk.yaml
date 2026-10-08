@@ -31,6 +31,7 @@ best_time:
   company: null
   crowd_window: "Quiet away from O2 event nights (GUESS)"
   opening_hours: "Riverside path always open; The Tide daily 07:00-22:00, free. greenwichpeninsula.co.uk via search, 2026-09-28"
+  hours: "Riverside path always open; The Tide daily 07:00–22:00. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 2,
           crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}

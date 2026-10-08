@@ -31,6 +31,7 @@ best_time:
   company: null
   crowd_window: "Busiest at weekday lunchtimes with City workers; many shops close at weekends (GUESS)"
   opening_hours: "Public areas open 24/7; shops, bars and restaurants set their own hours (leadenhallmarket.co.uk, 2026-09-30)."
+  hours: "Open 24 hours; shops and restaurants keep their own hours"   # shown on the stop (journey audit), from opening_hours above
   days: [mon, tue, wed, thu, fri]   # GUESS: most shops are open on weekdays; recheck before weekend plans
 features:
   place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,

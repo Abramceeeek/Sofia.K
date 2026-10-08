@@ -38,6 +38,7 @@ best_time:
   company: null
   crowd_window: "Arrive about 15 minutes early for a good seat (CHECKED)"
   opening_hours: "Choral Evensong most days at 17:00 (15:00 on Sunday); about 45 min; free and unticketed. Official site, read 2026-09-27"
+  hours: "Choral Evensong most days at 17:00 (15:00 on Sundays), about 45 min. Free, no ticket"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}

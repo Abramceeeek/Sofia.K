@@ -1,20 +1,31 @@
 import SwiftUI
 
 /// D119 (ODYS, new): "Now", the screen for while you're out. Quiet on purpose: the stop you're at, "Enjoy it. I'll stay
-/// quiet until you need me.", a slowly breathing arch, and what's next. "I'm done here" asks for the rating (only after
-/// the planned arrival, D110), then moves on to the next stop. Where you are in the day is kept per plan.
+/// quiet until you need me.", a slowly breathing arch, and what's next. "I'm done here" asks for the rating (the visit
+/// is over, D110), then moves on to the next stop. Where you are in the day is kept per plan. D123: with location on,
+/// how far the stop is, and the rating asked for once they've left it. m176: a trip day's journeys at each end.
 struct NowView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var rating: Stop?
     @State private var showSafety = false
     @State private var card: Stop?
+    @State private var arrived: Set<String> = []     // D123: stops the phone saw them reach, this session
+    @State private var asked: Set<String> = []       // and the ones already asked about after leaving
 
     var body: some View {
         let stops = model.plan?.stops ?? []
         let i = min(model.nowIndex, stops.count)
+        let tripDay = model.currentTripDay?.day
         NavigationStack {
+            ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if !model.location.asked && !model.client.demo && i < stops.count {
+                    LocationAsk()
+                }
+                if i == 0, let day = tripDay {   // m176: the trip's first journeys come before the first stop
+                    ForEach(day.journeys("arrive") + day.journeys("to_stay"), id: \.self) { JourneyCard(leg: $0) }
+                }
                 if i < stops.count {
                     let stop = stops[i]
                     Eyebrow("Now")
@@ -30,6 +41,11 @@ struct NowView: View {
                     .accessibilityHint("Opens the stop's card")
                     Text("Enjoy it. I'll stay quiet until you need me.")
                         .foregroundStyle(Theme.inkSoft)
+                    if let line = distanceLine(stop) {   // D123: from the phone's location, never sent
+                        Label(line, systemImage: "location.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.accent)
+                    }
                     Spacer(minLength: 12)
                     BreathingArch().frame(maxWidth: .infinity)
                     Spacer(minLength: 12)
@@ -38,6 +54,9 @@ struct NowView: View {
                     }
                     PrimaryButton(title: "I'm done here") { done(stop) }
                 } else {
+                    if let day = tripDay {   // m176: the way back for bags, and on to the airport or station
+                        ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
+                    }
                     Eyebrow("That's the day")
                     Text("Thank you for going.")
                         .font(Theme.hero)
@@ -60,7 +79,9 @@ struct NowView: View {
                     }
                 }
                 HStack {
-                    QuietButton("See the whole day") { dismiss() }
+                    if i < stops.count || model.nextTripDay != nil {   // m176: not twice on the last screen
+                        QuietButton("See the whole day") { dismiss() }
+                    }
                     Spacer()
                     QuietButton("Help") { showSafety = true }
                 }
@@ -68,6 +89,7 @@ struct NowView: View {
             .padding(.horizontal, 28)
             .padding(.top, 40)
             .padding(.bottom, 12)
+            }
             .background(Theme.calm.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $card) { StopView(stop: $0) }
@@ -76,6 +98,57 @@ struct NowView: View {
             RatingView(stop: stop, onNext: { model.advanceNow() })
         }
         .sheet(isPresented: $showSafety) { SafetyView() }
+        .onAppear { model.location.start() }
+        .onDisappear { model.location.stop() }
+        .onChange(of: model.location.here?.latitude) { _, _ in noticeArrival(stops, i) }
+    }
+
+    /// D123: "You're here", or how far the stop is, while location is on.
+    private func distanceLine(_ stop: Stop) -> String? {
+        guard model.location.usable, let pin = stop.pin, let m = model.location.metres(to: pin) else { return nil }
+        return m < 120 || arrived.contains(stop.id) && m < 250 ? "You're here" : Location.walkText(m)
+    }
+
+    /// D123: once the phone has seen them at the stop (within 120 m) and then about 250 m away, the visit is over, so
+    /// the rating is asked for once (D110: only after the visit). Nothing about where they are is sent.
+    private func noticeArrival(_ stops: [Stop], _ i: Int) {
+        guard model.location.usable, i < stops.count, rating == nil else { return }
+        let stop = stops[i]
+        guard let pin = stop.pin, let m = model.location.metres(to: pin) else { return }
+        if m < 120 { arrived.insert(stop.id); return }
+        if m > 250, arrived.contains(stop.id), !asked.contains(stop.id), stop.rateable, !model.rated.contains(stop.momentId) {
+            asked.insert(stop.id)
+            rating = stop
+            Task { await model.client.event("rating_on_leaving") }
+        }
+    }
+}
+
+/// D123: asked once, the first time "Now" opens, with equal-weight answers; iOS's own prompt comes only after a yes.
+struct LocationAsk: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Use your location while you're out?")
+                .font(.headline)
+                .foregroundStyle(Theme.ink)
+            Text("I'll show how far your next stop is, and ask how it felt once you've left. Your location stays on your phone.")
+                .font(.subheadline)
+                .foregroundStyle(Theme.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 10) {
+                SecondaryButton(title: "Yes, use it") {
+                    model.location.turnOn()
+                    Task { await model.client.event("location_on") }
+                }
+                SecondaryButton(title: "No thanks") {
+                    model.location.turnOff()
+                    Task { await model.client.event("location_off") }
+                }
+            }
+        }
+        .surfaceCard(padding: 16)
     }
 
     /// "I'm done here" says the visit is over, so an unrated stop asks for its rating whatever the planned time
@@ -192,7 +265,7 @@ struct RatingView: View {
                     .foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-            } else {
+            } else if !stop.momentId.hasPrefix("generic:") {   // m176: a generic Test B stop has no card to share
                 PrimaryButton(title: "Share this moment") { sharing = true }
             }
             SecondaryButton(title: onNext == nil ? "Done" : "On to the next stop") {

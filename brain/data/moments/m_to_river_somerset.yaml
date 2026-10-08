@@ -39,6 +39,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Strand entrance and River Terrace 08:00-23:00; courtyard free. Somerset House via search, 2026-09-28"
+  hours: "Strand entrance and River Terrace 08:00–23:00. Courtyard free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}

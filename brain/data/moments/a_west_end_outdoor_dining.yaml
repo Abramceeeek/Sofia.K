@@ -36,6 +36,7 @@ best_time:
   company: null
   crowd_window: "Busy streets are part of it (FOUNDER: watching the street)"
   opening_hours: "OshPaz Regent Street 11:00-22:00 (official). Angus Steakhouse Oxford Circus: heated terrace; hours not found. Checked 2026-09-27"
+  hours: "OshPaz Regent Street 11:00–22:00; other terraces keep their own hours"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 1}

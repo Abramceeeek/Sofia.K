@@ -33,6 +33,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Public streets"
+  hours: "Public streets: always open"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 1}

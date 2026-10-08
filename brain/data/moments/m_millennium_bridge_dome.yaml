@@ -37,6 +37,7 @@ best_time:
   company: null
   crowd_window: "Busiest at weekend afternoons (GUESS)"
   opening_hours: "Always open, free. Checked 2026-09-27 (Wikivoyage)"
+  hours: "Always open. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 1, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0,
           crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}

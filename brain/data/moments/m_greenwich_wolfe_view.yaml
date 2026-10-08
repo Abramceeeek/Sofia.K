@@ -36,6 +36,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Pedestrian gates 06:00-20:00 (Royal Parks, read 2026-09-27); as early as 18:00 in winter (RMG). Free"
+  hours: "Park gates from 06:00; they close from about 18:00 in winter. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}

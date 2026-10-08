@@ -34,6 +34,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "08:00 until dusk (gates 06:30-22:30 for facilities). Enable / Wandsworth via search, 2026-09-27"
+  hours: "Daily 08:00 until dusk. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}

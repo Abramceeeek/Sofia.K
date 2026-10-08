@@ -33,6 +33,7 @@ best_time:
   company: null
   crowd_window: "Busy is the point here: a full room"   # FOUNDER (the buzz)
   opening_hours: "Mon-Thu 12:00-23:00, Fri 15:00-23:00, Sat-Sun 12:00-23:00. Checked 2026-09-27 via search (meetbros.co.uk)"
+  hours: "Mon–Thu 12:00–23:00, Fri 15:00–23:00, Sat–Sun 12:00–23:00"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}

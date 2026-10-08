@@ -92,6 +92,21 @@ extension AppModel {
             self.surveyDone = true
             UserDefaults.standard.set(true, forKey: "surveyDone")
         }
+        if surveyDone, isVisitor, plan == nil, !client.demo { await visitorFirstDay() }
+    }
+
+    /// m176: visitors skip the Test B pair, so they'd reach the tabs with nothing made for them. A first London day
+    /// from their answers (next Saturday afternoon, from the centre) shows the value at once; "Plan a trip" sets their
+    /// real dates. Visitors stay outside the Test B analysis (D116).
+    func visitorFirstDay() async {
+        let saturday = Dates.nextSaturday()
+        await makePlan(date: saturday, start: Dates.time(12), end: Dates.time(17), stops: 4)
+        guard plan != nil else { return }
+        await client.event("visitor_first_day")
+        tab = .trip
+        var p = NavigationPath()
+        p.append(TripDest.day)
+        path = p
     }
 
     func startPair(_ intent: PairIntent) async {
@@ -127,6 +142,7 @@ extension AppModel {
         UserDefaults.standard.set(true, forKey: "pairDone")
         plan = chosen
         lastRequest = nil
+        UserDefaults.standard.set(chosen.id, forKey: "testBPlanId")   // m176: replacing it unrated asks first
         (rated, myRatings) = AppModel.savedRatings(for: chosen)
         revealPlanId = chosen.id
         AppModel.cache(chosen, "plan.json")
@@ -249,6 +265,14 @@ extension AppModel {
         if remindersOn { Task { await Reminders.schedule(dayPlan, rated: done) } }
     }
 
+    /// m176: the plan chosen in the Test B comparison, not rated yet, for today or later. Replacing it asks first,
+    /// because rating it on a real day is what the test needs most.
+    var testBPlanAtRisk: Bool {
+        guard let plan, !client.demo, plan.id == UserDefaults.standard.integer(forKey: "testBPlanId"), rated.isEmpty
+        else { return false }
+        return (plan.date ?? "") >= Dates.isoDay.string(from: .now)
+    }
+
     // ---- journey audit (7 Oct): the trip carried day by day ---------------------------------------------------
 
     /// During a trip: today's day (planned or not), unless today's plan is already "your day".
@@ -260,6 +284,15 @@ extension AppModel {
                                                          to: Dates.isoDay.date(from: today) ?? .now).day,
                   (0..<trip.dayCount).contains(i) else { continue }
             return (trip, i, trip.days.first { $0.index == i && $0.plan != nil })
+        }
+        return nil
+    }
+
+    /// The trip day the current plan is (m176: "Now" shows its journeys at each end).
+    var currentTripDay: (trip: Trip, day: TripDayOut)? {
+        guard let plan else { return nil }
+        for trip in trips {
+            if let d = trip.days.first(where: { $0.plan?.id == plan.id }) { return (trip, d) }
         }
         return nil
     }
@@ -298,6 +331,29 @@ extension AppModel {
         save(trip)
         Task { await client.event("handoff_answer", ["kind": choice.kind, "provider": choice.provider,
                                                      "answer": choice.booked ? "booked" : "saved"]) }
+    }
+
+    /// m176: after "Swap this stop" or "Regenerate" on a trip's day, the trip keeps the new day, so its day page and
+    /// "Make this my day" don't bring the old stops back. Only when the plan being changed is that trip day's plan.
+    func syncTripDay(from old: Plan?, to new: Plan) {
+        guard let old, var trip = trips.first(where: { $0.days.contains { $0.plan?.id == old.id } }),
+              let i = trip.days.firstIndex(where: { $0.plan?.id == old.id }) else { return }
+        let d = trip.days[i]
+        trip.days[i] = TripDayOut(index: d.index, date: d.date, kind: d.kind, title: d.title, plan: new,
+                                  window: d.window, before: d.before, legs: d.legs)
+        let base = { (p: Plan) in Set(p.stops.filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] }) }
+        trip.used = Array(Set(trip.used).subtracting(base(old)).union(base(new))).sorted()
+        save(trip)
+    }
+
+    /// m176: "Remove this flight / stay from the trip". Anything booked stays booked on the provider's site; the days
+    /// are marked to plan again, since they started from the stay or the flight's times.
+    func removeChoice(_ kind: String, from tripId: UUID) {
+        guard var trip = findTrip(tripId) else { return }
+        if kind == "flight" { trip.flight = nil } else { trip.stay = nil }
+        trip.daysStale = !trip.days.isEmpty
+        save(trip)
+        Task { await client.event("choice_removed", ["kind": kind]) }
     }
 
     // ---- the Book tab's search ---------------------------------------------------------------------------------

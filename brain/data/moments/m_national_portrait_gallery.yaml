@@ -31,6 +31,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Sun-Thu 10:30-18:00, Fri-Sat to 21:00; free. Official site via search, 2026-09-28"
+  hours: "Sun–Thu 10:30–18:00, Fri–Sat to 21:00. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}

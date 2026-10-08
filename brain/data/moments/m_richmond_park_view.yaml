@@ -38,6 +38,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Park open 24/7 to pedestrians; Pembroke Lodge 09:00-17:30. Deer rut Sept-Nov: keep at least 50 m from the deer. Royal Parks via search, 2026-09-27"
+  hours: "Open 24 hours to walkers; Pembroke Lodge 09:00–17:30. Keep 50 m from the deer in the rut (Sept–Nov)"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 0, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}

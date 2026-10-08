@@ -295,6 +295,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for it in body.items:
             if it.item not in app.state.swipe_items:
                 raise HTTPException(422, f"unknown swipe place {it.item}")
+            # m176: one answer per place; answering again (onboarding's Back) replaces it, so it isn't counted twice
+            for old in [sw for sw in user.swipes if sw.item == it.item]:
+                s.delete(old)
             s.add(db.Swipe(user_id=user.id, item=it.item, reaction=it.reaction))
         s.flush()
         s.refresh(user)
@@ -310,6 +313,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for it in body.items:
             if cats is None or it.key not in cats.items:
                 raise HTTPException(422, f"unknown category {it.key}")
+            for old in [a for a in user.categories if a.key == it.key]:   # m176: one answer per kind of place
+                s.delete(old)
             s.add(db.CategoryAnswer(user_id=user.id, key=it.key, reaction=it.reaction,
                                     want=it.want if it.reaction == "never_tried" else None))
         s.flush()
@@ -324,6 +329,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for it in body.items:
             if it.task not in app.state.tasks:
                 raise HTTPException(422, f"unknown task {it.task}")
+            for old in [c for c in user.choices if c.task == it.task]:   # m176: one choice per made-up day
+                s.delete(old)
             s.add(db.ConjointChoice(user_id=user.id, task=it.task, choice=it.choice))
         s.flush()
         s.refresh(user)

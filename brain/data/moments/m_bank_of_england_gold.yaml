@@ -36,6 +36,7 @@ best_time:
   company: null
   crowd_window: "Weekday mornings are likely quieter (GUESS)"
   opening_hours: "Mon-Fri 10:00-17:00 (last entry 16:30); third Thursday to 20:00; closed weekends, bank holidays, Fri 2 Oct and from 15:00 Fri 27 Nov. Free. Official site, read 2026-09-27"
+  hours: "Mon–Fri 10:00–17:00 (last entry 16:30), third Thursday to 20:00; closed weekends and bank holidays. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 2,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}

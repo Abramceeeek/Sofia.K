@@ -104,6 +104,10 @@ struct PlanFormView: View {
     @State private var start = Dates.time(12)
     @State private var end = Dates.time(17)
     @State private var stops = 4
+    @State private var fromHere = false           // D123: start from where I am (location, rounded on the phone)
+    @State private var mustDo: MomentSummary?     // m176: a place they want in the day
+    @State private var pickMust = false
+    @State private var confirm = false
 
     var body: some View {
         ScrollView {
@@ -152,8 +156,19 @@ struct PlanFormView: View {
                             if dir == .decrement, stops > 3 { stops -= 1 }
                         }
                     }
-                    FormRow(label: "Starting near", last: true) {
-                        Text(AppConfig.startName).foregroundStyle(Theme.muted)
+                    FormRow(label: "Starting near") {
+                        HStack(spacing: 8) {
+                            Chip(title: "Charing Cross", on: !fromHere, height: 40) { fromHere = false }
+                            Chip(title: "Where I am", on: fromHere, height: 40) { chooseHere() }
+                        }
+                    }
+                    FormRow(label: "Must include", last: true) {
+                        Button { pickMust = true } label: {
+                            Text(mustDo?.title ?? "Anything")
+                                .foregroundStyle(mustDo == nil ? Theme.muted : Theme.accent)
+                                .lineLimit(1)
+                        }
+                        .accessibilityHint("Optional: a place you want in the day")
                     }
                 }
                 .tint(Theme.accent)
@@ -161,22 +176,49 @@ struct PlanFormView: View {
                 .environment(\.locale, Locale(identifier: "en_GB"))
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
                 .settle(2)
-                Text("From \(AppConfig.startName), by the Trafalgar Square exit. Lunch is in the plan if the day spans midday.")
+                Text(startNote)
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
-                PrimaryButton(title: model.busy ? "Planning…" : "Make my day", disabled: model.busy || end <= start) {
-                    Task {
-                        await model.makePlan(date: date, start: start, end: end, stops: stops)
-                        if model.errorMessage == nil { onDone?() }
-                    }
+                PrimaryButton(title: model.busy ? "Planning…" : "Make my day",
+                              disabled: model.busy || end <= start || (fromHere && model.location.roundedHere == nil)) {
+                    if model.testBPlanAtRisk { confirm = true } else { make() }
                 }
+                .confirmReplacingTestBPlan($confirm) { make() }
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)
             .padding(.bottom, 32)
         }
         .background(Theme.background)
+        .sheet(isPresented: $pickMust) { MustIncludePicker(selected: $mustDo) }
+        .onDisappear { if !model.showNow { model.location.stop() } }
+    }
+
+    private var startNote: String {
+        if !fromHere {
+            return "From \(AppConfig.startName), by the Trafalgar Square exit. Lunch is in the plan if the day spans midday."
+        }
+        if model.location.deniedBySettings {
+            return "Location is off for ODYS. Turn it on in your phone's Settings, or start from Charing Cross."
+        }
+        return model.location.roundedHere == nil
+            ? "Finding where you are…"
+            : "From where you are now (sent rounded to about 100 m, and not kept). Lunch is in the plan if the day spans midday."
+    }
+
+    /// D123: "Where I am" asks for location the first time (ODYS's reason is in the permission text).
+    private func chooseHere() {
+        fromHere = true
+        if model.location.usable { model.location.start() } else { model.location.turnOn() }
+    }
+
+    private func make() {
+        Task {
+            await model.makePlan(date: date, start: start, end: end, stops: stops,
+                                 from: fromHere ? model.location.roundedHere : nil, mustDo: mustDo?.id)
+            if model.errorMessage == nil { onDone?() }
+        }
     }
 
     private var tomorrow: Date { Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now }
@@ -198,6 +240,55 @@ struct PlanFormView: View {
         let rounded = Calendar.current.date(byAdding: .minute, value: (30 - minute % 30) % 30, to: half) ?? half
         start = max(Dates.time(12), rounded)
         end = min(max(Dates.time(17), start.addingTimeInterval(3 * 3600)), Dates.time(22))
+    }
+}
+
+/// m176: "Must include": one of the checked moments, by name. Optional; the planner builds the day around it.
+struct MustIncludePicker: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    @Binding var selected: MomentSummary?
+    @State private var all: [MomentSummary] = []
+    @State private var query = ""
+    @State private var loading = true
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if loading {
+                    HStack(spacing: 10) { ProgressView(); Text("Loading places…").foregroundStyle(Theme.muted) }
+                }
+                Button("Anything (no must-include)") { selected = nil; dismiss() }
+                    .foregroundStyle(Theme.accent)
+                ForEach(shown) { m in
+                    Button {
+                        selected = m
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Text(m.title).foregroundStyle(Theme.ink)
+                            Spacer()
+                            if selected?.id == m.id { Image(systemName: "checkmark").foregroundStyle(Theme.accent) }
+                        }
+                    }
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
+            .searchable(text: $query, prompt: "Search places")
+            .serifTitle("Must include")
+            .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Cancel") { dismiss() } } }
+            .task {
+                if let list = try? await model.client.moments() {
+                    all = list.filter { $0.status == "ready" }.sorted { $0.title < $1.title }
+                }
+                loading = false
+            }
+        }
+    }
+
+    private var shown: [MomentSummary] {
+        query.isEmpty ? all : all.filter { $0.title.localizedCaseInsensitiveContains(query) }
     }
 }
 
@@ -1019,6 +1110,7 @@ struct MomentCardBody: View {
             DetailRows(rows: [
                 ("Best time and light", bestText),
                 ("What happens", stop.what),
+                ("Opening hours", stop.hours ?? ""),     // m176: checked on the card's own source
                 ("Book ahead", stop.bookAhead ?? ""),   // journey audit: Horizon 22, the Transport Museum, karting
                 ("Queue", (stop.queueMin ?? 0) > 0 ? "Allow about \(Int(stop.queueMin ?? 0)) min to queue." : ""),
                 ("Cost", stop.costText.replacingOccurrences(of: "Cost: ", with: "").capitalizedFirst),

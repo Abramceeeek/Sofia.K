@@ -33,6 +33,7 @@ best_time:
   company: "Friends, to share more dishes (GUESS)"
   crowd_window: "Busiest at weekend lunchtimes (GUESS)"
   opening_hours: "Restaurants' own hours; dim sum by day. chinatown.co.uk via search, 2026-09-28"
+  hours: "Restaurants keep their own hours; dim sum is served by day"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
           crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}

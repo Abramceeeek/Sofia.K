@@ -121,8 +121,10 @@ final class AppModel {
 
     let client: BrainClient
     let screen: String?
+    let location: Location                 // D123: where they are while out, on the phone only
 
     init() {
+        location = Location()
         let demo = AppConfig.demo
         let brain = BrainClient(base: AppConfig.baseURL, demo: demo)
         let screen = demo ? AppConfig.screen : nil
@@ -280,6 +282,16 @@ final class AppModel {
             step = n
             if !client.demo { UserDefaults.standard.set(n.rawValue, forKey: "onboardingStep") }
         }
+    }
+
+    /// m176: "‹ Back" to the step before. Answers already given stay filled in; sending them again replaces them on
+    /// the Brain (one answer per place, task and kind), so nothing is counted twice.
+    func back() {
+        guard let p = Step(rawValue: step.rawValue - 1) else { return }
+        reaction = nil
+        stepProgress = 0
+        step = p
+        if !client.demo { UserDefaults.standard.set(p.rawValue, forKey: "onboardingStep") }
     }
 
     // ---- D117: short reactions between answers, from the answer itself ------------------------------
@@ -457,12 +469,16 @@ final class AppModel {
 
     // ---- plans and ratings ------------------------------------------------------------------------
 
-    func makePlan(date: Date, start: Date, end: Date, stops: Int) async {
+    /// D123: `from` is "where you are", rounded to about 100 m on the phone (`Location.roundedHere`); m176: `mustDo` is
+    /// a card they want in the day.
+    func makePlan(date: Date, start: Date, end: Date, stops: Int, from: Point? = nil, mustDo: String? = nil) async {
         let day = Dates.isoDay.string(from: date)
-        let request = PlanRequest(start: AppConfig.start, startName: AppConfig.startName,
+        var request = PlanRequest(start: from ?? AppConfig.start, startName: from == nil ? AppConfig.startName : "where you are",
                                   startTime: Dates.hhmm.string(from: start), endTime: Dates.hhmm.string(from: end),
                                   date: day, stops: stops, familiar: true)
-        await fetchPlan(request)
+        if let mustDo { request.intent = ["must_do": mustDo] }
+        await fetchPlan(request, sameDay: false)   // a new day: any trip day it replaces as "your day" stays as it was
+        if from != nil { await client.event("plan_from_here") }
     }
 
     /// The same day again, e.g. after "Improve future plans": no stops kept, nothing left out.
@@ -477,6 +493,7 @@ final class AppModel {
     /// if nothing new fits. Off in the blind Test B comparison (Build 2).
     func regenerate() async {
         guard var request = lastRequest, let current = plan else { return }
+        request.intent = nil                   // a new day: the must-include goes with the old stops
         request.keep = []
         request.exclude = Array(Set(request.exclude + current.stops.filter(\.rateable).map(\.momentId))).sorted()
         await fetchPlan(request)
@@ -488,6 +505,7 @@ final class AppModel {
         guard var request = lastRequest, let current = plan else { return }
         request.keep = current.stops.filter { $0.id != stop.id }.map { $0.key ?? $0.momentId }
         request.exclude.append(stop.momentId)
+        if request.intent?["must_do"] == stop.momentId { request.intent = nil }   // they're swapping it out
         let before = Set(current.stops.map(\.momentId))
         await fetchPlan(request, swap: true)
         if let now = plan, now.id != current.id {
@@ -496,9 +514,12 @@ final class AppModel {
         }
     }
 
-    private func fetchPlan(_ request: PlanRequest, swap: Bool = false) async {
+    /// `sameDay`: the same day changed (swap, regenerate, re-plan), so a trip day it came from takes the new stops.
+    private func fetchPlan(_ request: PlanRequest, swap: Bool = false, sameDay: Bool = true) async {
+        let old = plan
         await run {
             let plan = try await self.client.makePlan(request)
+            if sameDay { self.syncTripDay(from: old, to: plan) }   // m176: a swapped trip day changes the trip too
             self.plan = plan
             self.lastRequest = request
             if !swap {
@@ -674,9 +695,25 @@ final class AppModel {
 
     func deleteMyData() async {
         await run {
-            try await self.client.deleteMe()
+            do {
+                try await self.client.deleteMe()
+            } catch let e as URLError where AppModel.noSignal(e) {
+                // m176: no signal. Everything on this phone goes now; the planner's copy goes the next time the app
+                // is online, with the old token kept in the Keychain for that alone.
+                if let token = self.client.token { Keychain.save(token, account: Keychain.pendingDelete) }
+                self.client.forget()
+                self.clearLocal()
+                self.errorMessage = "Deleted from this phone. The rest is deleted from the planner the next time you're online."
+                return
+            }
             self.clearLocal()
         }
+    }
+
+    /// m176: a deletion made with no signal, finished when the app is next online.
+    func finishPendingDelete() async {
+        guard let old = Keychain.load(account: Keychain.pendingDelete) else { return }
+        if await client.deleteOld(token: old) { Keychain.delete(account: Keychain.pendingDelete) }
     }
 
     /// Everything about the person kept on this phone, removed; back to Welcome. Used by "Delete my data" and when
@@ -737,6 +774,7 @@ final class AppModel {
         self.pendingRatings = []
         AppModel.cache(nil as [RatingRequest]?, "pending_ratings.json")
         AppModel.cache(nil as SavedHandoff?, "handoff.json")
+        self.location.forget()                 // D123: the location choice goes too
     }
 
     // ---- the current plan and its request stay on the phone ("Your plan is saved on this phone") -------

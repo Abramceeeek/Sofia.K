@@ -37,6 +37,7 @@ best_time:
   company: null
   crowd_window: "Off-peak: weekdays 09:00-16:00 (CHECKED: Better's peak times)"
   opening_hours: "Daily 06:30-21:00 (from Better's peak/off-peak times). Book a lane-swim session online; some sell out. Official site, read 2026-09-27"
+  hours: "Daily 06:30–21:00; book a lane-swim session online, as some sell out"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2,
           crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 2, photo_potential: 1}

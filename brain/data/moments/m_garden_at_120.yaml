@@ -37,6 +37,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Winter (1 Oct-31 Mar): daily 10:00-18:30, weekends to 17:00; summer to 21:00; closed bank holidays. Free, no booking (groups of 12+ book). No alcohol. Checked 2026-09-27 via search"
+  hours: "Until 31 Mar: daily 10:00–18:30, weekends to 17:00; closed bank holidays. Free, no booking"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 2,
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}

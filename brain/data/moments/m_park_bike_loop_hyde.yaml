@@ -34,6 +34,7 @@ best_time:
   company: null
   crowd_window: "Pedestrians have priority; weekends are busier (GUESS)"
   opening_hours: "Park gates 05:00-midnight. Cycling only on signed routes. Royal Parks, read 2026-09-27"
+  hours: "Park gates 05:00–midnight; cycle only on signed routes"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 2, outdoor_exposure: 2, photo_potential: 1}

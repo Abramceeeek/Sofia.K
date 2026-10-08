@@ -33,6 +33,7 @@ best_time:
   company: null
   crowd_window: "Weekday lunchtimes bring office workers (GUESS)"
   opening_hours: "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27"
+  hours: "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 2, iconic: 0, local_novel: 2,
           crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}

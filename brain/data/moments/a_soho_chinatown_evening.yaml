@@ -35,6 +35,7 @@ best_time:
   company: "Friends (FRIEND)"
   crowd_window: "Busy is the point"   # FRIEND
   opening_hours: "Public streets; restaurants' own hours"
+  hours: "Public streets; restaurants keep their own hours"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1,
           crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}

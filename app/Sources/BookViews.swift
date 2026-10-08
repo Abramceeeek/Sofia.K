@@ -146,9 +146,23 @@ struct BookHeader: View {
     @Environment(AppModel.self) private var model
     let trip: Trip
     let segment: BookState.Segment?
+    @State private var showSafety = false
 
     var body: some View {
         VStack(spacing: 10) {
+            HStack {   // m176: the way back to the trip, and Help, on Book too
+                Button {
+                    model.tab = .trip
+                    var p = NavigationPath()
+                    p.append(TripDest.trip(trip.id))
+                    model.path = p
+                } label: {
+                    Text("‹ Your trip").font(.subheadline).foregroundStyle(Theme.accent)
+                }
+                .accessibilityLabel("Back to your trip")
+                Spacer()
+                HelpPill { showSafety = true }
+            }
             if trip.needFlight && trip.needStay {
                 HStack(spacing: 0) {
                     segmentButton("Flights", .flights)
@@ -184,6 +198,7 @@ struct BookHeader: View {
         .background(Theme.background.opacity(0.96))
         .background(.ultraThinMaterial)
         .overlay(alignment: .bottom) { Rectangle().fill(Theme.hairline).frame(height: 1) }
+        .sheet(isPresented: $showSafety) { SafetyView() }
     }
 
     private func segmentButton(_ title: String, _ s: BookState.Segment) -> some View {
@@ -837,7 +852,7 @@ struct StayList: View {
             } else if let error = book.error {
                 ErrorCard(text: error) { Task { await model.search() } }
             } else {
-                LoadingCard(text: "Finding places to stay in \(trip.city)…")
+                LoadingCard(text: "Checking hundreds of places to stay in \(trip.city). This can take about 15 seconds…")
             }
         }
     }

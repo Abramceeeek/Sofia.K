@@ -31,6 +31,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "Mon-Fri 08:00-19:00, Sat 09:00-19:00, Sun 11:00-18:00 (burlingtonarcade.com, 2026-09-30). Free to walk through."
+  hours: "Mon–Fri 08:00–19:00, Sat 09:00–19:00, Sun 11:00–18:00. Free to walk through"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}

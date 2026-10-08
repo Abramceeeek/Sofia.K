@@ -33,6 +33,7 @@ best_time:
   company: null
   crowd_window: "Queues late on weekend nights (GUESS)"
   opening_hours: "Open 24/7. Official site, read 2026-09-27"
+  hours: "Open 24 hours, every day"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2,
           crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 1}

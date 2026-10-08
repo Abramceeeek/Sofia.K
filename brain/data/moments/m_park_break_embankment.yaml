@@ -32,6 +32,7 @@ best_time:
   company: null
   crowd_window: null
   opening_hours: "07:30 to 18:00 (16 Oct to end of BST), 16:30 after; free. Westminster City Council via search, 2026-09-28"
+  hours: "07:30–18:00 until the clocks go back, then 07:30–16:30. Free"   # shown on the stop (journey audit), from opening_hours above
 features:
   place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1,
           crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
