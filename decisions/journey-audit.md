@@ -16,6 +16,14 @@
 
 **What I did now (Claude, under D69, no scope change):** fixed the 12 bugs below that break the journey or lose test data; Claude ~9 h; Abram ~15 min to try the new build. **What needs Abram:** 5 decisions (bottom of this page). Everything else is ranked for "before strangers" (~27 Oct) or "after Test B" (D75).
 
+**Update, 8 Oct (D123, m176):**
+- Abram said yes to everything logical, so decisions 1–3 are done: no food or "grew up" questions, NHS 111, and "Good to know" on trips.
+- The rest of the findings are fixed: offline deletion, removing a choice, asking before replacing the Test B plan, a swapped trip day kept, journeys on "Now", Book's way back, more dates, "Must include", opening hours on every stop, onboarding Back, and a first day for visitors.
+- **Location while out** is added (on the phone only).
+- The Uber Boat cards now use peak fares (weekends are peak).
+- Still waiting on Abram: the paid server, and the TfL and Met Office keys.
+- The plan for the other apps' strengths is in `decisions/competitor-gaps-plan.md`.
+
 ---
 
 ## 1. The journey, step by step

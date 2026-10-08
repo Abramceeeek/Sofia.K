@@ -64,6 +64,9 @@
 | 58 | **One sentence in:** "a slow Sunday with good food near the river" turns into the day's settings, on top of the questions | 2026-10-07 | Journey audit (Gemini, Ask Maps and ChatGPT start from one sentence) | GUESS: Claude ~6 h | Needs an AI step on the person's words, so a consent change (`ai_processing` is off today, m117). Test it after Test B against completion and "felt understood" |
 | 59 | **Key screens in other languages** (for example Russian, Uzbek, Turkish), checked by native speakers | 2026-10-07 | Journey audit | GUESS: Claude ~10–20 h, plus reviewers | English only today. Card text would need translating too, card by card |
 | 60 | **The end of a trip:** a short recap of the days and the ratings, "how was it", and "plan the next one" | 2026-10-07 | Journey audit | GUESS: Claude ~4 h | Goes with #45. The trip now carries on day by day ("Today in your trip", "Tomorrow: Day N"); nothing happens after the last day yet |
+| 61 | **"Now" on the lock screen:** a Live Activity with the next stop, the leave-by time and a one-tap "How was it?" | 2026-10-08 | Competitor gaps (Citymapper, Flighty, Wallet) | GUESS: Claude ~8 h; Abram ~30 min (an App ID and profile for the widget extension in GitHub Secrets) | `decisions/competitor-gaps-plan.md` #7. Signing a second target could break the upload pipeline, so not before the tests |
+| 62 | **Price alerts** for a saved flight or stay, checked once a day | 2026-10-08 | Competitor gaps (TripIt Pro, Google) | GUESS: Claude ~10 h | Needs push notifications and a server job; search fees once Duffel is live |
+| 63 | **"People who like what you like rated this 4.6"**, from ODYS's own ratings | 2026-10-08 | Competitor gaps (reviews on Google and Tripadvisor) | GUESS: Claude ~6 h | Only after 50+ raters, and never below a minimum count per moment (privacy) |
 
 ## Rejected for now (D114, 30 Sep)
 

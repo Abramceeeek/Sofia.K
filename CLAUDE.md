@@ -103,7 +103,7 @@ Replace forms with a conversation that feels like talking to a well-travelled fr
 ## Personal context — ask for what's needed, not the sensitive category
 
 - Budget per trip/day — **not** income or financial situation.
-- Languages spoken, home city / where they grew up, food needs (halal, vegetarian, allergies) — **not** nationality. *Amended (D19): v0 asks one optional question, "Any foods or drinks you avoid?", with a one-line consent note, and **no allergy question**. Allergies are health data and halal may reveal religion (Area 12).*
+- Languages spoken, home city / where they grew up, food needs (halal, vegetarian, allergies) — **not** nationality. *Amended (D19): v0 asks one optional question, "Any foods or drinks you avoid?", with a one-line consent note, and **no allergy question**. Allergies are health data and halal may reveal religion (Area 12).* *Amended (D123, 8 Oct): the food and "where did you grow up" questions are no longer asked, because no plan used them. Ask again only once the planner uses the answer.*
 - Travel style: solo / friends / partner; morning or night person; activity level.
 - **Inspiring fields (D77, optional):** finance & tech / food / history & culture / nature / none. Art & design was dropped for Test B (D83). This asks about interests, never a job or employer.
   - It feeds `aspiration_match`, mapped onto moments in `brain/data/aspiration.yaml`.
@@ -165,12 +165,13 @@ The same profile matches **people**, not just places. Compatible trip-mates make
     - The first external TestFlight build is about the week of 9 Nov, behind the same gates.
     - The GitHub Actions pipeline builds for the simulator until Abram adds the signing secrets (D70e).
   - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.
-- **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`. **Roadmap to a real product (6 Oct):** `decisions/roadmap.md`: Stage 1 "real for testers" before strangers (live flights and hotels, TfL times, Met Office weather, a paid server), then the tests, then a public release only if Checkpoint 3 says go. *Proposed, awaiting Abram's go.* **Journey audit (7 Oct):** `decisions/journey-audit.md`, from onboarding to the flight home and against the free alternatives. The bugs it found are fixed (m175); five decisions wait for Abram.
+- **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`. **Roadmap to a real product (6 Oct):** `decisions/roadmap.md`: Stage 1 "real for testers" before strangers (live flights and hotels, TfL times, Met Office weather, a paid server), then the tests, then a public release only if Checkpoint 3 says go. *Proposed, awaiting Abram's go.* **Journey audit (7 Oct):** `decisions/journey-audit.md`, from onboarding to the flight home and against the free alternatives. Its findings are fixed (m175, m176), and decisions 1–3 are done (D123). **Location while out (D123):** asked on "Now", when in use only, on the phone; only a "Start from where I am" point leaves it, rounded to ~100 m and not kept. **Closing the gaps with other apps:** `decisions/competitor-gaps-plan.md` (proposed; new ideas wait for Checkpoint 3).
 - **Economics work is paused** unless a decision needs it (D52).
 
 ## Non-negotiable guardrails
 
 - Wellbeing/health data: explicit opt-in, clear purpose, easy deletion.
+- **Location (D123):** opt-in when it's first useful, "when in use" only, processed on the phone. Never stored on the server; never used to infer where someone lives.
 - Transcribe voice/video, then delete raw recordings unless the user chooses to keep them.
 - Frame as trip wellbeing — never psychological assessment or therapy.
 - Disclose AI-generated hosts.
