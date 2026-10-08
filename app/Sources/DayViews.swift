@@ -122,6 +122,16 @@ struct NowView: View {
             Task { await model.client.event("rating_on_leaving") }
         }
     }
+
+    /// "I'm done here" says the visit is over, so an unrated stop asks for its rating whatever the planned time
+    /// (journey audit: people ahead of the plan lost their ratings). Rated stops and lunch slots simply move on.
+    private func done(_ stop: Stop) {
+        if stop.rateable, !model.rated.contains(stop.momentId) {
+            rating = stop
+        } else {
+            withAnimation(Motion.settle) { model.advanceNow() }
+        }
+    }
 }
 
 /// D123: asked once, the first time "Now" opens, with equal-weight answers; iOS's own prompt comes only after a yes.
@@ -149,16 +159,6 @@ struct LocationAsk: View {
             }
         }
         .surfaceCard(padding: 16)
-    }
-
-    /// "I'm done here" says the visit is over, so an unrated stop asks for its rating whatever the planned time
-    /// (journey audit: people ahead of the plan lost their ratings). Rated stops and lunch slots simply move on.
-    private func done(_ stop: Stop) {
-        if stop.rateable, !model.rated.contains(stop.momentId) {
-            rating = stop
-        } else {
-            withAnimation(Motion.settle) { model.advanceNow() }
-        }
     }
 }
 
