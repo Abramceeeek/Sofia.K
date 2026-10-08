@@ -329,6 +329,13 @@ struct DemoScreen: View {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
         case "now": DayScreen().onAppear { model.nowIndex = 1; model.showNow = true }  // 10b (D119): during the day
+        case "nowend":                                                          // 10c: a trip's day done, tomorrow next
+            DayScreen().onAppear {
+                guard let trip = model.trips.first, let day = trip.days.first(where: { $0.index == 1 }) else { return }
+                model.useDay(trip, day)
+                model.nowIndex = day.plan?.stops.count ?? 0
+                model.showNow = true
+            }
         case "rating":                                                          // 11
             if let stop = demoStop { RatingView(stop: stop) }
         case "ratingdone":                                                      // 11a (D119): after saving

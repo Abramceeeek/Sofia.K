@@ -375,3 +375,25 @@ def test_trip_days_carry_legs_and_the_place_on_the_way(client):
     old = client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 1,
                                                             "arrive_time": "10:00", "leave_time": "20:00"}).json()
     assert old["days"][0]["legs"][0]["origin"]["name"] == "the airport"   # build 41 still works
+
+
+def test_one_day_changed_to_the_hours_the_person_is_free(client):
+    """Abram's comment (8 Oct, m177): "I'm meeting someone tomorrow." The app plans just that day again at the hours
+    they're free, without the trip's other days' places; the day may keep its own."""
+    h, _ = install(client)
+    start = date.today() + timedelta(days=4)
+    body = {"start_date": start.isoformat(), "nights": 2, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 3}
+    d = client.post("/v1/me/trips/days", headers=h, json=body).json()
+    middle = d["days"][1]
+    own = {st["moment_id"].split("#")[0] for st in middle["plan"]["stops"] if st["rateable"]}
+    others = [m for m in d["used"] if m not in own]
+    r = client.post("/v1/me/trips/days", headers=h, json={**body, "days": [1], "exclude": others,
+                                                          "day_start": "15:00", "day_end": "21:00", "stops_per_day": 2})
+    assert r.status_code == 201, r.text
+    day = r.json()["days"]
+    assert [x["index"] for x in day] == [1] and day[0]["window"]["start"] == "15:00"
+    stops = day[0]["plan"]["stops"]
+    assert stops[0]["arrive"] >= "15:00" and stops[-1]["depart"] <= "21:00"
+    places = [st["moment_id"].split("#")[0] for st in stops if st["rateable"]]
+    assert len(places) <= 2 and not set(places) & set(others)
+    assert set(others) <= set(r.json()["used"])          # the other days' places stay taken

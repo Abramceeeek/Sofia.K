@@ -237,13 +237,15 @@ extension AppModel {
     }
 
     /// D122: the person's hours and places a day, and how the trip starts and ends (flight, train or car).
-    private func daysRequest(_ trip: Trip, days: [Int], exclude: [String]) -> TripDaysRequest {
+    /// `hours`: one day's own hours and places, when the person changes that day (else the trip's).
+    private func daysRequest(_ trip: Trip, days: [Int], exclude: [String],
+                             hours: (from: String, to: String, places: Int)? = nil) -> TripDaysRequest {
         let ends = trip.ends
         return TripDaysRequest(destination: trip.destination, startDate: trip.start, nights: trip.nights,
                                feelings: trip.feelings, stay: trip.stay?.point, stayName: trip.stay?.title,
-                               days: days, exclude: exclude, dayStart: trip.dayFrom, dayEnd: trip.dayTo,
-                               stopsPerDay: trip.placesPerDay, travelLight: trip.travelLight,
-                               arrive: ends.arrive, leave: ends.leave)
+                               days: days, exclude: exclude, dayStart: hours?.from ?? trip.dayFrom,
+                               dayEnd: hours?.to ?? trip.dayTo, stopsPerDay: hours?.places ?? trip.placesPerDay,
+                               travelLight: trip.travelLight, arrive: ends.arrive, leave: ends.leave)
     }
 
     /// "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and regenerate.
@@ -297,7 +299,8 @@ extension AppModel {
         return nil
     }
 
-    /// At the end of a trip's day ("That's the day"): the next day of the same trip, if there is one.
+    /// At the end of a trip's day ("That's the day"): the next day of the same trip, if there is one (planned or not;
+    /// a travel day home has journeys but no plan).
     var nextTripDay: (trip: Trip, index: Int, day: TripDayOut?)? {
         guard let plan else { return nil }
         for trip in trips {
@@ -305,9 +308,64 @@ extension AppModel {
                     ?? (trip.id == currentTripId ? trip.days.first(where: { $0.date == plan.date }) : nil) else { continue }
             let i = current.index + 1
             guard i < trip.dayCount else { return nil }
-            return (trip, i, trip.days.first { $0.index == i && $0.plan != nil })
+            return (trip, i, trip.days.first { $0.index == i })
         }
         return nil
+    }
+
+    /// Abram's comment (8 Oct): the trip day dated tomorrow, to look at ahead of time (the evening before, too).
+    var tomorrowInTrip: (trip: Trip, index: Int, day: TripDayOut?)? {
+        guard !client.demo,
+              let tomorrow = Calendar.london.date(byAdding: .day, value: 1, to: Calendar.london.startOfDay(for: .now))
+        else { return nil }
+        for trip in trips {
+            guard let i = Calendar.london.dateComponents([.day], from: trip.startDate, to: tomorrow).day,
+                  (0..<trip.dayCount).contains(i) else { continue }
+            return (trip, i, trip.days.first { $0.index == i })
+        }
+        return nil
+    }
+
+    /// Plans a later day first, if it's one of the "as you go" days not planned yet.
+    func planTripDayIfNeeded(_ tripId: UUID, _ index: Int) async {
+        if findTrip(tripId)?.days.contains(where: { $0.index == index }) != true { await planDay(tripId, index) }
+    }
+
+    /// Opens one day of a trip on the Trip tab, to look at (and change) before it's "your day".
+    func openTripDay(_ tripId: UUID, _ index: Int, from source: String) {
+        tab = .trip
+        var p = NavigationPath()
+        p.append(TripDest.trip(tripId))
+        p.append(TripDest.tripDay(tripId, index))
+        path = p
+        Task { await client.event("trip_day_previewed", ["from": source, "day": "\(index + 1)"]) }
+    }
+
+    /// Abram's comment (8 Oct): one day planned again at the hours the person is free and with their places, around
+    /// plans they've made. The trip's other days keep their places; this day may keep some of its own. If it was
+    /// "your day", the new plan becomes your day.
+    func changeTripDay(_ tripId: UUID, _ index: Int, from: String, to: String, places: Int) async -> Bool {
+        guard var trip = findTrip(tripId) else { return false }
+        let old = trip.days.first { $0.index == index }
+        let base = { (p: Plan?) in (p?.stops ?? []).filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] } }
+        let own = Set(base(old?.plan) + base(old?.before))
+        let request = daysRequest(trip, days: [index], exclude: trip.used.filter { !own.contains($0) },
+                                  hours: (from, to, places))
+        var ok = false
+        await run {
+            let out = try await self.client.tripDays(request)
+            guard let new = out.days.first(where: { $0.index == index }) else { return }
+            trip.days.removeAll { $0.index == index }
+            trip.days.append(new)
+            trip.days.sort { $0.index < $1.index }
+            trip.used = out.used
+            self.save(trip)
+            if let was = old?.plan, self.plan?.id == was.id, new.plan != nil { self.useDay(trip, new) }
+            await self.client.event("trip_day_changed", ["day": "\(index + 1)", "from": from, "to": to,
+                                                         "places": "\(places)"])
+            ok = true
+        }
+        return ok
     }
 
     /// "Start today's day" / "Tomorrow: Day 3": plans the day first if it's one of the later, "as you go" days.

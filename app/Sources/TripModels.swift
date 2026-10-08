@@ -304,6 +304,11 @@ struct LegSpot: Codable, Hashable {
     var query: String? { maps ?? lat.flatMap { la in lon.map { "\(la),\($0)" } } }
 }
 
+/// For "Change this day" (a sheet per day): a trip's days are numbered from 0.
+extension TripDayOut: Identifiable {
+    var id: Int { index }
+}
+
 struct DayWindow: Codable, Hashable {
     let start: String
     let end: String
@@ -481,6 +486,8 @@ extension Dates {
     static let weekdayShort: DateFormatter = make("EEE")
     /// "Oct"
     static let monthShort: DateFormatter = make("MMM")
+    /// "October 2026"
+    static let monthYear: DateFormatter = make("MMMM yyyy")
 
     private static func make(_ format: String) -> DateFormatter {
         let f = DateFormatter()

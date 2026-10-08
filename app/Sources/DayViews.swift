@@ -4,6 +4,7 @@ import SwiftUI
 /// quiet until you need me.", a slowly breathing arch, and what's next. "I'm done here" asks for the rating (the visit
 /// is over, D110), then moves on to the next stop. Where you are in the day is kept per plan. D123: with location on,
 /// how far the stop is, and the rating asked for once they've left it. m176: a trip day's journeys at each end.
+/// Abram's comment (8 Oct): at the end of a trip's day, "Preview tomorrow", where the day can still be changed.
 struct NowView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -71,12 +72,18 @@ struct NowView: View {
                     Spacer(minLength: 12)
                     BreathingArch().frame(maxWidth: .infinity)
                     Spacer(minLength: 12)
-                    if let next = model.nextTripDay {   // journey audit: a trip goes on to its next day
-                        PrimaryButton(title: model.busy ? "Planning…" : "Tomorrow: Day \(next.index + 1)",
+                    if let next = model.nextTripDay {   // Abram's comment (8 Oct): look at tomorrow tonight
+                        Text("Tomorrow is Day \(next.index + 1). Have a look tonight: if you've made other plans, change its hours and I'll plan around them.")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                        PrimaryButton(title: model.busy ? "Planning…" : "Preview tomorrow: Day \(next.index + 1)",
                                       disabled: model.busy) {
                             Task {
-                                await model.goToTripDay(next.trip.id, next.index)
+                                await model.planTripDayIfNeeded(next.trip.id, next.index)
                                 dismiss()
+                                try? await Task.sleep(for: .milliseconds(450))   // the cover closes, then the trip opens
+                                model.openTripDay(next.trip.id, next.index, from: "now")
                             }
                         }
                     } else {

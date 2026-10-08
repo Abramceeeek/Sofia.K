@@ -210,6 +210,8 @@ struct TripHome: View {
                 PageTitle(text: "Where to next?", font: Theme.display).settle(0)
                 if let today = model.todayInTrip {   // journey audit: during a trip, today comes first
                     TodayInTripCard(trip: today.trip, index: today.index, day: today.day).settle(1)
+                } else if let next = model.tomorrowInTrip {   // Abram's comment (8 Oct): then tomorrow, to look ahead
+                    TomorrowInTripCard(trip: next.trip, index: next.index, day: next.day).settle(1)
                 }
                 PlanTripCard { model.showCreate = true }.settle(1)
                 if !model.pairDone, !model.isVisitor, !model.client.demo {
@@ -278,6 +280,43 @@ struct TodayInTripCard: View {
             await model.goToTripDay(trip.id, index)
             if model.plan?.date == Dates.isoDay.string(from: .now) { model.path.append(TripDest.day) }
         }
+    }
+}
+
+/// Abram's comment (8 Oct): "Tomorrow · Day 3 of 6", once today is under way (or the evening before the trip). One tap
+/// to look at it, so there's time to say "I'm meeting someone" and have the day planned around it.
+struct TomorrowInTripCard: View {
+    @Environment(AppModel.self) private var model
+    let trip: Trip
+    let index: Int
+    let day: TripDayOut?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Eyebrow("Tomorrow · Day \(index + 1) of \(trip.dayCount)")
+            Text(day?.title ?? "Your \(trip.city) trip")
+                .font(Theme.serif(24, relativeTo: .title2))
+                .foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            if let first = day?.plan?.stops.first {
+                Text("First: \(first.title), around \(first.arrive)")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text("Made other plans? Change the day's hours, and I'll plan around them.")
+                .font(.footnote)
+                .foregroundStyle(Theme.muted)
+                .fixedSize(horizontal: false, vertical: true)
+            SecondaryButton(title: model.busy ? "Planning…" : (day == nil ? "Plan tomorrow" : "See tomorrow"),
+                            disabled: model.busy) {
+                Task {
+                    await model.planTripDayIfNeeded(trip.id, index)
+                    model.openTripDay(trip.id, index, from: "home")
+                }
+            }
+        }
+        .surfaceCard(padding: 20)
     }
 }
 
@@ -475,20 +514,12 @@ struct TripCreateFlow: View {
     @Environment(\.dismiss) private var dismiss
     @State private var trip: Trip
     @State private var step: Int
-    @State private var lengthKey: String
     @State private var showAirports = false
     let editing: Bool
-
-    static let lengths: [(key: String, label: String, nights: Int?, sub: String)] = [
-        ("day", "One day", 0, "Just the moments"), ("wknd", "A weekend", 2, "2 nights"), ("week", "A week", 6, "6 nights"),
-        ("two", "Two weeks", 13, "13 nights"), ("custom", "Custom", nil, "Any number of nights"),
-    ]
 
     init(trip: Trip, editing: Bool, startAt: Int? = nil) {
         _trip = State(initialValue: trip)
         _step = State(initialValue: startAt ?? (editing ? 1 : 0))
-        let key = Self.lengths.first { $0.nights == trip.nights }?.key ?? "custom"
-        _lengthKey = State(initialValue: key)
         self.editing = editing
     }
 
@@ -499,7 +530,7 @@ struct TripCreateFlow: View {
                 VStack(alignment: .leading, spacing: 16) {
                     switch step {
                     case 0: WhereStep()
-                    case 1: WhenStep(trip: $trip, lengthKey: $lengthKey)
+                    case 1: WhenStep(trip: $trip)
                     case 2: FromStep(trip: $trip, showAirports: $showAirports)
                     case 3: DaysStep(trip: $trip)
                     default: FeelStep(trip: $trip)
@@ -632,115 +663,181 @@ struct CityLine: View {
     }
 }
 
+/// Screen 21 (Abram's comment, 8 Oct): "When are you going?" on a calendar, as in Skyscanner and the booking apps.
+/// The first tap is the first day and a tap on a later day is the last; one day on its own is a day out. No lengths
+/// to choose first, and no counting nights.
 struct WhenStep: View {
     @Binding var trip: Trip
-    @Binding var lengthKey: String
-
-    private var isCustom: Bool { lengthKey == "custom" }
+    @State private var pickingEnd = false     // after a first tap: the next tap on that day or later is the last day
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            PageTitle(text: "How long for?", font: Theme.h1)
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                ForEach(TripCreateFlow.lengths.filter { $0.nights != nil }, id: \.key) { l in
-                    OptionTile(label: l.label, sub: l.sub, on: lengthKey == l.key, serif: true, offFill: Theme.surface,
-                               offStroke: .clear) {
-                        lengthKey = l.key
-                        trip.nights = l.nights ?? trip.nights
-                    }
-                }
-            }
-            OptionTile(label: "Custom", sub: isCustom ? "\(trip.nights) night\(trip.nights == 1 ? "" : "s")" : "Any number of nights",
-                       on: isCustom, serif: true, offFill: Theme.surface, offStroke: .clear) { lengthKey = "custom" }
-            if isCustom { nightsStepper }
-            Text(isCustom ? "Tap the first day, then the last day" : "Starting")
+        VStack(alignment: .leading, spacing: 14) {
+            PageTitle(text: "When are you going?", font: Theme.h1)
+            Text(pickingEnd ? "Now tap your last day. Tap the same day again for a day out."
+                            : "Tap your first day, then your last day.")
                 .font(.subheadline)
                 .foregroundStyle(Theme.muted)
-                .padding(.top, 6)
-            DateStrip(trip: $trip, custom: isCustom)
-                .padding(.horizontal, -24)
-            Text(trip.rangeLong)
-                .font(Theme.serif(21, relativeTo: .title3))
-                .foregroundStyle(Theme.ink)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+                .fixedSize(horizontal: false, vertical: true)
+                .animation(nil, value: pickingEnd)
+            TripCalendar(trip: $trip, pickingEnd: $pickingEnd)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(trip.rangeLong)
+                    .font(Theme.serif(21, relativeTo: .title3))
+                    .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(lengthWords)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            .accessibilityElement(children: .combine)
         }
     }
 
-    private var nightsStepper: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("How many nights").font(.footnote).foregroundStyle(Theme.muted)
-                Text("\(trip.nights) night\(trip.nights == 1 ? "" : "s")").foregroundStyle(Theme.ink)
-            }
-            Spacer()
-            RoundIcon(name: "minus", disabled: trip.nights <= 1) { trip.nights = max(1, trip.nights - 1) }
-                .accessibilityLabel("One night fewer")
-            RoundIcon(name: "plus", disabled: trip.nights >= 30) { trip.nights = min(30, trip.nights + 1) }
-                .accessibilityLabel("One night more")
-        }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 10)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    /// "A day out", "A weekend: 3 days, 2 nights", "7 days, 6 nights" (up to 30 nights).
+    private var lengthWords: String {
+        if trip.nights == 0 { return pickingEnd ? "A day out, unless you tap a later day" : "A day out: no stay needed" }
+        let days = "\(trip.dayCount) days, \(trip.nights) night\(trip.nights == 1 ? "" : "s")"
+        let firstDay = Calendar.london.component(.weekday, from: trip.startDate)   // Sunday 1 … Saturday 7
+        return trip.nights <= 2 && (firstDay == 6 || firstDay == 7) ? "A weekend: \(days)" : days
     }
 }
 
-/// The days ahead in a strip (as far as the Brain plans, about 11 months): the first and last day in amber, the days
-/// between warm. Drawn lazily, so the long strip costs nothing.
-struct DateStrip: View {
+/// A month at a time, Monday first: the first and last day in amber, the days between warm. Days before today, more
+/// than about 11 months ahead (as far as the Brain plans) or more than 30 nights after the first day can't be tapped.
+struct TripCalendar: View {
     @Binding var trip: Trip
-    let custom: Bool
+    @Binding var pickingEnd: Bool
+    @State private var month: Date              // the first of the month on show
 
-    private var days: [Date] {
-        let today = Calendar.london.startOfDay(for: .now)
-        return (0..<330).compactMap { Calendar.london.date(byAdding: .day, value: $0, to: today) }
+    private static let maxNights = 30
+    private static let band = Color(hex: 0x3A2F1C)
+
+    init(trip: Binding<Trip>, pickingEnd: Binding<Bool>) {
+        _trip = trip
+        _pickingEnd = pickingEnd
+        let first = max(trip.wrappedValue.startDate, Calendar.london.startOfDay(for: .now))
+        _month = State(initialValue: Self.monthStart(first))
+    }
+
+    private var cal: Calendar { Calendar.london }
+    private var today: Date { cal.startOfDay(for: .now) }
+    private var lastStart: Date { cal.date(byAdding: .day, value: 329, to: today) ?? today }
+    private var canGoBack: Bool { month > Self.monthStart(today) }
+    private var canGoOn: Bool {
+        month < Self.monthStart(cal.date(byAdding: .day, value: Self.maxNights, to: lastStart) ?? lastStart)
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 8) {
-                    ForEach(Array(days.enumerated()), id: \.offset) { i, day in
-                        dayButton(day, first: i == 0).id(Dates.isoDay.string(from: day))
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 4)
+        VStack(spacing: 8) {
+            HStack {
+                RoundIcon(name: "chevron.left", disabled: !canGoBack) { shift(-1) }
+                    .accessibilityLabel("Previous month")
+                Spacer()
+                Text(Dates.monthYear.string(from: month))
+                    .font(Theme.serif(20, relativeTo: .title3))
+                    .foregroundStyle(Theme.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                RoundIcon(name: "chevron.right", disabled: !canGoOn) { shift(1) }
+                    .accessibilityLabel("Next month")
             }
-            .onAppear { proxy.scrollTo(trip.start, anchor: .leading) }   // the first day in view, not today
+            HStack(spacing: 0) {
+                ForEach(Array(["M", "T", "W", "T", "F", "S", "S"].enumerated()), id: \.offset) { _, d in
+                    Text(d).font(.caption).foregroundStyle(Theme.muted).frame(maxWidth: .infinity)
+                }
+            }
+            .accessibilityHidden(true)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 4) {
+                ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
+                    if let day { dayCell(day) } else { Color.clear.frame(height: 44) }
+                }
+            }
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20))
+        .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { g in   // a sideways swipe turns the page
+            guard abs(g.translation.width) > abs(g.translation.height) * 2 else { return }   // not the page scrolling
+            if g.translation.width < -40, canGoOn { shift(1) } else if g.translation.width > 40, canGoBack { shift(-1) }
+        })
     }
 
-    private func dayButton(_ day: Date, first: Bool) -> some View {
+    /// The month's days, after blanks for the days before the 1st (Monday first).
+    private var cells: [Date?] {
+        let weekday = cal.component(.weekday, from: month)          // Sunday 1 … Saturday 7
+        let blanks = (weekday + 5) % 7
+        let count = cal.range(of: .day, in: .month, for: month)?.count ?? 30
+        return Array(repeating: nil, count: blanks)
+            + (0..<count).map { cal.date(byAdding: .day, value: $0, to: month) }
+    }
+
+    private func dayCell(_ day: Date) -> some View {
         let iso = Dates.isoDay.string(from: day)
         let isStart = iso == trip.start
         let isEnd = trip.nights > 0 && iso == trip.end
-        let inRange = iso > trip.start && iso < trip.end
-        let showMonth = first || Calendar.london.component(.day, from: day) == 1
-        return Button {
-            Haptics.light()
-            if custom, iso > trip.start {
-                let n = Calendar.london.dateComponents([.day], from: trip.startDate, to: day).day ?? trip.nights
-                trip.nights = min(max(n, 1), 30)
-            } else {
-                trip.start = iso
+        let inRange = trip.nights > 0 && iso > trip.start && iso < trip.end
+        let open = canTap(day)
+        return Button { tap(iso, day) } label: {
+            ZStack {
+                HStack(spacing: 0) {   // the warm band from the first day to the last
+                    (isEnd || inRange ? Self.band : Color.clear)
+                    ((isStart && trip.nights > 0) || inRange ? Self.band : Color.clear)
+                }
+                .frame(height: 40)
+                if isStart || isEnd {
+                    Circle().fill(Theme.accent).frame(width: 40, height: 40)
+                } else if day == today {
+                    Circle().stroke(Theme.outlineStrong, lineWidth: 1).frame(width: 40, height: 40)
+                }
+                Text(Dates.dayNum.string(from: day))
+                    .font(.body.weight(isStart || isEnd ? .semibold : .regular))
+                    .monospacedDigit()
+                    .foregroundStyle(isStart || isEnd ? Theme.onAccent : (open ? Theme.ink : Theme.muted.opacity(0.45)))
             }
-        } label: {
-            VStack(spacing: 2) {
-                Text(Dates.weekdayShort.string(from: day)).font(.caption).opacity(0.8)
-                Text(Dates.dayNum.string(from: day)).font(.title3.weight(.semibold))
-                Text(showMonth ? Dates.monthShort.string(from: day) : " ").font(.caption2).opacity(0.8)
-            }
-            .foregroundStyle(isStart || isEnd ? Theme.onAccent : Theme.ink)
-            .frame(width: 52, height: 74)
-            .background(isStart || isEnd ? Theme.accent : (inRange ? Color(hex: 0x3A2F1C) : Theme.surface),
-                        in: RoundedRectangle(cornerRadius: 16))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
         }
-        .buttonStyle(PressStyle())
+        .buttonStyle(.plain)
+        .disabled(!open)
         .accessibilityLabel(Dates.dayName.string(from: day))
+        .accessibilityValue(isStart ? "First day" : isEnd ? "Last day" : inRange ? "In your trip" : "")
         .accessibilityAddTraits(isStart || isEnd ? .isSelected : [])
+    }
+
+    private func canTap(_ day: Date) -> Bool {
+        guard day >= today else { return false }
+        if pickingEnd, day >= trip.startDate {
+            return (cal.dateComponents([.day], from: trip.startDate, to: day).day ?? 0) <= Self.maxNights
+        }
+        return day <= lastStart
+    }
+
+    /// The first tap is the first day; the next tap on that day or later is the last day (the same day: a day out).
+    /// A tap on an earlier day, or after a whole trip is chosen, starts again from that day.
+    private func tap(_ iso: String, _ day: Date) {
+        Haptics.light()
+        if pickingEnd, iso >= trip.start {
+            trip.nights = min(cal.dateComponents([.day], from: trip.startDate, to: day).day ?? 0, Self.maxNights)
+            pickingEnd = false
+        } else {
+            trip.start = iso
+            trip.nights = 0
+            pickingEnd = true
+        }
+    }
+
+    private func shift(_ by: Int) {
+        withAnimation(.easeOut(duration: 0.2)) { month = cal.date(byAdding: .month, value: by, to: month) ?? month }
+    }
+
+    private static func monthStart(_ d: Date) -> Date {
+        let c = Calendar.london
+        return c.date(from: c.dateComponents([.year, .month], from: d)) ?? d
     }
 }
 
@@ -1353,8 +1450,10 @@ struct TripDayView: View {
     let tripId: UUID
     let index: Int
     var scrollToEnd = false        // CI screenshots: the last day's way home
+    var openChange = false         // CI screenshots: "Change this day" open
     @State private var confirm = false
     @State private var showSafety = false
+    @State private var changing: TripDayOut?
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -1396,7 +1495,11 @@ struct TripDayView: View {
                             Text("Your day gets \"Now\", a nudge to rate each stop, and swapping a stop.")
                                 .font(.footnote)
                                 .foregroundStyle(Theme.muted)
-                                .id("end")
+                            // Abram's comment (8 Oct): plans change; the day is planned again around them
+                            SecondaryButton(title: "Made other plans? Change this day", icon: "clock.arrow.circlepath") {
+                                changing = day
+                            }
+                            .id("end")
                         } else if day == nil {
                             PrimaryButton(title: model.busy ? "Planning…" : "Plan this day", disabled: model.busy) {
                                 Task { await model.planDay(tripId, index) }
@@ -1418,6 +1521,7 @@ struct TripDayView: View {
                 .padding(.bottom, 40)
             }
             .onAppear {
+                if openChange { changing = model.findTrip(tripId)?.days.first { $0.index == index } }
                 guard scrollToEnd else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { proxy.scrollTo("end", anchor: .bottom) }
             }
@@ -1426,6 +1530,9 @@ struct TripDayView: View {
         .toolbar(.hidden, for: .navigationBar)
         .statusBarShade()
         .sheet(isPresented: $showSafety) { SafetyView() }
+        .sheet(item: $changing) { day in
+            if let trip = model.findTrip(tripId) { ChangeDaySheet(trip: trip, day: day) }
+        }
     }
 
     private func use(_ trip: Trip, _ day: TripDayOut) {
@@ -1433,6 +1540,100 @@ struct TripDayView: View {
         var p = NavigationPath()
         p.append(TripDest.day)
         model.path = p
+    }
+}
+
+/// Abram's comment (8 Oct): "I'm meeting someone tomorrow." The hours they're free and how many places, then the day
+/// planned again around them. The trip's other days stay as they are; this day may keep some of its own places.
+struct ChangeDaySheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let trip: Trip
+    let day: TripDayOut
+    @State private var from: String
+    @State private var to: String
+    @State private var places: Int
+
+    init(trip: Trip, day: TripDayOut) {
+        self.trip = trip
+        self.day = day
+        // the arrival and leaving days keep the person's own hours: the journeys set their real start and end
+        _from = State(initialValue: day.kind == "arrive" ? trip.dayFrom : (day.window?.start ?? trip.dayFrom))
+        _to = State(initialValue: day.kind == "leave" ? trip.dayTo : (day.window?.end ?? trip.dayTo))
+        _places = State(initialValue: trip.placesPerDay)
+    }
+
+    private var tooShort: Bool { Self.minutes(to) - Self.minutes(from) < 60 }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                QuietButton("Cancel", color: Theme.accent) { dismiss() }
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    Eyebrow("Day \(day.index + 1) · \(Dates.shortDay(day.date))")
+                    PageTitle(text: "Change this day", font: Theme.h1)
+                    Text("Meeting someone, or made other plans? Tell me when you're free, and I'll plan the day again around it. Your other days stay as they are.")
+                        .foregroundStyle(Theme.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                    TimeMenu(label: "Free from", time: $from)
+                    TimeMenu(label: "Until", time: $to)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Places").font(.footnote).foregroundStyle(Theme.muted)
+                            Text("\(places) place\(places == 1 ? "" : "s"), lunch on top").foregroundStyle(Theme.ink)
+                        }
+                        Spacer()
+                        RoundIcon(name: "minus", disabled: places <= 1) { places -= 1 }
+                            .accessibilityLabel("One place fewer")
+                        RoundIcon(name: "plus", disabled: places >= 6) { places += 1 }
+                            .accessibilityLabel("One place more")
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 10)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+                    if tooShort {
+                        Text("Leave at least an hour between the two times.")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.accent)
+                    }
+                    Text(note)
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+            }
+        }
+        .background(Theme.background)
+        .safeAreaInset(edge: .bottom) {
+            PrimaryButton(title: model.busy ? "Planning…" : "Plan this day again", disabled: model.busy || tooShort) {
+                Task {
+                    if await model.changeTripDay(trip.id, day.index, from: from, to: to, places: places) { dismiss() }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
+            .background(Theme.background)
+        }
+    }
+
+    private var note: String {
+        switch day.kind {
+        case "arrive": return "This day still starts once you've arrived. Busy in the middle of the day? Choose the part that's free."
+        case "leave": return "This day still ends in time for your journey home. Busy in the middle of the day? Choose the part that's free."
+        default: return "Busy in the middle of the day? Choose the part that's free. Once it's your day, you can also swap a stop."
+        }
+    }
+
+    static func minutes(_ hhmm: String) -> Int {
+        let p = hhmm.split(separator: ":").compactMap { Int($0) }
+        return p.count == 2 ? p[0] * 60 + p[1] : 0
     }
 }
 
@@ -1648,6 +1849,10 @@ struct TripDemoScreen: View {
         case "tripdaylast":                                                               // 25a: the way home
             if let trip = model.trips.first {
                 NavigationStack { TripDayView(tripId: trip.id, index: trip.dayCount - 1, scrollToEnd: true) }
+            }
+        case "daychange":                                                                 // 25b: "Change this day"
+            if let trip = model.trips.first {
+                NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: true) }
             }
         case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31
             MainTabs().onAppear {
