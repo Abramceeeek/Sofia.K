@@ -112,7 +112,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            min_stops: int | None = None, budget_gbp: float | None = None,
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
            max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
-           lunch_bonus: float = 0.0) -> DayPlan | None:
+           lunch_bonus: float = 0.0, lunch_not_first: bool = False) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -196,6 +196,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     meals = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.lunch]
     if len(meals) > 1:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in meals]) <= 1)
+    if lunch_not_first:   # journey round 2: a morning starts with a place, not lunch
+        for i in meals:
+            solver.Add(routing.NextVar(routing.Start(0)) != i)
     areas = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.kind == "area"]
     if len(areas) > max_areas:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in areas]) <= max_areas)
@@ -235,7 +238,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              must_include: set[str] | frozenset[str] = frozenset(),
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
-             buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0) -> DayPlan:
+             buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
+             lunch_not_first: bool = False) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -255,7 +259,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 legs=legs, floor=floor, max_stops=max_stops, time_limit_s=time_limit_s,
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
                 min_stops=min_stops, max_areas=max_areas,
-                buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus)
+                buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
+                lunch_not_first=lunch_not_first)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:

@@ -88,7 +88,7 @@ struct SafetyView: View {
                 await model.loadSafety()
                 model.markSafetySeen()
             }
-            .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
         }
     }
 
@@ -166,7 +166,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("What we store") {
-                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your location is never stored. Your trips stay on this phone; flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your location is never stored. Your trips stay on this phone; the days planned for them are kept like any plan, starting from your stay's location (never its name). Flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
                 }
                 .listRowBackground(Theme.surface)
                 Section {
@@ -229,7 +229,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .topBarTrailing) { Button("Close") { dismiss() } }
             }
             .sheet(isPresented: $confirmDelete) {
-                DeleteConfirmView { dismiss() }
+                DeleteConfirmView { dismiss() }.brainFeedback()
             }
         }
     }

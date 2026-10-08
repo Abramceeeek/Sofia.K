@@ -341,6 +341,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/answers", status_code=204)
     def post_answers(body: AnswersIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
         for it in body.items:
+            for old in [a for a in user.answers if a.question == it.question]:   # journey round 2: one per question
+                s.delete(old)
             s.add(db.Answer(user_id=user.id, question=it.question, text=it.text, input_mode=it.input_mode))
         s.commit()
         return Response(status_code=204)
@@ -903,7 +905,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
                 plan, stops, head = personal_day(s, user, p, brief, pool, familiar=False, exclude=sorted(used),
                                                  post=post, feelings=feelings or None, fallback=False)
-                if not stops:
+                if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
                 used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
                 row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
@@ -942,7 +944,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if got := fill(fr.main, day, i, label, "main"):
                     entry["plan"] = got[0]
                     entry["title"] = got[0]["feel_line"] or label
-                    if fr.leave_leg:   # the last day: back for the bags, then away
+                    if fr.leave_leg and not fr.day_trip:   # the last day: back for the bags, then away
                         legs.append(tripdays.back_leg(est, got[1][-1], start, start_name))
             if not entry["title"]:
                 entry["title"] = (entry["before"] or {}).get("feel_line") or "A free day: nothing new fits it yet"

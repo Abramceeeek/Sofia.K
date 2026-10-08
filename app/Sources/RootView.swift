@@ -19,18 +19,41 @@ struct RootView: View {
             }
         }
         .background(Theme.background)
-        .overlay(alignment: .top) {
-            if model.waking { WakingBanner() }
-        }
-        .alert("Something went wrong", isPresented: Binding(
-            get: { model.errorMessage != nil },
-            set: { if !$0 { model.errorMessage = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(model.errorMessage ?? "")
-        }
+        .brainFeedback()
     }
+}
+
+/// Journey round 2: an alert or a banner on the root view is hidden under any open sheet or cover, so a failed Help
+/// & safety send said nothing. Every sheet and cover that talks to the Brain carries this too; only the top one shows.
+struct BrainFeedback: ViewModifier {
+    @Environment(AppModel.self) private var model
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .top) {
+                if model.waking { WakingBanner() }
+            }
+            .alert("Something went wrong", isPresented: Binding(
+                get: { model.errorMessage != nil },
+                set: { if !$0 { model.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(model.errorMessage ?? "")
+            }
+            .alert(model.notice?.title ?? "", isPresented: Binding(
+                get: { model.notice != nil && model.errorMessage == nil },
+                set: { if !$0 { model.notice = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(model.notice?.text ?? "")
+            }
+    }
+}
+
+extension View {
+    func brainFeedback() -> some View { modifier(BrainFeedback()) }
 }
 
 /// The free server sleeps when nobody has used it for 15 minutes (D109).

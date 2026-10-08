@@ -259,6 +259,12 @@ def test_answering_again_replaces_the_earlier_answer(client):
     assert client.get("/v1/me/weights", headers=h).json()["n_observations"] == n1
     export = client.get("/v1/admin/export", headers=ADMIN).json()
     assert [sw["reaction"] for sw in export["swipes"] if sw["user_id"] == uid] == ["didnt_enjoy"]
+    # journey round 2: the best-moment answer too, after Back and Next
+    for text in ("The lido at 8am.", "The lido at 8am, then breakfast."):
+        assert client.post("/v1/me/answers", headers=h, json={"items": [
+            {"question": "best_hour", "text": text, "input_mode": "typed"}]}).status_code == 204
+    export = client.get("/v1/admin/export", headers=ADMIN).json()
+    assert [a["text"] for a in export["answers"] if a["user_id"] == uid] == ["The lido at 8am, then breakfast."]
 
 
 def test_a_stop_that_needs_booking_says_so(tmp_path, test_moments):

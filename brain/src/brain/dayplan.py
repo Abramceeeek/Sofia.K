@@ -131,6 +131,11 @@ LUNCH_BONUS = 5.0
 LUNCH_CARD_MIN = 0.5   # a food card is offered as the lunch stop only if the person is predicted to like it this much
 
 
+# Journey round 2 (8 Oct): a day that starts at least this long before the lunch window (10:15 or earlier) never
+# opens with lunch. Without it, 21 of 36 simulated trip days (free 10:00-18:00) waited and began with lunch at 11:30.
+LUNCH_NOT_FIRST_GAP_MIN = 75
+
+
 def spans_lunch(start_min: int, end_min: int) -> bool:
     """Whether a day from start to end (minutes) gets a lunch stop (D102)."""
     lo, hi = LUNCH_START
@@ -292,7 +297,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
-                  buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS)
+                  buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS,
+                  lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN)
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))

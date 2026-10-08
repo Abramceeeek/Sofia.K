@@ -397,3 +397,37 @@ def test_one_day_changed_to_the_hours_the_person_is_free(client):
     places = [st["moment_id"].split("#")[0] for st in stops if st["rateable"]]
     assert len(places) <= 2 and not set(places) & set(others)
     assert set(others) <= set(r.json()["used"])          # the other days' places stay taken
+
+
+def test_a_day_trip_starts_at_the_station_with_no_check_in_or_bags(client):
+    """Journey round 2: one day by train, no stay. The day starts when the train is in, from the station, and ends on
+    the way back to it: no "to your stay", no check-in and no bags (they cost about 65 min of a 6-hour day)."""
+    h, _ = install(client)
+    start = date.today() + timedelta(days=6)
+    body = {"start_date": start.isoformat(), "nights": 0, "day_start": "09:00", "day_end": "20:00", "stops_per_day": 3,
+            "arrive": {"mode": "train", "place": "EUS", "time": "10:15"},
+            "leave": {"mode": "train", "place": "EUS", "time": "19:30"}}
+    r = client.post("/v1/me/trips/days", headers=h, json=body)
+    assert r.status_code == 201, r.text
+    day = r.json()["days"][0]
+    assert day["kind"] == "one" and [l["slot"] for l in day["legs"]] == ["arrive", "leave"]
+    assert day["legs"][0]["title"] == "Arrive at Euston" and day["legs"][1]["origin"] is None
+    assert day["window"]["start"] == "10:25"                       # the train's 10:15, plus 10 min to get out
+    assert day["plan"]["stops"][-1]["depart"] <= day["legs"][1]["depart"]
+    # with a stay, the same arrival goes to the stay first, as before
+    stay = {**body, "nights": 1, "stay": {"lat": STAY.lat, "lon": STAY.lon}, "stay_name": "Sample hotel"}
+    first = client.post("/v1/me/trips/days", headers=h, json=stay).json()["days"][0]
+    assert first["legs"][0]["title"].endswith("→ your stay")
+
+
+def test_a_day_with_only_lunch_left_is_a_free_day(client):
+    """Journey round 2: a long trip runs out of places that suit the person; a day with lunch alone was shown as
+    planned ("Ready"). It's a free day now, and says so."""
+    h, _ = install(client)
+    ids = [m["id"] for m in client.get("/v1/moments?plannable_only=true", headers=h).json()]
+    start = date.today() + timedelta(days=8)
+    r = client.post("/v1/me/trips/days", headers=h, json={"start_date": start.isoformat(), "nights": 3, "days": [2],
+                                                          "exclude": ids, "day_start": "10:00", "day_end": "18:00"})
+    assert r.status_code == 201, r.text
+    day = r.json()["days"][0]
+    assert day["plan"] is None and day["title"].startswith("A free day")

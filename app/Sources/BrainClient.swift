@@ -145,6 +145,11 @@ final class BrainClient {
         try await send("POST", "v1/me/survey", body)
     }
 
+    /// Journey round 2: the pair as it stands (answered or not), after a lost reply.
+    func pair() async throws -> PairResponse {
+        try await call("GET", "v1/me/testb/pair")
+    }
+
     func makePair(_ intent: PairIntent) async throws -> PairResponse {
         if demo { return try Self.bundled("demo_pair") }
         return try await call("POST", "v1/me/testb/pair", intent)

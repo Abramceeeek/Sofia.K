@@ -65,6 +65,9 @@ final class AppModel {
     var busy = false
     var waking = false
     var errorMessage: String?
+    var notice: (title: String, text: String)?   // journey round 2: news that isn't an error
+    var sendingRatings = false             // journey round 2: one send loop at a time, so none is dropped
+    var clock = Date()                     // journey round 2: set when the app comes back, so date-based cards update
 
     // Answers, kept until each step is sent
     var bestHour = ""
@@ -275,7 +278,9 @@ final class AppModel {
     var questionLabel: String { "Question \(questionNumber) of \(questionTotal)" }
     var questionProgress: Double { Double(questionNumber - 1) / Double(max(questionTotal, 1)) }
 
-    func next() {
+    /// `from`: only if still on that step (journey round 2: two taps on "Skip the rest" skipped the next step too).
+    func next(from: Step? = nil) {
+        if let from, from != step { return }
         reaction = nil
         stepProgress = 0
         if let n = Step(rawValue: step.rawValue + 1) {
@@ -361,17 +366,19 @@ final class AppModel {
 
     /// D116: a visitor's answers to the category cards (unanswered ones, after "Skip the rest", aren't sent).
     func finishCategories() async {
+        let from = step
         await run {
             let items = (self.onboarding?.categoryCards ?? []).compactMap { self.categoryAnswers[$0.key] }
             if !items.isEmpty { try await self.client.sendCategories(items) }
-            self.next()
+            self.next(from: from)
         }
     }
 
     func finishPlaces() async {
+        let from = step
         await run {
             try await self.sendReactions(self.onboarding?.swipePlaces ?? [])
-            self.next()
+            self.next(from: from)
         }
     }
 
@@ -402,12 +409,13 @@ final class AppModel {
     /// The last onboarding step: straight on to the first plan (D110).
     func finishThisOrThat() async {
         profile.whyTravel = why
+        let from = step
         await run {
             try await self.sendChoices(self.onboarding?.conjointTasks ?? [])
             try await self.client.sendProfile(self.profile)
             AppModel.cache(self.profile, "profile.json")
             self.learned = nil
-            self.next()                       // D117: "So far, I've learned…" before the first plan
+            self.next(from: from)             // D117: "So far, I've learned…" before the first plan
         }
     }
 
@@ -519,6 +527,15 @@ final class AppModel {
         let old = plan
         await run {
             let plan = try await self.client.makePlan(request)
+            guard !plan.stops.isEmpty else {   // journey round 2: never swap a day for an empty one
+                self.errorMessage = "Nothing fits that day and time. Try a longer stretch of the day, or another day."
+                return
+            }
+            if let must = request.intent?["must_do"],
+               !plan.stops.contains(where: { $0.momentId.components(separatedBy: "#")[0] == must }) {
+                self.notice = ("Your must-include didn't fit",
+                               "It's closed or can't be fitted at those times, so the day is planned without it.")
+            }
             if sameDay { self.syncTripDay(from: old, to: plan) }   // m176: a swapped trip day changes the trip too
             self.plan = plan
             self.lastRequest = request
@@ -561,7 +578,9 @@ final class AppModel {
     /// Sends the ratings kept while there was no signal; each is removed once the Brain has it (or no longer has its
     /// plan). Stops at the first one that still can't be sent. Rating a stop twice replaces it on the Brain.
     func sendPendingRatings() async {
-        guard !client.demo, client.token != nil else { return }
+        guard !client.demo, client.token != nil, !sendingRatings else { return }
+        sendingRatings = true
+        defer { sendingRatings = false }
         while let next = pendingRatings.first {
             do {
                 try await client.rate(next)

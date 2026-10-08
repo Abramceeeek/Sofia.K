@@ -20,6 +20,7 @@ struct FaceApp: App {
                 .onChange(of: scenePhase, initial: true) { _, phase in
                     // each time the app comes to the front, start waking the free server (it sleeps after 15 min)
                     if phase == .active {
+                        model.clock = .now   // journey round 2: Today / Tomorrow follow the date after a night away
                         Task {
                             await model.wake()
                             await model.sendPendingRatings()   // journey audit: ratings made without signal

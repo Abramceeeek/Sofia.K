@@ -25,9 +25,9 @@ struct HomeView: View {
                     StopView(stop: stop)
                 }
         }
-        .sheet(isPresented: $showSafety) { SafetyView() }
-        .sheet(isPresented: $showSettings) { SettingsView() }
-        .fullScreenCover(isPresented: $model.showNow) { NowView() }   // D119: during the day
+        .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
+        .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
+        .fullScreenCover(isPresented: $model.showNow) { NowView().brainFeedback() }   // D119: during the day
     }
 }
 
@@ -70,7 +70,7 @@ struct DayScreen: View {
             DayView(layout: layout, reveal: reveal, scroll: scroll)
                 .navigationDestination(for: Stop.self) { stop in StopView(stop: stop) }
         }
-        .fullScreenCover(isPresented: $model.showNow) { NowView() }
+        .fullScreenCover(isPresented: $model.showNow) { NowView().brainFeedback() }
     }
 }
 
@@ -158,8 +158,8 @@ struct PlanFormView: View {
                     }
                     FormRow(label: "Starting near") {
                         HStack(spacing: 8) {
-                            Chip(title: "Charing Cross", on: !fromHere, height: 40) { fromHere = false }
-                            Chip(title: "Where I am", on: fromHere, height: 40) { chooseHere() }
+                            Chip(title: "Charing Cross", on: !fromHere, height: 44) { fromHere = false }
+                            Chip(title: "Where I am", on: fromHere, height: 44) { chooseHere() }
                         }
                     }
                     FormRow(label: "Must include", last: true) {
@@ -167,6 +167,7 @@ struct PlanFormView: View {
                             Text(mustDo?.title ?? "Anything")
                                 .foregroundStyle(mustDo == nil ? Theme.muted : Theme.accent)
                                 .lineLimit(1)
+                                .frame(minHeight: 44)
                         }
                         .accessibilityHint("Optional: a place you want in the day")
                     }
@@ -181,7 +182,7 @@ struct PlanFormView: View {
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
                 PrimaryButton(title: model.busy ? "Planning…" : "Make my day",
-                              disabled: model.busy || end <= start || (fromHere && model.location.roundedHere == nil)) {
+                              disabled: model.busy || end <= start || (fromHere && (model.location.roundedHere == nil || !inLondon))) {
                     if model.testBPlanAtRisk { confirm = true } else { make() }
                 }
                 .confirmReplacingTestBPlan($confirm) { make() }
@@ -202,10 +203,13 @@ struct PlanFormView: View {
         if model.location.deniedBySettings {
             return "Location is off for ODYS. Turn it on in your phone's Settings, or start from Charing Cross."
         }
-        return model.location.roundedHere == nil
-            ? "Finding where you are…"
-            : "From where you are now (sent rounded to about 100 m, and not kept). Lunch is in the plan if the day spans midday."
+        if model.location.roundedHere == nil { return "Finding where you are…" }
+        if !inLondon { return "\"Where I am\" works in London: you seem to be further away, so start from Charing Cross." }
+        return "From where you are now (sent rounded to about 100 m, and not kept). Lunch is in the plan if the day spans midday."
     }
+
+    /// Journey round 2: the moments are all in London, so "Where I am" means within about 25 km of Charing Cross.
+    private var inLondon: Bool { (model.location.metres(to: AppConfig.start) ?? .infinity) < 25_000 }
 
     /// D123: "Where I am" asks for location the first time (ODYS's reason is in the permission text).
     private func chooseHere() {
@@ -412,8 +416,9 @@ struct PlanView: View {
                         ToolbarItem(placement: .topBarLeading) { Button("Close") { showNewPlan = false } }
                     }
             }
+            .brainFeedback()
         }
-        .sheet(isPresented: $showImprove) { ImproveView() }
+        .sheet(isPresented: $showImprove) { ImproveView().brainFeedback() }
         .task(id: plan.id) { await runReveal() }
     }
 
@@ -577,7 +582,7 @@ struct ViewToggle: View {
             Text(title)
                 .font(.subheadline)
                 .foregroundStyle(Theme.ink)
-                .frame(maxWidth: .infinity, minHeight: 38)
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .background(on ? Theme.surfaceHigh : Color.clear, in: RoundedRectangle(cornerRadius: 9))
                 .contentShape(Rectangle())
         }
@@ -1309,7 +1314,7 @@ struct StopView: View {
         } message: {
             Text("You'll get different stops for the same times. This plan will be replaced.")
         }
-        .sheet(isPresented: $showRating) { RatingView(stop: stop) }
+        .sheet(isPresented: $showRating) { RatingView(stop: stop).brainFeedback() }
         .navigationDestination(isPresented: $sharing) {
             SharePreview(stop: stop, rating: model.myRatings[stop.momentId] ?? 5)
         }

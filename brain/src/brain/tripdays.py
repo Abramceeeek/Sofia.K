@@ -159,6 +159,7 @@ class Frame:
     leave_at: int | None = None                         # minutes: when to leave the stay on the last day
     leave_leg: Leg | None = None
     title: str = ""            # when nothing can be planned
+    day_trip: bool = False     # journey round 2: one day, no stay: no check-in and no bags
 
 
 def on_the_way(p: Point, a: Point, b: Point, slack_m: float = ON_THE_WAY_SLACK_M) -> bool:
@@ -184,12 +185,18 @@ def frame_day(i: int, total: int, cfg: Arrivals | None, est: LondonEstimate, *, 
                stay.lat, stay.lon)
     frame = Frame(kind=kind, main=None)
     plan_start = start
+    # journey round 2: a day trip (one day, no stay) has nowhere to check in or leave bags: the day starts where they
+    # arrive and ends on the way home (it lost about 65 min of a 6-hour day to check-in and bags)
+    frame.day_trip = kind == "one" and not stay_chosen
+    main_from, main_name = stay, stay_name
 
     if first and arrive:
         t = mins(arrive.time)
         if arrive.mode == "car":
-            frame.legs.append(Leg("arrive", "Drive to your stay", None, you, "driving", arrive=hhmm(t),
-                                  note="Arriving by car at the time you gave."))
+            frame.legs.append(Leg("arrive", "Drive into London" if frame.day_trip else "Drive to your stay", None,
+                                  None if frame.day_trip else you, "driving", arrive=hhmm(t),
+                                  note="Arriving by car at the time you gave."
+                                  + (" Allow time to park." if frame.day_trip else "")))
             plan_start = max(start, t + (cfg.check_in_min if cfg else 20))
         else:
             light_from: Place | None = None
@@ -223,7 +230,19 @@ def frame_day(i: int, total: int, cfg: Arrivals | None, est: LondonEstimate, *, 
                     origin = Spot("the station", None)
                 how, note, where = None, None, origin.name
             check_in = mins(cfg.check_in_time) if cfg else 15 * 60
-            if travel_light and stay_chosen and light_from and at_hub < check_in and at_hub + 60 <= end:
+            if frame.day_trip and light_from:
+                if arrive.mode == "flight":
+                    frame.legs.append(Leg("arrive", f"{where} → {light_from.name}", origin,
+                                          Spot(light_from.name, light_from.maps_name, light_from.lat, light_from.lon),
+                                          "transit", depart=hhmm(out), arrive=hhmm(at_hub), minutes=at_hub - out,
+                                          how=f"{ap.link} ({ap.rail_min} min)", note=note))
+                else:
+                    frame.legs.append(Leg("arrive", f"Arrive at {light_from.name}", None,
+                                          Spot(light_from.name, light_from.maps_name, light_from.lat, light_from.lon),
+                                          "transit", arrive=hhmm(at_hub)))
+                main_from, main_name = light_from.point, light_from.name
+                plan_start = max(start, at_hub)
+            elif travel_light and stay_chosen and light_from and at_hub < check_in and at_hub + 60 <= end:
                 # no bags to drop: start from the station, one place, then the stay (D122)
                 if arrive.mode == "flight":
                     frame.legs.append(Leg("arrive", f"{where} → {light_from.name}", origin,
@@ -244,7 +263,8 @@ def frame_day(i: int, total: int, cfg: Arrivals | None, est: LondonEstimate, *, 
         L = mins(leave.time)
         if leave.mode == "car":
             frame.leave_at = L
-            frame.leave_leg = Leg("leave", f"Leave by car at {hhmm(L)}", you, None, "driving", depart=hhmm(L))
+            frame.leave_leg = Leg("leave", f"Leave by car at {hhmm(L)}", None if frame.day_trip else you, None,
+                                  "driving", depart=hhmm(L))
         else:
             if leave.mode == "flight":
                 ap = cfg.airports.get(leave.place or "") if cfg else None
@@ -267,15 +287,16 @@ def frame_day(i: int, total: int, cfg: Arrivals | None, est: LondonEstimate, *, 
                 note = f"At the station {before} min before your {hhmm(L)} train."
             leave_at = down5(L - before - to_ap)
             frame.leave_at = leave_at
-            frame.leave_leg = Leg("leave", f"Leave for {dest.name} by {hhmm(leave_at)}", you, dest, "transit",
-                                  depart=hhmm(leave_at), arrive=hhmm(leave_at + to_ap), minutes=to_ap, how=how,
-                                  note=note)
-        plan_end = min(end, frame.leave_at - (cfg.back_for_bags_min if cfg else 30))
+            frame.leave_leg = Leg("leave", f"Leave for {dest.name} by {hhmm(leave_at)}", None if frame.day_trip else you,
+                                  dest, "transit", depart=hhmm(leave_at), arrive=hhmm(leave_at + to_ap), minutes=to_ap,
+                                  how=how, note=note)
+        bags = 0 if frame.day_trip else (cfg.back_for_bags_min if cfg else 30)
+        plan_end = min(end, frame.leave_at - bags)
 
     plan_start = up5(plan_start)
     n = stops_for(plan_start, plan_end, stops - (1 if frame.before else 0))
     if plan_start <= LATEST_START and n > 0:
-        frame.main = Part(stay, stay_name, hhmm(plan_start), hhmm(plan_end), n)
+        frame.main = Part(main_from, main_name, hhmm(plan_start), hhmm(plan_end), n)
     if frame.main is None and frame.before is None:
         frame.title = {"arrive": "Arrive and settle in", "leave": "Travel day: an easy trip home"}.get(
             kind, "A free day: no time left for a place")

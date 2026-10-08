@@ -35,7 +35,7 @@ struct SurveyView: View {
         let text = model.onboarding?.survey
         ScrollView {
             VStack(alignment: .leading, spacing: 26) {
-                Eyebrow(model.isVisitor ? "Before your trip" : "Before your plan")   // journey audit: visitors plan a trip next
+                Eyebrow(model.isVisitor ? "Before your first day" : "Before your plan")   // visitors get a first day next
                 VStack(alignment: .leading, spacing: 8) {
                     PageTitle(text: text?.title ?? "Three quick questions")
                     Text("About the questions you've just answered. Every one is optional.")
@@ -127,6 +127,7 @@ struct PairFlow: View {
                 Button("Not now") { model.showPair = false }
                     .font(.subheadline)
                     .foregroundStyle(Theme.accent)
+                    .frame(minHeight: 44)
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
             }
@@ -275,7 +276,7 @@ struct PairCompare: View {
                     Text("Plan \(label)")
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(Theme.ink)
-                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                         .background(showing == label ? Theme.surfaceHigh : Color.clear, in: RoundedRectangle(cornerRadius: 10))
                         .contentShape(Rectangle())
                 }
@@ -356,8 +357,9 @@ struct PairReveal: View {
     let pair: PairResponse
 
     var body: some View {
+        ScrollView {   // journey round 2: with large text, "See your plan" stays reachable
         VStack(alignment: .leading, spacing: 20) {
-            Spacer()
+            Spacer(minLength: 40)
             ArchMark()
             Eyebrow("Thank you")
             ForEach(Array((pair.reveal ?? []).enumerated()), id: \.offset) { i, line in
@@ -367,12 +369,13 @@ struct PairReveal: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .settle(i)
             }
-            Spacer()
+            Spacer(minLength: 24)
             PrimaryButton(title: "See your plan") { model.finishPair() }
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        }
         .background(Theme.background)
     }
 }

@@ -43,8 +43,8 @@ struct ShareCardView: View {
                     .lineLimit(3)
                     .minimumScaleFactor(0.7)
                 if let why = stop.reasons?.compactMap(\.me).first {
-                    // D115: the plain-language reason, in the sharer's own voice
-                    Text("“\(why)”")
+                    // D115: the plain-language reason, from the sharer's answers (journey round 2: not a quote)
+                    Text(why)
                         .font(.custom(Theme.italicName, fixedSize: 17))
                         .foregroundStyle(Theme.creamQuote)
                         .lineLimit(3)

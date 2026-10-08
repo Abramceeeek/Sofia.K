@@ -158,6 +158,7 @@ struct BookHeader: View {
                     model.path = p
                 } label: {
                     Text("‹ Your trip").font(.subheadline).foregroundStyle(Theme.accent)
+                        .frame(minHeight: 44).contentShape(Rectangle())
                 }
                 .accessibilityLabel("Back to your trip")
                 Spacer()
@@ -198,7 +199,7 @@ struct BookHeader: View {
         .background(Theme.background.opacity(0.96))
         .background(.ultraThinMaterial)
         .overlay(alignment: .bottom) { Rectangle().fill(Theme.hairline).frame(height: 1) }
-        .sheet(isPresented: $showSafety) { SafetyView() }
+        .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
     }
 
     private func segmentButton(_ title: String, _ s: BookState.Segment) -> some View {
@@ -638,7 +639,8 @@ struct FlightDetailView: View {
                                 provider: link.name, price: flight.price, booked: false,
                                 arriveTime: sameDay ? flight.outbound.arriveTime : nil,
                                 leaveTime: back.flatMap { $0.departDay == trip.end ? $0.departTime : nil },
-                                arrivePlace: flight.outbound.destination, leavePlace: back?.origin)
+                                arrivePlace: flight.outbound.destination, leavePlace: back?.origin,
+                                sample: flight.sample)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.nights > 0 ? "Return flight" : "Flight",
                                   price: flight.price, searchedAt: model.book.flights?.searchedAt.flatMap(Self.parseDate),
                                   choice: choice))
@@ -1126,7 +1128,7 @@ struct StayDetailView: View {
     private func open(_ link: TripLink, _ trip: Trip?) {
         guard let url = URL(string: link.url), let trip else { return }
         let choice = TripChoice(kind: "stay", title: stay.name, provider: link.name, price: stay.priceTotal, booked: false,
-                                point: stay.point)
+                                point: stay.point, sample: stay.sample)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.lengthLabel, price: stay.priceTotal,
                                   searchedAt: model.book.stays?.searchedAt.flatMap(FlightDetailView.parseDate),
                                   choice: choice))
@@ -1187,7 +1189,7 @@ struct HandoffSheet: View {
         let ago = h.searchedAt.map { max(0, Int(Date.now.timeIntervalSince($0) / 60)) }
         let checked = ago.map { $0 < 1 ? "Price found just now" : "Price found \($0) minute\($0 == 1 ? "" : "s") ago" }
             ?? "The price is on their site"
-        return "\(checked), so it can change there. You pay \(h.provider) directly. ODYS earns nothing from this link."
+        return "\(checked), so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link."
     }
 
     private func answer(_ h: Handoff, booked: Bool) {

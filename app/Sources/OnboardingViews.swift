@@ -18,7 +18,7 @@ struct OnboardingView: View {
                         Text("‹ \(previous == .places && model.isVisitor ? "Kinds of places" : previous.title)")
                             .font(.subheadline)
                             .foregroundStyle(Theme.accent)
-                            .frame(minHeight: 36)
+                            .frame(minHeight: 44)
                     }
                     .accessibilityLabel("Back to \(previous.title)")
                     Spacer()
@@ -243,7 +243,7 @@ struct CategoryStep: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 StepHeader(model.questionLabel, progress: model.questionProgress) {
-                    if index < cards.count { QuietButton("Skip the rest") { Task { await onDone() } } }
+                    if index < cards.count { QuietButton("Skip the rest") { Task { await onDone() } }.disabled(model.busy) }
                 }
                 if index < cards.count {
                     let card = cards[index]
@@ -529,7 +529,7 @@ struct LearnedRow: View {
                                 .font(.subheadline.weight(.medium))
                                 .foregroundStyle(wrong ? Theme.accent : Theme.ink)
                                 .padding(.horizontal, 16)
-                                .frame(minHeight: 36)
+                                .frame(minHeight: 44)
                                 .overlay(Capsule().stroke(wrong ? Theme.accent : Theme.outlineStrong, lineWidth: 1))
                                 .contentShape(Capsule())
                         }
@@ -796,7 +796,7 @@ struct PlacesStep: View {
                 StepHeader(standalone ? "\(min(index + 1, places.count)) of \(places.count)" : model.questionLabel,
                            progress: standalone ? Double(index) / Double(max(places.count, 1)) : model.questionProgress) {
                     // D112: the unanswered ones aren't sent
-                    if index < places.count { QuietButton("Skip the rest") { Task { await onDone() } } }
+                    if index < places.count { QuietButton("Skip the rest") { Task { await onDone() } }.disabled(model.busy) }
                 }
                 if index < places.count {
                     let place = places[index]
@@ -1039,7 +1039,11 @@ struct ImproveView: View {
             .scrollDismissesKeyboard(.interactively)
             .serifTitle("Improve future plans")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { Button("Close") { dismiss() } }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Close") {   // journey round 2: closing keeps what was answered (Test A's scales too)
+                        if current >= 0 { Task { await model.saveImprovements(done: false); dismiss() } } else { dismiss() }
+                    }
+                }
             }
             .sheet(isPresented: $morePlaces) {
                 NavigationStack {

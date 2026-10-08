@@ -112,7 +112,10 @@ extension AppModel {
     func startPair(_ intent: PairIntent) async {
         await run {
             self.pair = try await self.client.makePair(intent)
-            if self.pair?.done == true { self.pairDone = true }
+            // journey round 2: answered before (the app closed on the reveal): their plan, not a dead end
+            if self.pair?.done == true {
+                if self.pair?.chosen != nil { self.finishPair() } else { self.skipPair() }
+            }
         }
     }
 
@@ -120,9 +123,13 @@ extension AppModel {
     func sendPairFeedback(chosen: String, fit1: Int, fit2: Int, why: String, voice: Bool) async {
         let text = why.trimmingCharacters(in: .whitespacesAndNewlines)
         await run {
-            self.pair = try await self.client.pairFeedback(PairFeedback(chosen: chosen, fit1: fit1, fit2: fit2,
-                                                                        why: text.isEmpty ? nil : text,
-                                                                        inputMode: voice ? "voice" : "typed"))
+            do {
+                self.pair = try await self.client.pairFeedback(PairFeedback(chosen: chosen, fit1: fit1, fit2: fit2,
+                                                                            why: text.isEmpty ? nil : text,
+                                                                            inputMode: voice ? "voice" : "typed"))
+            } catch BrainError.status(409) {
+                self.pair = try await self.client.pair()   // journey round 2: sent before, but the answer was lost
+            }
         }
     }
 
@@ -176,6 +183,12 @@ extension AppModel {
     func newTrip() -> Trip {
         var t = Trip(start: Dates.isoDay.string(from: Dates.nextSaturday()), nights: 2)
         t.needFlight = profile.based == "abroad"
+        if profile.based == "uk" {   // journey round 2: elsewhere in the UK, not "already in London"
+            t.travelBy = "train"
+            t.station = "KGX"
+            t.arriveAt = "11:00"
+            t.leaveAt = "17:00"
+        }
         t.feelings = Array(why.prefix(2))
         return t
     }
@@ -242,7 +255,7 @@ extension AppModel {
                              hours: (from: String, to: String, places: Int)? = nil) -> TripDaysRequest {
         let ends = trip.ends
         return TripDaysRequest(destination: trip.destination, startDate: trip.start, nights: trip.nights,
-                               feelings: trip.feelings, stay: trip.stay?.point, stayName: trip.stay?.title,
+                               feelings: trip.feelings, stay: trip.stay?.point, stayName: trip.stay == nil ? nil : "your stay",
                                days: days, exclude: exclude, dayStart: hours?.from ?? trip.dayFrom,
                                dayEnd: hours?.to ?? trip.dayTo, stopsPerDay: hours?.places ?? trip.placesPerDay,
                                travelLight: trip.travelLight, arrive: ends.arrive, leave: ends.leave)
@@ -285,7 +298,7 @@ extension AppModel {
             guard let i = Calendar.london.dateComponents([.day], from: trip.startDate,
                                                          to: Dates.isoDay.date(from: today) ?? .now).day,
                   (0..<trip.dayCount).contains(i) else { continue }
-            return (trip, i, trip.days.first { $0.index == i && $0.plan != nil })
+            return (trip, i, trip.days.first { $0.index == i })   // journey round 2: a travel day too
         }
         return nil
     }
@@ -434,8 +447,12 @@ extension AppModel {
             book.stays = nil
             book.resultsFor = trip.id
         }
-        book.loading = true
         book.error = nil
+        if trip.start < Dates.isoDay.string(from: .now) {   // journey round 2: the Brain only searches from today
+            book.error = "This trip has started, so there's nothing to search for its dates. To change a flight or add a night, use the airline's or the stay's own site."
+            return
+        }
+        book.loading = true
         do {
             switch book.segment {
             case .flights:

@@ -32,8 +32,9 @@ struct MainTabs: View {
             .fullScreenCover(isPresented: $model.showCreate, onDismiss: { model.editingTrip = nil; model.editStep = nil }) {
                 TripCreateFlow(trip: model.editingTrip ?? model.newTrip(), editing: model.editingTrip != nil,
                                startAt: model.editStep)
+                    .brainFeedback()
             }
-            .fullScreenCover(isPresented: $model.showPair) { PairFlow() }
+            .fullScreenCover(isPresented: $model.showPair) { PairFlow().brainFeedback() }
         }
     }
 }
@@ -202,8 +203,10 @@ struct TripHome: View {
     @Environment(AppModel.self) private var model
     var onHelp: () -> Void = {}
     var onData: () -> Void = {}
+    @State private var planningDay = false
 
     var body: some View {
+        let _ = model.clock   // journey round 2: Today / Tomorrow and the greeting follow the date after a night away
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 TopBar(eyebrow: AppModel.greeting, onHelp: onHelp, onData: onData)
@@ -224,6 +227,9 @@ struct TripHome: View {
                             .buttonStyle(PressStyle())
                     }
                     .settle(2)
+                } else if !model.client.demo {   // journey round 2: with no day yet, "Plan a day" was out of reach
+                    SecondaryButton(title: "Plan a day out instead", icon: "sun.max") { planningDay = true }
+                        .settle(2)
                 }
                 if !model.trips.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
@@ -241,6 +247,15 @@ struct TripHome: View {
             .padding(.bottom, 32)
         }
         .background(Theme.background)
+        .sheet(isPresented: $planningDay) {
+            NavigationStack {
+                PlanFormView(onDone: { planningDay = false })
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) { Button("Close") { planningDay = false } }
+                    }
+            }
+            .brainFeedback()
+        }
     }
 }
 
@@ -266,9 +281,11 @@ struct TodayInTripCard: View {
                     .foregroundStyle(Theme.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            PrimaryButton(title: model.busy ? "Planning…" : (day == nil ? "Plan today" : "Start today"),
+            PrimaryButton(title: model.busy ? "Planning…" : (day == nil ? "Plan today" : day?.plan == nil ? "See today" : "Start today"),
                           disabled: model.busy) {
-                if model.testBPlanAtRisk { confirm = true } else { start() }
+                // journey round 2: a travel or free day has nothing to start: its page shows the journeys
+                if day != nil, day?.plan == nil { model.openTripDay(trip.id, index, from: "today") }
+                else if model.testBPlanAtRisk { confirm = true } else { start() }
             }
         }
         .surfaceCard(padding: 20)
@@ -327,7 +344,8 @@ struct TomorrowInTripCard: View {
 struct TripGoodToKnow: View {
     let trip: Trip
 
-    private var fromAbroad: Bool { trip.needFlight && (trip.origin?.country ?? "") != "GB" }
+    var basedAbroad = false   // journey round 2: by where they said they're based (never nationality)
+    private var fromAbroad: Bool { (trip.needFlight && (trip.origin?.country ?? "") != "GB") || basedAbroad }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -515,6 +533,7 @@ struct TripCreateFlow: View {
     @State private var trip: Trip
     @State private var step: Int
     @State private var showAirports = false
+    @State private var confirmReplace = false
     let editing: Bool
 
     init(trip: Trip, editing: Bool, startAt: Int? = nil) {
@@ -546,7 +565,11 @@ struct TripCreateFlow: View {
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(title: buttonTitle, disabled: model.busy) { next() }
+            PrimaryButton(title: buttonTitle, disabled: model.busy) {
+                // journey round 2: a one-day trip becomes "your day", so the unrated Test B plan asks first
+                if step == Self.questions - 1, trip.nights == 0, model.testBPlanAtRisk { confirmReplace = true } else { next() }
+            }
+                .confirmReplacingTestBPlan($confirmReplace) { next() }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
                 .padding(.bottom, 8)
@@ -912,10 +935,49 @@ struct FromStep: View {
             }
             .buttonStyle(.plain)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
-            Text("Your first day starts when your flight lands, and your last day ends in time for the flight home.")
+            // journey round 2: a flight booked elsewhere (or found later) still shapes the first and last days
+            Toggle(isOn: Binding(get: { trip.ownFlight ?? false }, set: { on in
+                trip.ownFlight = on
+                if on {
+                    if trip.flightAirport == nil { trip.flightAirport = "LHR" }
+                    if trip.arriveAt == nil { trip.arriveAt = "11:00" }
+                    if trip.leaveAt == nil { trip.leaveAt = "17:00" }
+                }
+            })) {
+                Text("I already have a flight").foregroundStyle(Theme.ink)
+            }
+            .tint(Theme.accent)
+            .padding(.horizontal, 18)
+            .frame(minHeight: 52)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            if trip.ownFlight == true {
+                VStack(spacing: 0) {
+                    Menu {
+                        Picker("London airport", selection: Binding(get: { trip.flightAirport ?? "LHR" },
+                                                                    set: { trip.flightAirport = $0 })) {
+                            ForEach(LondonAirports.all, id: \.code) { Text($0.name).tag($0.code) }
+                        }
+                    } label: {
+                        MenuRow(label: "London airport", value: LondonAirports.name(trip.flightAirport) ?? "Heathrow")
+                    }
+                    Rectangle().fill(Theme.hairline).frame(height: 1)
+                    TimeMenu(label: "It lands, on the first day", time: time(\.arriveAt, "11:00"),
+                             options: HalfHours.from(5, to: 23))
+                    if trip.nights > 0 {
+                        Rectangle().fill(Theme.hairline).frame(height: 1)
+                        TimeMenu(label: "Your flight home leaves, on the last day", time: time(\.leaveAt, "17:00"),
+                                 options: HalfHours.from(6, to: 23))
+                    }
+                }
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            }
+            Text(trip.ownFlight == true || trip.flight != nil
+                 ? "Your first day starts when your flight lands, and your last day ends in time for the flight home."
+                 : "Choose a flight in Book, or add the one you have, and the first and last days fit around it.")
                 .font(.footnote)
                 .foregroundStyle(Theme.muted)
                 .padding(.horizontal, 4)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -1170,6 +1232,7 @@ struct TripOverview: View {
     let tripId: UUID
     var onHelp: () -> Void = {}
     @State private var confirmDelete = false
+    @State private var removing: String?      // journey round 2: "flight" or "stay", asked before it's taken off
 
     var body: some View {
         ScrollView {
@@ -1193,6 +1256,17 @@ struct TripOverview: View {
         } message: {
             Text("It's removed from this phone. Anything you booked stays booked on the provider's site.")
         }
+        .confirmationDialog("Remove this \(removing ?? "choice") from the trip?",
+                            isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
+                            titleVisibility: .visible) {
+            Button("Remove it", role: .destructive) {
+                if let kind = removing { model.removeChoice(kind, from: tripId) }
+                removing = nil
+            }
+            Button("Keep it", role: .cancel) { removing = nil }
+        } message: {
+            Text("Anything you booked stays booked on the provider's site. The days will be planned again around the change.")
+        }
     }
 
     private func content(_ trip: Trip) -> some View {
@@ -1211,7 +1285,7 @@ struct TripOverview: View {
                     openBook(trip, .flights)
                 }
                 if trip.flight != nil {   // m176: a choice can be taken off the trip
-                    QuietButton("Remove this flight from the trip") { model.removeChoice("flight", from: trip.id) }
+                    QuietButton("Remove this flight from the trip") { removing = "flight" }
                 }
             }
             if trip.needStay {
@@ -1221,7 +1295,7 @@ struct TripOverview: View {
                     openBook(trip, .stays)
                 }
                 if trip.stay != nil {
-                    QuietButton("Remove this stay from the trip") { model.removeChoice("stay", from: trip.id) }
+                    QuietButton("Remove this stay from the trip") { removing = "stay" }
                 }
             }
             HStack(alignment: .firstTextBaseline) {
@@ -1245,7 +1319,7 @@ struct TripOverview: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Your days: \(trip.daysLine). Change")
             if trip.daysStale {
-                SecondaryButton(title: model.busy ? "Planning…" : "Plan the days again from your stay and flight",
+                SecondaryButton(title: model.busy ? "Planning…" : "Plan the days again around your stay and journeys",
                                 disabled: model.busy) {
                     Task { await model.replanDays(trip.id) }
                 }
@@ -1257,7 +1331,7 @@ struct TripOverview: View {
             }
             TripTotal(trip: trip, flights: model.book.resultsFor == trip.id ? model.book.flights : nil,
                       stays: model.book.resultsFor == trip.id ? model.book.stays : nil)
-            TripGoodToKnow(trip: trip)
+            TripGoodToKnow(trip: trip, basedAbroad: model.isVisitor)
             QuietButton("Delete this trip") { confirmDelete = true }
         }
         .padding(.horizontal, 24)
@@ -1269,7 +1343,9 @@ struct TripOverview: View {
         if let f = trip.flight, !trip.fits(f) {
             return "Chosen for other dates: check it on \(f.provider), or choose again"
         }
-        if let f = trip.flight { return "\(f.provider) · \(Money.whole(f.price))" }
+        if let f = trip.flight {
+            return "\(f.provider) · \(Money.whole(f.price))" + (f.sample == true ? " · a sample price, not a real fare" : "")
+        }
         guard let origin = trip.origin else { return "Choose where you're flying from" }
         if model.book.resultsFor == trip.id, let r = model.book.flights, let low = r.facets.price?.first {
             return "From \(Money.whole(low)) · \(r.total) options from \(origin.city)"
@@ -1281,7 +1357,9 @@ struct TripOverview: View {
         if let s = trip.stay, !trip.fits(s) {
             return "Chosen for other dates: check it on \(s.provider), or choose again"
         }
-        if let s = trip.stay { return "\(s.provider) · \(Money.whole(s.price)) for \(trip.lengthLabel)" }
+        if let s = trip.stay {
+            return "\(s.provider) · \(Money.whole(s.price)) for \(trip.lengthLabel)" + (s.sample == true ? " · a sample price" : "")
+        }
         if model.book.resultsFor == trip.id, let r = model.book.stays, let low = r.facets.priceNight?.first {
             return "From \(Money.whole(low)) a night · \(r.total) places"
         }
@@ -1427,6 +1505,12 @@ struct TripTotal: View {
                 Spacer()
                 Text(Money.whole(sum)).font(Theme.serif(28, relativeTo: .title)).foregroundStyle(Theme.ink)
             }
+            if trip.flight?.sample == true || trip.stay?.sample == true || flights?.source == "sample" || stays?.source == "sample" {
+                Text("Includes sample prices: the real ones show once live search is on.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             ForEach(r.indices, id: \.self) { i in
                 HStack {
                     Text(r[i].0)
@@ -1507,7 +1591,9 @@ struct TripDayView: View {
                         } else {
                             ForEach(day?.journeys("leave") ?? [], id: \.self) { JourneyCard(leg: $0) }
                             if day?.before == nil {
-                                Text("A travel day: nothing is planned, so you can take it easy.")
+                                Text(day?.kind == "arrive" || day?.kind == "leave"
+                                     ? "A travel day: nothing is planned, so you can take it easy."
+                                     : "A free day: the places that suit you are already in your other days. More London moments are being checked.")
                                     .foregroundStyle(Theme.inkSoft)
                                     .padding(20)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1529,9 +1615,9 @@ struct TripDayView: View {
         .background(Theme.background)
         .toolbar(.hidden, for: .navigationBar)
         .statusBarShade()
-        .sheet(isPresented: $showSafety) { SafetyView() }
+        .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
         .sheet(item: $changing) { day in
-            if let trip = model.findTrip(tripId) { ChangeDaySheet(trip: trip, day: day) }
+            if let trip = model.findTrip(tripId) { ChangeDaySheet(trip: trip, day: day).brainFeedback() }
         }
     }
 
@@ -1808,8 +1894,8 @@ struct YouView: View {
         }
         .background(Theme.background)
         .statusBarShade()
-        .sheet(isPresented: $showSafety) { SafetyView() }
-        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
+        .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
         .task {
             await model.loadSafety()
             if model.learned == nil { model.learned = try? await model.client.summary() }

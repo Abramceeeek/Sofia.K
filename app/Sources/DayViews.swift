@@ -45,8 +45,10 @@ struct NowView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityHint("Opens the stop's card")
-                    Text("Enjoy it. I'll stay quiet until you need me.")
+                    Text(lookAhead.map { "A look ahead: this day is \($0). Ratings open on the day." }
+                         ?? "Enjoy it. I'll stay quiet until you need me.")
                         .foregroundStyle(Theme.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
                     if let line = distanceLine(stop) {   // D123: from the phone's location, never sent
                         Label(line, systemImage: "location.fill")
                             .font(.subheadline)
@@ -57,8 +59,16 @@ struct NowView: View {
                     Spacer(minLength: 12)
                     if i + 1 < stops.count {
                         NextUp(stop: stops[i + 1])
+                    } else if let leave = tripDay?.journeys("leave").first {   // journey round 2: the way home, ahead
+                        Label("After this: \(leave.title)", systemImage: "airplane.departure")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     PrimaryButton(title: "I'm done here") { done(stop) }
+                    if lookAhead == nil {   // journey round 2: a closed place or a long queue needn't be rated to move on
+                        QuietButton("Didn't go? Skip this stop") { skip(stop) }
+                    }
                 } else {
                     if let day = tripDay {   // m176: the way back for bags, and on to the airport or station
                         ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
@@ -107,9 +117,9 @@ struct NowView: View {
             .navigationDestination(item: $card) { StopView(stop: $0) }
         }
         .sheet(item: $rating) { stop in
-            RatingView(stop: stop, onNext: { model.advanceNow() })
+            RatingView(stop: stop, onNext: { model.advanceNow() }).brainFeedback()
         }
-        .sheet(isPresented: $showSafety) { SafetyView() }
+        .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
         .onAppear { model.location.start() }
         .onDisappear { model.location.stop() }
         .onChange(of: model.location.here?.latitude) { _, _ in noticeArrival(stops, i) }
@@ -135,10 +145,24 @@ struct NowView: View {
         }
     }
 
+    /// Journey round 2: "Start the day" on a plan for a later day is a look ahead: nothing is rated before the day.
+    private var lookAhead: String? {
+        guard let date = model.plan?.date, date > Dates.isoDay.string(from: .now) else { return nil }
+        return Dates.shortDay(date)
+    }
+
+    /// Journey round 2: they didn't go (closed, a queue, changed their mind). On to the next stop, no rating and no
+    /// reminder for it; counted, so the test knows which stops were skipped.
+    private func skip(_ stop: Stop) {
+        Reminders.cancel(stop: stop)
+        Task { await model.client.event("stop_skipped", ["moment": stop.momentId]) }
+        withAnimation(Motion.settle) { model.advanceNow() }
+    }
+
     /// "I'm done here" says the visit is over, so an unrated stop asks for its rating whatever the planned time
     /// (journey audit: people ahead of the plan lost their ratings). Rated stops and lunch slots simply move on.
     private func done(_ stop: Stop) {
-        if stop.rateable, !model.rated.contains(stop.momentId) {
+        if stop.rateable, !model.rated.contains(stop.momentId), lookAhead == nil {
             rating = stop
         } else {
             withAnimation(Motion.settle) { model.advanceNow() }
@@ -272,7 +296,7 @@ struct RatingView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
             if model.lastRatingQueued {   // journey audit: no signal; kept on the phone
-                Text("Saved on your phone. It'll send when you're back online.")
+                Text("Saved on your phone. It'll send the next time you open ODYS with signal.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)
@@ -357,7 +381,7 @@ struct SharePreview: View {
                     .shadow(color: .black.opacity(0.45), radius: 30, y: 24)
                     .modifier(Lift())
                     .padding(.top, 8)
-                Text("Your rating and your own words go with it, never what we estimated it's worth to you.")
+                Text("Your rating and a reason from your answers go with it, never what we estimated it's worth to you.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)

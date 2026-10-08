@@ -134,7 +134,7 @@ struct AbramCard: View {
                     Button("Watch his short hello") { model.route = .founder }
                         .font(.subheadline)
                         .foregroundStyle(Theme.accent)
-                        .frame(minHeight: 32)
+                        .frame(minHeight: 44)
                 }
             }
             Spacer(minLength: 0)
@@ -273,12 +273,13 @@ struct ConsentView: View {
         ("person", "A research test run by Abram, one person in London. Nothing is sold."),
         ("list.bullet", "A few quick questions and some places, then your plans: a day out, or a whole trip."),
         ("lock", "We keep your answers to plan your days and to test the idea. We don't ask for your name, email or phone number."),
-        ("hand.raised", "Skip any question and stop any time. \"Your data\" → Delete my data removes everything."),
+        ("hand.raised", "Most questions can be skipped, and you can stop any time. \"Your data\" → Delete my data removes everything."),
     ]
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                BackLink { model.route = .welcome }   // journey round 2: consent had no way back
                 Eyebrow("Before we start")
                 PageTitle(text: "A few things first")
                 VStack(alignment: .leading, spacing: 16) {

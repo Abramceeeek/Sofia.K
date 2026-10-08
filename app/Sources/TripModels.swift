@@ -340,6 +340,7 @@ struct TripChoice: Codable, Hashable {
     // an old flight's times or an old stay's price onto new days. Optional: choices saved by older builds have none.
     var forStart: String? = nil
     var forNights: Int? = nil
+    var sample: Bool? = nil                // journey round 2: a sample result (no search keys yet), never a real price
 }
 
 struct Trip: Codable, Hashable, Identifiable {
@@ -368,6 +369,9 @@ struct Trip: Codable, Hashable, Identifiable {
     var station: String?                   // a train's London station (brain/data/arrivals.yaml)
     var arriveAt: String?                  // a train's or car's arrival on day 1
     var leaveAt: String?                   // its departure on the last day
+    // Journey round 2: a flight booked elsewhere: its London airport, with the times in arriveAt and leaveAt
+    var ownFlight: Bool?
+    var flightAirport: String?
 
     var dayFrom: String { hoursFrom ?? "10:00" }
     var dayTo: String { hoursTo ?? "18:00" }
@@ -394,6 +398,11 @@ struct Trip: Codable, Hashable, Identifiable {
         switch arrivingBy {
         case "flight":
             let flight = fits(self.flight) ? self.flight : nil
+            if flight == nil, ownFlight == true {   // journey round 2: the times of a flight booked elsewhere
+                let place = flightAirport ?? "LHR"
+                return (arriveAt.map { TripEnd(mode: "flight", place: place, time: $0) },
+                        leaveAt.map { TripEnd(mode: "flight", place: place, time: $0) })
+            }
             return (flight?.arriveTime.map { TripEnd(mode: "flight", place: flight?.arrivePlace, time: $0) },
                     flight?.leaveTime.map { TripEnd(mode: "flight", place: flight?.leavePlace, time: $0) })
         case "train", "car":
@@ -434,6 +443,15 @@ struct Trip: Codable, Hashable, Identifiable {
         let words = feelings.map { TripFeelings.adjective($0) }
         return (words.isEmpty ? "Your trip" : "A \(words.joined(separator: ", ")) trip") + " · " + travellers
     }
+}
+
+/// Journey round 2: London's five airports, for a flight booked elsewhere (the codes match brain/data/arrivals.yaml).
+enum LondonAirports {
+    static let all: [(code: String, name: String)] = [
+        ("LHR", "Heathrow"), ("LGW", "Gatwick"), ("STN", "Stansted"), ("LTN", "Luton"), ("LCY", "London City"),
+    ]
+
+    static func name(_ code: String?) -> String? { all.first { $0.code == code }?.name }
 }
 
 /// D122: London's main stations, for "Arriving by train" (the codes match brain/data/arrivals.yaml).
