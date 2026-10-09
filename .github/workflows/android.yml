@@ -1,0 +1,80 @@
+# ODYS for Android (D125): builds the APK on Linux and publishes it as a download.
+#
+# - Every push that changes android/ builds a signed debug APK (android/app/debug.keystore: debug only, so each new
+#   APK installs over the last one and keeps the app's data). A Google Play release key goes in GitHub Secrets later.
+# - The APK goes to the run's artifacts, and to the pre-release "android-latest" (replaced each build), so it can be
+#   downloaded straight from a phone: github.com/<owner>/<repo>/releases/tag/android-latest.
+name: android
+
+on:
+  push:
+    paths:
+      - "android/**"
+      - "!android/**/*.md"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write          # to publish the "android-latest" pre-release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-android-all-34
+
+      # Every screen drawn with the iPhone app's sample data (app/src/test/.../ScreensTest.kt): a screen that crashes
+      # stops the build here, so it never reaches a phone. The pictures are kept with the run.
+      - name: Draw every screen
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ODYS-android-screens-${{ github.run_number }}
+          path: android/app/build/screens
+          if-no-files-found: ignore
+
+      - name: Build the APK
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Name the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk "ODYS-android-${{ github.run_number }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ODYS-android-${{ github.run_number }}
+          path: android/ODYS-android-${{ github.run_number }}.apk
+          if-no-files-found: error
+
+      - name: Publish the download (pre-release "android-latest")
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag || true
+          gh release create android-latest "ODYS-android-${{ github.run_number }}.apk" \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "ODYS for Android (build ${{ github.run_number }})" \
+            --notes "Test build ${{ github.run_number }} from ${GITHUB_REF_NAME} (${GITHUB_SHA::7}). On the phone: download the .apk, open it, and allow installs from your browser if Android asks. A newer build installs over this one and keeps your answers."

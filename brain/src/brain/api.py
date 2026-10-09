@@ -246,6 +246,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.add(user)
         if code:
             s.add(db.Event(user_id=user.id, name="tester_code", props={"code": code}))
+        if body.platform:   # D125: so Android testers can be told apart in the results
+            s.add(db.Event(user_id=user.id, name="install_platform", props={"platform": body.platform}))
         s.commit()
         return InstallOut(user_id=user.id, token=token, channel=channel)
 

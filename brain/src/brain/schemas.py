@@ -23,6 +23,8 @@ class InstallIn(BaseModel):
     # Build 2: an optional tester code typed on the welcome screen. It names a group (where they heard about us),
     # never a person; data/tester_codes.yaml sets the channel for known codes
     code: str | None = Field(default=None, max_length=40)
+    # D125: which app (the iPhone app sends nothing; the Android app sends "android"), kept as an event
+    platform: Literal["ios", "android"] | None = None
 
 
 class InstallOut(BaseModel):

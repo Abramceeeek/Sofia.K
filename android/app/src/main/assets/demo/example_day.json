@@ -1,0 +1,246 @@
+{
+ "id": 0,
+ "title": "An example Sunday",
+ "date": null,
+ "stops": [
+  {
+   "moment_id": "m_courtauld_gallery",
+   "key": "m_courtauld_gallery",
+   "title": "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid",
+   "arrive": "10:43",
+   "depart": "11:48",
+   "travel_min": 13,
+   "travel_mode": "walk",
+   "travel_text": "Getting there: about 13 min on foot from Charing Cross station.",
+   "approach": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
+   "what": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 12.0,
+   "cost_kind": "entry",
+   "cost_text": "Entry: £12",
+   "rain_swap": "",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "worth_gbp": null,
+   "feel_word": "Curious",
+   "reveal": false,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Temple or Covent Garden station"
+    },
+    {
+     "label": "The way in",
+     "text": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery"
+    },
+    {
+     "label": "You arrive",
+     "text": "The Courtauld Gallery, Somerset House"
+    }
+   ],
+   "best_light": "",
+   "best_window": "",
+   "pin": {
+    "lat": 51.510734,
+    "lon": -0.116912
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Getting there: about 13 min on foot from Charing Cross station.",
+    "Go in through the Somerset House arch on the Strand and follow the signs to the gallery.",
+    "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
+    "Entry: £12"
+   ],
+   "card": {
+    "id": "m_courtauld_gallery",
+    "title": "Van Gogh's bandaged ear and Manet's barmaid at the Courtauld",
+    "status": "ready",
+    "place": {
+     "name": "The Courtauld Gallery, Somerset House",
+     "overture_id": null,
+     "lat": 51.510734,
+     "lon": -0.116912
+    },
+    "approach": {
+     "from": "Temple or Covent Garden station",
+     "path": "Go in through the Somerset House arch on the Strand and follow the signs to the gallery",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.510734,
+      "lon": -0.116912
+     }
+    },
+    "what_happens": "In a small, calm gallery you stand in front of Van Gogh's Self-Portrait with Bandaged Ear and Manet's A Bar at the Folies-Bergère.",
+    "best_time": {
+     "time_of_day": [
+      "10:00-18:00"
+     ],
+     "light": null,
+     "weather": [
+      "any"
+     ],
+     "company": null,
+     "crowd_window": null,
+     "opening_hours": "Open daily 10:00-18:00, last entry 17:15; from £10 weekdays, £12 weekends. Official site, 2026-09-28",
+     "days": [],
+     "best_window": [],
+     "best_around_sunset": null
+    },
+    "cost_gbp": 12.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  },
+  {
+   "moment_id": "lunch@m_courtauld_gallery",
+   "key": "lunch@m_courtauld_gallery",
+   "title": "Lunch near The Courtauld Gallery",
+   "arrive": "11:53",
+   "depart": "12:38",
+   "travel_min": 0,
+   "travel_mode": "walk",
+   "travel_text": "",
+   "approach": "",
+   "what": "Pick a café, pub or food stall nearby.",
+   "queue_min": 0,
+   "best_text": "",
+   "cost_gbp": 15.0,
+   "cost_kind": "food",
+   "cost_text": "Food: about £15",
+   "rain_swap": "",
+   "lunch": true,
+   "familiar": false,
+   "rateable": false,
+   "worth_gbp": null,
+   "feel_word": "Lunch",
+   "reveal": false,
+   "approach_steps": [],
+   "best_light": "",
+   "best_window": "",
+   "pin": {
+    "lat": 51.510734,
+    "lon": -0.116912
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Pick a café, pub or food stall nearby.",
+    "Food: about £15"
+   ]
+  },
+  {
+   "moment_id": "m_soane_museum",
+   "key": "m_soane_museum",
+   "title": "Sir John Soane's house of curiosities, top-lit and full of mirrors",
+   "arrive": "12:56",
+   "depart": "14:02",
+   "travel_min": 13,
+   "travel_mode": "walk",
+   "travel_text": "Getting there: about 13 min on foot from The Courtauld Gallery.",
+   "approach": "Walk south to Lincoln's Inn Fields and number 13.",
+   "what": "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
+   "queue_min": 10.0,
+   "best_text": "",
+   "cost_gbp": 0.0,
+   "cost_kind": "entry",
+   "cost_text": "Cost: free",
+   "rain_swap": "",
+   "lunch": false,
+   "familiar": false,
+   "rateable": true,
+   "worth_gbp": null,
+   "feel_word": "Awe",
+   "reveal": false,
+   "approach_steps": [
+    {
+     "label": "From",
+     "text": "Holborn station"
+    },
+    {
+     "label": "The way in",
+     "text": "Walk south to Lincoln's Inn Fields and number 13"
+    },
+    {
+     "label": "You arrive",
+     "text": "Sir John Soane's Museum, 13 Lincoln's Inn Fields"
+    }
+   ],
+   "best_light": "",
+   "best_window": "",
+   "pin": {
+    "lat": 51.516956,
+    "lon": -0.117953
+   },
+   "chosen_for": [],
+   "why": [],
+   "lines": [
+    "Getting there: about 13 min on foot from The Courtauld Gallery.",
+    "Walk south to Lincoln's Inn Fields and number 13.",
+    "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
+    "Allow about 10 min to queue.",
+    "Cost: free"
+   ],
+   "card": {
+    "id": "m_soane_museum",
+    "title": "Sir John Soane's house of curiosities, top-lit and full of mirrors",
+    "status": "ready",
+    "place": {
+     "name": "Sir John Soane's Museum, 13 Lincoln's Inn Fields",
+     "overture_id": null,
+     "lat": 51.516956,
+     "lon": -0.117953
+    },
+    "approach": {
+     "from": "Holborn station",
+     "path": "Walk south to Lincoln's Inn Fields and number 13",
+     "step_free": null,
+     "start_point": {
+      "lat": 51.516956,
+      "lon": -0.117953
+     }
+    },
+    "what_happens": "You squeeze through an architect's house kept exactly as he left it in 1837, packed with ancient marbles, paintings and models, lit from skylights and scattered with mirrors.",
+    "best_time": {
+     "time_of_day": [
+      "10:00-17:00"
+     ],
+     "light": null,
+     "weather": [
+      "any"
+     ],
+     "company": null,
+     "crowd_window": "A queue at busy times (official)",
+     "opening_hours": "Wed-Sun 10:00-17:00, last admission 16:30; free. Official site, read 2026-09-28",
+     "days": [
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+     ],
+     "best_window": [],
+     "best_around_sunset": null
+    },
+    "cost_gbp": 0.0,
+    "shot_card": null,
+    "plannable": true
+   }
+  }
+ ],
+ "feel_line": "Some history, lunch, then one big wow",
+ "summary": [
+  "Start: Charing Cross station at 10:30 · 3 stops, including lunch",
+  "Costs: about £27 for food and entry, all on foot"
+ ],
+ "totals": {
+  "cost_gbp": 27.0,
+  "spend_gbp": 27.0,
+  "transport_gbp": 0.0,
+  "walk_min": 26,
+  "walk_km": 1.9,
+  "finish": "14:02"
+ }
+}

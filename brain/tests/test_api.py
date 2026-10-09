@@ -411,6 +411,18 @@ def test_survey_and_tester_code(client):
                for e in export["events"])
 
 
+def test_the_android_app_is_recorded_at_install(client):
+    """D125: the Android app says so at install (an event); the iPhone app sends nothing and nothing is added."""
+    _, android = install(client, platform="android")
+    _, iphone = install(client)
+    assert client.post("/v1/installs", json={"consent": {"version": "x", "research": True, "ai_processing": False},
+                                             "platform": "windows"}).status_code == 422
+    events = client.get("/v1/admin/export", headers=ADMIN).json()["events"]
+    marks = [(e["user_id"], e["props"]) for e in events if e["name"] == "install_platform"]
+    assert marks == [(android, {"platform": "android"})]
+    assert iphone not in {u for u, _ in marks}
+
+
 def test_a_trip_days_feelings_and_checked_dates_reach_the_plan(client):
     """Journey round 2: swap and regenerate on a trip day send the trip's feelings (this plan only, the profile isn't
     changed); every stop says when its card was last checked; long trips can exclude more than 40 places."""

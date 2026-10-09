@@ -1,0 +1,227 @@
+package com.odys.app
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlightTakeoff
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+/**
+ * D119: "Now", the screen for while you're out (app/Sources/DayViews.swift). Quiet on purpose: the stop you're at, "Enjoy
+ * it. I'll stay quiet until you need me.", a slowly breathing arch, and what's next. "I'm done here" asks for the rating
+ * (the visit is over, D110), then moves on. D123: with location on, how far the stop is, and the rating asked for once
+ * they've left it. m176: a trip day's journeys at each end; at the end of a trip's day, "Preview tomorrow".
+ */
+@Composable
+fun NowView(model: AppModel) {
+    val scope = rememberCoroutineScope()
+    var rating by remember { mutableStateOf<Stop?>(null) }
+    var showSafety by remember { mutableStateOf(false) }
+    var card by remember { mutableStateOf<Stop?>(null) }
+    var onTheWay by remember { mutableStateOf<Stop?>(null) }
+    var replanning by remember { mutableStateOf(false) }
+    var arrived by remember { mutableStateOf(setOf<String>()) }
+    var asked by remember { mutableStateOf(setOf<String>()) }
+    val stops = model.plan?.stops ?: emptyList()
+    val i = minOf(model.nowIndex, stops.size)
+    val tripDay = model.currentTripDay()?.second
+    val next = model.nextTripDay()
+    val date = model.plan?.date
+    // journey round 2: "Start the day" on a plan for a later day is a look ahead: nothing is rated before the day
+    val lookAhead = if (date != null && date > Dates.todayIso()) Dates.shortDay(date) else null
+    val loc = model.location
+    fun close() { model.showNow = false }
+
+    fun advance() = model.advanceNow()
+
+    fun done(stop: Stop) {
+        if (stop.rateable && stop.momentId !in model.rated && lookAhead == null) rating = stop else advance()
+    }
+
+    fun skip(stop: Stop) {
+        model.reminders.cancel(stop)
+        scope.launch { model.client.event("stop_skipped", mapOf("moment" to stop.momentId)) }
+        advance()
+    }
+
+    DisposableEffect(Unit) {
+        loc.start()
+        onDispose { loc.stop() }
+    }
+    // D123: seen at the stop (within 120 m), then about 250 m away: the visit is over, so the rating is asked for once
+    LaunchedEffect(loc.here) {
+        if (!loc.usable || i >= stops.size || rating != null) return@LaunchedEffect
+        val stop = stops[i]
+        val m = stop.pin?.let { loc.metres(it) } ?: return@LaunchedEffect
+        if (m < 120) {
+            arrived = arrived + stop.id
+        } else if (m > 250 && stop.id in arrived && stop.id !in asked && stop.rateable && stop.momentId !in model.rated) {
+            asked = asked + stop.id
+            rating = stop
+            model.client.event("rating_on_leaving")
+        }
+    }
+
+    FullSheet(model, ::close, color = Theme.calm) {
+        val open = card
+        if (open != null) {
+            StopView(model, open) { card = null }
+            return@FullSheet
+        }
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp)
+            .padding(top = 40.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (!loc.asked && i < stops.size) LocationAsk(model)
+            if (i == 0 && tripDay != null) {   // m176: the trip's first journeys come before the first stop
+                tripDay.journeys("arrive").forEach { JourneyCard(it) }
+                tripDay.before?.let { before ->
+                    SectionLabel("On the way · travelling light")
+                    for (stop in before.stops) {
+                        TripDayStop(stop)
+                        if (stop.rateable && stop.momentId !in model.rated) {
+                            QuietButton("Been there? How was it?", color = Theme.accent) { onTheWay = stop }
+                        }
+                    }
+                }
+                tripDay.journeys("to_stay").forEach { JourneyCard(it) }
+            }
+            if (i < stops.size) {
+                val stop = stops[i]
+                Eyebrow("Now")
+                Text(stop.title, style = Theme.hero, maxLines = 4, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.clickable(role = Role.Button) { card = stop }
+                        .semantics { contentDescription = "${stop.title}. Opens the stop's card" })
+                Text(lookAhead?.let { "A look ahead: this day is $it. Ratings open on the day." }
+                    ?: "Enjoy it. I'll stay quiet until you need me.", style = Theme.body.copy(color = Theme.inkSoft))
+                val pin = stop.pin
+                val m = if (loc.usable && pin != null) loc.metres(pin) else null
+                if (m != null) {   // D123: from the phone's location, never sent
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(Icons.Filled.LocationOn, null, tint = Theme.accent, modifier = Modifier.size(16.dp))
+                        Text(if (m < 120 || (stop.id in arrived && m < 250)) "You're here" else Location.walkText(m),
+                            style = Theme.subheadline.copy(color = Theme.accent))
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { BreathingArch() }
+                Spacer(Modifier.height(12.dp))
+                val leave = tripDay?.journeys("leave")?.firstOrNull()
+                if (i + 1 < stops.size) {
+                    NextUp(stops[i + 1])
+                } else if (leave != null) {   // journey round 2: the way home, ahead
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Filled.FlightTakeoff, null, tint = Theme.inkSoft, modifier = Modifier.size(18.dp))
+                        Text("After this: ${leave.title}", style = Theme.subheadline.copy(color = Theme.inkSoft))
+                    }
+                }
+                PrimaryButton("I'm done here") { done(stop) }
+                if (lookAhead == null) {   // journey round 2: a closed place or a long queue needn't be rated to move on
+                    QuietButton("Didn't go? Skip this stop", Modifier.fillMaxWidth()) { skip(stop) }
+                    if (model.lastRequest != null) {   // decision 3; never on the Test B plan
+                        QuietButton("Plans changed? Re-plan the rest of today", Modifier.fillMaxWidth(), color = Theme.accent) {
+                            replanning = true
+                        }
+                    }
+                }
+            } else {
+                if (tripDay != null) {   // m176: the way back for bags, and on to the airport or station
+                    (tripDay.journeys("back") + tripDay.journeys("leave")).forEach { JourneyCard(it) }
+                }
+                Eyebrow("That's the day")
+                Text("Thank you for going.", style = Theme.hero)
+                Text("Every stop you rated makes the next day fit you better.", style = Theme.body.copy(color = Theme.inkSoft))
+                Spacer(Modifier.height(12.dp))
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { BreathingArch() }
+                Spacer(Modifier.height(12.dp))
+                if (next != null) {   // Abram's comment (8 Oct): look at tomorrow tonight
+                    val (trip, index, _) = next
+                    Text("Tomorrow is Day ${index + 1}. Have a look tonight: if you've made other plans, change its hours and I'll plan around them.",
+                        style = Theme.subheadline.copy(color = Theme.inkSoft))
+                    PrimaryButton(if (model.busy) "Planning…" else "Preview tomorrow: Day ${index + 1}", enabled = !model.busy) {
+                        scope.launch {
+                            model.planTripDayIfNeeded(trip.id, index)
+                            close()
+                            delay(300)
+                            model.openTripDay(trip.id, index, "now")
+                        }
+                    }
+                } else {
+                    PrimaryButton("See the whole day") { close() }
+                }
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                if (i < stops.size || next != null) QuietButton("See the whole day") { close() }
+                Spacer(Modifier.weight(1f))
+                QuietButton("Help") { showSafety = true }
+            }
+        }
+    }
+    rating?.let { stop -> RatingView(model, stop, onNext = { advance() }) { rating = null } }
+    onTheWay?.let { stop -> RatingView(model, stop, planId = tripDay?.before?.id) { onTheWay = null } }
+    if (showSafety) SafetyView(model) { showSafety = false }
+    if (replanning) ReplanRestDialog(model) { replanning = false }
+}
+
+/** D123: asked once, the first time "Now" opens, with equal-weight answers; Android's own prompt comes only after a yes. */
+@Composable
+fun LocationAsk(model: AppModel) {
+    val scope = rememberCoroutineScope()
+    val ask = rememberLocationAsk(model)
+    Column(Modifier.surfaceCard(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Use your location while you're out?", style = Theme.headline)
+        Text("I'll show how far your next stop is, and ask how it felt once you've left. Your location stays on your phone.",
+            style = Theme.subheadline.copy(color = Theme.inkSoft))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SecondaryButton("Yes, use it", Modifier.weight(1f)) {
+                ask()
+                scope.launch { model.client.event("location_on") }
+            }
+            SecondaryButton("No thanks", Modifier.weight(1f)) {
+                model.location.turnOff()
+                scope.launch { model.client.event("location_off") }
+            }
+        }
+    }
+}
+
+/** "Next, around 14:34": the next stop and how to get there. */
+@Composable
+fun NextUp(stop: Stop) {
+    Column(Modifier.fillMaxWidth().border(1.dp, Theme.outline, RoundedCornerShape(18.dp))
+        .padding(horizontal = 18.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("Next, around ${stop.arrive}", style = Theme.subheadline.copy(color = Theme.muted))
+        Text(stop.title, style = Theme.body)
+        if (stop.travelText.isNotEmpty()) Text(stop.travelText, style = Theme.subheadline.copy(color = Theme.inkTertiary))
+    }
+}

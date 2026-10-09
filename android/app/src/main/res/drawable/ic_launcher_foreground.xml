@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ODYS mark: an arch of amber light in a dark frame, the light spilling out in front (108 dp adaptive icon) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#FF2C2F36" android:strokeWidth="3"
+        android:pathData="M37,74 L37,47 A17,17 0 0,1 71,47 L71,74" />
+    <path android:fillColor="#FFFFC665"
+        android:pathData="M42,74 L42,48 A12,12 0 0,1 66,48 L66,74 Z" />
+    <path android:fillColor="#66FFC665"
+        android:pathData="M42,74 L66,74 L80,86 L28,86 Z" />
+</vector>
