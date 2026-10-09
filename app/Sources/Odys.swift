@@ -20,6 +20,20 @@ enum Haptics {
     }
 }
 
+/// UX checklist (9 Oct): the pushed screens that draw their own "‹ Back" (a day, a trip, a flight, a stay) hide the
+/// navigation bar, and iOS then turns off the swipe from the left edge. This keeps that swipe on every pushed screen,
+/// and never on a tab's first screen or during a push.
+extension UINavigationController: UIGestureRecognizerDelegate {
+    override open func viewDidLoad() {
+        super.viewDidLoad()
+        interactivePopGestureRecognizer?.delegate = self
+    }
+
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        viewControllers.count > 1 && transitionCoordinator == nil
+    }
+}
+
 // ---- buttons ------------------------------------------------------------------------------------------------
 
 /// Press (120 ms): scale .97. Used by every tappable card and tile.

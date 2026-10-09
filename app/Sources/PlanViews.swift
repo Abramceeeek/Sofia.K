@@ -358,6 +358,7 @@ struct PlanView: View {
     @State private var showImprove = false
     @State private var confirmRegenerate = false
     @State private var replanning = false
+    @State private var swapping: Stop?          // UX checklist (9 Oct): a long-press swap asks first, like the card
 
     var body: some View {
         let layout = Binding(get: { forcedLayout ?? savedLayout }, set: { savedLayout = $0 })
@@ -414,6 +415,14 @@ struct PlanView: View {
         } message: {
             Text("You'll get different stops for the same times. This plan will be replaced.")
         }
+        .confirmationDialog("Swap \(swapping?.title ?? "this stop") for something else?",
+                            isPresented: Binding(get: { swapping != nil }, set: { if !$0 { swapping = nil } }),
+                            titleVisibility: .visible, presenting: swapping) { stop in
+            Button("Swap it") { Task { await model.swap(stop) } }
+            Button("Keep it", role: .cancel) {}
+        } message: { _ in
+            Text("The other stops stay. This one won't come back in this plan.")
+        }
         .sheet(isPresented: $showNewPlan) {
             NavigationStack {
                 PlanFormView(onDone: { showNewPlan = false })
@@ -469,7 +478,7 @@ struct PlanView: View {
             .buttonStyle(PressStyle())
             .contextMenu {
                 if stop.rateable, model.lastRequest != nil {   // Build 2: never on the Test B plan
-                    Button { Task { await model.swap(stop) } } label: {
+                    Button { swapping = stop } label: {
                         Label("Swap this stop", systemImage: "arrow.triangle.2.circlepath")
                     }
                 }
@@ -1258,6 +1267,7 @@ struct StopView: View {
     @State private var confirmSwap = false
     @State private var confirmRegenerate = false
     @State private var sharing = false
+    @State private var reporting = false
 
     var body: some View {
         let done = model.rated.contains(stop.momentId)
@@ -1294,6 +1304,9 @@ struct StopView: View {
                     if stop.rateable {
                         rating(done: done, opens: opens)
                     }
+                    // UX checklist (9 Oct): a wrong price, hours or route is reported where it's seen, to a person
+                    QuietButton("Something wrong with this place? Tell us") { reporting = true }
+                        .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 14)
@@ -1333,6 +1346,7 @@ struct StopView: View {
             Text("You'll get different stops for the same times. This plan will be replaced.")
         }
         .sheet(isPresented: $showRating) { RatingView(stop: stop).brainFeedback() }
+        .sheet(isPresented: $reporting) { SafetyView(prefill: "About \(stop.title): ").brainFeedback() }
         .navigationDestination(isPresented: $sharing) {
             SharePreview(stop: stop, rating: model.myRatings[stop.momentId] ?? 5)
         }

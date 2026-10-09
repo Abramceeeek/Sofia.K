@@ -30,7 +30,7 @@ enum Theme {
     static let amberLight = Color(hex: 0xFFE7B0)     // the top of the arch's light
     static let onAccent = Color(hex: 0x111317)
     // Help & safety: one red, only for emergencies
-    static let danger = Color(hex: 0xE5484D)         // "Call 999"
+    static let danger = Color(hex: 0xD0363B)         // "Call 999": white on it is 4.9:1 (UX checklist, 9 Oct; was E5484D, 3.9:1)
     static let emergencyBg = Color(hex: 0x3A1416)
     static let emergencyBorder = Color(hex: 0x7A2A2E)
     static let emergencyTitle = Color(hex: 0xFFDCDC)

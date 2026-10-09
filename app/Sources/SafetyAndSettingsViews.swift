@@ -12,8 +12,10 @@ struct SafetyView: View {
     @State private var reply: String?
     @State private var showSettings = false
 
-    init(sent: String? = nil) {      // CI screenshots: `sent` shows the reply to a message just sent
+    /// `prefill` starts the message (a stop card's "Something wrong with this place?").
+    init(sent: String? = nil, prefill: String = "") {      // CI screenshots: `sent` shows the reply to a message just sent
         _reply = State(initialValue: sent)
+        _message = State(initialValue: prefill)
     }
 
     var body: some View {
