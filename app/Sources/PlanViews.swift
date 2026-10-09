@@ -410,7 +410,7 @@ struct PlanView: View {
         .background(Theme.background)
         .animation(reduceMotion ? nil : Motion.fade, value: model.reminderAsked)
         .confirmationDialog("Make a new plan for this day?", isPresented: $confirmRegenerate, titleVisibility: .visible) {
-            Button("Regenerate plan") { Task { await model.regenerate() } }
+            Button("Plan this day again") { Task { await model.regenerate() } }
             Button("Keep this plan", role: .cancel) {}
         } message: {
             Text("You'll get different stops for the same times. This plan will be replaced.")
@@ -527,7 +527,7 @@ struct PlanView: View {
             }
             HStack(spacing: 10) {
                 if model.lastRequest != nil {   // Build 2: the Test B plan is rated as it was chosen
-                    SecondaryButton(title: "Regenerate", disabled: model.busy) { confirmRegenerate = true }
+                    SecondaryButton(title: "Plan again", disabled: model.busy) { confirmRegenerate = true }
                 }
                 SecondaryButton(title: "Another day") {
                     model.planAnotherDay()
@@ -1297,7 +1297,7 @@ struct StopView: View {
                         if stop.rateable, model.lastRequest != nil {   // Build 2: not on the Test B plan
                             HStack(spacing: 10) {
                                 SecondaryButton(title: "Swap this stop", disabled: model.busy) { confirmSwap = true }
-                                SecondaryButton(title: "Regenerate", disabled: model.busy) { confirmRegenerate = true }
+                                SecondaryButton(title: "Plan again", disabled: model.busy) { confirmRegenerate = true }
                             }
                         }
                     }
@@ -1335,7 +1335,7 @@ struct StopView: View {
             Text("The other stops stay. This one won't come back in this plan.")
         }
         .confirmationDialog("Make a new plan for this day?", isPresented: $confirmRegenerate, titleVisibility: .visible) {
-            Button("Regenerate plan") {
+            Button("Plan this day again") {
                 Task {
                     await model.regenerate()
                     if model.errorMessage == nil { dismiss() }
