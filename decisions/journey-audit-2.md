@@ -32,6 +32,13 @@
 
 **Needs Abram:** 5 decisions (section 6), about 15 min. Trying the build takes about 15 min more.
 
+**Update, 9 Oct (D124, m179):**
+- Abram said "fix everything you can do now".
+- Items 1–11 in section 3 are fixed in build 58.
+- Decisions 2–4 are done as recommended: a reinstall starts afresh, "Re-plan the rest of today", and "Checked" on every stop.
+- Visitor essentials are in "Good to know", from official pages.
+- Still Abram's: the paid server (decision 1), the phone checks (item 12), and Test D's per-trip price at Checkpoint 3 (decision 5).
+
 ## 1. The journey, step by step (as built today)
 
 | Step | What happens now | Found in this round | Status |

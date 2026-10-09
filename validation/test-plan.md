@@ -99,6 +99,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Measures:** visits by arm (GoatCounter); sign-ups by arm and by option (Tally hidden fields); monthly vs annual split.
 - **Two sign-up rates:** sign-ups with a `ref` code (invitees) are counted for K, and the Test D rates are reported both with and without them.
 - **Meta ads: none** (D26).
+- **To consider at Checkpoint 3 (journey audit round 2, D124):** a per-trip price beside the monthly and yearly ones. Flighty sells £4.99 pay-as-you-go next to £59.99 a year (UK App Store, read 8 Oct 2026). UK paid travel apps charge £24.99–£59.99 a year. Only 17% would pay up to 5% of a trip's value for an AI assistant (Amadeus, Sep 2025). The arms are not changed yet.
 
 ## Test E — B2B discovery (5 interviews, D34, D36, D49): postponed until v0 exists (D86)
 
