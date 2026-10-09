@@ -1,10 +1,12 @@
 # UX checklist: every question, answered for ODYS (9 Oct 2026)
 
-**Decision first:** of 107 questions, **68 pass**, **23 are partial**, **6 failed and are fixed** (five fixes, build 68), and **10 don't apply yet** (no accounts, payments or ads). Nothing is left failing. The partial ones are either on the after-9-Nov list, waiting for the paid server (decision 1), or to be measured in Test B.
+**Decision first:** of 120 questions, **74 pass**, **29 are partial**, **6 failed and are fixed** (five fixes, build 68), and **11 don't apply yet** (no accounts, payments or ads). Nothing is left failing. The partial ones are either on the after-9-Nov list, waiting for the paid server (decision 1), or to be measured in Test B.
 
 **Where it came from:** Abram pasted five UX research notes and checklists (Hick, Fitts, peak–end, Zeigarnik and goal gradient, micro-frustrations and dark patterns), one of them written for "Days Out", this app's earlier name. Their questions are merged here without duplicates and answered from the code and the decision log. **Their statistics and customer quotes are not repeated:** they weren't checked in this session, and some say they are composites (rule 1). Checks that need the phone are marked for Abram's phone pass.
 
-**Hours:** Claude ~3 h for the audit and ~1 h for the fixes (GUESS). Abram: 0 h, plus the phone checks already on his list.
+**Coverage, checked line by line (9 Oct, after Abram asked):** the five lists hold **327 questions** (55, 114, 33, 100 and 25), and each one maps to a row here. The first pass had 107 rows; the check added 13 that had been missed or folded in too loosely (marked "Added in the coverage check"). Questions about passwords, one-time codes, card and address entry, bank linking, trials and renewals map to the N/A rows, because ODYS has no accounts or payments.
+
+**Hours:** Claude ~3.5 h for the audit and ~1 h for the fixes (GUESS). Abram: 0 h, plus the phone checks already on his list.
 
 **Fixed today (build 68, m181):**
 1. Swipe back from the left edge now works on the five screens that draw their own "‹ Back".
@@ -17,7 +19,7 @@
 
 ## 🧠 Cognitive load and clarity (First impression and navigation)
 
-25 questions: 19 pass, 3 partial, 3 fixed.
+30 questions: 23 pass, 4 partial, 3 fixed.
 
 | # | Question | ODYS | Answer | Next |
 |---|---|---|---|---|
@@ -32,7 +34,7 @@
 | 9 | Is every main feature within 2 taps of home? | Pass | Plan a trip, your day, your trips, Help and Your data are each one tap from the Trip tab. |  |
 | 10 | Are labels in the words people use, with no jargon? | Fixed | Mostly plain already. "Regenerate" was a tech word: it is now "Plan again" ("Plan this day again" in the confirmation). "Fits me" and "worth about £V to you" are worth listening for in Test B. | Fixed in build 68 |
 | 11 | Do icons carry text labels? | Partial | Every tab has a word. One icon-only button, the gear for "Your data", has a VoiceOver label but no visible word; the same link is written out at the bottom of the You tab. |  |
-| 12 | Is body text at least 16 px, with 4.5:1 contrast? | Pass | Body text is the system's 17 pt and grows with the phone's text size. Measured today, every text colour is at least 4.5:1 on its background: ink 15.7:1, labels 7.1:1, tab labels 5.2:1. Secondary lines are 13–15 pt. |  |
+| 12 | Is body text at least 16 px, with 4.5:1 contrast? | Pass | Body text is the system's 17 pt and grows with the phone's text size. Measured today, every text colour is at least 4.5:1 on its background: ink 15.7:1, labels 7.1:1, tab labels 5.2:1. Secondary lines are 13–15 pt. The dark look still needs a check in bright sunlight. | Abram's phone check |
 | 13 | Does every button pass contrast? | Fixed | One didn't: white on the red "Call 999" button was 3.9:1. The red is now D0363B, so the text is 4.9:1 and the button still stands out at 3.3:1 against its card. | Fixed in build 68 |
 | 14 | Does it stay readable with large text sizes and Reduce Motion? | Pass | Fonts scale with Dynamic Type, the day's curve gives each label its own row at accessibility sizes (m178), and Reduce Motion turns off all movement (D117). | Abram's phone check: A full large-text and VoiceOver pass is still on Abram's phone-check list. |
 | 15 | Does every empty state say what to do next? | Pass | Book with no trip: "Plan a trip first…" with one button. No flights match: "Clear filters". You, before any ratings: "Nothing yet. It comes from your answers and your ratings." |  |
@@ -46,10 +48,15 @@
 | 23 | Do the map and the list agree? | Pass | Both are drawn from the same stops, numbered the same. |  |
 | 24 | Is only one interruption shown at a time? | Pass | One alert at a time (a notice waits while an error shows); the reminder question is asked once, after a plan. |  |
 | 25 | Do people never have to remember something from an earlier screen? | Pass | Each step of "Plan a trip" repeats the trip so far (dates, travellers). |  |
+| 26 | Are advanced options tucked away until they're needed? | Pass | Flight and stay filters sit in their own sheet with a live "Show 12 flights"; the later places and choices are under "Improve future plans"; "Good to know" is its own page. | : Added in the coverage check (9 Oct). |
+| 27 | Is the recommended or default choice obvious? | Pass | "Best" is the selected sort; 3 places a day and your hours are preset; the amber button is always the suggested next step. | : Added in the coverage check (9 Oct). |
+| 28 | Do the most-used controls stay in the same place on every screen? | Pass | Help and the gear are top-right on every main screen, "‹ Back" top-left, and the main button at the end of the content. | : Added in the coverage check (9 Oct). |
+| 29 | Is search forgiving of typos? | Partial | "Search places" matches any part of a name, ignoring capitals, over a short list (about 50 places) that is shown in full anyway. A misspelt name finds nothing. | : Added in the coverage check (9 Oct). |
+| 30 | Can people tell looking at a place from adding it to their plan? | Pass | Tapping a stop opens it. Adding is a separate "Add a place" in the free-time row, and "Must include" is on "Plan a day". | : Added in the coverage check (9 Oct). |
 
 ## ✋ Physical and motor ergonomics (Thumb zone and interaction)
 
-16 questions: 9 pass, 5 partial, 1 fixed, 1 n/a.
+17 questions: 9 pass, 6 partial, 1 fixed, 1 n/a.
 
 | # | Question | ODYS | Answer | Next |
 |---|---|---|---|---|
@@ -69,10 +76,11 @@
 | 14 | Are map pins big enough and far enough apart? | Partial | Plan pins are numbered and stays are tappable on the map; not yet checked by hand with a thumb. | Abram's phone check |
 | 15 | Can screen-reader users tell what each control does and its state? | Partial | 34 VoiceOver labels; tiles and chips announce "selected"; the calendar names each day. A full VoiceOver pass hasn't been done. | Abram's phone check |
 | 16 | Does the layout stay still under the thumb while loading? | Pass | Loading cards hold their space, and the plan's reveal fades in place. |  |
+| 17 | Do controls look tappable without relying on colour alone? | Partial | Buttons and tiles have shapes and outlines. The quiet text buttons ("Skip the rest", "Previous", "Got a tester code?") are grey text only. | : Added in the coverage check (9 Oct). |
 
 ## 🛡️ Safety, trust and error forgiveness (The anxiety fillers)
 
-27 questions: 17 pass, 5 partial, 1 fixed, 4 n/a.
+31 questions: 18 pass, 7 partial, 1 fixed, 5 n/a.
 
 | # | Question | ODYS | Answer | Next |
 |---|---|---|---|---|
@@ -93,8 +101,8 @@
 | 15 | Are subscription prices, trials, renewals and cancelling clear and easy? | N/A | Nothing is sold in the app yet. Prices are tested later on a web page (Test D). When payments come, they need plain terms and cancelling as easy as subscribing. |  |
 | 16 | Are ads clearly marked, with a decent close button? | N/A | There are no ads. |  |
 | 17 | Can destructive actions be confirmed or undone? | Pass | Swap, plan again, re-plan the rest, removing a trip and deleting data each ask first; corrections in "So far" have "Undo". |  |
-| 18 | Do error messages say what happened, why, and what to do, without clearing input? | Partial | Offline and slow-server messages are specific ("You seem to be offline. Check your connection and try again."). A server error says only "The planner answered with an error (500). Please try again." Nothing typed is cleared by an error. |  |
-| 19 | Is what people enter kept through going back, backgrounding and timeouts? | Partial | Answers are sent as each step finishes and the step is remembered; plans, trips and ratings are saved on the phone. A half-written Help message or "why" note is lost if its screen is closed. |  |
+| 18 | Do error messages say what happened, why, and what to do, without clearing input? | Partial | Offline and slow-server messages are specific ("You seem to be offline. Check your connection and try again."). A server error says only "The planner answered with an error (500). Please try again." Nothing typed is cleared by an error. Alerts have only "OK"; you try again with the same button. |  |
+| 19 | Is what people enter kept through going back, backgrounding and timeouts? | Partial | Answers are sent as each step finishes and the step is remembered; plans, trips and ratings are saved on the phone. A half-written Help message or "why" note is lost if its screen is closed. The app is portrait only, so turning the phone loses nothing. |  |
 | 20 | Without signal, is work kept and the situation explained? | Pass | Ratings wait and send later (m175); the day's plan is saved on the phone; the free server's wake-up says "Waking up the planner. This can take up to a minute." |  |
 | 21 | After a failure, is it clear whether the action happened? | Pass | Swap, plan again and delete close only when they worked; after a booking link, "Did you book it?". |  |
 | 22 | Is a person reachable in 2 taps from anywhere? | Pass | "Help" on every main screen reaches a real person within a few hours, with 999 and NHS 111 at the top. |  |
@@ -103,10 +111,14 @@
 | 25 | Is account recovery and logout simple? | N/A | There are no accounts: the phone has a random code. A reinstall starts afresh (D124); a new phone starts again. |  |
 | 26 | Can people get a copy of their data themselves? | Partial | Delete is in the app; a copy is by email (the privacy notice promises a reply within a month). That's fine at test scale. | After-9-Nov #70 |
 | 27 | Are security cues shown only at payment and login, and only when true? | N/A | No payments or logins in the app. |  |
+| 28 | Are cancellation and refund terms shown before choosing? | Pass | Flights show the bag allowance and whether they can be refunded or changed; stays say "Can't be refunded" or "Check cancellation terms". Each price says when it was checked and that it can change on the provider's site. | : Added in the coverage check (9 Oct). |
+| 29 | Does every text field keep a visible label while you type? | Partial | The Help message and the reply contact use their grey placeholder as the only label, so it disappears as you type (the card's heading still names the message box). | : Added in the coverage check (9 Oct). |
+| 30 | Can an accidental skip be undone? | Partial | "Didn't go? Skip this stop" on "Now" moves on at once, with no undo. The stop stays in the day's plan and can still be opened and rated there. | : Added in the coverage check (9 Oct). |
+| 31 | Are other people's edit rights clear on a shared plan? | N/A | Plans aren't shared for editing. | : Added in the coverage check (9 Oct). |
 
 ## 📈 Momentum, motivation and feedback (Rewards without manipulation)
 
-21 questions: 15 pass, 4 partial, 2 n/a.
+22 questions: 15 pass, 5 partial, 2 n/a.
 
 | # | Question | ODYS | Answer | Next |
 |---|---|---|---|---|
@@ -131,10 +143,11 @@
 | 19 | Do badges clear once dealt with? | Pass | The only one, Help's dot for a new reply, clears when it's read. |  |
 | 20 | Do streaks forgive a missed day? | N/A | No streaks, on purpose: days out are occasional (calm technology). |  |
 | 21 | After planning, can people save, share, edit and start the plan? | Partial | Saved automatically; edited by swap, plan again, add a place or change a day; started with "Now". Sharing a plan with a friend before the day isn't possible: only a rated moment can be shared afterwards. | After-9-Nov #69 |
+| 22 | Do long waits (over 10 seconds) show real progress, or skeleton screens? | Partial | Waits show a card saying what's happening ("Finding flights from…"), not a progress bar or skeleton. A live flight search takes 11–16 s, and the free server's wake-up up to a minute. | : Added in the coverage check (9 Oct). |
 
 ## 🛑 Real-user friction points (Common drop-off killers)
 
-18 questions: 8 pass, 6 partial, 1 fixed, 3 n/a.
+20 questions: 9 pass, 7 partial, 1 fixed, 3 n/a.
 
 | # | Question | ODYS | Answer | Next |
 |---|---|---|---|---|
@@ -155,4 +168,6 @@
 | 15 | Can bad weather, a closure or changed plans be handled without starting again? | Pass | "Re-plan the rest of today" (m179) keeps what's done and re-plans what's left. |  |
 | 16 | Are common edge cases handled: groups, one-way or multi-city, flexible dates, access needs? | Partial | Groups: yes, travellers for flights and stays. One-way and multi-city: no (after-9-Nov #68, #14). Flexible dates: no. Step-free and with-kids: no (after-9-Nov #46); only 4 of 51 cards have step-free access checked so far. | After-9-Nov #46 |
 | 17 | Are real users watched doing the main task without coaching, and asked what they expected? | Partial | That's the friends' and strangers' TestFlight rounds. Add two questions to the friends' round: "What did you expect to happen when you tapped…?" and "Where did you hesitate?" | Test B / friends' round |
-| 18 | Are drop-offs, corrections and complaints tracked? | Partial | Events already cover onboarding done, plans, swaps, plan again, re-plans, skipped stops, shares and booking hand-offs, so time to first plan, completion, share rate and correction rate can be counted. Feedback from Help & safety isn't tagged by theme yet. | Test B / friends' round: Tag Help & safety messages by theme weekly during Test B. |
+| 18 | Are drop-offs, corrections and complaints tracked? | Partial | Events already cover onboarding done, plans, swaps, plan again, re-plans, skipped stops, shares and booking hand-offs, so time to first plan, completion, share rate and correction rate can be counted. Feedback from Help & safety isn't tagged by theme yet. There are no session recordings, on purpose (privacy). | Test B / friends' round: Tag Help & safety messages by theme weekly during Test B. |
+| 19 | Is the app usable within about 2 seconds of opening? | Partial | The app opens at once with the saved plan. But after 15 quiet minutes the free server needs up to a minute to wake before a new plan or search. A paid server removes the wait. | Abram's decision: Decision 1: the paid server. Added in the coverage check (9 Oct). |
+| 20 | Are tips and instruction pop-ups kept to a minimum? | Pass | There are none: each screen explains itself in a line. | : Added in the coverage check (9 Oct). |
