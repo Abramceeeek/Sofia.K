@@ -241,7 +241,7 @@ extension AppModel {
             }
             self.currentTripId = trip.id
             if self.book.resultsFor != trip.id { self.book.flights = nil; self.book.stays = nil }
-            if trip.nights == 0, let day = out.days.first, day.plan != nil { self.useDay(trip, day) }
+            if trip.nights == 0, let day = trip.days.first, day.plan != nil { self.useDay(trip, day) }
             await self.client.event("trip_made", ["nights": "\(trip.nights)", "flight": trip.needFlight ? "yes" : "no",
                                                   "adults": "\(trip.adults)", "feelings": trip.feelings.joined(separator: ",")])
             ok = true
