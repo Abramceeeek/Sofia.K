@@ -793,7 +793,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     "for real.", "total": 0, "shown": 0, "results": [], "facets": trips.flight_facets([]),
                     "tabs": {}, "links": links, "searched_at": datetime.now(timezone.utc).isoformat()}
         ff = trips.FlightFilters(
-            max_stops=f.max_stops, stops=f.stops, out_times=f.out_times, out_depart=f.out_depart,
+            max_stops=f.max_stops, stops=f.stops, out_times=f.out_times, in_times=f.in_times, out_depart=f.out_depart,
             in_depart=f.in_depart, max_leg_min=f.max_leg_min, airlines=f.airlines, max_price=f.max_price,
             checked_bag=f.checked_bag, refundable=f.refundable, sort=f.sort)
         shown = trips.filter_flights(found, ff)

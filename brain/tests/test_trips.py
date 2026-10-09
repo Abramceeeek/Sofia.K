@@ -241,6 +241,13 @@ def test_flight_and_stay_responses_carry_tabs_and_tags(client):
     assert all(360 <= int(x["outbound"]["depart_at"][11:13]) * 60 + int(x["outbound"]["depart_at"][14:16]) < 1080
                for x in d["results"])
     assert sum("Cheapest" in x["tags"] for x in d["results"]) == (1 if d["results"] else 0)
+    # 9 Oct: the flight home has its own leaving times
+    back = client.post("/v1/trips/flights", headers=h, json={
+        "origin": "TAS", "depart_date": soon.isoformat(), "return_date": (soon + timedelta(days=7)).isoformat(),
+        "filters": {"in_times": ["evening"]}}).json()["results"]
+    assert back and all(x["inbound"]["depart_at"][11:13] >= "18" for x in back)
+    assert client.post("/v1/trips/flights", headers=h, json={
+        "origin": "TAS", "depart_date": soon.isoformat(), "filters": {"in_times": ["late"]}}).status_code == 422
     s = client.post("/v1/trips/stays", headers=h, json={
         "checkin": soon.isoformat(), "checkout": (soon + timedelta(days=3)).isoformat()}).json()
     assert set(s["tabs"]) == {"recommended", "price", "rating"} and s["results"][0]["tags"]

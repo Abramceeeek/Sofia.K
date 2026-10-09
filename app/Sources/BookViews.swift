@@ -498,10 +498,11 @@ struct FlightRow: View {
             }
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
-                    if let back = flight.inbound {
-                        Text("Return \(Dates.shortDay(back.departAt)) · \(Dates.duration(back.durationMin))")
+                    if let back = flight.inbound {   // 9 Oct (Abram): the flight home's own times, not only its day
+                        Text(FlightRow.backLine(back))
                             .font(.footnote)
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(Theme.inkSoft)
+                            .lineLimit(2)
                     }
                     Text(FlightRow.bagLabel(flight.checkedBags))
                         .font(.footnote)
@@ -520,6 +521,14 @@ struct FlightRow: View {
         .padding(16)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20))
         .accessibilityElement(children: .combine)
+    }
+
+    /// "Back Sun 12 Oct · 18:40 → 21:05 · direct"
+    static func backLine(_ back: FlightLeg) -> String {
+        let day: String = Dates.shortDay(back.departAt)
+        let plus: String = back.plusDays > 0 ? " +\(back.plusDays)" : ""
+        let stops: String = back.stops == 0 ? "direct" : (back.stops == 1 ? "1 stop" : "\(back.stops) stops")
+        return "Back \(day) · \(back.departTime) → \(back.arriveTime)\(plus) · \(stops)"
     }
 
     static func bagLabel(_ bags: Int?) -> String {
@@ -1292,20 +1301,32 @@ struct FlightFilterSheet: View {
         let f = book.flightFilters
         let times: [(String, String, String)] = [("night", "Night", "00:00–06:00"), ("morning", "Morning", "06:00–12:00"),
                                                  ("afternoon", "Afternoon", "12:00–18:00"), ("evening", "Evening", "18:00–24:00")]
-        return VStack(alignment: .leading, spacing: 10) {
-            FilterTitle(text: "Leaving \(model.currentTrip?.origin?.city ?? "")")
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-                ForEach(times, id: \.0) { k, label, sub in
-                    OptionTile(label: label, sub: sub, on: f.outTimes.contains(k)) {
-                        if let i = f.outTimes.firstIndex(of: k) {
-                            book.flightFilters.outTimes.remove(at: i)
-                        } else {
-                            book.flightFilters.outTimes.append(k)
-                        }
-                    }
+        let homeward = (model.currentTrip?.nights ?? 0) > 0
+        return VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 10) {
+                FilterTitle(text: "Leaving \(model.currentTrip?.origin?.city ?? "")")
+                timeGrid(times, f.outTimes) { book.flightFilters.outTimes = Self.toggled($0, in: f.outTimes) }
+            }
+            if homeward {   // 9 Oct (Abram): the flight home has its own times
+                VStack(alignment: .leading, spacing: 10) {
+                    FilterTitle(text: "Flying home from \(model.currentTrip?.city ?? "London")")
+                    timeGrid(times, f.inTimes) { book.flightFilters.inTimes = Self.toggled($0, in: f.inTimes) }
                 }
             }
         }
+    }
+
+    private func timeGrid(_ times: [(String, String, String)], _ on: [String],
+                          toggle: @escaping (String) -> Void) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+            ForEach(times, id: \.0) { k, label, sub in
+                OptionTile(label: label, sub: sub, on: on.contains(k)) { toggle(k) }
+            }
+        }
+    }
+
+    static func toggled(_ k: String, in list: [String]) -> [String] {
+        list.contains(k) ? list.filter { $0 != k } : list + [k]
     }
 
     @ViewBuilder private var journeySection: some View {

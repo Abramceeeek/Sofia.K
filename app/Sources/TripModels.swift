@@ -32,6 +32,7 @@ struct TripLink: Codable, Hashable {
 struct FlightFilters: Codable, Hashable {
     var stops: [Int] = []                  // 0, 1, 2 (= 2 or more); empty means any
     var outTimes: [String] = []            // night / morning / afternoon / evening, leaving
+    var inTimes: [String] = []             // the same, for the flight home (9 Oct)
     var maxLegMin: Int?                    // the longest journey, each way
     var airlines: [String] = []
     var maxPrice: Double?
@@ -40,7 +41,7 @@ struct FlightFilters: Codable, Hashable {
 
     /// How many filters are on, for "Filters · 2" (the sort isn't a filter).
     var count: Int {
-        [!stops.isEmpty, !outTimes.isEmpty, maxLegMin != nil, !airlines.isEmpty, maxPrice != nil, checkedBag]
+        [!stops.isEmpty, !outTimes.isEmpty, !inTimes.isEmpty, maxLegMin != nil, !airlines.isEmpty, maxPrice != nil, checkedBag]
             .filter { $0 }.count
     }
 

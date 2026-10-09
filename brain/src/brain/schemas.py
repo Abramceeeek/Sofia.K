@@ -198,6 +198,7 @@ class FlightFiltersIn(BaseModel):
     max_stops: int | None = Field(default=None, ge=0, le=2)
     stops: list[Annotated[int, Field(ge=0, le=2)]] = Field(default_factory=list, max_length=3)   # 2 = "2 or more"
     out_times: list[Literal["night", "morning", "afternoon", "evening"]] = Field(default_factory=list, max_length=4)
+    in_times: list[Literal["night", "morning", "afternoon", "evening"]] = Field(default_factory=list, max_length=4)
     out_depart: tuple[Minutes, Minutes] | None = None      # minutes after midnight, local
     in_depart: tuple[Minutes, Minutes] | None = None
     max_leg_min: int | None = Field(default=None, ge=30, le=4000)

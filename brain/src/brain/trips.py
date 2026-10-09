@@ -459,6 +459,7 @@ class FlightFilters:
     max_stops: int | None = None                 # 0 = direct only
     stops: list[int] = field(default_factory=list)       # keep these numbers of stops; 2 means "2 or more"
     out_times: list[str] = field(default_factory=list)   # night / morning / afternoon / evening, leaving
+    in_times: list[str] = field(default_factory=list)    # the same, for the flight home (9 Oct)
     out_depart: tuple[int, int] | None = None    # minutes after midnight, local
     in_depart: tuple[int, int] | None = None
     max_leg_min: int | None = None               # the longest journey, each way
@@ -499,6 +500,7 @@ def filter_flights(flights: list[Flight], f: FlightFilters) -> list[Flight]:
             if (f.max_stops is None or x.stops <= f.max_stops)
             and (not f.stops or min(x.stops, 2) in f.stops)
             and (not f.out_times or time_bucket(x.outbound.depart_minute) in f.out_times)
+            and (not f.in_times or x.inbound is None or time_bucket(x.inbound.depart_minute) in f.in_times)
             and _in_window(x.outbound.depart_minute, f.out_depart)
             and (x.inbound is None or _in_window(x.inbound.depart_minute, f.in_depart))
             and (f.max_leg_min is None or x.longest_leg_min <= f.max_leg_min)

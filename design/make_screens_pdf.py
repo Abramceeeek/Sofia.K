@@ -115,7 +115,7 @@ SCREENS = [
     ("flights", "26", "Trips (Abram's ODYS Trips design)", "Flights",
      "The search pinned at the top; Best, Cheapest and Fastest with their tops; one-tap chips. Sample prices until the keys are in."),
     ("flightfilters", "27", "Trips (Abram's ODYS Trips design)", "Flight filters",
-     "Stops, leaving times, longest journey, price, a checked bag and airlines, with a live \"Show N flights\"."),
+     "Stops, leaving times each way, longest journey, price, a checked bag and airlines, with a live \"Show N flights\"."),
     ("flight", "28", "Trips (Abram's ODYS Trips design)", "A flight: where to book",
      "Both legs, the bags, the price found here and where to book. ODYS earns nothing from these links."),
     ("handoff", "28a", "Trips (Abram's ODYS Trips design)", "Going to a booking site", "Where you're going, the price found and when, and that you pay them directly."),
