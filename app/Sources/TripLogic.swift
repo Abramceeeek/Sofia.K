@@ -210,20 +210,17 @@ extension AppModel {
     func makeTrip(_ draft: Trip, keepFrom old: Trip? = nil, keepChanged: Bool = true) async -> Bool {
         var trip = draft
         var ok = false
+        // Written with constants only: the release build's optimiser crashed on a captured `var` here (build 60)
         let today = Dates.isoDay.string(from: .now)
-        var kept: [TripDayOut] = []
-        if let old, old.start == trip.start, old.nights == trip.nights {
-            let changed = keepChanged ? Set(old.changedDays ?? []) : []
-            kept = old.days.filter { $0.date < today || changed.contains($0.index) }
-            trip.changedDays = old.changedDays?.filter { changed.contains($0) }
-        } else {
-            trip.changedDays = nil
-        }
+        let sameDates = old.map { $0.start == draft.start && $0.nights == draft.nights } ?? false
+        let changed: Set<Int> = sameDates && keepChanged ? Set(old?.changedDays ?? []) : []
+        let kept: [TripDayOut] = sameDates ? (old?.days ?? []).filter { $0.date < today || changed.contains($0.index) } : []
+        trip.changedDays = sameDates ? old?.changedDays?.filter { changed.contains($0) } : nil
         let keptIndex = Set(kept.map(\.index))
-        let todo = Array((0..<trip.dayCount).filter { !keptIndex.contains($0) }.prefix(7))
-        let base = { (p: Plan?) in (p?.stops ?? []).filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] } }
-        let exclude = Array(Set(kept.flatMap { base($0.plan) + base($0.before) })).sorted()
-        let wasYourDay = old?.days.first { $0.plan?.id != nil && $0.plan?.id == plan?.id }
+        let todo = Array((0..<draft.dayCount).filter { !keptIndex.contains($0) }.prefix(7))
+        let exclude = AppModel.momentBases(kept)
+        let currentPlanId = plan?.id
+        let yourDayIndex = old?.days.first(where: { currentPlanId != nil && $0.plan?.id == currentPlanId })?.index
         await run {
             if kept.isEmpty || !todo.isEmpty {
                 let out = try await self.client.tripDays(self.daysRequest(trip, days: kept.isEmpty ? [] : todo,
@@ -235,9 +232,9 @@ extension AppModel {
             trip.daysStale = false
             self.save(trip)
             // "your day" follows its day when that day was planned again
-            if let was = wasYourDay, !keptIndex.contains(was.index),
-               let now = trip.days.first(where: { $0.index == was.index }), now.plan != nil {
-                self.useDay(trip, now)
+            if let i = yourDayIndex, !keptIndex.contains(i),
+               let day = trip.days.first(where: { $0.index == i }), day.plan != nil {
+                self.useDay(trip, day)
             }
             self.currentTripId = trip.id
             if self.book.resultsFor != trip.id { self.book.flights = nil; self.book.stays = nil }
@@ -247,6 +244,17 @@ extension AppModel {
             ok = true
         }
         return ok
+    }
+
+    /// The cards (not their lunch versions) in these days' plans and places on the way.
+    static func momentBases(_ days: [TripDayOut]) -> [String] {
+        var out = Set<String>()
+        for day in days {
+            for stop in (day.plan?.stops ?? []) + (day.before?.stops ?? []) where stop.rateable {
+                out.insert(stop.momentId.components(separatedBy: "#")[0])
+            }
+        }
+        return out.sorted()
     }
 
     /// A later day ("+ 3 more days, planned as you go"), without any moment the trip already has.
