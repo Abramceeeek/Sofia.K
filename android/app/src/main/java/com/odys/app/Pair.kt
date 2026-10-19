@@ -209,10 +209,10 @@ fun PairCompare(model: AppModel, pair: PairResponse) {
                         Chip("Plan 2", chosen == "2", Modifier.weight(1f)) { chosen = "2" }
                     }
                 }
-                SurveyQuestion("${text?.fitPrompt ?: "This plan fits me"}: Plan 1") {
+                SurveyQuestion(fitText(text?.fitPrompt, "1")) {
                     ScaleRow("not at all", "completely", fit1) { fit1 = it }
                 }
-                SurveyQuestion("${text?.fitPrompt ?: "This plan fits me"}: Plan 2") {
+                SurveyQuestion(fitText(text?.fitPrompt, "2")) {
                     ScaleRow("not at all", "completely", fit2) { fit2 = it }
                 }
                 SurveyQuestion(text?.whyPrompt ?: "Why? (optional)") {
@@ -262,4 +262,10 @@ fun PairReveal(model: AppModel, pair: PairResponse) {
         Spacer(Modifier.height(24.dp))
         PrimaryButton("See your plan") { model.finishPair() }
     }
+}
+
+/** 19 Oct review: "Plan 1 fits me", the same statement (Test B's item) with the plan named in it. */
+fun fitText(prompt: String?, n: String): String {
+    val p = prompt ?: "This plan fits me"
+    return if ("This plan" in p) p.replace("This plan", "Plan $n") else "$p: Plan $n"
 }

@@ -195,6 +195,7 @@ struct BasedStep: View {
                     }
                     .settle(i + 1)
                 }
+                if model.profile.based == "uk" || abroad {   // 19 Oct: Londoners have said where already
                 VStack(alignment: .leading, spacing: 8) {
                     // a town or city, never nationality (D116)
                     Text(abroad ? "Which town or city are you visiting from? (optional)"
@@ -207,6 +208,7 @@ struct BasedStep: View {
                         .textInputAutocapitalization(.words)
                 }
                 .padding(.top, 10)
+                }
                 Text(q?.note ?? "So we ask the right questions. We never ask your nationality.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.muted)
@@ -368,12 +370,17 @@ struct AnswerTile: View {
 
     var body: some View {
         SelectTile(on: on, radius: 16, minHeight: 56, action: action) {
-            Text(title)
-                .foregroundStyle(Theme.ink)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 8)
+            // 19 Oct review: a tick as well as the amber edge, so the choice doesn't rest on colour alone
+            HStack(spacing: 6) {
+                if on { Image(systemName: "checkmark").font(.footnote.weight(.bold)).foregroundStyle(Theme.accent) }
+                Text(title)
+                    .foregroundStyle(Theme.ink)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 8)
         }
+        .accessibilityAddTraits(on ? .isSelected : [])
     }
 }
 
@@ -525,7 +532,7 @@ struct LearnedRow: View {
                     // D118: one clear button per line ("Not right" / "Undo"); a marked line says what happens
                     HStack(spacing: 10) {
                         Button(action: toggle) {
-                            Text(wrong ? "Undo" : "Not right")
+                            Text(wrong ? "Undo" : "Don't use this")
                                 .font(.subheadline.weight(.medium))
                                 .foregroundStyle(wrong ? Theme.accent : Theme.ink)
                                 .padding(.horizontal, 16)
@@ -662,7 +669,7 @@ struct TellItButton: View {
                 }
                 .frame(width: 52, height: 52)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(listening ? "Listening… tap when you're done" : "Tell it instead")
+                    Text(listening ? "Listening… tap when you're done" : "Speak instead")
                         .font(.headline)
                         .foregroundStyle(Theme.ink)
                     Text(listening ? "Say it the way you'd tell a friend." : "Speak your answer. No typing.")
@@ -678,7 +685,7 @@ struct TellItButton: View {
             .contentShape(RoundedRectangle(cornerRadius: 22))
         }
         .buttonStyle(PressStyle())
-        .accessibilityLabel(listening ? "Stop listening" : "Tell it instead: speak your answer")
+        .accessibilityLabel(listening ? "Stop listening" : "Speak your answer instead")
     }
 }
 
@@ -754,8 +761,8 @@ struct WhyStep: View {
                     model.keepFeelings()             // journey audit: kept even if the app is closed before the end
                     model.next()
                 }
-                // D118: opting out is a quiet link, not the loudest button on the screen
-                QuietButton("None of these") {
+                // D118: opting out is never the loudest button; 19 Oct review: but a real one, easy to see and tap
+                SecondaryButton(title: "None of these") {
                     model.why = []
                     model.keepFeelings()
                     model.next()
@@ -949,8 +956,8 @@ struct ThisOrThatStep: View {
     }
 }
 
-/// One made-up day: all six details, each with its icon (D95; Abram kept the six, D119), on a field of colour.
-/// The two fields swap from pair to pair, so neither colour belongs to A or B.
+/// One made-up day: all six details, each with its icon (D95; Abram kept the six, D119). 19 Oct review: both days on
+/// the same quiet field (a red one could make a day look worse before it's read), with a plain cue to choose.
 struct DayOption: View {
     let label: String
     let text: String
@@ -982,23 +989,14 @@ struct DayOption: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+                Text(on ? "Chosen" : "Choose this day")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+                    .padding(.top, 4)
             }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                ZStack {
-                    if field == 0 {
-                        LinearGradient(stops: [.init(color: Color(hex: 0x1E2A3E), location: 0),
-                                               .init(color: Color(hex: 0x3D5168), location: 0.55),
-                                               .init(color: Color(hex: 0xB8925A), location: 1)],
-                                       startPoint: .top, endPoint: .bottom)
-                    } else {
-                        RadialGradient(colors: [Color(hex: 0xB04A3A), Color(hex: 0x4A1F18), Color(hex: 0x15110F)],
-                                       center: UnitPoint(x: 0.5, y: 0.2), startRadius: 0, endRadius: 300)
-                    }
-                    Color.black.opacity(0.45)
-                }
-            }
+            .background(on ? Theme.selected : Theme.surface)
             .clipShape(RoundedRectangle(cornerRadius: 24))
             .overlay(RoundedRectangle(cornerRadius: 24).stroke(on ? Theme.accent : Theme.outline, lineWidth: on ? 2 : 1))
             .contentShape(RoundedRectangle(cornerRadius: 24))

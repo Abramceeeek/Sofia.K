@@ -146,7 +146,7 @@ class Reminders(private val context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
             val nm = context.getSystemService(NotificationManager::class.java)
             nm.createNotificationChannel(NotificationChannel(CHANNEL, "Rating reminders",
-                NotificationManager.IMPORTANCE_DEFAULT).apply { description = "One nudge after each stop of your day" })
+                NotificationManager.IMPORTANCE_DEFAULT).apply { description = "One reminder after each stop of your day" })
         }
     }
 

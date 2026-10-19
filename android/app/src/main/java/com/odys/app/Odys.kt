@@ -38,6 +38,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Settings
@@ -222,26 +224,44 @@ fun QuietButton(
     }
 }
 
-/** "‹ Back", in amber, for screens without a bar. */
+/** Back, for screens without a bar: Android's arrow (19 Oct review: "‹ Back" is the iPhone's way); the word is
+ *  kept for TalkBack. 48 dp. */
 @Composable
 fun BackLink(title: String = "Back", onClick: () -> Unit) {
-    Row(
+    Box(
         Modifier
-            .heightIn(min = 44.dp)
+            .size(48.dp)
+            .clip(CircleShape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = title },
-        verticalAlignment = Alignment.CenterVertically,
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, tint = Theme.accent, modifier = Modifier.size(24.dp))
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Theme.accent, modifier = Modifier.size(24.dp))
+    }
+}
+
+/** An arrow and where it goes ("Your trip"), for a way back that leaves the tab. */
+@Composable
+fun ArrowLink(title: String, onClick: () -> Unit) {
+    Row(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Theme.accent, modifier = Modifier.size(20.dp))
         Text(title, style = Theme.body.copy(color = Theme.accent))
     }
 }
 
-/** "Close", top right of a full-screen sheet. */
+/** Close or Cancel, top of a full-screen sheet: Android's ✕ (19 Oct review); any other word stays a word. */
 @Composable
 fun CloseLink(title: String = "Close", onClick: () -> Unit) {
-    Box(Modifier.heightIn(min = 44.dp).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
-        Text(title, style = Theme.body.copy(color = Theme.accent))
+    if (title == "Close" || title == "Cancel") {
+        Box(Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = title }, contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.Close, null, tint = Theme.accent, modifier = Modifier.size(24.dp))
+        }
+    } else {
+        Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
+            Text(title, style = Theme.body.copy(color = Theme.accent))
+        }
     }
 }
 

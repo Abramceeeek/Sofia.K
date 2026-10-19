@@ -221,14 +221,16 @@ def leg_text(t: int | None, mode: str, came_from: str, exit_station: str | None,
         return ""
     if mode == "walk":
         return f"Getting there: about {t} min on foot from {came_from}."
+    # 19 Oct review: one colon per line ("about 26 min: walk to …" read as a second label), so the steps are a sentence
     if route:
-        return f"Getting there: about {t} min from {came_from}: {route}." if first else \
-            f"Getting there: about {t} min: {route}."
+        steps = route[:1].upper() + route[1:]
+        return f"Getting there: about {t} min from {came_from}. {steps}." if first else \
+            f"Getting there: about {t} min. {steps}."
     dest = f" to {arrive_at}" if arrive_at else ""
     if first:
         return f"Getting there: about {t} min by Tube or bus from {came_from}{dest}."
-    walk = f"walk to {exit_station}" if exit_station else "walk to the nearest station"
-    return f"Getting there: about {t} min: {walk}, then take the Tube or bus{dest}."
+    walk = f"Walk to {exit_station}" if exit_station else "Walk to the nearest station"
+    return f"Getting there: about {t} min. {walk}, then take the Tube or bus{dest}."
 
 
 def personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], brief: Brief,
@@ -376,8 +378,12 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             stop = {"worth_gbp": round(worth) if worth >= 1 else None,
                     "feel_word": feel_word(m), "reveal": is_reveal(m),   # D119: "How the day moves", "The reveal"
                     # the moment card's approach line (D112): from where, the path, where you arrive; card text only
+                    # 19 Oct review: walking in from somewhere else, the card's station is the nearest one, not where
+                    # you come from ("13 min on foot from Charing Cross" beside "From: Temple station" read as a slip)
                     "approach_steps": [{"label": k, "text": v} for k, v in
-                                       (("From", clean(m.approach.from_)), ("The way in", clean(m.approach.path)),
+                                       (("Nearest station" if mode == "walk" and "station" in (m.approach.from_ or "").lower()
+                                         and clean(m.approach.from_) != prev_name else "From", clean(m.approach.from_)),
+                                        ("The way in", clean(m.approach.path)),
                                         ("You arrive", clean(m.place.name))) if v],
                     "title": m.display_title(), "approach": approach_text(m, walked_from_stop=True),
                     "what": clean(m.experience.what_happens), "best": clean(m.best_time.light),

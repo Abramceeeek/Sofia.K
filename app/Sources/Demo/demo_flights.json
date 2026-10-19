@@ -1,111 +1,21 @@
 {
  "source": "sample",
  "note": "Sample results, made up for testing: not real flights or prices. The links below search for real.",
- "total": 28,
- "shown": 28,
+ "total": 25,
+ "shown": 25,
  "results": [
   {
-   "id": "sample-15",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 389.39,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T20:00",
-    "arrive_at": "2026-10-22T02:50",
-    "duration_min": 410,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2408"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T10:20",
-    "arrive_at": "2026-10-27T17:06",
-    "duration_min": 406,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2799"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": true,
-   "changeable": false,
-   "sample": true,
-   "stops": 0,
-   "duration_min": 816,
-   "tags": [
-    "Best"
-   ]
-  },
-  {
-   "id": "sample-6",
+   "id": "sample-23",
    "airline": "Test Wings",
    "airline_code": "T3",
-   "price": 408.6,
+   "price": 350.49,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T17:25",
-    "arrive_at": "2026-10-22T00:17",
-    "duration_min": 412,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3258"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T06:10",
-    "arrive_at": "2026-10-27T12:54",
-    "duration_min": 404,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3551"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": true,
-   "changeable": true,
-   "sample": true,
-   "stops": 0,
-   "duration_min": 816,
-   "tags": []
-  },
-  {
-   "id": "sample-8",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 376.71,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T08:00",
-    "arrive_at": "2026-10-21T17:22",
-    "duration_min": 562,
+    "depart_at": "2026-11-02T07:50",
+    "arrive_at": "2026-11-02T10:56",
+    "duration_min": 486,
     "stops": 1,
     "via": [
      "FRA"
@@ -114,15 +24,111 @@
      "Test Wings"
     ],
     "flight_numbers": [
-     "T3145",
-     "T3417"
+     "T3233",
+     "T3738"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T20:55",
-    "arrive_at": "2026-10-28T03:49",
+    "depart_at": "2026-11-08T15:30",
+    "arrive_at": "2026-11-09T03:22",
+    "duration_min": 412,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3717"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": false,
+   "changeable": false,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 898,
+   "tags": [
+    "Best"
+   ]
+  },
+  {
+   "id": "sample-9",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 312.87,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T14:30",
+    "arrive_at": "2026-11-02T18:34",
+    "duration_min": 544,
+    "stops": 1,
+    "via": [
+     "FRA"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1420",
+     "S1161"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T21:00",
+    "arrive_at": "2026-11-09T10:20",
+    "duration_min": 500,
+    "stops": 1,
+    "via": [
+     "FRA"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1709",
+     "S1530"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 1044,
+   "tags": []
+  },
+  {
+   "id": "sample-12",
+   "airline": "Test Wings",
+   "airline_code": "T3",
+   "price": 373.85,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T08:00",
+    "arrive_at": "2026-11-02T09:52",
+    "duration_min": 412,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3923"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T15:05",
+    "arrive_at": "2026-11-09T02:59",
     "duration_min": 414,
     "stops": 0,
     "via": [],
@@ -130,152 +136,111 @@
      "Test Wings"
     ],
     "flight_numbers": [
-     "T3319"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": true,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 976,
-   "tags": []
-  },
-  {
-   "id": "sample-27",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 429.13,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T08:00",
-    "arrive_at": "2026-10-21T14:47",
-    "duration_min": 407,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3452"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T13:10",
-    "arrive_at": "2026-10-27T20:05",
-    "duration_min": 415,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3117"
+     "T3557"
     ]
    },
    "checked_bags": 0,
    "refundable": false,
-   "changeable": true,
+   "changeable": false,
    "sample": true,
    "stops": 0,
-   "duration_min": 822,
+   "duration_min": 826,
    "tags": []
   },
   {
-   "id": "sample-11",
-   "airline": "Example Jet",
-   "airline_code": "E4",
-   "price": 413.93,
+   "id": "sample-22",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 312.73,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T17:25",
-    "arrive_at": "2026-10-22T02:06",
-    "duration_min": 521,
+    "depart_at": "2026-11-02T06:10",
+    "arrive_at": "2026-11-02T10:29",
+    "duration_min": 559,
     "stops": 1,
     "via": [
-     "GYD"
+     "IST"
     ],
     "carriers": [
-     "Example Jet"
+     "Sample Air"
     ],
     "flight_numbers": [
-     "E4985",
-     "E4484"
+     "S1885",
+     "S1275"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T17:15",
-    "arrive_at": "2026-10-27T23:59",
-    "duration_min": 404,
-    "stops": 0,
-    "via": [],
+    "depart_at": "2026-11-08T11:25",
+    "arrive_at": "2026-11-09T01:19",
+    "duration_min": 534,
+    "stops": 1,
+    "via": [
+     "IST"
+    ],
     "carriers": [
-     "Example Jet"
+     "Sample Air"
     ],
     "flight_numbers": [
-     "E4812"
+     "S1366",
+     "S1222"
     ]
    },
    "checked_bags": 0,
    "refundable": false,
-   "changeable": true,
+   "changeable": false,
    "sample": true,
    "stops": 1,
-   "duration_min": 925,
+   "duration_min": 1093,
    "tags": []
   },
   {
-   "id": "sample-23",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 322.52,
+   "id": "sample-5",
+   "airline": "Example Jet",
+   "airline_code": "E4",
+   "price": 292.92,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T14:00",
-    "arrive_at": "2026-10-21T23:18",
-    "duration_min": 558,
+    "depart_at": "2026-11-02T21:15",
+    "arrive_at": "2026-11-03T03:26",
+    "duration_min": 671,
     "stops": 2,
     "via": [
      "IST",
      "FRA"
     ],
     "carriers": [
-     "Demo Airways"
+     "Example Jet"
     ],
     "flight_numbers": [
-     "D2309",
-     "D2966",
-     "D2402"
+     "E4925",
+     "E4876",
+     "E4200"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T08:05",
-    "arrive_at": "2026-10-27T20:11",
-    "duration_min": 726,
+    "depart_at": "2026-11-08T21:20",
+    "arrive_at": "2026-11-09T12:21",
+    "duration_min": 601,
     "stops": 2,
     "via": [
-     "FRA",
-     "IST"
+     "IST",
+     "FRA"
     ],
     "carriers": [
-     "Demo Airways"
+     "Example Jet"
     ],
     "flight_numbers": [
-     "D2722",
-     "D2165",
-     "D2926"
+     "E4469",
+     "E4764",
+     "E4186"
     ]
    },
    "checked_bags": 0,
@@ -283,547 +248,142 @@
    "changeable": false,
    "sample": true,
    "stops": 2,
-   "duration_min": 1284,
-   "tags": []
-  },
-  {
-   "id": "sample-22",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 364.47,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T20:35",
-    "arrive_at": "2026-10-22T06:28",
-    "duration_min": 593,
-    "stops": 1,
-    "via": [
-     "IST"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2885",
-     "D2999"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T06:50",
-    "arrive_at": "2026-10-27T16:37",
-    "duration_min": 587,
-    "stops": 1,
-    "via": [
-     "IST"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2808",
-     "D2415"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": false,
-   "changeable": false,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 1180,
-   "tags": []
-  },
-  {
-   "id": "sample-24",
-   "airline": "Example Jet",
-   "airline_code": "E4",
-   "price": 288.46,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T13:10",
-    "arrive_at": "2026-10-22T00:00",
-    "duration_min": 650,
-    "stops": 2,
-    "via": [
-     "GYD",
-     "IST"
-    ],
-    "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4135",
-     "E4543",
-     "E4883"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T15:40",
-    "arrive_at": "2026-10-28T05:15",
-    "duration_min": 815,
-    "stops": 2,
-    "via": [
-     "FRA",
-     "GYD"
-    ],
-    "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4282",
-     "E4755",
-     "E4285"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": false,
-   "sample": true,
-   "stops": 2,
-   "duration_min": 1465,
+   "duration_min": 1272,
    "tags": [
     "Cheapest"
    ]
   },
   {
-   "id": "sample-14",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 294.05,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T10:40",
-    "arrive_at": "2026-10-21T22:17",
-    "duration_min": 697,
-    "stops": 2,
-    "via": [
-     "GYD",
-     "FRA"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2754",
-     "D2851",
-     "D2239"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T16:30",
-    "arrive_at": "2026-10-28T06:04",
-    "duration_min": 814,
-    "stops": 2,
-    "via": [
-     "IST",
-     "FRA"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2772",
-     "D2105",
-     "D2773"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": false,
-   "changeable": false,
-   "sample": true,
-   "stops": 2,
-   "duration_min": 1511,
-   "tags": []
-  },
-  {
-   "id": "sample-16",
-   "airline": "Example Jet",
-   "airline_code": "E4",
-   "price": 451.16,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T09:25",
-    "arrive_at": "2026-10-21T18:57",
-    "duration_min": 572,
-    "stops": 1,
-    "via": [
-     "IST"
-    ],
-    "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4158",
-     "E4568"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T17:55",
-    "arrive_at": "2026-10-28T00:38",
-    "duration_min": 403,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4399"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 975,
-   "tags": []
-  },
-  {
-   "id": "sample-17",
-   "airline": "Example Jet",
-   "airline_code": "E4",
-   "price": 425.15,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T20:40",
-    "arrive_at": "2026-10-22T05:18",
-    "duration_min": 518,
-    "stops": 1,
-    "via": [
-     "GYD"
-    ],
-    "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4167",
-     "E4819"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T18:20",
-    "arrive_at": "2026-10-28T04:07",
-    "duration_min": 587,
-    "stops": 1,
-    "via": [
-     "FRA"
-    ],
-    "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4716",
-     "E4360"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 1105,
-   "tags": []
-  },
-  {
-   "id": "sample-25",
+   "id": "sample-21",
    "airline": "Sample Air",
    "airline_code": "S1",
-   "price": 515.7,
+   "price": 339.22,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T17:20",
-    "arrive_at": "2026-10-22T00:10",
-    "duration_min": 410,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Sample Air"
-    ],
-    "flight_numbers": [
-     "S1978"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T06:25",
-    "arrive_at": "2026-10-27T13:05",
-    "duration_min": 400,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Sample Air"
-    ],
-    "flight_numbers": [
-     "S1482"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": true,
-   "changeable": false,
-   "sample": true,
-   "stops": 0,
-   "duration_min": 810,
-   "tags": []
-  },
-  {
-   "id": "sample-10",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 421.98,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T10:10",
-    "arrive_at": "2026-10-21T20:17",
-    "duration_min": 607,
+    "depart_at": "2026-11-02T12:00",
+    "arrive_at": "2026-11-02T15:39",
+    "duration_min": 519,
     "stops": 1,
     "via": [
      "FRA"
     ],
     "carriers": [
-     "Test Wings"
+     "Sample Air"
     ],
     "flight_numbers": [
-     "T3986",
-     "T3495"
+     "S1292",
+     "S1236"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T20:50",
-    "arrive_at": "2026-10-28T06:25",
-    "duration_min": 575,
-    "stops": 1,
-    "via": [
-     "FRA"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3931",
-     "T3536"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 1182,
-   "tags": []
-  },
-  {
-   "id": "sample-3",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 532.81,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T14:15",
-    "arrive_at": "2026-10-21T21:02",
-    "duration_min": 407,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3390"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T07:15",
-    "arrive_at": "2026-10-27T13:57",
-    "duration_min": 402,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3500"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 0,
-   "duration_min": 809,
-   "tags": [
-    "Fastest"
-   ]
-  },
-  {
-   "id": "sample-0",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 431.7,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T09:40",
-    "arrive_at": "2026-10-21T19:54",
+    "depart_at": "2026-11-08T06:35",
+    "arrive_at": "2026-11-08T21:49",
     "duration_min": 614,
     "stops": 1,
     "via": [
      "IST"
     ],
     "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1157",
+     "S1448"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": false,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 1133,
+   "tags": []
+  },
+  {
+   "id": "sample-8",
+   "airline": "Demo Airways",
+   "airline_code": "D2",
+   "price": 430.63,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T17:20",
+    "arrive_at": "2026-11-02T19:02",
+    "duration_min": 402,
+    "stops": 0,
+    "via": [],
+    "carriers": [
      "Demo Airways"
     ],
     "flight_numbers": [
-     "D2203",
-     "D2709"
+     "D2939"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T06:45",
-    "arrive_at": "2026-10-27T15:52",
-    "duration_min": 547,
-    "stops": 1,
-    "via": [
-     "IST"
-    ],
+    "depart_at": "2026-11-08T09:55",
+    "arrive_at": "2026-11-08T21:41",
+    "duration_min": 406,
+    "stops": 0,
+    "via": [],
     "carriers": [
      "Demo Airways"
     ],
     "flight_numbers": [
-     "D2701",
-     "D2325"
+     "D2420"
     ]
    },
    "checked_bags": 0,
    "refundable": false,
    "changeable": true,
    "sample": true,
-   "stops": 1,
-   "duration_min": 1161,
+   "stops": 0,
+   "duration_min": 808,
    "tags": []
   },
   {
-   "id": "sample-5",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 337.74,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T13:40",
-    "arrive_at": "2026-10-22T02:15",
-    "duration_min": 755,
-    "stops": 2,
-    "via": [
-     "GYD",
-     "FRA"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3344",
-     "T3825",
-     "T3441"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T17:00",
-    "arrive_at": "2026-10-28T05:14",
-    "duration_min": 734,
-    "stops": 2,
-    "via": [
-     "IST",
-     "FRA"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3324",
-     "T3798",
-     "T3435"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 2,
-   "duration_min": 1489,
-   "tags": []
-  },
-  {
-   "id": "sample-20",
+   "id": "sample-24",
    "airline": "Sample Air",
    "airline_code": "S1",
-   "price": 481.47,
+   "price": 398.2,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T07:40",
-    "arrive_at": "2026-10-21T17:42",
-    "duration_min": 602,
+    "depart_at": "2026-11-02T08:30",
+    "arrive_at": "2026-11-02T12:32",
+    "duration_min": 542,
     "stops": 1,
     "via": [
-     "FRA"
+     "GYD"
     ],
     "carriers": [
      "Sample Air"
     ],
     "flight_numbers": [
-     "S1143",
-     "S1690"
+     "S1614",
+     "S1910"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T15:10",
-    "arrive_at": "2026-10-27T21:50",
-    "duration_min": 400,
+    "depart_at": "2026-11-08T16:55",
+    "arrive_at": "2026-11-09T04:41",
+    "duration_min": 406,
     "stops": 0,
     "via": [],
     "carriers": [
      "Sample Air"
     ],
     "flight_numbers": [
-     "S1221"
+     "S1308"
     ]
    },
    "checked_bags": 1,
@@ -831,35 +391,111 @@
    "changeable": false,
    "sample": true,
    "stops": 1,
-   "duration_min": 1002,
+   "duration_min": 948,
    "tags": []
   },
   {
-   "id": "sample-21",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 547.74,
+   "id": "sample-13",
+   "airline": "Test Wings",
+   "airline_code": "T3",
+   "price": 419.6,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T08:10",
-    "arrive_at": "2026-10-21T15:05",
-    "duration_min": 415,
-    "stops": 0,
-    "via": [],
+    "depart_at": "2026-11-02T21:25",
+    "arrive_at": "2026-11-03T00:37",
+    "duration_min": 492,
+    "stops": 1,
+    "via": [
+     "GYD"
+    ],
     "carriers": [
-     "Demo Airways"
+     "Test Wings"
     ],
     "flight_numbers": [
-     "D2629"
+     "T3578",
+     "T3342"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T11:20",
-    "arrive_at": "2026-10-27T18:03",
+    "depart_at": "2026-11-08T09:45",
+    "arrive_at": "2026-11-08T21:28",
+    "duration_min": 403,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3845"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 895,
+   "tags": []
+  },
+  {
+   "id": "sample-17",
+   "airline": "Test Wings",
+   "airline_code": "T3",
+   "price": 463.88,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T21:55",
+    "arrive_at": "2026-11-02T23:41",
+    "duration_min": 406,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3325"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T12:00",
+    "arrive_at": "2026-11-08T23:40",
+    "duration_min": 400,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3190"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": true,
+   "changeable": false,
+   "sample": true,
+   "stops": 0,
+   "duration_min": 806,
+   "tags": []
+  },
+  {
+   "id": "sample-19",
+   "airline": "Demo Airways",
+   "airline_code": "D2",
+   "price": 464.09,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T21:55",
+    "arrive_at": "2026-11-02T23:38",
     "duration_min": 403,
     "stops": 0,
     "via": [],
@@ -867,339 +503,237 @@
      "Demo Airways"
     ],
     "flight_numbers": [
-     "D2964"
+     "D2744"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T07:00",
+    "arrive_at": "2026-11-08T18:51",
+    "duration_min": 411,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2213"
     ]
    },
    "checked_bags": 1,
    "refundable": false,
    "changeable": false,
-   "sample": true,
-   "stops": 0,
-   "duration_min": 818,
-   "tags": []
-  },
-  {
-   "id": "sample-4",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 352.42,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T21:00",
-    "arrive_at": "2026-10-22T08:17",
-    "duration_min": 677,
-    "stops": 2,
-    "via": [
-     "FRA",
-     "GYD"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2592",
-     "D2727",
-     "D2957"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T09:15",
-    "arrive_at": "2026-10-27T23:08",
-    "duration_min": 833,
-    "stops": 2,
-    "via": [
-     "IST",
-     "FRA"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2410",
-     "D2473",
-     "D2693"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": false,
-   "changeable": false,
-   "sample": true,
-   "stops": 2,
-   "duration_min": 1510,
-   "tags": []
-  },
-  {
-   "id": "sample-1",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 493.47,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T14:35",
-    "arrive_at": "2026-10-21T23:11",
-    "duration_min": 516,
-    "stops": 1,
-    "via": [
-     "IST"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2712",
-     "D2531"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T08:00",
-    "arrive_at": "2026-10-27T16:29",
-    "duration_min": 509,
-    "stops": 1,
-    "via": [
-     "GYD"
-    ],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2140",
-     "D2507"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 1025,
-   "tags": []
-  },
-  {
-   "id": "sample-26",
-   "airline": "Sample Air",
-   "airline_code": "S1",
-   "price": 471.57,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T06:00",
-    "arrive_at": "2026-10-21T15:01",
-    "duration_min": 541,
-    "stops": 1,
-    "via": [
-     "IST"
-    ],
-    "carriers": [
-     "Sample Air"
-    ],
-    "flight_numbers": [
-     "S1705",
-     "S1114"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T06:50",
-    "arrive_at": "2026-10-27T16:54",
-    "duration_min": 604,
-    "stops": 1,
-    "via": [
-     "FRA"
-    ],
-    "carriers": [
-     "Sample Air"
-    ],
-    "flight_numbers": [
-     "S1822",
-     "S1954"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": true,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 1145,
-   "tags": []
-  },
-  {
-   "id": "sample-13",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 566.78,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T18:55",
-    "arrive_at": "2026-10-22T01:39",
-    "duration_min": 404,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3298"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T17:35",
-    "arrive_at": "2026-10-28T00:27",
-    "duration_min": 412,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3192"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": true,
-   "changeable": true,
-   "sample": true,
-   "stops": 0,
-   "duration_min": 816,
-   "tags": []
-  },
-  {
-   "id": "sample-7",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 416.5,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T21:20",
-    "arrive_at": "2026-10-22T09:56",
-    "duration_min": 756,
-    "stops": 2,
-    "via": [
-     "GYD",
-     "FRA"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3235",
-     "T3262",
-     "T3513"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T14:15",
-    "arrive_at": "2026-10-28T00:20",
-    "duration_min": 605,
-    "stops": 2,
-    "via": [
-     "IST",
-     "GYD"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3603",
-     "T3518",
-     "T3635"
-    ]
-   },
-   "checked_bags": 1,
-   "refundable": false,
-   "changeable": false,
-   "sample": true,
-   "stops": 2,
-   "duration_min": 1361,
-   "tags": []
-  },
-  {
-   "id": "sample-18",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 589.06,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T19:35",
-    "arrive_at": "2026-10-22T02:24",
-    "duration_min": 409,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2976"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T18:00",
-    "arrive_at": "2026-10-28T00:45",
-    "duration_min": 405,
-    "stops": 0,
-    "via": [],
-    "carriers": [
-     "Demo Airways"
-    ],
-    "flight_numbers": [
-     "D2643"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
    "sample": true,
    "stops": 0,
    "duration_min": 814,
    "tags": []
   },
   {
-   "id": "sample-19",
-   "airline": "Demo Airways",
-   "airline_code": "D2",
-   "price": 591.29,
+   "id": "sample-3",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 395.87,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T20:40",
-    "arrive_at": "2026-10-22T03:30",
-    "duration_min": 410,
-    "stops": 0,
-    "via": [],
+    "depart_at": "2026-11-02T09:15",
+    "arrive_at": "2026-11-02T14:15",
+    "duration_min": 600,
+    "stops": 1,
+    "via": [
+     "IST"
+    ],
     "carriers": [
-     "Demo Airways"
+     "Sample Air"
     ],
     "flight_numbers": [
-     "D2815"
+     "S1658",
+     "S1591"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T15:45",
-    "arrive_at": "2026-10-27T22:26",
+    "depart_at": "2026-11-08T15:50",
+    "arrive_at": "2026-11-09T05:01",
+    "duration_min": 491,
+    "stops": 1,
+    "via": [
+     "GYD"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1619",
+     "S1360"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": false,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 1091,
+   "tags": []
+  },
+  {
+   "id": "sample-20",
+   "airline": "Demo Airways",
+   "airline_code": "D2",
+   "price": 422.78,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T20:50",
+    "arrive_at": "2026-11-03T00:22",
+    "duration_min": 512,
+    "stops": 1,
+    "via": [
+     "GYD"
+    ],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2204",
+     "D2135"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T20:40",
+    "arrive_at": "2026-11-09T10:00",
+    "duration_min": 500,
+    "stops": 1,
+    "via": [
+     "IST"
+    ],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2677",
+     "D2503"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 1012,
+   "tags": []
+  },
+  {
+   "id": "sample-14",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 411.95,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T20:10",
+    "arrive_at": "2026-11-03T00:08",
+    "duration_min": 538,
+    "stops": 1,
+    "via": [
+     "GYD"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1521",
+     "S1513"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T20:25",
+    "arrive_at": "2026-11-09T10:24",
+    "duration_min": 539,
+    "stops": 1,
+    "via": [
+     "IST"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1680",
+     "S1518"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": false,
+   "changeable": false,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 1077,
+   "tags": []
+  },
+  {
+   "id": "sample-1",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 487.15,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T14:55",
+    "arrive_at": "2026-11-02T16:39",
+    "duration_min": 404,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1663"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T07:15",
+    "arrive_at": "2026-11-08T19:08",
+    "duration_min": 413,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1796"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 0,
+   "duration_min": 817,
+   "tags": []
+  },
+  {
+   "id": "sample-15",
+   "airline": "Demo Airways",
+   "airline_code": "D2",
+   "price": 512.09,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T20:45",
+    "arrive_at": "2026-11-02T22:26",
     "duration_min": 401,
     "stops": 0,
     "via": [],
@@ -1207,169 +741,470 @@
      "Demo Airways"
     ],
     "flight_numbers": [
-     "D2380"
+     "D2593"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T08:00",
+    "arrive_at": "2026-11-08T19:50",
+    "duration_min": 410,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2623"
     ]
    },
    "checked_bags": 1,
-   "refundable": false,
-   "changeable": false,
+   "refundable": true,
+   "changeable": true,
    "sample": true,
    "stops": 0,
    "duration_min": 811,
    "tags": []
   },
   {
-   "id": "sample-9",
-   "airline": "Example Jet",
-   "airline_code": "E4",
-   "price": 411.14,
+   "id": "sample-7",
+   "airline": "Test Wings",
+   "airline_code": "T3",
+   "price": 509.71,
    "currency": "GBP",
    "outbound": {
     "origin": "TAS",
     "destination": "LON",
-    "depart_at": "2026-10-21T08:35",
-    "arrive_at": "2026-10-21T19:13",
-    "duration_min": 638,
+    "depart_at": "2026-11-02T06:25",
+    "arrive_at": "2026-11-02T08:15",
+    "duration_min": 410,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3361"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T15:30",
+    "arrive_at": "2026-11-09T03:20",
+    "duration_min": 410,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3926"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 0,
+   "duration_min": 820,
+   "tags": []
+  },
+  {
+   "id": "sample-0",
+   "airline": "Demo Airways",
+   "airline_code": "D2",
+   "price": 306.05,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T20:05",
+    "arrive_at": "2026-11-03T04:22",
+    "duration_min": 797,
     "stops": 2,
     "via": [
      "FRA",
      "IST"
     ],
     "carriers": [
-     "Example Jet"
+     "Demo Airways"
     ],
     "flight_numbers": [
-     "E4861",
-     "E4898",
-     "E4593"
+     "D2787",
+     "D2374",
+     "D2307"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T20:50",
-    "arrive_at": "2026-10-28T10:16",
-    "duration_min": 806,
+    "depart_at": "2026-11-08T06:30",
+    "arrive_at": "2026-11-09T01:31",
+    "duration_min": 841,
+    "stops": 2,
+    "via": [
+     "FRA",
+     "GYD"
+    ],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2524",
+     "D2856",
+     "D2501"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": false,
+   "changeable": false,
+   "sample": true,
+   "stops": 2,
+   "duration_min": 1638,
+   "tags": []
+  },
+  {
+   "id": "sample-18",
+   "airline": "Test Wings",
+   "airline_code": "T3",
+   "price": 530.77,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T07:50",
+    "arrive_at": "2026-11-02T09:43",
+    "duration_min": 413,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3465"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T10:45",
+    "arrive_at": "2026-11-08T22:27",
+    "duration_min": 402,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Test Wings"
+    ],
+    "flight_numbers": [
+     "T3398"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 0,
+   "duration_min": 815,
+   "tags": []
+  },
+  {
+   "id": "sample-10",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 481.08,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T06:00",
+    "arrive_at": "2026-11-02T10:54",
+    "duration_min": 594,
+    "stops": 1,
+    "via": [
+     "FRA"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1734",
+     "S1641"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T16:00",
+    "arrive_at": "2026-11-09T06:11",
+    "duration_min": 551,
+    "stops": 1,
+    "via": [
+     "IST"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1480",
+     "S1660"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 1,
+   "duration_min": 1145,
+   "tags": []
+  },
+  {
+   "id": "sample-6",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 622.17,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T18:55",
+    "arrive_at": "2026-11-02T20:35",
+    "duration_min": 400,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1555"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T14:30",
+    "arrive_at": "2026-11-09T02:12",
+    "duration_min": 402,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1662"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": true,
+   "changeable": true,
+   "sample": true,
+   "stops": 0,
+   "duration_min": 802,
+   "tags": [
+    "Fastest"
+   ]
+  },
+  {
+   "id": "sample-11",
+   "airline": "Example Jet",
+   "airline_code": "E4",
+   "price": 628.62,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T17:10",
+    "arrive_at": "2026-11-02T19:03",
+    "duration_min": 413,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Example Jet"
+    ],
+    "flight_numbers": [
+     "E4905"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T18:20",
+    "arrive_at": "2026-11-09T06:12",
+    "duration_min": 412,
+    "stops": 0,
+    "via": [],
+    "carriers": [
+     "Example Jet"
+    ],
+    "flight_numbers": [
+     "E4158"
+    ]
+   },
+   "checked_bags": 0,
+   "refundable": false,
+   "changeable": false,
+   "sample": true,
+   "stops": 0,
+   "duration_min": 825,
+   "tags": []
+  },
+  {
+   "id": "sample-16",
+   "airline": "Test Wings",
+   "airline_code": "T3",
+   "price": 479.85,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T07:05",
+    "arrive_at": "2026-11-02T11:33",
+    "duration_min": 568,
     "stops": 2,
     "via": [
      "GYD",
      "FRA"
     ],
     "carriers": [
-     "Example Jet"
-    ],
-    "flight_numbers": [
-     "E4898",
-     "E4184",
-     "E4427"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 2,
-   "duration_min": 1444,
-   "tags": []
-  },
-  {
-   "id": "sample-2",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 508.22,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T18:10",
-    "arrive_at": "2026-10-22T02:55",
-    "duration_min": 525,
-    "stops": 1,
-    "via": [
-     "FRA"
-    ],
-    "carriers": [
      "Test Wings"
     ],
     "flight_numbers": [
-     "T3407",
-     "T3377"
+     "T3308",
+     "T3993",
+     "T3843"
     ]
    },
    "inbound": {
     "origin": "LON",
     "destination": "TAS",
-    "depart_at": "2026-10-27T13:20",
-    "arrive_at": "2026-10-27T23:35",
-    "duration_min": 615,
-    "stops": 1,
+    "depart_at": "2026-11-08T17:50",
+    "arrive_at": "2026-11-09T12:25",
+    "duration_min": 815,
+    "stops": 2,
     "via": [
-     "IST"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3851",
-     "T3774"
-    ]
-   },
-   "checked_bags": 0,
-   "refundable": false,
-   "changeable": true,
-   "sample": true,
-   "stops": 1,
-   "duration_min": 1140,
-   "tags": []
-  },
-  {
-   "id": "sample-12",
-   "airline": "Test Wings",
-   "airline_code": "T3",
-   "price": 520.28,
-   "currency": "GBP",
-   "outbound": {
-    "origin": "TAS",
-    "destination": "LON",
-    "depart_at": "2026-10-21T09:00",
-    "arrive_at": "2026-10-21T18:08",
-    "duration_min": 548,
-    "stops": 1,
-    "via": [
-     "FRA"
-    ],
-    "carriers": [
-     "Test Wings"
-    ],
-    "flight_numbers": [
-     "T3746",
-     "T3634"
-    ]
-   },
-   "inbound": {
-    "origin": "LON",
-    "destination": "TAS",
-    "depart_at": "2026-10-27T13:35",
-    "arrive_at": "2026-10-27T23:32",
-    "duration_min": 597,
-    "stops": 1,
-    "via": [
+     "IST",
      "GYD"
     ],
     "carriers": [
      "Test Wings"
     ],
     "flight_numbers": [
-     "T3586",
-     "T3145"
+     "T3485",
+     "T3661",
+     "T3138"
     ]
    },
-   "checked_bags": 0,
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 2,
+   "duration_min": 1383,
+   "tags": []
+  },
+  {
+   "id": "sample-2",
+   "airline": "Sample Air",
+   "airline_code": "S1",
+   "price": 551.41,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T11:05",
+    "arrive_at": "2026-11-02T15:19",
+    "duration_min": 554,
+    "stops": 1,
+    "via": [
+     "FRA"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1909",
+     "S1626"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T12:20",
+    "arrive_at": "2026-11-09T02:56",
+    "duration_min": 576,
+    "stops": 1,
+    "via": [
+     "IST"
+    ],
+    "carriers": [
+     "Sample Air"
+    ],
+    "flight_numbers": [
+     "S1666",
+     "S1524"
+    ]
+   },
+   "checked_bags": 1,
    "refundable": false,
    "changeable": true,
    "sample": true,
    "stops": 1,
-   "duration_min": 1145,
+   "duration_min": 1130,
+   "tags": []
+  },
+  {
+   "id": "sample-4",
+   "airline": "Demo Airways",
+   "airline_code": "D2",
+   "price": 493.22,
+   "currency": "GBP",
+   "outbound": {
+    "origin": "TAS",
+    "destination": "LON",
+    "depart_at": "2026-11-02T17:45",
+    "arrive_at": "2026-11-03T00:45",
+    "duration_min": 720,
+    "stops": 2,
+    "via": [
+     "FRA",
+     "IST"
+    ],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2594",
+     "D2943",
+     "D2808"
+    ]
+   },
+   "inbound": {
+    "origin": "LON",
+    "destination": "TAS",
+    "depart_at": "2026-11-08T10:55",
+    "arrive_at": "2026-11-09T04:42",
+    "duration_min": 767,
+    "stops": 2,
+    "via": [
+     "FRA",
+     "IST"
+    ],
+    "carriers": [
+     "Demo Airways"
+    ],
+    "flight_numbers": [
+     "D2479",
+     "D2699",
+     "D2488"
+    ]
+   },
+   "checked_bags": 1,
+   "refundable": false,
+   "changeable": true,
+   "sample": true,
+   "stops": 2,
+   "duration_min": 1487,
    "tags": []
   }
  ],
@@ -1377,89 +1212,89 @@
   "stops": [
    {
     "stops": 0,
-    "min_price": 389.39
+    "min_price": 373.85
    },
    {
     "stops": 1,
-    "min_price": 364.47
+    "min_price": 312.73
    },
    {
     "stops": 2,
-    "min_price": 288.46
+    "min_price": 292.92
    }
   ],
   "airlines": [
    {
     "name": "Example Jet",
     "code": "E4",
-    "min_price": 288.46,
-    "count": 5
+    "min_price": 292.92,
+    "count": 2
    },
    {
     "name": "Demo Airways",
     "code": "D2",
-    "min_price": 294.05,
+    "min_price": 306.05,
+    "count": 6
+   },
+   {
+    "name": "Sample Air",
+    "code": "S1",
+    "min_price": 312.73,
     "count": 10
    },
    {
     "name": "Test Wings",
     "code": "T3",
-    "min_price": 337.74,
-    "count": 10
-   },
-   {
-    "name": "Sample Air",
-    "code": "S1",
-    "min_price": 471.57,
-    "count": 3
+    "min_price": 350.49,
+    "count": 7
    }
   ],
   "price": [
-   288.46,
-   591.29
+   292.92,
+   628.62
   ],
   "leg_minutes": [
-   407,
-   833
+   402,
+   841
   ],
   "tabs": {
    "best": {
-    "price": 389.39,
-    "duration_min": 816
+    "price": 350.49,
+    "duration_min": 898
    },
    "cheapest": {
-    "price": 288.46,
-    "duration_min": 1465
+    "price": 292.92,
+    "duration_min": 1272
    },
    "fastest": {
-    "price": 532.81,
-    "duration_min": 809
+    "price": 622.17,
+    "duration_min": 802
    }
   }
  },
  "tabs": {
   "best": {
-   "price": 389.39,
-   "duration_min": 816
+   "price": 350.49,
+   "duration_min": 898
   },
   "cheapest": {
-   "price": 288.46,
-   "duration_min": 1465
+   "price": 292.92,
+   "duration_min": 1272
   },
   "fastest": {
-   "price": 532.81,
-   "duration_min": 809
+   "price": 622.17,
+   "duration_min": 802
   }
  },
  "links": [
   {
    "name": "Skyscanner",
-   "url": "https://www.skyscanner.net/g/referrals/v1/flights/day-view/?origin=TAS&destination=LON&outboundDate=2026-10-21&adultsv2=1&cabinclass=economy&market=UK&locale=en-GB&currency=GBP&inboundDate=2026-10-27"
+   "url": "https://www.skyscanner.net/g/referrals/v1/flights/day-view/?origin=TAS&destination=LON&outboundDate=2026-11-02&adultsv2=1&cabinclass=economy&market=UK&locale=en-GB&currency=GBP&inboundDate=2026-11-08"
   },
   {
    "name": "Google Flights",
-   "url": "https://www.google.com/travel/flights?q=Flights+from+TAS+to+LON+on+2026-10-21+returning+2026-10-27+for+1+adult&hl=en-GB&curr=GBP"
+   "url": "https://www.google.com/travel/flights?q=Flights+from+TAS+to+LON+on+2026-11-02+returning+2026-11-08+for+1+adult&hl=en-GB&curr=GBP"
   }
  ],
- "searched_at": "2026-10-07T19:20:21.269530+00:00"
+ "searched_at": "2026-10-19T23:21:07.942107+00:00"
 }

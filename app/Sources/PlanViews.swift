@@ -125,6 +125,10 @@ struct PlanFormView: View {
                             Chip(title: Dates.short.string(from: Dates.nextSaturday()),
                                  on: isSameDay(date, Dates.nextSaturday())) { pick(Dates.nextSaturday()) }
                         }
+                        // 19 Oct review: a day picked below shows here too, so the chips and the Day row always agree
+                        if !isSameDay(date, .now), !isSameDay(date, tomorrow), !isSameDay(date, Dates.nextSaturday()) {
+                            Chip(title: Dates.short.string(from: date), on: true) {}
+                        }
                     }
                 }
                 .settle(1)
@@ -137,8 +141,8 @@ struct PlanFormView: View {
                     FormRow(label: "Start") {
                         DatePicker("Start", selection: $start, displayedComponents: .hourAndMinute).labelsHidden()
                     }
-                    FormRow(label: "Finish by") {
-                        DatePicker("Finish by", selection: $end, displayedComponents: .hourAndMinute).labelsHidden()
+                    FormRow(label: "Done by") {   // 19 Oct: the plan says "Done by" too
+                        DatePicker("Done by", selection: $end, displayedComponents: .hourAndMinute).labelsHidden()
                     }
                     FormRow(label: "Stops") {
                         HStack(spacing: 14) {
@@ -370,13 +374,12 @@ struct PlanView: View {
                 if let onBack { BackLink(action: onBack) }
                 TopBar(eyebrow: Dates.longDay(plan.date) ?? plan.title ?? "Your day", onHelp: onHelp, onData: onData)
                 header
-                if !model.reminderAsked, !plan.isBlind, shown >= 1 {
-                    ReminderAsk()   // D118: asked once, right after a plan, never before
-                        .transition(.opacity)
-                }
-                DayMoves(plan: plan, progress: phase(0.2, 0.6))
-                    .opacity(phase(0.18, 0.3))
+                // 19 Oct review: List or Map straight under the headline, so the map is there the moment it's chosen
                 ViewToggle(selection: layout)
+                if asList {
+                    DayMoves(plan: plan, progress: phase(0.2, 0.6))
+                        .opacity(phase(0.18, 0.3))
+                }
                 if !asList {
                     VStack(alignment: .leading, spacing: 8) {
                         PlanMap(stops: plan.stops, progress: phase(Self.route.lowerBound, Self.route.upperBound))
@@ -396,6 +399,10 @@ struct PlanView: View {
                 Text(model.lastRequest == nil ? "Open a stop to see how you'll arrive." : "Open a stop to see how you'll arrive, or to swap it.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
+                if !model.reminderAsked, !plan.isBlind, shown >= 1 {
+                    // D118: asked once per plan; 19 Oct review: after the plan, just before the day starts
+                    ReminderAsk().transition(.opacity)
+                }
                 PrimaryButton(title: "Start the day") { model.startDay() }   // D119: "Now", while you're out
                 actions
             }
@@ -679,13 +686,12 @@ struct PlanStats: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             if let t = plan.totals {
-                FlowRow(spacing: 18, lineSpacing: 4) {
-                    Text("\(Money.text(t.costGbp)) per person")
-                    Text(String(format: "%.1f km walking between stops", t.walkKm))
-                    Text("Done by \(t.finish ?? plan.stops.last?.depart ?? "–")")
+                // 19 Oct review: the three numbers as chips, easy to scan
+                FlowRow(spacing: 8, lineSpacing: 8) {
+                    StatChip(text: "\(Money.text(t.costGbp)) per person")
+                    StatChip(text: String(format: "%.1f km walking", t.walkKm))
+                    StatChip(text: "Done by \(t.finish ?? plan.stops.last?.depart ?? "–")")
                 }
-                .font(.subheadline)
-                .foregroundStyle(Theme.inkSoft)
                 Text(breakdown(t) + (plan.summary?.first.map { " " + $0 + "." } ?? ""))
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
@@ -705,6 +711,20 @@ struct PlanStats: View {
         let spend = t.spendGbp > 0 ? "\(Money.text(t.spendGbp)) food and entry" : "Free entry"
         let fare = t.transportGbp > 0 ? "\(Money.text(t.transportGbp)) Tube or bus" : "all on foot"
         return "\(spend), \(fare)."
+    }
+}
+
+/// One of the plan's numbers, as a quiet chip (not a button).
+struct StatChip: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.subheadline)
+            .foregroundStyle(Theme.ink)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Theme.surface, in: Capsule())
     }
 }
 
@@ -735,7 +755,7 @@ struct DayMoves: View {
             Text("How the day moves")
                 .font(.subheadline)
                 .foregroundStyle(Theme.muted)
-            Text(personal ? "Higher means we think you'll enjoy it more. Each word is the kind of moment a stop is."
+            Text(personal ? "Higher means we think you'll enjoy it more: our guess, not a score. Each word is the kind of moment a stop is."
                           : "Each word is the kind of moment a stop is.")
                 .font(.footnote)
                 .foregroundStyle(Theme.inkTertiary)
@@ -954,7 +974,8 @@ struct StopCard: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if showWhy, let worth = stop.worthLine {
-                    Text(worth).font(.subheadline).foregroundStyle(Theme.accent)
+                    Text(worth).font(.subheadline).foregroundStyle(Theme.muted)   // 19 Oct: amber is for actions
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 let badges = [swapped ? "Swapped in" : nil, stop.familiar ? "A place you loved" : nil,
                               rated ? "Rated" : nil].compactMap { $0 }
@@ -1048,8 +1069,9 @@ struct MomentHero: View {
                     .padding(rounded ? 18 : 24)
                     .padding(.top, 48)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(LinearGradient(stops: [.init(color: .clear, location: 0),
-                                                       .init(color: Theme.background.opacity(0.7), location: 0.3),
+                    // 19 Oct review: a firmer scrim, so the time and title read over a bright or busy photo
+                    .background(LinearGradient(stops: [.init(color: Theme.background.opacity(0.25), location: 0),
+                                                       .init(color: Theme.background.opacity(0.85), location: 0.3),
                                                        .init(color: Theme.background.opacity(rounded ? 0.92 : 1), location: 1)],
                                                startPoint: .top, endPoint: .bottom))
                     .allowsHitTesting(false)
@@ -1102,11 +1124,13 @@ struct MomentCardBody: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     if let worth = stop.worthLine {
-                        Text(worth).foregroundStyle(Theme.accent).padding(.top, 4)
-                        // D118: plainly a first estimate
-                        Text("A first estimate from what you've told us so far.")
+                        Text(worth).foregroundStyle(Theme.inkSoft).padding(.top, 4)
+                            .fixedSize(horizontal: false, vertical: true)
+                        // D118: plainly a first estimate; 19 Oct: and not a price or a promise
+                        Text("A first estimate from your answers so far: not a price, and not a promise of how you'll feel.")
                             .font(.footnote)
                             .foregroundStyle(Theme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
@@ -1174,7 +1198,13 @@ struct MomentCardBody: View {
         let window = stop.bestWindow ?? ""
         if light.isEmpty { return "" }
         let sentence = light.hasSuffix(".") ? light : light + "."
-        return window.isEmpty ? sentence : "\(sentence) On your day: \(window)."
+        if window.isEmpty { return sentence }
+        // 19 Oct review: say plainly whether this plan has them there at that time, never leave it to look like a mistake
+        let ends = window.components(separatedBy: "–")
+        let here = ends.count == 2 && AppModel.minutes(stop.arrive) < AppModel.minutes(ends[1])
+            && AppModel.minutes(ends[0]) < AppModel.minutes(stop.depart)
+        return here ? "\(sentence) On your day that's \(window), while you're here."
+                    : "\(sentence) On your day that's \(window); this plan has you here at \(stop.arrive)."
     }
 }
 
@@ -1274,6 +1304,7 @@ struct StopView: View {
     @State private var confirmRegenerate = false
     @State private var sharing = false
     @State private var reporting = false
+    @State private var helping = false
 
     var body: some View {
         let done = model.rated.contains(stop.momentId)
@@ -1328,6 +1359,10 @@ struct StopView: View {
         .navigationTitle("")                       // the title is on the picture
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
+        .toolbar {   // 19 Oct review: Help on the stop too, where people are when they're out
+            ToolbarItem(placement: .topBarTrailing) { Button("Help") { helping = true } }
+        }
+        .sheet(isPresented: $helping) { SafetyView().brainFeedback() }
         .confirmationDialog("Swap \(stop.title) for something else?", isPresented: $confirmSwap,
                             titleVisibility: .visible) {
             Button("Swap it") {
@@ -1394,17 +1429,17 @@ struct ReminderAsk: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "bell").foregroundStyle(Theme.accent).padding(.top, 3)
-                Text("A nudge to rate each stop after you leave?")
+                Text("Remind me to rate each stop?")
                     .font(Theme.title3)
                     .foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Text("One tap each, on the day. Your ratings are what make the next plan better. Set on your phone; nothing else is sent.")
+            Text("One reminder after each stop, set on this phone only. Your ratings are what make the next plan better.")
                 .font(.subheadline)
                 .foregroundStyle(Theme.muted)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 10) {
-                SecondaryButton(title: "Yes, nudge me") { Task { await model.answerReminders(true) } }
+                SecondaryButton(title: "Yes, remind me") { Task { await model.answerReminders(true) } }
                 SecondaryButton(title: "No thanks") { Task { await model.answerReminders(false) } }
             }
         }

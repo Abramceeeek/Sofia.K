@@ -643,7 +643,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         prefs.set("remindersOn", remindersOn)
         if (yes && !remindersOn) {
             notice = "Notifications are off for ODYS" to
-                "To get the nudge to rate a stop, turn on notifications for ODYS in your phone's Settings."
+                "To get a reminder to rate each stop, turn on notifications for ODYS in your phone's Settings."
         }
         plan?.let { if (remindersOn) reminders.schedule(it, rated) }
         client.event(if (remindersOn) "reminders_on" else "reminders_off")

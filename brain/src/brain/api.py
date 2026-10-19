@@ -83,6 +83,12 @@ def _next_saturday(today: date) -> date:
     return today + timedelta(days=(5 - today.weekday()) % 7)
 
 
+def _plain(description: str) -> str:
+    """19 Oct review: in London "transfer" means changing lines, so the card says what it means. The design file keeps
+    "longest transfer N min", which features.py reads."""
+    return description.replace("longest transfer", "longest journey between stops")
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
 
@@ -281,7 +287,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/v1/onboarding")
     def onboarding(user: db.User = Depends(current_user), s: Session = Depends(session)):
         ms = moments_by_id(s)
-        tasks = [{"task": k, "A": v["A"]["description"], "B": v["B"]["description"],
+        tasks = [{"task": k, "A": _plain(v["A"]["description"]), "B": _plain(v["B"]["description"]),
                   "levels": summary.task_levels(v)}   # D117: for "So far you've picked … every time"
                  for k, v in sorted(app.state.tasks.items())]
         amap = app.state.amap

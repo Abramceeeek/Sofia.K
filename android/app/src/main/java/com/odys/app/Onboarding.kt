@@ -111,7 +111,7 @@ fun OnboardingView(model: AppModel) {
         if (model.step != Step.Based && model.onboarding != null && previous != null) {
             // m176: a way back to the step before
             val label = if (previous == Step.Places && model.isVisitor) "Kinds of places" else previous.title
-            QuietButton("‹ $label", Modifier.padding(horizontal = 24.dp), color = Theme.accent) { model.back() }
+            Box(Modifier.padding(horizontal = 12.dp)) { BackLink("Back to $label") { model.back() } }   // 19 Oct: Android's arrow
         }
         val ob = model.onboarding
         Box(Modifier.weight(1f)) {
@@ -235,8 +235,8 @@ fun BasedStep(model: AppModel) {
                 }
             }
         }
-        Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // a town or city, never nationality (D116)
+        if (model.profile.based == "uk" || abroad) Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // a town or city, never nationality (D116); 19 Oct: not for Londoners, who have said where already
             Text(if (abroad) "Which town or city are you visiting from? (optional)" else (q?.cityPrompt ?: "Which town or city? (optional)"),
                 style = Theme.subheadline.copy(color = Theme.muted))
             LineField(if (abroad) "e.g. Tashkent" else "e.g. Manchester", model.profile.homeCity ?: "", onChange = {
@@ -360,7 +360,12 @@ fun PlaceField(title: String, photoId: String?, feel: String?, note: String? = n
 @Composable
 fun AnswerTile(title: String, on: Boolean, onClick: () -> Unit) {
     SelectTile(on, radius = 16.dp, minHeight = 56.dp, onClick = onClick) {
-        Text(title, style = Theme.body, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+        // 19 Oct review: a tick as well as the amber edge, so the choice doesn't rest on colour alone
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
+            if (on) Icon(Icons.Filled.Check, null, tint = Theme.accent, modifier = Modifier.size(16.dp).padding(end = 2.dp))
+            Text(title, style = Theme.body, textAlign = TextAlign.Center)
+        }
     }
 }
 
@@ -457,7 +462,7 @@ fun LearnedRow(item: LearnedItem, changing: Boolean, wrong: Boolean, modifier: M
                             .semantics { contentDescription = if (wrong) "Undo: keep using this" else "Not right: stop using this" },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(if (wrong) "Undo" else "Not right",
+                        Text(if (wrong) "Undo" else "Don't use this",
                             style = Theme.subheadline.copy(fontWeight = FontWeight.Medium, color = if (wrong) Theme.accent else Theme.ink),
                             modifier = Modifier.border(1.dp, if (wrong) Theme.accent else Theme.outlineStrong, CircleShape)
                                 .padding(horizontal = 16.dp, vertical = 10.dp))
@@ -552,7 +557,7 @@ fun TellItButton(listening: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(22.dp)
     Row(
         Modifier.fillMaxWidth().heightIn(min = 80.dp).pressable(haptic = true, onClick = onClick)
-            .semantics { contentDescription = if (listening) "Stop listening" else "Tell it instead: speak your answer" }
+            .semantics { contentDescription = if (listening) "Stop listening" else "Speak your answer instead" }
             .clip(shape).background(Theme.surface)
             .border(1.5.dp, Theme.accent.copy(alpha = if (listening) 1f else 0.55f), shape).padding(14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -564,7 +569,7 @@ fun TellItButton(listening: Boolean, onClick: () -> Unit) {
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(if (listening) "Listening… tap when you're done" else "Tell it instead", style = Theme.headline)
+            Text(if (listening) "Listening… tap when you're done" else "Speak instead", style = Theme.headline)
             Text(if (listening) "Say it the way you'd tell a friend." else "Speak your answer. No typing.",
                 style = Theme.subheadline.copy(color = Theme.muted))
         }
@@ -604,7 +609,8 @@ fun WhyStep(model: AppModel) {
             model.keepFeelings()
             model.next()
         }
-        QuietButton("None of these", Modifier.fillMaxWidth()) {
+        // D118: opting out is never the loudest button; 19 Oct review: but a real one, easy to see and tap
+        SecondaryButton("None of these", Modifier.fillMaxWidth()) {
             model.why = emptyList()
             model.keepFeelings()
             model.next()
@@ -744,14 +750,12 @@ fun ThisOrThatStep(model: AppModel, tasks: List<ConjointTask>, standalone: Boole
 fun DayOption(label: String, text: String, field: Int, on: Boolean, onClick: () -> Unit) {
     val parts = text.split("; ")
     val shape = RoundedCornerShape(24.dp)
-    val bg = if (field == 0) Brush.verticalGradient(0f to Color(0xFF1E2A3E), 0.55f to Color(0xFF3D5168), 1f to Color(0xFFB8925A))
-    else Brush.radialGradient(listOf(Color(0xFFB04A3A), Color(0xFF4A1F18), Color(0xFF15110F)))
+    // 19 Oct review: both days on the same quiet field (a red one could make a day look worse before it's read)
     Box(
-        Modifier.fillMaxWidth().pressable(haptic = true, onClick = onClick).clip(shape).background(bg)
+        Modifier.fillMaxWidth().pressable(haptic = true, onClick = onClick).clip(shape).background(if (on) Theme.selected else Theme.surface)
             .border(if (on) 2.dp else 1.dp, if (on) Theme.accent else Theme.outline, shape)
             .semantics { contentDescription = "$label: $text. Choose this made-up day" },
     ) {
-        Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.45f)))
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(label, style = Theme.serif(22.sp), modifier = Modifier.weight(1f))
@@ -764,6 +768,8 @@ fun DayOption(label: String, text: String, field: Int, on: Boolean, onClick: () 
                     Text(part.replaceFirstChar { it.uppercase() }, style = Theme.body)
                 }
             }
+            Text(if (on) "Chosen" else "Choose this day", style = Theme.subheadline.copy(color = Theme.accent,
+                fontWeight = FontWeight.SemiBold), modifier = Modifier.padding(top = 4.dp))
         }
     }
 }

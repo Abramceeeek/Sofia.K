@@ -102,7 +102,6 @@ fun NowView(model: AppModel) {
         }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp)
             .padding(top = 40.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            if (!loc.asked && i < stops.size) LocationAsk(model)
             if (i == 0 && tripDay != null) {   // m176: the trip's first journeys come before the first stop
                 tripDay.journeys("arrive").forEach { JourneyCard(it) }
                 tripDay.before?.let { before ->
@@ -154,12 +153,14 @@ fun NowView(model: AppModel) {
                         }
                     }
                 }
+                // 19 Oct review: asked under the day's own buttons, so the stop and "I'm done here" come first
+                if (!loc.asked) LocationAsk(model)
             } else {
                 if (tripDay != null) {   // m176: the way back for bags, and on to the airport or station
                     (tripDay.journeys("back") + tripDay.journeys("leave")).forEach { JourneyCard(it) }
                 }
                 Eyebrow("That's the day")
-                Text("Thank you for going.", style = Theme.hero)
+                Text("Thanks for today.", style = Theme.hero)
                 Text("Every stop you rated makes the next day fit you better.", style = Theme.body.copy(color = Theme.inkSoft))
                 Spacer(Modifier.height(12.dp))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { BreathingArch() }

@@ -23,9 +23,6 @@ struct NowView: View {
         NavigationStack {
             ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if !model.location.asked && !model.client.demo && i < stops.count {
-                    LocationAsk()
-                }
                 if i == 0, let day = tripDay {   // m176: the trip's first journeys come before the first stop
                     ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
                     if let before = day.before {   // the place on the way, when travelling light (as on the day's page)
@@ -79,12 +76,16 @@ struct NowView: View {
                             QuietButton("Plans changed? Re-plan the rest of today", color: Theme.accent) { replanning = true }
                         }
                     }
+                    // 19 Oct review: asked under the day's own buttons, so the stop and "I'm done here" come first
+                    if !model.location.asked && !model.client.demo {
+                        LocationAsk()
+                    }
                 } else {
                     if let day = tripDay {   // m176: the way back for bags, and on to the airport or station
                         ForEach(day.journeys("back") + day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
                     }
                     Eyebrow("That's the day")
-                    Text("Thank you for going.")
+                    Text("Thanks for today.")
                         .font(Theme.hero)
                         .foregroundStyle(Theme.ink)
                     Text("Every stop you rated makes the next day fit you better.")
@@ -316,12 +317,14 @@ struct RatingView: View {
                     .foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-            } else if !stop.momentId.hasPrefix("generic:") {   // m176: a generic Test B stop has no card to share
-                PrimaryButton(title: "Share this moment") { sharing = true }
             }
-            SecondaryButton(title: onNext == nil ? "Done" : "On to the next stop") {
+            // 19 Oct review: moving on is the main thing mid-day; sharing is there, not pushed
+            PrimaryButton(title: onNext == nil ? "Done" : "On to the next stop") {
                 onNext?()
                 dismiss()
+            }
+            if !model.lastRatingQueued, !stop.momentId.hasPrefix("generic:") {   // m176: a generic Test B stop has no card
+                SecondaryButton(title: "Share this moment", icon: "square.and.arrow.up") { sharing = true }
             }
         }
         .settle()

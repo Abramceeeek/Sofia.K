@@ -167,8 +167,19 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("What we store") {
-                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your location is never stored. Your trips stay on this phone; the days planned for them are kept like any plan, starting from your stay's location (never its name). Flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                // 19 Oct review: in short parts, not one paragraph
+                Section("What we keep") {
+                    Text("Your answers, typed or spoken (as text: the sound stays on your phone and isn't kept).")
+                    Text("Your reactions to places, your choices between example days, the short survey and your choice between two plans.")
+                    Text("Your plans and your ratings, and anything you add under \"Improve future plans\".")
+                    Text("Anything you send in Help & safety.")
+                }
+                .listRowBackground(Theme.surface)
+                Section("What we don't keep") {
+                    Text("Your name, email or phone number. The app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                    Text("Your location. A start point you choose for a plan is sent rounded to about 100 m, and not kept.")
+                    Text("Your trips: they stay on this phone. The days planned for them are kept like any plan, starting from your stay's location (never its name).")
+                    Text("Your flight and stay searches: they go to our search providers, and we keep only which filters you used.")
                 }
                 .listRowBackground(Theme.surface)
                 Section {

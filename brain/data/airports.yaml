@@ -50,7 +50,7 @@ airports:
   - {code: KRK, city: Kraków, name: Kraków, country: PL, region: europe}
   - {code: CPH, city: Copenhagen, name: Copenhagen, country: DK, region: europe}
   - {code: ARN, city: Stockholm, name: Stockholm Arlanda, country: SE, region: europe}
-  - {code: OSL, city: Oslo, name: Oslo Gardermoen, country: NO, region: europe}
+  - {code: OSL, city: Oslo, name: Oslo Gardermoen, country: "NO", region: europe}   # quoted: bare NO is YAML for false
   - {code: HEL, city: Helsinki, name: Helsinki, country: FI, region: europe}
   - {code: MAD, city: Madrid, name: Madrid Barajas, country: ES, region: europe}
   - {code: BCN, city: Barcelona, name: Barcelona El Prat, country: ES, region: europe}

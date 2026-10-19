@@ -105,16 +105,6 @@
   {
    "key": "activity",
    "text": "How active do you like a day to be?"
-  },
-  {
-   "key": "grew_up",
-   "text": "What kind of place did you grow up in?",
-   "note": "Optional. Only used to guess what will feel new to you."
-  },
-  {
-   "key": "foods_avoided",
-   "text": "Any foods or drinks you avoid?",
-   "note": "Optional. Only used to choose food stops, and you can skip it."
   }
  ],
  "photos": [
@@ -346,8 +336,8 @@
  "conjoint_tasks": [
   {
    "task": 2,
-   "A": "longest transfer 50 min; mild and dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 8 km walking",
-   "B": "longest transfer 30 min; rainy at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 3 km walking",
+   "A": "longest journey between stops 50 min; mild and dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 8 km walking",
+   "B": "longest journey between stops 30 min; rainy at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 3 km walking",
    "levels": {
     "A": [
      50.0,
@@ -369,8 +359,8 @@
   },
   {
    "task": 4,
-   "A": "longest transfer 50 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 8 km walking",
-   "B": "longest transfer 15 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 3 km walking",
+   "A": "longest journey between stops 50 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 8 km walking",
+   "B": "longest journey between stops 15 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 3 km walking",
    "levels": {
     "A": [
      50.0,
@@ -392,8 +382,8 @@
   },
   {
    "task": 6,
-   "A": "longest transfer 30 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
-   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking",
+   "A": "longest journey between stops 30 min; mild and dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
+   "B": "longest journey between stops 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking",
    "levels": {
     "A": [
      30.0,
@@ -415,8 +405,8 @@
   },
   {
    "task": 8,
-   "A": "longest transfer 50 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
-   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 3 km walking",
+   "A": "longest journey between stops 50 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
+   "B": "longest journey between stops 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 3 km walking",
    "levels": {
     "A": [
      50.0,
@@ -438,8 +428,8 @@
   },
   {
    "task": 9,
-   "A": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 8 km walking",
-   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £20 per person; about 3 km walking",
+   "A": "longest journey between stops 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 8 km walking",
+   "B": "longest journey between stops 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £20 per person; about 3 km walking",
    "levels": {
     "A": [
      30.0,
@@ -495,8 +485,8 @@
  "conjoint_tasks_later": [
   {
    "task": 1,
-   "A": "longest transfer 15 min; cold but dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 3 km walking",
-   "B": "longest transfer 30 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
+   "A": "longest journey between stops 15 min; cold but dry at the outdoor stops; 5 stops, packed; mostly quiet; £60 per person; about 3 km walking",
+   "B": "longest journey between stops 30 min; mild and dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
    "levels": {
     "A": [
      15.0,
@@ -518,8 +508,8 @@
   },
   {
    "task": 3,
-   "A": "longest transfer 50 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £60 per person; about 3 km walking",
-   "B": "longest transfer 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 8 km walking",
+   "A": "longest journey between stops 50 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £60 per person; about 3 km walking",
+   "B": "longest journey between stops 15 min; rainy at the outdoor stops; 3 stops, relaxed; mostly quiet; £60 per person; about 8 km walking",
    "levels": {
     "A": [
      50.0,
@@ -541,8 +531,8 @@
   },
   {
    "task": 5,
-   "A": "longest transfer 15 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
-   "B": "longest transfer 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 3 km walking",
+   "A": "longest journey between stops 15 min; cold but dry at the outdoor stops; 5 stops, packed; busy at 2 stops; £20 per person; about 8 km walking",
+   "B": "longest journey between stops 50 min; mild and dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £40 per person; about 3 km walking",
    "levels": {
     "A": [
      15.0,
@@ -564,8 +554,8 @@
   },
   {
    "task": 7,
-   "A": "longest transfer 15 min; cold but dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
-   "B": "longest transfer 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 3 km walking",
+   "A": "longest journey between stops 15 min; cold but dry at the outdoor stops; 3 stops, relaxed; busy at 2 stops; £60 per person; about 8 km walking",
+   "B": "longest journey between stops 30 min; rainy at the outdoor stops; 5 stops, packed; mostly quiet; £40 per person; about 3 km walking",
    "levels": {
     "A": [
      15.0,
@@ -587,8 +577,8 @@
   },
   {
    "task": 10,
-   "A": "longest transfer 15 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
-   "B": "longest transfer 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking",
+   "A": "longest journey between stops 15 min; rainy at the outdoor stops; 5 stops, packed; busy at 2 stops; £40 per person; about 8 km walking",
+   "B": "longest journey between stops 30 min; cold but dry at the outdoor stops; 3 stops, relaxed; mostly quiet; £20 per person; about 3 km walking",
    "levels": {
     "A": [
      15.0,
@@ -666,6 +656,8 @@
    "company": null,
    "crowd_window": null,
    "opening_hours": "Always open, free",
+   "book_ahead": null,
+   "hours": "Always open. Free",
    "days": [],
    "best_window": [
     "16:00-17:00"

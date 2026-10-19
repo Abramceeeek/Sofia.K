@@ -160,7 +160,7 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
     Column(Modifier.fillMaxWidth().background(Theme.background).padding(horizontal = 20.dp).padding(top = 4.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {   // m176: the way back to the trip, and Help, on Book too
-            QuietButton("‹ Your trip", color = Theme.accent) {
+            ArrowLink("Your trip") {   // 19 Oct review: Android's arrow, not "‹"; the words say it's another tab
                 model.tab = MainTab.Trip
                 model.tripPath.clear()
                 model.tripPath += Dest.TripOverview(trip.id)
@@ -446,12 +446,13 @@ fun FlightDetailView(model: AppModel, flight: Flight, onBack: () -> Unit) {
     }
 
     ScrollPage(spacing = 20, bottom = 40) {
-        QuietButton("‹ Flights", color = Theme.accent, onClick = onBack)
+        BackLink("Back to flights", onClick = onBack)   // 19 Oct review: Android's arrow
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(flight.airline, style = Theme.subheadline.copy(color = Theme.muted))
             PageTitle("${trip?.origin?.city ?: flight.outbound.origin} to ${trip?.city ?: "London"}", style = Theme.serif(32.sp))
             if (trip != null) {
-                Text("${Dates.dayShort(trip.startDate)} – ${Dates.dayShort(trip.endDate)} · ${trip.travellers} · economy",
+                // 19 Oct review: these are the days in London; each flight's own date is on its leg below
+                Text("In ${trip.city} ${Dates.dayShort(trip.startDate)} – ${Dates.dayShort(trip.endDate)} · ${trip.travellers} · economy",
                     style = Theme.subheadline.copy(color = Theme.inkSoft))
             }
         }
@@ -466,6 +467,9 @@ fun FlightDetailView(model: AppModel, flight: Flight, onBack: () -> Unit) {
                 SectionLabel("Where to book", Modifier.weight(1f))
                 Text("Same dates and travellers", style = Theme.footnote)
             }
+            // 19 Oct review: said next to the links, before anyone taps one
+            Text("ODYS earns nothing from these links while we test. You pay the site you book with, and each sets its own price, so it can differ from the one found here.",
+                style = Theme.footnote.copy(color = Theme.inkSoft))
             for (link in providers) {
                 val note = when (link.name) {
                     "Skyscanner" -> "Compares many sites, including this airline"
@@ -475,8 +479,6 @@ fun FlightDetailView(model: AppModel, flight: Flight, onBack: () -> Unit) {
                 val badge = if (link.name == flight.airline) "Official" else if (link.name == "Skyscanner") "Compares sites" else null
                 ProviderRow(link.name, note, badge) { open(link) }
             }
-            Text("ODYS earns nothing from these links in this test. Each site sets its own price, so it can differ from the one found here.",
-                style = Theme.footnote)
         }
     }
 }
@@ -719,10 +721,12 @@ fun StayDetailView(model: AppModel, stay: StayResult, onBack: () -> Unit) {
         }
         Column(Modifier.padding(horizontal = 24.dp).padding(top = 10.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                // 19 Oct review: a sample's rating says it's made up, with no made-up review count
                 Fact(stay.rating?.let { String.format(Locale.UK, "%.1f / 10", it) } ?: "–",
-                    stay.reviews?.let { "$it guest reviews" } ?: "Guest rating", Modifier.weight(1f))
+                    stay.reviews?.let { "$it guest reviews" } ?: if (stay.sample) "Made-up rating, for testing" else "Guest rating",
+                    Modifier.weight(1f))
                 Fact(stay.distanceKm?.let { String.format(Locale.UK, "%.1f km", it) } ?: "–",
-                    "from ${results?.centre ?: "the centre"}, where your days start", Modifier.weight(1f))
+                    "from ${results?.centre ?: "the centre"}, in central London", Modifier.weight(1f))
             }
             val why = listOfNotNull("${stay.room}. ${stay.board}.",
                 if (stay.refundable == true) "Free cancellation with this rate." else null,
@@ -735,6 +739,9 @@ fun StayDetailView(model: AppModel, stay: StayResult, onBack: () -> Unit) {
                     SectionLabel("Where to book", Modifier.weight(1f))
                     Text(trip?.lengthLabel ?: "", style = Theme.footnote)
                 }
+                // 19 Oct review: said next to the links, before anyone taps one
+                Text("ODYS earns nothing from these links while we test. You pay the site you book with, and each sets its own price, so check what's included (breakfast, cancellation) before you pay.",
+                    style = Theme.footnote.copy(color = Theme.inkSoft))
                 for (link in stay.links) {
                     val note = when (link.name) {
                         "Booking.com" -> "This place, with your dates and guests"
@@ -743,8 +750,6 @@ fun StayDetailView(model: AppModel, stay: StayResult, onBack: () -> Unit) {
                     }
                     ProviderRow(link.name, note, if (link.name == "The place's own website") "Direct" else null) { open(link) }
                 }
-                Text("ODYS earns nothing from these links in this test. Each site sets its own price, so check what's included (breakfast, cancellation) before you pay.",
-                    style = Theme.footnote)
             }
         }
     }
@@ -779,7 +784,7 @@ fun HandoffSheet(model: AppModel, h: Handoff) {
             verticalArrangement = Arrangement.spacedBy(14.dp)) {
             if (h.back) {
                 SectionLabel("Welcome back")
-                Text("Did you book it on ${h.provider}?", style = Theme.serif(28.sp))
+                Text("Did you book it?", style = Theme.serif(28.sp))
                 PrimaryButton("Yes, add it to my trip") { answer(true) }
                 SecondaryButton("Not yet, keep it saved") { answer(false) }
             } else {
@@ -793,7 +798,7 @@ fun HandoffSheet(model: AppModel, h: Handoff) {
                 val ago = minutesAgo(h.searchedAt)
                 val checked = ago?.let { if (it < 1) "Price found just now" else "Price found $it minute${if (it == 1L) "" else "s"} ago" }
                     ?: "The price is on their site"
-                Text("$checked, so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link.",
+                Text("$checked, so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link while we test.",
                     style = Theme.subheadline.copy(color = Theme.muted))
                 PrimaryButton("Continue to ${h.provider} ↗") {
                     openUrl(context, h.url)
@@ -818,7 +823,7 @@ fun FilterSheetFrame(model: AppModel, showLabel: String, clear: () -> Unit, cont
             Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                 QuietButton("Clear all", color = Theme.inkSoft, onClick = clear)
                 Text("Filters", style = Theme.headline, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
-                QuietButton("Done", color = Theme.accent, onClick = done)
+                CloseLink("Close", done)   // 19 Oct review: Android's ✕; the button below shows the results
             }
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)
                 .padding(top = 4.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(22.dp), content = content)
@@ -904,7 +909,7 @@ fun FlightFilterSheet(model: AppModel) {
         if (legs != null && legs.size == 2 && legs[0] < legs[1]) {
             val hi = legs[1].toDouble()
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Longest journey", f.maxLegMin?.let { "Up to ${Dates.duration(it)}" } ?: "Any")
+                FilterTitle("Longest journey", f.maxLegMin?.let { "Up to ${Dates.duration(it)}" } ?: "No limit")
                 FilterSlider((f.maxLegMin ?: legs[1]).toDouble(), legs[0].toDouble(), hi, 30.0) { v ->
                     book.flightFilters = f.copy(maxLegMin = if (v >= hi) null else v.toInt())
                 }
@@ -915,7 +920,7 @@ fun FlightFilterSheet(model: AppModel) {
             val lo = kotlin.math.floor(prices[0])
             val hi = kotlin.math.ceil(prices[1])
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Most I'll pay", f.maxPrice?.let { Money.whole(it) } ?: "Any")
+                FilterTitle("Most I'll pay", f.maxPrice?.let { Money.whole(it) } ?: "No limit")
                 FilterSlider(f.maxPrice ?: hi, lo, hi, 10.0) { v -> book.flightFilters = f.copy(maxPrice = if (v >= hi) null else v) }
             }
         }
@@ -948,8 +953,7 @@ fun FilterSwitch(label: String, sub: String, on: Boolean, onChange: (Boolean) ->
             Text(label, style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold))
             Text(sub, style = Theme.footnote)
         }
-        androidx.compose.material3.Switch(on, onChange, colors = androidx.compose.material3.SwitchDefaults.colors(
-            checkedTrackColor = Theme.amberDeep, checkedThumbColor = Theme.onAccent))
+        androidx.compose.material3.Switch(on, onChange, colors = odysSwitchColors())   // 19 Oct: one look for every switch
     }
 }
 
@@ -965,7 +969,7 @@ fun StayFilterSheet(model: AppModel) {
             val lo = kotlin.math.floor(prices[0])
             val hi = kotlin.math.ceil(prices[1])
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Most per night", f.maxNight?.let { Money.whole(it) } ?: "Any")
+                FilterTitle("Most per night", f.maxNight?.let { Money.whole(it) } ?: "No limit")
                 FilterSlider(f.maxNight ?: hi, lo, hi, 5.0) { v -> book.stayFilters = f.copy(maxNight = if (v >= hi) null else v) }
             }
         }

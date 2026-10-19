@@ -485,8 +485,8 @@ fun TripCreateFlow(model: AppModel) {
             }
         }) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.widthIn(min = 72.dp)) {
-                    QuietButton(backTitle, color = Theme.accent) { if (backTitle == "Cancel") dismiss() else step -= 1 }
+                Box(Modifier.widthIn(min = 72.dp)) {   // 19 Oct review: Android's ✕ and arrow, not words
+                    if (backTitle == "Cancel") CloseLink("Cancel") { dismiss() } else BackLink { step -= 1 }
                 }
                 Row(Modifier.weight(1f).semantics { contentDescription = "Question ${step + 1} of $TRIP_QUESTIONS" },
                     horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
@@ -769,7 +769,7 @@ fun DaysStep(trip: Trip, onChange: (Trip) -> Unit) {
         val n = trip.placesPerDay
         Stepper("Places a day", "$n place${if (n == 1) "" else "s"}", n <= 1, n >= 6, "One place fewer", "One place more",
             { onChange(trip.copy(places = maxOf(1, n - 1))) }) { onChange(trip.copy(places = minOf(6, n + 1))) }
-        Text("Lunch comes on top, when a day runs through midday. A short day holds fewer places.", style = Theme.footnote,
+        Text("Plus lunch, when a day runs through midday. A short day holds fewer places.", style = Theme.footnote,
             modifier = Modifier.padding(horizontal = 4.dp))
         if (trip.arrivingBy == "flight" || trip.arrivingBy == "train") {
             SwitchRow("Travelling light on day 1", "No big bags: if you arrive before check-in, one place on the way, then your stay.",
@@ -1152,7 +1152,7 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
             PrimaryButton(if (mine) "This is your day" else "Make this my day", enabled = !mine) {
                 if (model.testBPlanAtRisk) confirm = true else use(trip, day)
             }
-            Text("Your day gets \"Now\", a nudge to rate each stop, and swapping a stop.", style = Theme.footnote)
+            Text("Your day gets \"Now\", a reminder to rate each stop, and swapping a stop.", style = Theme.footnote)
             // Abram's comment (8 Oct): plans change; the day is planned again around them
             SecondaryButton("Made other plans? Change this day", icon = Icons.Filled.Schedule) { changing = day }
         } else if (day == null) {
@@ -1200,7 +1200,7 @@ fun ChangeDaySheet(model: AppModel, trip: Trip, day: TripDayOut, onClose: () -> 
                 scope.launch { if (model.changeTripDay(trip.id, day.index, from, to, places)) onClose() }
             }
         }) {
-            QuietButton("Cancel", color = Theme.accent, onClick = onClose)
+            CloseLink("Cancel", onClose)   // 19 Oct review: Android's ✕
             Eyebrow("Day ${day.index + 1} · ${Dates.shortDay(day.date)}")
             PageTitle("Change this day")
             Text("Meeting someone, or made other plans? Tell me when you're free, and I'll plan the day again around it. Your other days stay as they are.",
@@ -1210,7 +1210,7 @@ fun ChangeDaySheet(model: AppModel, trip: Trip, day: TripDayOut, onClose: () -> 
                 Hairline()
                 TimeMenu("Until", to, HalfHours.from(6, 23)) { to = it }
             }
-            Stepper("Places", "$places place${if (places == 1) "" else "s"}, lunch on top", places <= 1, places >= 6,
+            Stepper("Places", "$places place${if (places == 1) "" else "s"}, plus lunch", places <= 1, places >= 6,
                 "One place fewer", "One place more", { places -= 1 }) { places += 1 }
             if (tooShort) Text("Leave at least an hour between the two times.", style = Theme.subheadline.copy(color = Theme.accent))
             Text(note, style = Theme.footnote)
@@ -1294,12 +1294,13 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Talk to a person", style = Theme.headline, modifier = Modifier.weight(1f))
                 if (model.unreadSafety) Box(Modifier.size(9.dp).background(Theme.danger, CircleShape))
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Theme.muted)   // 19 Oct: it opens
             }
             Text("Something wrong with a stop, a booking or how you feel? A real person replies here, within a few hours.",
                 style = Theme.subheadline.copy(color = Theme.inkTertiary))
         }
         Column {
-            SectionLabel("What I've learned about you", Modifier.padding(bottom = 6.dp))
+            SectionLabel("What you've told us", Modifier.padding(bottom = 6.dp))
             val items = model.learned?.items ?: emptyList()
             if (items.isEmpty()) {
                 Text("Nothing yet. It comes from your answers and your ratings.", style = Theme.body.copy(color = Theme.muted),

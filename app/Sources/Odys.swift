@@ -155,6 +155,33 @@ struct QuietButton: View {
     }
 }
 
+/// A line to tick (19 Oct review: consent is agreed to, not switched on): a circle that fills with a check.
+struct CheckRow: View {
+    let label: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button {
+            Haptics.light()
+            isOn.toggle()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(isOn ? Theme.accent : Theme.inkSoft)
+                Text(label).foregroundStyle(Theme.ink)
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityValue(isOn ? "ticked" : "not ticked")
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+}
+
 /// "‹ Back", in amber, for screens without a navigation bar.
 struct BackLink: View {
     let action: () -> Void

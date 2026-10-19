@@ -555,7 +555,8 @@ struct FlightDetailView: View {
                     PageTitle(text: "\(trip?.origin?.city ?? flight.outbound.origin) to \(trip?.city ?? "London")",
                               font: Theme.serif(32, relativeTo: .largeTitle))
                     if let trip {
-                        Text("\(Dates.dayShort.string(from: trip.startDate)) – \(Dates.dayShort.string(from: trip.endDate)) · \(trip.travellers) · economy")
+                        // 19 Oct review: these are the days in London; each flight's own date is on its leg below
+                        Text("In \(trip.city) \(Dates.dayShort.string(from: trip.startDate)) – \(Dates.dayShort.string(from: trip.endDate)) · \(trip.travellers) · economy")
                             .font(.subheadline)
                             .foregroundStyle(Theme.inkSoft)
                     }
@@ -580,15 +581,16 @@ struct FlightDetailView: View {
                         Spacer()
                         Text("Same dates and travellers").font(.footnote).foregroundStyle(Theme.muted)
                     }
+                    // 19 Oct review: said next to the links, before anyone taps one
+                    Text("ODYS earns nothing from these links while we test. You pay the site you book with, and each sets its own price, so it can differ from the one found here.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
                     ForEach(providers, id: \.name) { link in
                         ProviderRow(name: link.name, note: Self.note(link.name, flight), badge: Self.badge(link.name, flight)) {
                             open(link, trip)
                         }
                     }
-                    Text("ODYS earns nothing from these links in this test. Each site sets its own price, so it can differ from the one found here.")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(.horizontal, 24)
@@ -1074,10 +1076,11 @@ struct StayDetailView: View {
                     }
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(spacing: 10) {
+                        // 19 Oct review: a sample's rating says it's made up, with no made-up review count
                         fact(stay.rating.map { String(format: "%.1f / 10", $0) } ?? "–",
-                             stay.reviews.map { "\($0) guest reviews" } ?? "Guest rating")
+                             stay.reviews.map { "\($0) guest reviews" } ?? (stay.sample ? "Made-up rating, for testing" : "Guest rating"))
                         fact(stay.distanceKm.map { String(format: "%.1f km", $0) } ?? "–",
-                             "from \(results?.centre ?? "the centre"), where your days start")
+                             "from \(results?.centre ?? "the centre"), in central London")
                     }
                     Text(why)
                         .foregroundStyle(Theme.inkSoft)
@@ -1090,16 +1093,17 @@ struct StayDetailView: View {
                             Spacer()
                             Text(trip?.lengthLabel ?? "").font(.footnote).foregroundStyle(Theme.muted)
                         }
+                        // 19 Oct review: said next to the links, before anyone taps one
+                        Text("ODYS earns nothing from these links while we test. You pay the site you book with, and each sets its own price, so check what's included (breakfast, cancellation) before you pay.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
                         ForEach(stay.links, id: \.name) { link in
                             ProviderRow(name: link.name, note: Self.note(link.name),
                                         badge: link.name == "The place's own website" ? "Direct" : nil) {
                                 open(link, trip)
                             }
                         }
-                        Text("ODYS earns nothing from these links in this test. Each site sets its own price, so check what's included (breakfast, cancellation) before you pay.")
-                            .font(.footnote)
-                            .foregroundStyle(Theme.muted)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -1190,7 +1194,7 @@ struct HandoffSheet: View {
 
     @ViewBuilder private func comeBack(_ h: Handoff) -> some View {
         SectionLabel(text: "Welcome back")
-        Text("Did you book it on \(h.provider)?")
+        Text("Did you book it?")
             .font(Theme.serif(28, relativeTo: .title))
             .foregroundStyle(Theme.ink)
             .fixedSize(horizontal: false, vertical: true)
@@ -1202,7 +1206,7 @@ struct HandoffSheet: View {
         let ago = h.searchedAt.map { max(0, Int(Date.now.timeIntervalSince($0) / 60)) }
         let checked = ago.map { $0 < 1 ? "Price found just now" : "Price found \($0) minute\($0 == 1 ? "" : "s") ago" }
             ?? "The price is on their site"
-        return "\(checked), so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link."
+        return "\(checked), so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link while we test."
     }
 
     private func answer(_ h: Handoff, booked: Bool) {
@@ -1334,7 +1338,7 @@ struct FlightFilterSheet: View {
         if let legs = book.flights?.facets.legMinutes, legs.count == 2, legs[0] < legs[1] {
             let hi = Double(legs[1])
             VStack(alignment: .leading, spacing: 8) {
-                FilterTitle(text: "Longest journey", value: book.flightFilters.maxLegMin.map { "Up to \(Dates.duration($0))" } ?? "Any")
+                FilterTitle(text: "Longest journey", value: book.flightFilters.maxLegMin.map { "Up to \(Dates.duration($0))" } ?? "No limit")
                 Slider(value: Binding(get: { Double(book.flightFilters.maxLegMin ?? Int(hi)) },
                                       set: { v in book.flightFilters.maxLegMin = v >= hi ? nil : Int(v) }),
                        in: Double(legs[0])...hi, step: 30)
@@ -1348,7 +1352,7 @@ struct FlightFilterSheet: View {
         if let prices = book.flights?.facets.price, prices.count == 2, prices[0] < prices[1] {
             let hi = prices[1].rounded(.up)
             VStack(alignment: .leading, spacing: 8) {
-                FilterTitle(text: "Most I'll pay", value: book.flightFilters.maxPrice.map { Money.whole($0) } ?? "Any")
+                FilterTitle(text: "Most I'll pay", value: book.flightFilters.maxPrice.map { Money.whole($0) } ?? "No limit")
                 Slider(value: Binding(get: { book.flightFilters.maxPrice ?? hi },
                                       set: { v in book.flightFilters.maxPrice = v >= hi ? nil : v }),
                        in: prices[0].rounded(.down)...hi, step: 10)
@@ -1448,7 +1452,7 @@ struct StayFilterSheet: View {
             if let prices = r?.facets.priceNight, prices.count == 2, prices[0] < prices[1] {
                 let lo = prices[0].rounded(.down), hi = prices[1].rounded(.up)
                 VStack(alignment: .leading, spacing: 8) {
-                    FilterTitle(text: "Most per night", value: f.maxNight.map { Money.whole($0) } ?? "Any")
+                    FilterTitle(text: "Most per night", value: f.maxNight.map { Money.whole($0) } ?? "No limit")
                     Slider(value: Binding(get: { f.maxNight ?? hi },
                                           set: { v in book.stayFilters.maxNight = v >= hi ? nil : v }),
                            in: lo...hi, step: 5)

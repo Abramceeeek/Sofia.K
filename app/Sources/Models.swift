@@ -331,8 +331,10 @@ struct Stop: Codable, Hashable, Identifiable {
     var id: String { momentId + "@" + arrive }
 
     /// D118: the worth and the price side by side ("Worth about £32 to you · Free entry").
+    /// 19 Oct review: the price first, then the worth, plainly a guess, so neither reads as the other (D88's figure).
     var worthLine: String? {
-        worthGbp.map { "Worth about \(Money.text($0)) to you · " + (costGbp == 0 ? "Free entry" : "Costs \(Money.text(costGbp))") }
+        worthGbp.map { (costGbp == 0 ? "Free entry." : "Costs \(Money.text(costGbp)).")
+            + " We guess it's worth about \(Money.text($0)) to you." }
     }
 
     /// The word for this stop on "How the day moves" and its line.

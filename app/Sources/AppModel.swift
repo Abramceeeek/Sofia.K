@@ -10,7 +10,7 @@ enum AppConfig {
     }
     static let consentVersion = "app-2026-10-02"    // D114 share link; D115 speaking; D118 safety contact, reminders
     /// CI screenshots: the demo plan's day, so "Plan a day" (8) and the plan (9) show the same date.
-    static let demoDate = "2026-10-31"
+    static let demoDate = "2026-10-24"        // the demo plan's day (brain/scripts/make_demo.py): next Saturday
     static let contactEmail = "abram@abdurakhmonbek.com"
     /// Build 1 plans from the Test B start point (D104): Charing Cross station, Trafalgar Square exit (TfL).
     static let startName = "Charing Cross station"
@@ -707,7 +707,7 @@ final class AppModel {
         UserDefaults.standard.set(remindersOn, forKey: "remindersOn")
         if yes, !remindersOn {   // journey round 2: a refused permission said nothing
             notice = ("Notifications are off for ODYS",
-                      "To get the nudge to rate a stop, turn on notifications for ODYS in your phone's Settings.")
+                      "To get a reminder to rate each stop, turn on notifications for ODYS in your phone's Settings.")
         }
         if remindersOn, let plan { await Reminders.schedule(plan, rated: rated) }
         await client.event(remindersOn ? "reminders_on" : "reminders_off")

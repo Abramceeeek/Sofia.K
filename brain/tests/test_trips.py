@@ -137,6 +137,24 @@ def test_sample_results_are_labelled_and_repeatable():
     assert all(s.sample and s.name.startswith("Sample ") for s in stays)
 
 
+def test_sample_flights_keep_each_airports_clock():
+    """19 Oct review: Tashkent 20:00 + 6h 50m showed 02:50 in London. Each end is on its own clock now, and the
+    duration is real time, across the clock change on Sunday 25 Oct too."""
+    from datetime import datetime, timezone
+    q = trips.FlightQuery(origin="TAS", destination="LHR", depart=date(2026, 10, 21), ret=date(2026, 10, 27))
+    for f in trips.sample_flights(q, AIRPORTS):
+        for leg, (src, dst) in ((f.outbound, ("Asia/Tashkent", "Europe/London")),
+                                (f.inbound, ("Europe/London", "Asia/Tashkent"))):
+            from zoneinfo import ZoneInfo
+            dep = datetime.fromisoformat(leg.depart_at).replace(tzinfo=ZoneInfo(src))
+            arr = datetime.fromisoformat(leg.arrive_at).replace(tzinfo=ZoneInfo(dst))
+            assert (arr.astimezone(timezone.utc) - dep.astimezone(timezone.utc)).total_seconds() == leg.duration_min * 60
+    every = {a.code for a in AIRPORTS}
+    assert all(a.country in trips._COUNTRY_TZ for a in AIRPORTS), "an airport's country has no time zone"
+    assert next(a for a in AIRPORTS if a.code == "OSL").country == "NO"      # not YAML's false
+    assert trips.airport_zone("LAX", AIRPORTS).key == "America/Los_Angeles" and "LAX" in every
+
+
 def test_cache_and_hourly_cap():
     calls = []
     now = [0.0]

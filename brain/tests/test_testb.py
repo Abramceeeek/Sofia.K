@@ -374,7 +374,7 @@ def test_relaxed_people_stay_longer_at_gardens():
 def test_travel_legs_start_with_the_walk_to_a_station():
     """D102: "walk to X station, then take the Tube or bus to Y" when a leg starts at a stop."""
     t = testb.leg_text(22, "transit", "The Garden at 120", "Bank station", "Liverpool Street station", first=False)
-    assert t == "Getting there: about 22 min: walk to Bank station, then take the Tube or bus to Liverpool Street station."
+    assert t == "Getting there: about 22 min. Walk to Bank station, then take the Tube or bus to Liverpool Street station."
     assert testb.leg_text(20, "transit", "London Bridge station", "London Bridge station", "Cutty Sark DLR station",
                           first=True) == ("Getting there: about 20 min by Tube or bus from London Bridge station "
                                           "to Cutty Sark DLR station.")

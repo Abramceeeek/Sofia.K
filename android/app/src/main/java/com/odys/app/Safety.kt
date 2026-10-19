@@ -168,9 +168,18 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
         Column(Modifier.fillMaxSize()) {
             SheetBar("Your data", onClose = onClose)
             ScrollPage(spacing = 18, top = 4, bottom = 32) {
-                SettingsSection("What we store") {
-                    Text("Your answers, your reactions to places, your choices between example days, anything you add under \"Improve future plans\", the short survey and your choice between two plans, your plans and your ratings, and anything you send in Help & safety. Your location is never stored. Your trips stay on this phone; the days planned for them are kept like any plan, starting from your stay's location (never its name). Flight and stay searches go to our search providers, and we keep only which filters you used. We don't ask for your name, email or phone number: the app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.",
-                        style = Theme.body)
+                // 19 Oct review: in short parts, not one paragraph
+                SettingsSection("What we keep") {
+                    DataLine("Your answers, typed or spoken (as text: the sound stays on your phone and isn't kept).")
+                    DataLine("Your reactions to places, your choices between example days, the short survey and your choice between two plans.")
+                    DataLine("Your plans and your ratings, and anything you add under \"Improve future plans\".")
+                    DataLine("Anything you send in Help & safety.")
+                }
+                SettingsSection("What we don't keep") {
+                    DataLine("Your name, email or phone number. The app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
+                    DataLine("Your location. A start point you choose for a plan is sent rounded to about 100 m, and not kept.")
+                    DataLine("Your trips: they stay on this phone. The days planned for them are kept like any plan, starting from your stay's location (never its name).")
+                    DataLine("Your flight and stay searches: they go to our search providers, and we keep only which filters you used.")
                 }
                 SettingsSection("Reminders", "Set on your phone for the day of your plan. Nothing is sent.") {
                     // D118: rating reminders can be turned off (or on) here, any time
@@ -218,6 +227,12 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
     if (confirmDelete) DeleteConfirmView(model, { confirmDelete = false }) { onClose() }
 }
 
+/** One line of "Your data", with a little room between lines. */
+@Composable
+private fun DataLine(text: String) {
+    Text(text, style = Theme.body, modifier = Modifier.padding(vertical = 6.dp))
+}
+
 @Composable
 private fun SettingsSection(title: String?, footer: String? = null, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -234,7 +249,7 @@ private fun SettingSwitch(label: String, on: Boolean, onChange: (Boolean) -> Uni
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Switch) { onChange(!on) },
         verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = Theme.body, modifier = Modifier.weight(1f).padding(end = 12.dp))
-        Switch(on, onChange, colors = SwitchDefaults.colors(checkedTrackColor = Theme.accent, checkedThumbColor = Theme.onAccent))
+        Switch(on, onChange, colors = odysSwitchColors())   // 19 Oct: one look for every switch
     }
 }
 

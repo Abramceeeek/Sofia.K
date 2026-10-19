@@ -66,6 +66,8 @@ def test_further_ahead_the_daily_forecast_is_used_and_scaled():
     fake = FakeMet(hourly=hourly(now, 48), daily=daily([day], temp=17.0, pop=60))
     o = Forecast("met-key", fetch=fake).for_window(day, "12:00", "17:00")
     assert o.source == "daily" and o.temp_c == 17.0 and abs(o.rain_prob - 0.6 * DAILY_RAIN_SHARE) < 1e-9
+    # 19 Oct review: days ahead, it is an outlook for the day that may change, not a forecast for the plan's hours
+    assert o.line == "Outlook: up to 17°C, 40% chance of rain (Met Office; it may change)"
 
 
 def test_a_failed_forecast_never_fails_a_plan_and_waits_before_trying_again():
@@ -145,9 +147,9 @@ def test_the_journey_arriving_first_and_its_route_in_words():
 def test_leg_text_names_the_real_lines():
     route = "walk to Westminster Station, then Jubilee line to London Bridge"
     assert leg_text(21, "transit", "the Garden", "Bank", "Borough Market", False, route) == \
-        f"Getting there: about 21 min: {route}."
+        "Getting there: about 21 min. Walk to Westminster Station, then Jubilee line to London Bridge."   # 19 Oct
     assert leg_text(21, "transit", "Charing Cross", None, None, True, route).startswith(
-        "Getting there: about 21 min from Charing Cross: walk to")
+        "Getting there: about 21 min from Charing Cross. Walk to")
     assert "Tube or bus" in leg_text(21, "transit", "x", None, None, False)   # no route: as before
 
 

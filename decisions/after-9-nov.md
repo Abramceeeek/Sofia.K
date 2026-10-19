@@ -80,6 +80,7 @@
 | 74 | **Plans for friends who know each other:** a plan for two to four people's weights with a fairness rule, costs per person; goes with #69 | 2026-10-19 | Abram (buddies); research (relationships are a core motive) | GUESS: Claude ~12 h | §4.4 |
 | 75 | **Buddies: strangers matched to go together**: research done 19 Oct (verification, small groups, public meeting points, never protected characteristics, an Online Safety Act user-to-user risk assessment). **Not built: "no group trips in year one" (30 Sep) stands** until Abram changes it | 2026-10-19 | Abram ("find people who want to go to a specific place at the same time") | GUESS: 60–100 h plus legal advice | §4.5 |
 | 76 | **Trains** (search or link-outs to UK rail booking, as for flights), **"Would you go again?" / "Was it worth the money?"** after a day, **use the unused answers** (company, morning or night, activity), an **accessibility filter**, a private **trip journal** | 2026-10-19 | Algorithm and trip review, 19 Oct | GUESS: ~4 + 2 + 3 + 4 + 6 h | §4.6; `decisions/algorithm-explained.md` §11 |
+| 77 | **From the 19 Oct screen reviews:** cluster price pins on the stays map; name the hotel rating's source; type a station as the start; a shorter plan headline; a "Plan a day out" card on Trip home once a day exists; one voice ("I" in Abram's clips, "we" elsewhere); show how picked feelings map to the stops' words; say "both ways" on the flight tabs' times | 2026-10-19 | Five AI screen reviews (`design/screen-review-synthesis.md`) | GUESS: Claude ~1 h each, ~8 h | None helps Test B; the fixes that did are in m186 |
 
 ## Rejected for now (D114, 30 Sep)
 
@@ -94,3 +95,4 @@ From the same outside research (rounds 1 and 2, several AI models). Not parked: 
 | Locked "secret" moments | Rejected by Abram |
 | Sharing model scores | The share card shows the person's own rating only, never "worth £X" (D114) |
 | Reward-based referrals | Sharing stays prosocial ("I think you'd love this day — try it"), with no rewards (D114) |
+| Reading booking emails to track bookings | Suggested by a screen review (19 Oct). It means reading people's email; "Did you book it?" stays a tap |

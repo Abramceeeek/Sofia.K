@@ -204,12 +204,14 @@ fun PlanFormView(model: AppModel, onDone: (() -> Unit)? = null, onHelp: (() -> U
                 if (saturday != today && saturday != tomorrow) {
                     Chip(Dates.dayShort(saturday), date == saturday) { pick(saturday) }
                 }
+                // 19 Oct review: a day picked below shows here too, so the chips and the Day row always agree
+                if (date != today && date != tomorrow && date != saturday) Chip(Dates.dayShort(date), true) {}
             }
         }
         Column(Modifier.settle(2).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Theme.surface)) {
             FormRow("Day") { ValueButton(Dates.dayShort(date)) { pickDay = true } }
             FormRow("Start") { ValueButton(Dates.hhmm(start)) { pickTime = "start" } }
-            FormRow("Finish by") { ValueButton(Dates.hhmm(end)) { pickTime = "end" } }
+            FormRow("Done by") { ValueButton(Dates.hhmm(end)) { pickTime = "end" } }   // 19 Oct: the plan says "Done by" too
             FormRow("Stops") {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.semantics { contentDescription = "$stops stops" }) {
@@ -436,14 +438,12 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
             })
             PlanStats(plan, Modifier.graphicsLayer { alpha = phase(if (plan.isBlind) 0f else 0.12f, 0.25f) })
         }
-        AnimatedVisibility(!model.reminderAsked && !plan.isBlind && shown >= 1f, enter = fadeIn(), exit = fadeOut()) {
-            ReminderAsk(model)   // D118: asked once, right after a plan, never before
-        }
-        DayMoves(plan, phase(0.2f, 0.6f), Modifier.graphicsLayer { alpha = phase(0.18f, 0.3f) })
+        // 19 Oct review: List or Map straight under the headline, so the map is there the moment it's chosen
         ViewToggle(layout) {
             layout = it
             model.prefs.set("planLayout", it)
         }
+        if (layout != "map") DayMoves(plan, phase(0.2f, 0.6f), Modifier.graphicsLayer { alpha = phase(0.18f, 0.3f) })
         if (layout == "map") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val pins = plan.stops.mapIndexedNotNull { i, s -> s.pin?.let { MapPin(it, s.title, i + 1) } }
@@ -480,6 +480,9 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
         Text(if (model.lastRequest == null) "Open a stop to see how you'll arrive."
              else "Open a stop to see how you'll arrive, or to swap it. Press and hold a stop to swap it.",
             style = Theme.footnote)
+        AnimatedVisibility(!model.reminderAsked && !plan.isBlind && shown >= 1f, enter = fadeIn(), exit = fadeOut()) {
+            ReminderAsk(model)   // D118: asked once per plan; 19 Oct review: after the plan, just before the day starts
+        }
         PrimaryButton("Start the day") { model.startDay() }   // D119: "Now", while you're out
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (model.improved) {
@@ -587,17 +590,24 @@ object RouteMath {
 fun PlanStats(plan: Plan, modifier: Modifier = Modifier) {
     val t = plan.totals ?: return
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            val style = Theme.subheadline.copy(color = Theme.inkSoft)
-            Text("${Money.text(t.costGbp)} per person", style = style)
-            Text(String.format(java.util.Locale.UK, "%.1f km walking between stops", t.walkKm), style = style)
-            Text("Done by ${t.finish ?: plan.stops.lastOrNull()?.depart ?: "–"}", style = style)
+        // 19 Oct review: the three numbers as chips, easy to scan
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatChip("${Money.text(t.costGbp)} per person")
+            StatChip(String.format(java.util.Locale.UK, "%.1f km walking", t.walkKm))
+            StatChip("Done by ${t.finish ?: plan.stops.lastOrNull()?.depart ?: "–"}")
         }
         val spend = if (t.spendGbp > 0) "${Money.text(t.spendGbp)} food and entry" else "Free entry"
         val fare = if (t.transportGbp > 0) "${Money.text(t.transportGbp)} Tube or bus" else "all on foot"
         Text("$spend, $fare." + (plan.summary?.firstOrNull()?.let { " $it." } ?: ""), style = Theme.footnote)
         plan.weather?.line?.takeIf { it.isNotEmpty() }?.let { Text(it, style = Theme.footnote) }
     }
+}
+
+/** One of the plan's numbers, as a quiet chip (not a button). */
+@Composable
+fun StatChip(text: String) {
+    Text(text, style = Theme.subheadline.copy(color = Theme.ink),
+        modifier = Modifier.clip(RoundedCornerShape(50)).background(Theme.surface).padding(horizontal = 12.dp, vertical = 6.dp))
 }
 
 /**
@@ -617,7 +627,7 @@ fun DayMoves(plan: Plan, progress: Float = 1f, modifier: Modifier = Modifier) {
         .semantics { contentDescription = "How the day moves: " + points.joinToString("; ") { "${it.time}, ${it.word}" } },
         verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("How the day moves", style = Theme.subheadline.copy(color = Theme.muted))
-        Text(if (personal) "Higher means we think you'll enjoy it more. Each word is the kind of moment a stop is."
+        Text(if (personal) "Higher means we think you'll enjoy it more: our guess, not a score. Each word is the kind of moment a stop is."
              else "Each word is the kind of moment a stop is.", style = Theme.footnote.copy(color = Theme.inkTertiary))
         DayCurve(points, progress, peak, Modifier.padding(top = 8.dp))
     }
@@ -725,7 +735,7 @@ fun StopCard(number: Int, stop: Stop, rated: Boolean = false, swapped: Boolean =
             if (showWhy) stop.reasons?.firstOrNull()?.you?.let {
                 Text(it, style = Theme.subheadline.copy(color = Theme.inkSoft))
             }
-            if (showWhy) stop.worthLine?.let { Text(it, style = Theme.subheadline.copy(color = Theme.accent)) }
+            if (showWhy) stop.worthLine?.let { Text(it, style = Theme.subheadline.copy(color = Theme.muted)) }   // 19 Oct: amber is for actions
             val badges = listOfNotNull(if (swapped) "Swapped in" else null, if (stop.familiar) "A place you loved" else null,
                 if (rated) "Rated" else null)
             if (badges.isNotEmpty()) Text(badges.joinToString(" · "), style = Theme.italic(15.sp))
@@ -777,7 +787,7 @@ fun MomentHero(stop: Stop, height: Dp = 380.dp, rounded: Boolean = false, drift:
             }
             Column(
                 Modifier.align(Alignment.BottomStart).fillMaxWidth()
-                    .background(Brush.verticalGradient(0f to Color.Transparent, 0.3f to Theme.background.copy(alpha = 0.7f),
+                    .background(Brush.verticalGradient(0f to Theme.background.copy(alpha = 0.25f), 0.3f to Theme.background.copy(alpha = 0.85f),   // 19 Oct: firmer
                         1f to Theme.background.copy(alpha = if (rounded) 0.92f else 1f)))
                     .padding(horizontal = if (rounded) 18.dp else 24.dp).padding(top = 48.dp, bottom = if (rounded) 18.dp else 24.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -813,8 +823,10 @@ fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean 
                 for (r in reasons) Text(r.you, style = Theme.serif(22.sp))
                 if (basis != null && reasons.isNotEmpty()) Text(basis.soFar, style = Theme.footnote)
                 stop.worthLine?.let {
-                    Text(it, style = Theme.body.copy(color = Theme.accent), modifier = Modifier.padding(top = 4.dp))
-                    Text("A first estimate from what you've told us so far.", style = Theme.footnote)   // D118
+                    Text(it, style = Theme.body.copy(color = Theme.inkSoft), modifier = Modifier.padding(top = 4.dp))
+                    // D118: plainly a first estimate; 19 Oct: and not a price or a promise
+                    Text("A first estimate from your answers so far: not a price, and not a promise of how you'll feel.",
+                        style = Theme.footnote)
                 }
             }
         }
@@ -844,8 +856,13 @@ fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean 
         } ?: ""
         val light = stop.bestLight ?: ""
         val window = stop.bestWindow ?: ""
+        // 19 Oct review: say plainly whether this plan has them there at that time, never leave it to look like a mistake
+        val ends = window.split("–")
+        val here = ends.size == 2 && Dates.minutes(stop.arrive) < Dates.minutes(ends[1]) &&
+            Dates.minutes(ends[0]) < Dates.minutes(stop.depart)
         val best = if (light.isEmpty()) "" else (if (light.endsWith(".")) light else "$light.") +
-            (if (window.isEmpty()) "" else " On your day: $window.")
+            (if (window.isEmpty()) "" else if (here) " On your day that's $window, while you're here."
+             else " On your day that's $window; this plan has you here at ${stop.arrive}.")
         DetailRows(listOf(
             "Best time and light" to best,
             "What happens" to stop.what,
@@ -931,6 +948,7 @@ fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Uni
     var confirmRegenerate by remember { mutableStateOf(false) }
     var sharing by remember { mutableStateOf(false) }
     var reporting by remember { mutableStateOf(false) }
+    var helping by remember { mutableStateOf(false) }
     val done = stop.momentId in model.rated
     val opens = stop.ratingOpens(model.plan?.date)
     val now = Dates.now()
@@ -979,10 +997,18 @@ fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Uni
             }
         }
         Box(Modifier.statusBarsPadding().padding(start = 12.dp, top = 4.dp)
-            .clip(CircleShape).background(Theme.background.copy(alpha = 0.55f)).padding(end = 10.dp)) {
+            .clip(CircleShape).background(Theme.background.copy(alpha = 0.55f))) {
             BackLink(onClick = onBack)
         }
+        // 19 Oct review: Help on the stop too, where people are when they're out
+        Box(Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 4.dp)
+            .clip(RoundedCornerShape(50)).background(Theme.background.copy(alpha = 0.55f))
+            .clickable(role = Role.Button) { helping = true }.heightIn(min = 48.dp).padding(horizontal = 18.dp),
+            contentAlignment = Alignment.Center) {
+            Text("Help", style = Theme.body)
+        }
     }
+    if (helping) SafetyView(model) { helping = false }
     if (confirmSwap) {
         ConfirmDialog("Swap ${stop.title} for something else?", "The other stops stay. This one won't come back in this plan.",
             "Swap it", "Keep it", onConfirm = {
@@ -1039,12 +1065,14 @@ fun RatingView(model: AppModel, stop: Stop, planId: Int? = null, onNext: (() -> 
                         if (model.lastRatingQueued) {   // journey audit: no signal; kept on the phone
                             Text("Saved on your phone. It'll send the next time you open ODYS with signal.", style = Theme.footnote,
                                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                        } else if (!stop.isGeneric) {   // m176: a generic Test B stop has no card to share
-                            PrimaryButton("Share this moment") { sharing = true }
                         }
-                        SecondaryButton(if (onNext == null) "Done" else "On to the next stop") {
+                        // 19 Oct review: moving on is the main thing mid-day; sharing is there, not pushed
+                        PrimaryButton(if (onNext == null) "Done" else "On to the next stop") {
                             onNext?.invoke()
                             onClose()
+                        }
+                        if (!model.lastRatingQueued && !stop.isGeneric) {   // m176: a generic Test B stop has no card
+                            SecondaryButton("Share this moment", icon = Icons.Filled.Share) { sharing = true }
                         }
                     }
                 } else {
@@ -1127,12 +1155,12 @@ fun ReminderAsk(model: AppModel) {
         .border(1.dp, Theme.outline, RoundedCornerShape(18.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Icons.Outlined.Notifications, null, tint = Theme.accent, modifier = Modifier.padding(top = 3.dp).size(20.dp))
-            Text("A nudge to rate each stop after you leave?", style = Theme.title3)
+            Text("Remind me to rate each stop?", style = Theme.title3)
         }
-        Text("One tap each, on the day. Your ratings are what make the next plan better. Set on your phone; nothing else is sent.",
+        Text("One reminder after each stop, set on this phone only. Your ratings are what make the next plan better.",
             style = Theme.subheadline.copy(color = Theme.muted))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            SecondaryButton("Yes, nudge me", Modifier.weight(1f)) {
+            SecondaryButton("Yes, remind me", Modifier.weight(1f)) {
                 val enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
                 if (Build.VERSION.SDK_INT >= 33 && !enabled) ask.launch(Manifest.permission.POST_NOTIFICATIONS)
                 else scope.launch { model.answerReminders(true, enabled) }

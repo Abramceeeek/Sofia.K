@@ -294,6 +294,12 @@ struct PairCompare: View {
         withAnimation(Motion.fade) { proxy.scrollTo("top", anchor: .top) }
     }
 
+    /// 19 Oct review: "Plan 1 fits me", the same statement (Test B's item) with the plan named in it.
+    static func fit(_ text: TestBText?, _ n: String) -> String {
+        let p = text?.fitPrompt ?? "This plan fits me"
+        return p.contains("This plan") ? p.replacingOccurrences(of: "This plan", with: "Plan \(n)") : "\(p): Plan \(n)"
+    }
+
     @ViewBuilder private func questions(_ text: TestBText?) -> some View {
         VStack(alignment: .leading, spacing: 24) {
             Rectangle().fill(Theme.hairline).frame(height: 1)
@@ -303,10 +309,10 @@ struct PairCompare: View {
                     Chip(title: "Plan 2", on: chosen == "2") { chosen = "2" }
                 }
             }
-            SurveyQuestion(text: "\(text?.fitPrompt ?? "This plan fits me"): Plan 1") {
+            SurveyQuestion(text: Self.fit(text, "1")) {
                 ScaleRow(low: "not at all", high: "completely", value: $fit1)
             }
-            SurveyQuestion(text: "\(text?.fitPrompt ?? "This plan fits me"): Plan 2") {
+            SurveyQuestion(text: Self.fit(text, "2")) {
                 ScaleRow(low: "not at all", high: "completely", value: $fit2)
             }
             SurveyQuestion(text: text?.whyPrompt ?? "Why? (optional)") {

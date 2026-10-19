@@ -26,10 +26,11 @@ import re
 import time
 from collections import deque
 from dataclasses import asdict, dataclass, field, replace
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import quote, urlencode
+from zoneinfo import ZoneInfo
 
 import yaml
 
@@ -376,11 +377,41 @@ def _rng(key: str) -> random.Random:
     return random.Random(int(hashlib.sha256(key.encode()).hexdigest()[:12], 16))
 
 
+# 19 Oct review: the made-up flights are made up, but their clocks must still be right (Tashkent 20:00 + 6h 50m lands
+# at 21:50 in London, not 02:50), because trip day 1 is planned from the arrival time. One zone per country, plus the
+# airports in countries with more than one.
+_COUNTRY_TZ = {
+    "AE": "Asia/Dubai", "AT": "Europe/Vienna", "AU": "Australia/Sydney", "AZ": "Asia/Baku", "BE": "Europe/Brussels",
+    "BG": "Europe/Sofia", "BR": "America/Sao_Paulo", "CA": "America/Toronto", "CH": "Europe/Zurich",
+    "CN": "Asia/Shanghai", "CZ": "Europe/Prague", "DE": "Europe/Berlin", "DK": "Europe/Copenhagen",
+    "EG": "Africa/Cairo", "ES": "Europe/Madrid", "FI": "Europe/Helsinki", "FR": "Europe/Paris", "GB": "Europe/London",
+    "GE": "Asia/Tbilisi", "GR": "Europe/Athens", "HK": "Asia/Hong_Kong", "HU": "Europe/Budapest",
+    "IE": "Europe/Dublin", "IN": "Asia/Kolkata", "IS": "Atlantic/Reykjavik", "IT": "Europe/Rome",
+    "JE": "Europe/Jersey", "JP": "Asia/Tokyo", "KE": "Africa/Nairobi", "KG": "Asia/Bishkek", "KR": "Asia/Seoul",
+    "KZ": "Asia/Almaty", "MA": "Africa/Casablanca", "NG": "Africa/Lagos", "NL": "Europe/Amsterdam",
+    "NO": "Europe/Oslo", "PL": "Europe/Warsaw", "PT": "Europe/Lisbon", "QA": "Asia/Qatar", "RO": "Europe/Bucharest",
+    "SA": "Asia/Riyadh", "SE": "Europe/Stockholm", "SG": "Asia/Singapore", "TH": "Asia/Bangkok",
+    "TJ": "Asia/Dushanbe", "TR": "Europe/Istanbul", "US": "America/New_York", "UZ": "Asia/Tashkent",
+    "ZA": "Africa/Johannesburg"}
+_AIRPORT_TZ = {"ORD": "America/Chicago", "LAX": "America/Los_Angeles", "SFO": "America/Los_Angeles"}
+
+
+def airport_zone(code: str, airports: list[Airport]) -> ZoneInfo:
+    """The airport's time zone; London's for codes we don't know (the sample flights all touch London)."""
+    if code in _AIRPORT_TZ:
+        return ZoneInfo(_AIRPORT_TZ[code])
+    country = next((a.country for a in airports if a.code == code), "GB")
+    return ZoneInfo(_COUNTRY_TZ.get(country, "Europe/London"))
+
+
 def _sample_leg(r: random.Random, origin: str, dest: str, day: date, base: int, hubs: list[str],
-                depart_minute: int, stops: int, airline: tuple[str, str]) -> Leg:
+                depart_minute: int, stops: int, airline: tuple[str, str],
+                airports: list[Airport] | None = None) -> Leg:
     dur = int(base * (1 + 0.04 * r.random()) + stops * r.randint(70, 220))
     dep = datetime.combine(day, datetime.min.time()) + timedelta(minutes=depart_minute)
-    arr = dep + timedelta(minutes=dur)       # sample times ignore time zones: they're made up
+    # each end on its own clock: the duration is real time, so add it in UTC
+    dep_zoned = dep.replace(tzinfo=airport_zone(origin, airports or []))
+    arr = (dep_zoned.astimezone(timezone.utc) + timedelta(minutes=dur)).astimezone(airport_zone(dest, airports or []))
     via = r.sample(hubs, k=min(stops, len(hubs)))
     numbers = [f"{airline[1]}{r.randint(100, 999)}" for _ in range(stops + 1)]
     return Leg(origin=origin, destination=dest, depart_at=dep.strftime("%Y-%m-%dT%H:%M"),
@@ -402,12 +433,12 @@ def sample_flights(q: FlightQuery, airports: list[Airport]) -> list[Flight]:
         direct_share = 0.75 if base < 200 else 0.35
         stops = 0 if r.random() < direct_share else (1 if r.random() < 0.8 else 2)
         out_dep = r.choice(range(6 * 60, 22 * 60, 5))
-        outbound = _sample_leg(r, q.origin, q.destination, q.depart, base, hubs, out_dep, stops, airline)
+        outbound = _sample_leg(r, q.origin, q.destination, q.depart, base, hubs, out_dep, stops, airline, airports)
         inbound = None
         if q.ret:
             in_stops = stops if r.random() < 0.7 else max(0, stops - 1)
             inbound = _sample_leg(r, q.destination, q.origin, q.ret, base, hubs, r.choice(range(6 * 60, 22 * 60, 5)),
-                                  in_stops, airline)
+                                  in_stops, airline, airports)
         per_person = (40 + base * 0.55) * (1.8 if q.ret else 1) * (0.75 + 0.6 * r.random()) * (1 - 0.12 * stops)
         cabin = {"premium_economy": 1.7, "business": 3.6, "first": 6.0}.get(q.cabin, 1.0)
         people = q.adults + 0.75 * len(q.children)
@@ -443,7 +474,7 @@ def sample_stays(q: StayQuery) -> list[Stay]:
         breakfast = kind == "Hotel" and r.random() < 0.4
         out.append(Stay(id=f"sample-{i}", name=f"Sample {kind.lower()} {chr(65 + i % 26)}, {area}", kind=kind.lower(),
                         stars=stars, rating=round(min(9.8, 6.0 + 3.6 * quality * (0.7 + 0.5 * r.random())), 1),
-                        reviews=r.randint(12, 2400), address=f"{area}, London", lat=lat + r.uniform(-0.004, 0.004),
+                        reviews=None, address=f"{area}, London", lat=lat + r.uniform(-0.004, 0.004),
                         lon=lon + r.uniform(-0.006, 0.006), photo=None,
                         price_total=round(night * q.nights * max(1, q.rooms) * (1.1 if breakfast else 1), 2),
                         currency="GBP", nights=q.nights, room="Double room" if q.adults <= 2 else "Family room",

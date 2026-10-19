@@ -2,8 +2,15 @@
  "id": 1,
  "kind": "personal",
  "label": null,
- "date": "2026-10-31",
- "intent": {},
+ "date": "2026-10-24",
+ "intent": {
+  "weather": {
+   "temp_c": 14.0,
+   "rain_prob": 0.21,
+   "source": "daily",
+   "line": "Outlook: up to 14°C, 20% chance of rain (Met Office; it may change)"
+  }
+ },
  "stops": [
   {
    "moment_id": "lunch@m_waterloo_bridge_sunset",
@@ -29,6 +36,9 @@
    "feel_word": "Lunch",
    "reveal": false,
    "approach_steps": [],
+   "book_ahead": "",
+   "checked": "",
+   "hours": "",
    "best_light": "",
    "best_window": "",
    "pin": {
@@ -51,7 +61,7 @@
    "depart": "14:23",
    "travel_min": 26,
    "travel_mode": "transit",
-   "travel_text": "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
+   "travel_text": "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
    "approach": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
    "what": "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
    "queue_min": 0,
@@ -63,7 +73,7 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 32,
+   "worth_gbp": 25,
    "feel_word": "Big views",
    "reveal": true,
    "approach_steps": [
@@ -80,8 +90,11 @@
      "text": "The Garden at 120, Fen Court, 120 Fenchurch Street"
     }
    ],
+   "book_ahead": "",
+   "checked": "2026-09-27",
+   "hours": "Until 31 Mar: daily 10:00–18:30, weekends to 17:00; closed bank holidays. Free, no booking",
    "best_light": "At dusk, when the towers light up",
-   "best_window": "16:12–17:12",
+   "best_window": "17:26–18:26",
    "pin": {
     "lat": 51.5121,
     "lon": -0.0815
@@ -108,7 +121,7 @@
     }
    ],
    "lines": [
-    "Getting there: about 26 min: walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
+    "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
     "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
     "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
     "Cost: free"
@@ -144,6 +157,8 @@
      "company": null,
      "crowd_window": null,
      "opening_hours": "Winter (1 Oct-31 Mar): daily 10:00-18:30, weekends to 17:00; summer to 21:00; closed bank holidays. Free, no booking (groups of 12+ book). No alcohol. Checked 2026-09-27 via search",
+     "book_ahead": null,
+     "hours": "Until 31 Mar: daily 10:00–18:30, weekends to 17:00; closed bank holidays. Free, no booking",
      "days": [],
      "best_window": [
       "16:00-17:00"
@@ -188,12 +203,12 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 28,
+   "worth_gbp": 21,
    "feel_word": "Calm",
    "reveal": true,
    "approach_steps": [
     {
-     "label": "From",
+     "label": "Nearest station",
      "text": "Monument or Tower Hill station"
     },
     {
@@ -205,6 +220,9 @@
      "text": "St Dunstan-in-the-East"
     }
    ],
+   "book_ahead": "",
+   "checked": "2026-09-27",
+   "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
    "best_light": "Daylight",
    "best_window": "",
    "pin": {
@@ -269,6 +287,8 @@
      "company": null,
      "crowd_window": "Weekday lunchtimes bring office workers (GUESS)",
      "opening_hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27",
+     "book_ahead": null,
+     "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
      "days": [],
      "best_window": [],
      "best_around_sunset": null
@@ -296,7 +316,7 @@
    "depart": "17:00",
    "travel_min": 41,
    "travel_mode": "transit",
-   "travel_text": "Getting there: about 41 min: walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
+   "travel_text": "Getting there: about 41 min. Walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
    "approach": "Walk into the park and up the steep hill to the statue beside the Royal Observatory: about 15-20 min, the last part uphill.",
    "what": "At the top, all of London opens up across the river: Canary Wharf, the Shard and St Paul's.",
    "queue_min": 0,
@@ -308,7 +328,7 @@
    "lunch": false,
    "familiar": true,
    "rateable": true,
-   "worth_gbp": 27,
+   "worth_gbp": 20,
    "feel_word": "Awe",
    "reveal": true,
    "approach_steps": [
@@ -325,8 +345,11 @@
      "text": "General Wolfe statue, Greenwich Park (by the Royal Observatory)"
     }
    ],
+   "book_ahead": "",
+   "checked": "2026-09-27",
+   "hours": "Park gates from 06:00; they close from about 18:00 in winter. Free",
    "best_light": "Late afternoon on a clear day",
-   "best_window": "14:37–16:52",
+   "best_window": "15:51–18:06",
    "pin": {
     "lat": 51.481675,
     "lon": -0.010802
@@ -352,7 +375,7 @@
     }
    ],
    "lines": [
-    "Getting there: about 41 min: walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
+    "Getting there: about 41 min. Walk to Monument or Tower Hill station, then take the Tube or bus to Cutty Sark DLR station.",
     "Walk into the park and up the steep hill to the statue beside the Royal Observatory: about 15-20 min, the last part uphill.",
     "At the top, all of London opens up across the river: Canary Wharf, the Shard and St Paul's.",
     "Best: Late afternoon on a clear day",
@@ -390,6 +413,8 @@
      "company": null,
      "crowd_window": null,
      "opening_hours": "Pedestrian gates 06:00-20:00 (Royal Parks, read 2026-09-27); as early as 18:00 in winter (RMG). Free",
+     "book_ahead": null,
+     "hours": "Park gates from 06:00; they close from about 18:00 in winter. Free",
      "days": [],
      "best_window": [
       "14:30-17:00"
@@ -415,11 +440,11 @@
    ]
   }
  ],
- "value": 3.126,
+ "value": 2.588,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-10-07T19:20:18.604993+00:00",
- "title": "Saturday 31 October",
+ "created_at": "2026-10-19T23:21:05.265212+00:00",
+ "title": "Saturday 24 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
   "Costs: about £15 for food and entry, plus about £6 transport"
@@ -444,9 +469,9 @@
   "kinds": 0
  },
  "weather": {
-  "temp_c": 12.0,
-  "rain_prob": 0.2,
-  "source": "hourly",
-  "line": "Forecast: about 12°C, 20% chance of rain (Met Office)"
+  "temp_c": 14.0,
+  "rain_prob": 0.21,
+  "source": "daily",
+  "line": "Outlook: up to 14°C, 20% chance of rain (Met Office; it may change)"
  }
 }

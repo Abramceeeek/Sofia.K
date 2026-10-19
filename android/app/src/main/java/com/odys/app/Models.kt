@@ -259,10 +259,11 @@ data class Stop(
 ) {
     val id: String get() = "$momentId@$arrive"
 
-    /** D118: the worth and the price side by side ("Worth about £32 to you · Free entry"). */
+    /** 19 Oct review: the price first, then the worth, plainly a guess, so neither reads as the other (D88's figure). */
     val worthLine: String?
         get() = worthGbp?.let {
-            "Worth about ${Money.text(it)} to you · " + if (costGbp == 0.0) "Free entry" else "Costs ${Money.text(costGbp)}"
+            (if (costGbp == 0.0) "Free entry." else "Costs ${Money.text(costGbp)}.") +
+                " We guess it's worth about ${Money.text(it)} to you."
         }
 
     /** The word for this stop on "How the day moves". */

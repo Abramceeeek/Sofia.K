@@ -1065,7 +1065,7 @@ struct DaysStep: View {
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
-            Text("Lunch comes on top, when a day runs through midday. A short day holds fewer places.")
+            Text("Plus lunch, when a day runs through midday. A short day holds fewer places.")
                 .font(.footnote)
                 .foregroundStyle(Theme.muted)
                 .padding(.horizontal, 4)
@@ -1607,7 +1607,7 @@ struct TripDayView: View {
                                 if model.testBPlanAtRisk { confirm = true } else { use(trip, day) }
                             }
                             .confirmReplacingTestBPlan($confirm) { use(trip, day) }
-                            Text("Your day gets \"Now\", a nudge to rate each stop, and swapping a stop.")
+                            Text("Your day gets \"Now\", a reminder to rate each stop, and swapping a stop.")
                                 .font(.footnote)
                                 .foregroundStyle(Theme.muted)
                             // Abram's comment (8 Oct): plans change; the day is planned again around them
@@ -1702,7 +1702,7 @@ struct ChangeDaySheet: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Places").font(.footnote).foregroundStyle(Theme.muted)
-                            Text("\(places) place\(places == 1 ? "" : "s"), lunch on top").foregroundStyle(Theme.ink)
+                            Text("\(places) place\(places == 1 ? "" : "s"), plus lunch").foregroundStyle(Theme.ink)
                         }
                         Spacer()
                         RoundIcon(name: "minus", disabled: places <= 1) { places -= 1 }
@@ -1879,6 +1879,7 @@ struct YouView: View {
                             Text("Talk to a person").font(.headline).foregroundStyle(Theme.ink)
                             Spacer()
                             if model.unreadSafety { Circle().fill(Theme.danger).frame(width: 9, height: 9) }
+                            Image(systemName: "chevron.right").foregroundStyle(Theme.muted)   // 19 Oct: it opens
                         }
                         Text("Something wrong with a stop, a booking or how you feel? A real person replies here, within a few hours.")
                             .font(.subheadline)
@@ -1890,7 +1891,7 @@ struct YouView: View {
                 }
                 .buttonStyle(PressStyle())
                 VStack(alignment: .leading, spacing: 2) {
-                    SectionLabel(text: "What I've learned about you").padding(.bottom, 6)
+                    SectionLabel(text: "What you've told us").padding(.bottom, 6)
                     let items = model.learned?.items ?? []
                     if items.isEmpty {
                         Text("Nothing yet. It comes from your answers and your ratings.")

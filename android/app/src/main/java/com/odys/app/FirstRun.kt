@@ -56,6 +56,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -315,11 +318,15 @@ fun ConsentView(model: AppModel) {
         }
         Column(Modifier.surfaceCard(padding = 18.dp)) {
             Text("To take part, please confirm both", style = Theme.headline, modifier = Modifier.padding(bottom = 6.dp))
-            ToggleRow("I'm 18 or over", adult) { adult = it }
+            // 19 Oct review: agreeing is a tick, not a setting to switch
+            CheckRow("I'm 18 or over", adult) { adult = it }
             Box(Modifier.fillMaxWidth().height(1.dp).background(Theme.hairline))
-            ToggleRow("I agree to take part", agree) { agree = it }
+            CheckRow("I agree to take part", agree) { agree = it }
         }
         PrimaryButton(if (model.busy) "One moment…" else "Continue", enabled = adult && agree && !model.busy) { model.agree() }
+        if (!(adult && agree)) {
+            Text("Tick both to continue.", style = Theme.footnote, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        }
         QuietButton(if (code.isEmpty()) "Got a tester code?" else "Tester code: $code") { askCode = true }
     }
     if (askCode) {
@@ -330,14 +337,29 @@ fun ConsentView(model: AppModel) {
     }
 }
 
-/** A labelled switch, 44 dp or taller, amber when on. */
+/** A labelled switch, 48 dp or taller, amber when on. */
 @Composable
 fun ToggleRow(label: String, on: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = enabled) { onChange(!on) },
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = enabled, role = Role.Switch) { onChange(!on) },
         verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = Theme.body, modifier = Modifier.weight(1f))
-        Switch(on, onChange, enabled = enabled, colors = SwitchDefaults.colors(checkedTrackColor = Theme.accent,
-            checkedThumbColor = Theme.onAccent, uncheckedTrackColor = Theme.surfaceHigh, uncheckedThumbColor = Theme.muted,
-            uncheckedBorderColor = Theme.outlineStrong))
+        Switch(on, onChange, enabled = enabled, colors = odysSwitchColors())
+    }
+}
+
+/** 19 Oct review: one look for every switch; off, the thumb is light on a dark track with a border, so it shows. */
+@Composable
+fun odysSwitchColors() = SwitchDefaults.colors(checkedTrackColor = Theme.accent, checkedThumbColor = Theme.onAccent,
+    uncheckedTrackColor = Theme.surfaceHigh, uncheckedThumbColor = Theme.inkSoft, uncheckedBorderColor = Theme.inkTertiary)
+
+/** A line to tick (19 Oct review: consent is agreed to, not switched on). */
+@Composable
+fun CheckRow(label: String, on: Boolean, onChange: (Boolean) -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(on, role = Role.Checkbox, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        androidx.compose.material3.Checkbox(on, onCheckedChange = null,
+            colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = Theme.accent,
+                uncheckedColor = Theme.inkSoft, checkmarkColor = Theme.onAccent))
+        Text(label, style = Theme.body, modifier = Modifier.weight(1f))
     }
 }

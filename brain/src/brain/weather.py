@@ -60,12 +60,19 @@ class Outlook:
 
     @property
     def line(self) -> str:
+        """19 Oct review: beyond 48 h it is the day's outlook (the day's top temperature), not the plan's hours, and it
+        can still change, so it says so."""
+        daily = self.source == "daily"
         parts = []
         if self.temp_c is not None:
-            parts.append(f"about {round(self.temp_c)}°C")
+            parts.append(f"{'up to' if daily else 'about'} {round(self.temp_c)}°C")
         if self.rain_prob is not None:
             parts.append(f"{int(round(self.rain_prob * 100, -1))}% chance of rain")
-        return "Forecast: " + ", ".join(parts) + " (Met Office)" if parts else ""
+        if not parts:
+            return ""
+        if daily:
+            return "Outlook: " + ", ".join(parts) + " (Met Office; it may change)"
+        return "Forecast: " + ", ".join(parts) + " (Met Office)"
 
     def out(self) -> dict[str, Any]:
         return {"temp_c": None if self.temp_c is None else round(self.temp_c, 1),

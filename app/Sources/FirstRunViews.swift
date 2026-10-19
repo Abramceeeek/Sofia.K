@@ -323,16 +323,22 @@ struct ConsentView: View {
                         .font(.headline)
                         .foregroundStyle(Theme.ink)
                         .padding(.bottom, 6)
-                    Toggle("I'm 18 or over", isOn: $adult).frame(minHeight: 44)
+                    // 19 Oct review: agreeing is a tick, not a setting to switch
+                    CheckRow(label: "I'm 18 or over", isOn: $adult)
                     Rectangle().fill(Theme.hairline).frame(height: 1)
-                    Toggle("I agree to take part", isOn: $agree).frame(minHeight: 44)
+                    CheckRow(label: "I agree to take part", isOn: $agree)
                 }
-                .tint(Theme.accent)
                 .foregroundStyle(Theme.ink)
                 .padding(18)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
                 PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: !(adult && agree) || model.busy) {
                     Task { await model.agree() }
+                }
+                if !(adult && agree) {
+                    Text("Tick both to continue.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
+                        .frame(maxWidth: .infinity)
                 }
                 QuietButton(code.isEmpty ? "Got a tester code?" : "Tester code: \(code)") { askCode = true }
             }
