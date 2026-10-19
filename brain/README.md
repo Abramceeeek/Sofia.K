@@ -157,21 +157,16 @@ A contact is deleted when you mark the message resolved, and at the latest after
 | TfL journey times | `TFL_APP_KEY` (`TFL_API_KEY`, `TFL_KEY`, `TFL_PRIMARY_KEY`) | `"travel": "tfl"` (or `"tfl 2070/2077"`: TfL found no journey for a few pairs, which keep the estimate); `"tfl_filling 120/2077"` while the table fills (10 to 15 minutes after the first deploy, at 200 calls a minute; later deploys only refresh what's over 14 days old); `"tfl_error"` = found, but TfL refused the first 20 calls; `"estimate"` = not found |
 | Met Office forecast | `MET_OFFICE_API_KEY` (`MET_OFFICE_KEY`, `METOFFICE_API_KEY`, `MET_API_KEY`, `MET_OFFICE_DATAHUB_KEY`) | `"weather": "met_office"`; `"met_office_error"` = found, but the last call failed; `"off"` = not found |
 | Error alerts (optional) | `BRAIN_OPS_WEBHOOK_URL` | — (unset: errors go to `BRAIN_ALERT_WEBHOOK_URL`, marked "not a safety alert") |
-| Nightly backup | `BRAIN_BACKUP_PUBLIC_KEY`, `BRAIN_BACKUP_TOKEN` | — |
+| Nightly backup | none needed (the public key is in the repo; the job proves itself by OIDC). `BRAIN_BACKUP_PUBLIC_KEY` overrides | — |
 
 **Uptime and backups** run in GitHub Actions (`.github/workflows/ops.yml`), **once the workflow is on `main`**: GitHub runs schedules only on the default branch (m182). Then: a `GET /v1/health` every 6 hours, and at 02:23 UTC the sealed backup, kept as a workflow artifact for 30 days. If the Brain doesn't answer, the run fails and GitHub emails whoever added the workflow; with the `BRAIN_OPS_WEBHOOK_URL` GitHub secret, a message also goes there. Run either now from GitHub → Actions → ops → Run workflow.
 
-**Setting up the backup (Abram, ~15 min, once):**
+**The backup, set up by Claude (19 Oct, at Abram's request):**
 
-```bash
-cd brain && pip install cryptography
-python -m brain.backup keygen            # writes odys-backup-private.key; prints a public key and a token
-```
-
-1. Put the private key in your password manager as well. Without it no backup can be opened; never put it in Git, a chat or Render.
-2. In Render, add `BRAIN_BACKUP_PUBLIC_KEY` (the public key) and `BRAIN_BACKUP_TOKEN` (the token).
-3. In GitHub → Settings → Secrets and variables → Actions, add `BRAIN_BACKUP_TOKEN` (the same token).
-4. Run the ops workflow with "backup" once: the run should keep a file named `odys-brain-YYYYMMDD.odysbk`.
+- The public key is `brain/data/backup_public_key.txt` (safe to share: it can only lock). `BRAIN_BACKUP_PUBLIC_KEY` in Render, if ever set, wins.
+- The private key was handed to Abram once, as the file `odys-backup-private.key`. Keep it in a password manager. Without it, no backup can be opened; it is never in Git, a chat log of its own, or Render.
+- The nightly job needs no secret: it proves itself with GitHub's signed identity token (OIDC, `brain/src/brain/ghoidc.py`), and the Brain lets in only `ops.yml` on `main` of this repository. At most 6 backups an hour.
+- If the private key is ever lost: run `python -m brain.backup keygen`, replace `backup_public_key.txt` with the new public key and push. New backups use the new key; old ones can't be opened.
 
 **Opening and restoring one:** download the artifact from the run, then `python -m brain.backup open odys-brain-20261020.odysbk --key odys-backup-private.key > backup.json`. To restore into a new, empty database: `python -m brain.backup restore backup.json --database-url postgresql://…`. The cards and TfL's times rebuild themselves at start. Contacts left with a safety message are never in a backup (D118).
 

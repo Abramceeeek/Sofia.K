@@ -62,7 +62,7 @@ From CLAUDE.md and `validation/recruit-now.md`. Each is Abram's unless marked.
 | 4 | **Apple check:** outside-activities policy and the IP clause (D60, D94) | Open since 28 Sep | ~30 min |
 | 5 | **ICO fee re-check** before strangers; pay £52 if required (D108) | Re-check due | ~10 min |
 | 6 | Privacy notice reviewed (`/privacy`; updated 19 Oct for backups, logs, TfL and the Met Office) | Draft | ~15 min |
-| 7 | Backup set up and one backup opened on your computer (`brain/README.md`, Stage 1) | Not done | ~15 min |
+| 7 | Backups: set up by Claude (19 Oct, m184). Save the private key file in a password manager; the first nightly run needs GitHub Actions working again (billing) | Key handed over; runs blocked by Actions billing | ~2 min |
 | 8 | `/v1/health` shows `"travel": "tfl"` and `"weather": "met_office"` after the deploy (Claude checks) | Claude, after the deploy | — |
 | 9 | Live flight and hotel keys (Duffel live, LiteAPI production), or keep the labelled test results for the friends' round | Optional for friends | ~1.5 h (accounts, card) |
 

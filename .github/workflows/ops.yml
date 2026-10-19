@@ -6,10 +6,12 @@
 #   wake), the job fails: GitHub emails whoever added this workflow (docs.github.com, "Notifications for workflow
 #   runs", read 19 Oct 2026), and, if the BRAIN_OPS_WEBHOOK_URL secret is set, a message goes there too. A provider
 #   that is set but failing (the Met Office, TfL) shows as a warning on the run, not a failure.
-# - Backup: GET /v1/admin/backup each night with the BRAIN_BACKUP_TOKEN secret. The Brain seals it to Abram's public
-#   key before it leaves (brain/src/brain/backup.py), so GitHub only ever holds ciphertext. Kept as
-#   a workflow artifact for 30 days. Without the secret, the job says so and stops.
-# Secrets are read from GitHub Secrets only; none is ever printed.
+# - Backup: GET /v1/admin/backup each night. The job proves who it is with GitHub's own signed identity token (OIDC,
+#   `id-token: write`), which the Brain checks: this repository, this workflow, on main (brain/src/brain/ghoidc.py).
+#   So no secret is needed anywhere. The Brain seals the backup to Abram's public key before it leaves
+#   (brain/src/brain/backup.py; the public key is brain/data/backup_public_key.txt), so GitHub only ever holds
+#   ciphertext. Kept as a workflow artifact for 30 days.
+# Secrets (only the optional BRAIN_OPS_WEBHOOK_URL) are read from GitHub Secrets; none is ever printed.
 name: ops
 
 on:
@@ -79,16 +81,16 @@ jobs:
     if: (github.event_name == 'schedule' && github.event.schedule == '23 2 * * *') || (github.event_name == 'workflow_dispatch' && inputs.job == 'backup')
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    permissions:
+      contents: read
+      id-token: write       # GitHub's signed identity for this job, checked by the Brain
     steps:
       - name: Fetch tonight's sealed backup
         id: fetch
-        env:
-          TOKEN: ${{ secrets.BRAIN_BACKUP_TOKEN }}
         run: |
-          if [ -z "$TOKEN" ]; then
-            echo "::notice::No BRAIN_BACKUP_TOKEN secret yet, so no backup was made (brain/README.md, Backups)."
-            exit 0
-          fi
+          TOKEN=$(curl -sS --max-time 30 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                  "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=odys-brain-backup" | python3 -c "import json,sys; print(json.load(sys.stdin)['value'])")
+          echo "::add-mask::$TOKEN"
           mkdir -p out
           f="out/odys-brain-$(date -u +%Y%m%d).odysbk"
           code=$(curl -sS --max-time 150 --retry 1 --retry-delay 20 -H "Authorization: Bearer $TOKEN" \

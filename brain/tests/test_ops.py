@@ -160,3 +160,70 @@ def test_keys_saved_under_other_names_are_found(monkeypatch):
     assert s.met_office_key == "abc" and s.tfl_app_key == "xyz"
     monkeypatch.setenv("MET_OFFICE_API_KEY", "exact")          # an exact name wins
     assert get_settings().met_office_key == "exact"
+
+
+# ---- the nightly job's identity (GitHub OIDC) -----------------------------------------------------------------
+
+def _oidc_pair():
+    import base64 as b64
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    k = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    n = k.public_key().public_numbers()
+    enc = lambda i: b64.urlsafe_b64encode(i.to_bytes((i.bit_length() + 7) // 8, "big")).rstrip(b"=").decode()
+    return k, {"keys": [{"kty": "RSA", "alg": "RS256", "kid": "k1", "n": enc(n.n), "e": enc(n.e)}]}
+
+
+def _jwt(key, **claims):
+    import base64 as b64
+    import time as t
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from brain import ghoidc
+    body = {"iss": ghoidc.ISSUER, "aud": ghoidc.AUDIENCE, "exp": t.time() + 300, "nbf": t.time() - 5,
+            "repository": ghoidc.REPOSITORY, "ref": "refs/heads/main", "workflow_ref": ghoidc.WORKFLOW_REF, **claims}
+    part = lambda d: b64.urlsafe_b64encode(json.dumps(d).encode()).rstrip(b"=").decode()
+    msg = f"{part({'alg': 'RS256', 'kid': 'k1', 'typ': 'JWT'})}.{part(body)}"
+    sig = b64.urlsafe_b64encode(key.sign(msg.encode(), padding.PKCS1v15(), hashes.SHA256())).rstrip(b"=").decode()
+    return f"{msg}.{sig}"
+
+
+def test_only_our_ops_workflow_on_main_passes_the_identity_check():
+    from brain.ghoidc import GithubOIDC
+    key, jwks = _oidc_pair()
+    other, _ = _oidc_pair()
+    fetched = []
+    o = GithubOIDC(fetch=lambda url: (fetched.append(url), jwks)[1])
+    assert o.verify(_jwt(key))["repository"] == "Abramceeeek/Sofia.K"
+    assert o.verify(_jwt(other)) is None                                       # signed by someone else
+    assert o.verify(_jwt(key, repository="someone/else")) is None
+    assert o.verify(_jwt(key, ref="refs/heads/feature")) is None
+    assert o.verify(_jwt(key, workflow_ref="Abramceeeek/Sofia.K/.github/workflows/android.yml@refs/heads/main")) is None
+    assert o.verify(_jwt(key, aud="https://github.com/Abramceeeek")) is None    # GitHub's default audience
+    assert o.verify(_jwt(key, exp=1)) is None                                   # expired
+    assert o.verify("not.a.token") is None and o.verify("x") is None
+    assert len(fetched) == 1                                                    # GitHub's keys are kept
+
+
+def test_the_backup_lets_the_workflow_in_and_caps_runs(client):
+    from brain.ghoidc import GithubOIDC
+    key, jwks = _oidc_pair()
+    public, private = backup.keygen()
+    client.app.state.oidc = GithubOIDC(fetch=lambda url: jwks)
+    client.app.state.settings = replace(client.app.state.settings, backup_key=public)
+    ok = {"Authorization": f"Bearer {_jwt(key)}"}
+    r = client.get("/v1/admin/backup", headers=ok)
+    assert r.status_code == 200 and json.loads(backup.unseal(r.content, private))["format"] == 1
+    assert client.get("/v1/admin/backup", headers={"Authorization": f"Bearer {_jwt(key, ref='refs/heads/x')}"}
+                      ).status_code == 403
+    codes = [client.get("/v1/admin/backup", headers=ok).status_code for _ in range(6)]
+    assert codes[:5] == [200] * 5 and codes[5] == 429                          # 6 an hour, overall
+
+
+def test_the_public_key_is_read_from_the_repository(monkeypatch, tmp_path):
+    from brain import config
+    monkeypatch.delenv("BRAIN_BACKUP_PUBLIC_KEY", raising=False)
+    (tmp_path / "backup_public_key.txt").write_text("cHVibGlj\n")
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    assert config.get_settings().backup_key == "cHVibGlj"
+    monkeypatch.setenv("BRAIN_BACKUP_PUBLIC_KEY", "fromrender")
+    assert config.get_settings().backup_key == "fromrender"

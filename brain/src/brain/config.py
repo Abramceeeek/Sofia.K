@@ -53,6 +53,14 @@ def _named_like(includes: tuple[str, ...], kinds: tuple[str, ...] = ("KEY", "API
     return None
 
 
+def _file(path: Path) -> str | None:
+    """A public value kept in the repository (the backup's public key: safe to share by design)."""
+    try:
+        return path.read_text(encoding="utf-8").strip() or None
+    except OSError:
+        return None
+
+
 def get_settings() -> Settings:
     return Settings(
         database_url=driver_url(os.environ.get("BRAIN_DATABASE_URL", "sqlite:///./brain.db")),
@@ -66,7 +74,7 @@ def get_settings() -> Settings:
         tfl_app_key=_first("TFL_APP_KEY", "TFL_API_KEY", "TFL_KEY", "TFL_PRIMARY_KEY") or _named_like(("TFL",)),
         met_office_key=_first("MET_OFFICE_API_KEY", "MET_OFFICE_KEY", "METOFFICE_API_KEY", "MET_API_KEY",
                               "MET_OFFICE_DATAHUB_KEY") or _named_like(("METOFFICE", "DATAHUB", "WEATHER")),
-        backup_key=_first("BRAIN_BACKUP_PUBLIC_KEY"),
+        backup_key=_first("BRAIN_BACKUP_PUBLIC_KEY") or _file(DATA_DIR / "backup_public_key.txt"),
         backup_token=_first("BRAIN_BACKUP_TOKEN"),
         ops_webhook_url=_first("BRAIN_OPS_WEBHOOK_URL"),
     )

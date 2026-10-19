@@ -67,8 +67,8 @@ services:
       # - TfL journey times: TFL_APP_KEY (also read: TFL_API_KEY, TFL_KEY, TFL_PRIMARY_KEY)
       # - Met Office forecast: MET_OFFICE_API_KEY (also read: MET_OFFICE_KEY, METOFFICE_API_KEY, MET_API_KEY,
       #   MET_OFFICE_DATAHUB_KEY)
-      # - Nightly backup: BRAIN_BACKUP_PUBLIC_KEY and BRAIN_BACKUP_TOKEN, both printed by
-      #   `python -m brain.backup keygen` on Abram's computer; the token also goes into GitHub Secrets
+      # - Nightly backup: nothing to add. The public key is brain/data/backup_public_key.txt and the GitHub job
+      #   proves itself with OIDC (brain/README.md, Stage 1)
       # - Error alerts (optional): BRAIN_OPS_WEBHOOK_URL; unset, they go to BRAIN_ALERT_WEBHOOK_URL, marked
       #   "not a safety alert"
 

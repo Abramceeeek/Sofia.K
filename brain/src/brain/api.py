@@ -37,6 +37,7 @@ from .scoring import conjoint_observation, named_weights, rating_observation, sw
 from .sun import sunset
 from .travel import LondonEstimate
 from .tfl import TflTravel, TravelStore, next_weekday_1pm
+from .ghoidc import GithubOIDC
 from .weather import Forecast
 
 # D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
@@ -139,6 +140,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan)
     app.state.settings = settings
+    app.state.oidc = GithubOIDC()   # Stage 1: lets the nightly backup job in without a shared secret (ghoidc.py)
     # Stage 1: the request log (no personal data), rate limits and error alerts (ops.py)
     ops.configure_logging()
     app.state.limiter = ops.Limiter()
@@ -1133,8 +1135,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         token (the nightly GitHub job's only key) or the admin token."""
         st = app.state.settings
         token = authorization.removeprefix("Bearer ").strip()
-        if not token or not any(t and secrets.compare_digest(token, t) for t in (st.backup_token, st.admin_token)):
-            raise HTTPException(403, "backup or admin token only")
+        if not token or not (any(t and secrets.compare_digest(token, t) for t in (st.backup_token, st.admin_token))
+                             or app.state.oidc.verify(token)):   # the ops workflow, by GitHub's signed identity
+            raise HTTPException(403, "backup or admin token, or the ops workflow, only")
+        if (wait := app.state.limiter.hit("backups-all", 6, 3600)) is not None:   # each one reads every table
+            return ops.too_many(wait)
         if not st.backup_key:
             raise HTTPException(503, "BRAIN_BACKUP_PUBLIC_KEY isn't set in Render")
         try:
