@@ -30,12 +30,14 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, CorrectionsIn, CuratedPlanIn, EventIn, FlightSearchIn, InstallIn,
+from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, EventIn, FlightSearchIn, InstallIn,
                       InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest, ProfileIn, RatingIn, SafetyIn,
                       SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
 from .travel import LondonEstimate
+from .tfl import TflTravel, TravelStore, next_weekday_1pm
+from .weather import Forecast
 
 # D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
 BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}
@@ -106,7 +108,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.categories = load_categories(settings.data_dir / "categories.yaml")   # visitors' cards (D116)
         asp = settings.data_dir / "aspiration.yaml"
         app.state.amap = load_aspiration(asp) if asp.exists() else None
-        app.state.travel = LondonEstimate()
+        app.state.estimate = LondonEstimate()     # the Test B pair keeps the estimate it was designed with (D105)
+        app.state.travel = app.state.estimate
+        app.state.forecast = Forecast(settings.met_office_key)   # Stage 1: the Met Office forecast (weather.py)
         codes = settings.data_dir / "tester_codes.yaml"
         with open(codes if codes.exists() else DATA_DIR / "tester_codes.yaml", encoding="utf-8") as f:
             app.state.tester_codes = (yaml.safe_load(f) or {}).get("codes") or {}   # Build 2
@@ -119,7 +123,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
             _reload_moments(s, settings)
             _purge_contacts(s)           # D118: safety contacts never outlive CONTACT_DAYS
+            cards = [m for m in moments_by_id(s).values() if m.plannable()]
+        if settings.tfl_app_key:         # Stage 1: TfL's journey times, the table filled in the background (tfl.py)
+            tr = TflTravel(settings.tfl_app_key, store=TravelStore(app.state.Session))
+            start = Point(lat=EXAMPLE_DAY["start"][0], lon=EXAMPLE_DAY["start"][1])
+            pairs = tr.pairs([(a.end(), b.start()) for a in cards for b in cards if a is not b]
+                             + [(start, b.start()) for b in cards])
+            tr.fill_in_background(pairs, next_weekday_1pm(datetime.now(ZoneInfo("Europe/London")).date()))
+            app.state.travel = tr
         yield
+        if isinstance(app.state.travel, TflTravel):
+            app.state.travel.stop()
         engine.dispose()
 
     app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan)
@@ -222,8 +236,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # D120: which flight and stay source is live ("sample", "duffel_test", "liteapi_sandbox"…), so a key put into
         # Render can be checked without anyone seeing it
         ts = app.state.trips
+        tr = app.state.travel
         return {"ok": True, "population_version": app.state.pop.version,
-                "flights": ts.flight_source, "stays": ts.stay_source}
+                "flights": ts.flight_source, "stays": ts.stay_source,
+                # Stage 1: whether the TfL and Met Office keys were found and work (never the keys)
+                "travel": tr.status if isinstance(tr, TflTravel) else "estimate",
+                "weather": app.state.forecast.status}
 
     @app.get("/privacy", response_class=HTMLResponse)
     def privacy():
@@ -432,9 +450,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                      must_do: str | None = None, familiar: bool = True, keep: list[str] = (), exclude: list[str] = (),
                      blind: bool = False, end_window: tuple[int, int] | None = None,
                      post: DeltaPosterior | None = None, feelings: list[str] | None = None,
-                     fallback: bool = True) -> tuple[dayplan.DayPlan, list[dict], dict]:
+                     fallback: bool = True, travel=None) -> tuple[dayplan.DayPlan, list[dict], dict]:
         """The person's plan as the app shows it: (the solver's plan, the app's stops, the plan's header fields).
-        Used by "plan a day" and by the Test B pair (Build 2)."""
+        Used by "plan a day" and by the Test B pair (Build 2). `travel`: the times to plan with (a TfL day view, or
+        the estimate for the Test B pair); by default the app's."""
+        travel = travel or app.state.travel
         by_id = {m.id: m for m in ready}
         cards_at = app.state.swipe_cards
         fixed = corrected(user)   # D117: answers marked "not right" on "So far" don't count
@@ -446,17 +466,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         def run(keep: set[str], exclude: set[str]):
             return dayplan.personal_plan(
-                p, post, ready, brief, app.state.travel, must_do=must_do, amap=app.state.amap,
+                p, post, ready, brief, travel, must_do=must_do, amap=app.state.amap,
                 fields=person_fields(user), end_window=end_window, loved=loved, disliked=disliked, familiar=familiar,
                 keep=keep, exclude=exclude,
                 popularity=app.state.popularity.shares if app.state.popularity else None)
 
         failed = lambda pl: pl.status != "ok" or not pl.stops
-        plan, stops, _, notes = run(set(keep), set(exclude))
-        if keep and failed(plan):      # a swap that can't keep the rest: replan the day without the old stop
-            plan, stops, _, notes = run(set(), set(exclude))
-        if exclude and fallback and failed(plan):   # "Regenerate" with nothing new left (D112): the best day again
-            plan, stops, _, notes = run(set(), set())
+
+        def solve():
+            plan, stops, _, notes = run(set(keep), set(exclude))
+            if keep and failed(plan):      # a swap that can't keep the rest: replan the day without the old stop
+                plan, stops, _, notes = run(set(), set(exclude))
+            if exclude and fallback and failed(plan):   # "Regenerate" with nothing new left (D112): the best day again
+                plan, stops, _, notes = run(set(), set())
+            return plan, stops, notes
+
+        plan, stops, notes = solve()
+        # Stage 1: the chosen Tube and bus legs, asked of TfL for that day; if one is well off, plan once more
+        if hasattr(travel, "check") and travel.check():
+            plan, stops, notes = solve()
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
@@ -485,7 +513,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
-                "totals": dayplan.plan_totals(stops, app.state.travel), "pace": notes.pace,
+                "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
                 "solver_status": plan.status, "blind": blind,
                 "feel_line": None if blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
                 "basis": None if blind else reasons.basis(
@@ -502,12 +530,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         budget = body.budget_gbp if body.budget_gbp is not None else \
             BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
         c = body.conditions
+        # Stage 1: without conditions from the app, the Met Office forecast for the plan's hours (weather.py)
+        outlook = app.state.forecast.for_window(day, body.start_time, body.end_time) if day and c is None else None
         brief = dayplan.Brief(
             start_name=body.start_name, start=body.start, start_time=body.start_time, end_time=body.end_time,
             stops=body.stops, budget_gbp=budget,
             day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
             weekday=day.strftime("%a").lower() if day else None,
-            temp_c=c.temp_c if c else None, rain_prob=c.rain_prob if c else None,
+            temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
+            rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
             time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
@@ -517,10 +548,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             mine = set((user.profile or {}).get("why_travel", []))
             post = update_person(p, observations(s, user, p) + [
                 o for f in feelings if f not in mine if (o := reasons.feeling_observation(p, f))])
+        tr = app.state.travel
+        view = tr.for_day(day, body.start_time) if isinstance(tr, TflTravel) else tr
         plan, out, head = personal_day(s, user, p, brief, ready, must_do=must_do, familiar=body.familiar,
                                        keep=body.keep, exclude=body.exclude, blind=body.blind, post=post,
-                                       feelings=feelings or None)
+                                       feelings=feelings or None, travel=view)
         intent = {**body.intent, **({"swapped_out": body.exclude} if body.exclude else {})}
+        if outlook:   # kept with the plan, so the results can tell weather-shaped plans apart
+            intent["weather"] = outlook.out()
+            head["weather"] = outlook.out()
         row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
         s.add(row)
         s.commit()
@@ -641,11 +677,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         gen = testb.generic_stops(folder / "generic.yaml", {m.id: m for m in ready}, dayplan._sunset(brief))
         gen_end = testb.plan_end(gen)
         window = (gen_end - 30, gen_end + 30) if gen_end is not None else None
-        plan, mine, head = personal_day(s, user, p, brief, ready, familiar=False, end_window=window)
+        plan, mine, head = personal_day(s, user, p, brief, ready, familiar=False, end_window=window,
+                                        travel=app.state.estimate)   # Test B as designed: no TfL, no forecast
         generic = [dayplan.generic_app_stop(i, st) for i, st in enumerate(gen)]
         views = {"personal": head,
                  "generic": {"title": brief.day_label, "summary": dayplan.summary_lines(brief, gen),
-                             "totals": dayplan.plan_totals(generic, app.state.travel), "blind": False,
+                             "totals": dayplan.plan_totals(generic, app.state.estimate), "blind": False,
                              "feel_line": None, "basis": None}}
         personal_label = secrets.choice("12")
         trip = body.model_dump(exclude_none=True) if body else {}
@@ -700,6 +737,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if pl is None or pl.user_id != user.id or hidden(pl) or (generic and pl.kind != "generic"):
                 raise HTTPException(404, "no such plan")
         c = body.conditions
+        if c is None and (now := app.state.forecast.now()):   # Stage 1: the weather when they rated it
+            c = ConditionsIn(temp_c=now.temp_c, rain_prob=now.rain_prob)
         if body.plan_id is not None:   # one rating per stop of a plan: rating it again (after a restart) replaces it
             for old in [r for r in user.ratings if r.plan_id == body.plan_id and r.moment_id == moment_id]:
                 s.delete(old)
@@ -906,19 +945,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             for n in dict.fromkeys((part.stops, part.stops - 1)):
                 if n < 1:
                     continue
+                outlook = app.state.forecast.for_window(day, part.start_time, part.end_time)   # Stage 1
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
-                                      sunset=sunset(day), lunch=part.lunch)
+                                      sunset=sunset(day), lunch=part.lunch,
+                                      temp_c=outlook.temp_c if outlook else None,
+                                      rain_prob=outlook.rain_prob if outlook else None)
+                view = est.for_day(day, part.start_time) if isinstance(est, TflTravel) else est
                 pool = ready if part.toward is None else [   # D122: the place on the way really is on the way
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
                 plan, stops, head = personal_day(s, user, p, brief, pool, familiar=False, exclude=sorted(used),
-                                                 post=post, feelings=feelings or None, fallback=False)
+                                                 post=post, feelings=feelings or None, fallback=False, travel=view)
+                if outlook:
+                    head["weather"] = outlook.out()
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
                 used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
                 row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
-                              intent={"trip": True, "day": i, "part": tag, "feelings": feelings})
+                              intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
+                                      **({"weather": outlook.out()} if outlook else {})})
                 s.add(row)
                 s.flush()
                 return {**plan_out(row), **head}, stops

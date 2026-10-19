@@ -213,12 +213,17 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
 
 
 def leg_text(t: int | None, mode: str, came_from: str, exit_station: str | None, arrive_at: str | None,
-             first: bool) -> str:
-    """D102: a Tube or bus leg from a stop starts with the walk to a station, then names where you go."""
+             first: bool, route: str | None = None) -> str:
+    """D102: a Tube or bus leg from a stop starts with the walk to a station, then names where you go.
+    Stage 1 (TfL): with TfL's route, the real lines ("walk to Westminster Station, then Jubilee line to London
+    Bridge")."""
     if t is None or t <= 2:
         return ""
     if mode == "walk":
         return f"Getting there: about {t} min on foot from {came_from}."
+    if route:
+        return f"Getting there: about {t} min from {came_from}: {route}." if first else \
+            f"Getting there: about {t} min: {route}."
     dest = f" to {arrive_at}" if arrive_at else ""
     if first:
         return f"Getting there: about {t} min by Tube or bus from {came_from}{dest}."
@@ -345,12 +350,13 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     for st in plan.stops:
         c = by_cand[st.moment_id]
         mode = travel.mode(prev_point, c.start)
+        route = getattr(travel, "route", lambda a, b: None)(prev_point, c.start) if mode != "walk" else None
         if st.moment_id == "lunch@start":
             place = brief.start_name
             stop = {"title": f"Lunch near {place}", "approach": "",
                     "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
-                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, place, not stops)}
+                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, place, not stops, route)}
             nxt = (c.end, place, brief.start_name)
         elif st.moment_id.startswith("lunch@"):
             host = by_id[st.moment_id[len("lunch@"):]]
@@ -362,7 +368,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             stop = {"title": f"Lunch near {place}", "approach": "",
                     "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
-                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, host.approach.from_, not stops)}
+                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, host.approach.from_, not stops, route)}
             nxt = (c.end, place, host.exit_station())
         else:
             m = by_id[_base(st.moment_id)]
@@ -381,7 +387,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                     "best_windows": m.best_windows(_sunset(brief)), "queue": m.experience.queue_min or 0,
                     "moment_id": m.id, "predicted": round(u_hat[m.id], 3),
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
-                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops)}
+                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops, route)}
             nxt = (m.end(), m.leave_name(), m.exit_station())
         stop.update({"key": st.moment_id,   # the planner's id ("<card>#lunch" when a food card is the lunch), for `keep`
                      "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min), "travel_min": st.travel_min,

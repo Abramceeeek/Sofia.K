@@ -19,6 +19,9 @@ class Settings:
     testflight_url: str | None = None   # D114: the public TestFlight link a share page offers; unset until external testing
     duffel_token: str | None = None     # D120: flight search; unset = sample flights, clearly labelled
     liteapi_key: str | None = None      # D120: places to stay; unset = sample stays, clearly labelled
+    tfl_app_key: str | None = None      # Stage 1: TfL journey times; unset = the straight-line estimate
+    met_office_key: str | None = None   # Stage 1: Met Office forecast; unset = no weather, as before
+    backup_key: str | None = None       # Stage 1: the public key nightly backups are encrypted to (ops.py)
 
 
 def driver_url(raw: str) -> str:
@@ -27,6 +30,15 @@ def driver_url(raw: str) -> str:
         if raw.startswith(prefix):
             return "postgresql+psycopg://" + raw[len(prefix):]
     return raw
+
+
+def _first(*names: str) -> str | None:
+    """The first of these environment variables that is set: the keys may have been named a little differently in
+    Render, and /v1/health says whether each was found (never its value)."""
+    for n in names:
+        if v := (os.environ.get(n) or "").strip():
+            return v
+    return None
 
 
 def get_settings() -> Settings:
@@ -39,4 +51,8 @@ def get_settings() -> Settings:
         testflight_url=os.environ.get("BRAIN_TESTFLIGHT_URL") or None,
         duffel_token=os.environ.get("DUFFEL_ACCESS_TOKEN") or None,
         liteapi_key=os.environ.get("LITEAPI_KEY") or None,
+        tfl_app_key=_first("TFL_APP_KEY", "TFL_API_KEY", "TFL_KEY", "TFL_PRIMARY_KEY"),
+        met_office_key=_first("MET_OFFICE_API_KEY", "MET_OFFICE_KEY", "METOFFICE_API_KEY", "MET_API_KEY",
+                              "MET_OFFICE_DATAHUB_KEY"),
+        backup_key=_first("BRAIN_BACKUP_PUBLIC_KEY"),
     )

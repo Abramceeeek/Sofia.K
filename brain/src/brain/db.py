@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, create_engine
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 
 
@@ -198,6 +198,20 @@ class MomentRow(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     record: Mapped[dict] = mapped_column(JSON)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
+class TravelTime(Base):
+    """Stage 1 (roadmap step 3): TfL's journey between two card points (~100 m keys), kept across restarts so the
+    table is asked for once. Places only: nothing about anyone's plan or where they are."""
+    __tablename__ = "travel_times"
+    __table_args__ = (UniqueConstraint("a", "b", name="uq_travel_pair"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    a: Mapped[str] = mapped_column(String(24), index=True)
+    b: Mapped[str] = mapped_column(String(24))
+    minutes: Mapped[float] = mapped_column(Float)
+    mode: Mapped[str] = mapped_column(String(8))
+    route: Mapped[str | None] = mapped_column(Text)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 def make_engine(url: str):
