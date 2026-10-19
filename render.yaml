@@ -62,6 +62,15 @@ services:
                                # left empty, trips show clearly labelled sample flights. Never committed or chatted
       - key: LITEAPI_KEY
         sync: false            # D120: stays search (LiteAPI sandbox or live key). Empty = labelled sample stays
+      # Stage 1, added by hand in the dashboard (Environment), never committed or chatted. /v1/health says whether
+      # each was found, never its value (brain/README.md, "Stage 1 keys"):
+      # - TfL journey times: TFL_APP_KEY (also read: TFL_API_KEY, TFL_KEY, TFL_PRIMARY_KEY)
+      # - Met Office forecast: MET_OFFICE_API_KEY (also read: MET_OFFICE_KEY, METOFFICE_API_KEY, MET_API_KEY,
+      #   MET_OFFICE_DATAHUB_KEY)
+      # - Nightly backup: BRAIN_BACKUP_PUBLIC_KEY and BRAIN_BACKUP_TOKEN, both printed by
+      #   `python -m brain.backup keygen` on Abram's computer; the token also goes into GitHub Secrets
+      # - Error alerts (optional): BRAIN_OPS_WEBHOOK_URL; unset, they go to BRAIN_ALERT_WEBHOOK_URL, marked
+      #   "not a safety alert"
 
 databases:
   - name: london-places-swipe-db

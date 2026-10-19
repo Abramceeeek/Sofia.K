@@ -209,3 +209,23 @@ def test_a_plan_with_tfl_names_the_lines(client):
     assert transit, plan["stops"]
     assert all("Jubilee line to London Bridge" in st["travel_text"] for st in transit)
     assert client.get("/v1/health").json()["travel"].startswith("tfl")
+
+
+def test_a_refused_key_stops_the_table_early_and_says_so():
+    calls = []
+
+    def refuse(url, params):
+        calls.append(1)
+        raise PermissionError("403")
+    tr = TflTravel("wrong", fetch=refuse)
+    far = [(Point(lat=51.50 + i / 100, lon=-0.20), Point(lat=51.50, lon=-0.05 - i / 100)) for i in range(40)]
+    assert tr.fill(tr.pairs(far), next_weekday_1pm(date(2026, 10, 19)), sleep=lambda s: None) == 0
+    assert len(calls) == 20 and tr.status == "tfl_error"
+
+
+def test_pairs_tfl_finds_no_journey_for_keep_the_estimate_and_the_status_settles():
+    replies = iter([tfl_reply(18), {"journeys": []}])
+    tr = TflTravel("k", fetch=lambda url, params: next(replies))
+    far = Point(lat=51.4613, lon=-0.3037)   # Richmond
+    tr.fill(tr.pairs([(A, B), (A, far)]), next_weekday_1pm(date(2026, 10, 19)), sleep=lambda s: None)
+    assert tr.status == "tfl 1/2" and tr.minutes(A, far) > 0

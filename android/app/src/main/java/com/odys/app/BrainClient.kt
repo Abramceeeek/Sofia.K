@@ -25,6 +25,9 @@ class BrainError(val code: Int) : Exception(
     when (code) {
         401 -> "This phone isn't registered any more. Please start again."
         -1 -> "Please agree to take part first."
+        // Stage 1: the Brain's rate limits (brain/src/brain/ops.py)
+        429 -> "That's a lot in a short time. Please wait a minute, then try again."
+        in 500..599 -> "Something went wrong on our side. Please try again in a minute."
         else -> "The planner answered with an error ($code). Please try again."
     }
 )

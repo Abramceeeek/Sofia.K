@@ -691,6 +691,12 @@ struct PlanStats: View {
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            if let w = plan.weather, !w.line.isEmpty {
+                Text(w.line)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .accessibilityElement(children: .combine)
     }

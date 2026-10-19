@@ -209,6 +209,9 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
                             .clickable(role = Role.Button) { confirmDelete = true })
                 }
                 Text("ODYS for Android, version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", style = Theme.footnote)
+                // Stage 1: the credits the data's licences ask for
+                Text("Journey times: Powered by TfL Open Data. Weather: Met Office. Maps: © OpenStreetMap contributors. " +
+                    "Card photos: Wikimedia Commons, credited on each card.", style = Theme.footnote)
             }
         }
     }

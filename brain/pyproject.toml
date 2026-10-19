@@ -14,6 +14,7 @@ dependencies = [
     "openpyxl>=3.1",   # reads the Phase 3 results sheet (Test B)
     "reportlab>=4.0",  # Test B plans as PDFs
     "httpx>=0.27",     # D120: flight and stay providers
+    "cryptography>=44", # Stage 1: nightly backups, encrypted to Abram's public key (backup.py)
 ]
 
 [project.optional-dependencies]

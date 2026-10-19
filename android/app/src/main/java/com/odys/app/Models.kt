@@ -181,9 +181,14 @@ data class Plan(
     val feelLine: String? = null,
     val basis: Basis? = null,
     val blind: Boolean? = null,
+    val weather: Weather? = null,     // Stage 1: the Met Office forecast the plan was made with, if any
 ) {
     val isBlind: Boolean get() = blind == true
 }
+
+/** Stage 1: the forecast for the plan's hours (brain.weather.Outlook). */
+@Serializable
+data class Weather(val tempC: Double? = null, val rainProb: Double? = null, val line: String = "")
 
 @Serializable
 data class Reason(val you: String, val me: String? = null)

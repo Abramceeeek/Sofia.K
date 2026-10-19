@@ -19,7 +19,7 @@
 <!-- DRAFT for Abram's review before the first external TestFlight build (D109). Served by the Brain at /privacy.
      Check before friends: Render's data processing terms (UNVERIFIED), and whether TestFlight needs this URL. -->
 <h1>Privacy notice: ODYS (test app)</h1>
-<p class="note">Last updated: 9 October 2026. This covers the ODYS test app (called "Days out" until 2 October 2026), which is in testing on iPhone through Apple's TestFlight, and on Android as a test download.</p>
+<p class="note">Last updated: 19 October 2026. This covers the ODYS test app (called "Days out" until 2 October 2026), which is in testing on iPhone through Apple's TestFlight, and on Android as a test download.</p>
 
 <h2>Who is responsible</h2>
 <p>Abram, an individual in London, is testing an idea for a travel planning app. This is research: nothing is sold. Contact: abram@abdurakhmonbek.com.</p>
@@ -27,7 +27,7 @@
 <h2>What we collect</h2>
 <ul>
   <li>Your answers in the app: the best hour of a recent day out, why you go out, your reactions to 10 London places (and whether you had no preference or weren't sure), your 10 "this or that" choices, and the optional "about you" questions (budget, who you usually go with, morning or night, how active, what interests you) and photo questions. Your budget and interests shape your plans now; the others help us test the idea. We no longer ask what foods you avoid or where you grew up, because the plans didn't use them.</li>
-  <li>The day plans the app makes for you, and the 1–5 ratings you give each stop.</li>
+  <li>The day plans the app makes for you, and the 1–5 ratings you give each stop. A plan, and a rating, may keep the weather forecast for central London at the time (from the Met Office): never where you were.</li>
   <li>A few app events, such as finishing the questions or asking for another plan, with their time. The Android app also says, once, that it is the Android app; nothing else about your phone.</li>
   <li>Anything you write in Help &amp; safety, and the replies to it. <strong>If you leave a phone number or email there</strong>, it's used only to reply to that message, and deleted as soon as it's sorted, or after 30 days at the latest.</li>
   <li><strong>Where you're based</strong> (London, elsewhere in the UK, or visiting from abroad) and, if you give it, your town or city. We use it to choose which questions to ask and to plan your days, and to count visitors separately in our results. We never ask your nationality, and never use where you're from to match or filter people.</li>
@@ -56,7 +56,8 @@
 <ul>
   <li><strong>Render</strong> hosts our server and database in Frankfurt, in the EU.</li>
   <li><strong>Apple</strong> delivers the iPhone app through TestFlight, under Apple's own terms and privacy policy.</li>
-  <li><strong>GitHub</strong> (Microsoft) delivers the Android test download, under its own terms and privacy policy.</li>
+  <li><strong>GitHub</strong> (Microsoft) delivers the Android test download, under its own terms and privacy policy. It also keeps our nightly backup copies, which are encrypted on our server before they leave it, so GitHub can't read them. Only Abram holds the key.</li>
+  <li><strong>Transport for London</strong> and the <strong>Met Office</strong> give us journey times and the weather forecast. We ask them only about the places on our own cards and central London: nothing about you, and never your location.</li>
   <li><strong>OpenStreetMap</strong> draws the maps in the Android app. Each piece of map is fetched from the OpenStreetMap Foundation's servers, which see your phone's internet address and which part of London the map shows, under the Foundation's own privacy policy. We send them nothing else.</li>
   <li><strong>Maps apps you open for directions</strong> (Apple Maps on iPhone, Google Maps on Android) get the place you're going to, and nothing else from us.</li>
   <li><strong>Duffel</strong> (flights) and <strong>LiteAPI by Nuitée</strong> (places to stay) receive a search only when you search, and only the search: route or city, dates and number of travellers, never your answers or anything that identifies you. While we test, results may be samples we make up, and the app says so.</li>
@@ -66,6 +67,8 @@
 
 <h2>How long we keep it</h2>
 <p>Until 31 March 2027, then it's deleted. Anonymised results may be kept. <strong>Settings → Delete my data</strong> in the app removes everything we hold about your phone, straight away. If you're offline at the time, everything on your phone goes at once, and the rest is deleted from our server the next time the app is online. <strong>If you delete the app and install it again</strong>, it starts afresh and asks for your consent again. On iPhone, it also deletes your earlier answers from our server. On Android, deleting the app also deletes the random code that links your phone to your answers, so the app can no longer find them: to delete them, use Delete my data before you delete the app. Otherwise they are deleted with everything else on 31 March 2027.</p>
+<p><strong>Backups:</strong> a copy of our database is made each night, encrypted so that only Abram can open it, and kept for 30 days. So something you delete is gone from the backups within 30 days. A phone number or email left in Help &amp; safety is never put in a backup.</p>
+<p><strong>Our server's logs</strong> note each request's kind (for example "make a plan"), whether it worked and how long it took, and the details of any error, for fixing it. A Help &amp; safety message is also written to the logs, in case it can't reach a person any other way (a contact you leave never is). They never record your internet address or the code that identifies your phone. To stop misuse, the server counts requests from each phone and internet address in its memory, for up to an hour; these counts are never written down.</p>
 
 <h2>Your rights</h2>
 <p>You can access, correct or delete your data, withdraw consent, or object, by using the app or by emailing abram@abdurakhmonbek.com. We reply within one month. If you're unhappy, you can complain to the Information Commissioner's Office (ico.org.uk).</p>

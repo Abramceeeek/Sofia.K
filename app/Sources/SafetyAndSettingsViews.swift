@@ -222,6 +222,10 @@ struct SettingsView: View {
                     Text("ODYS, version \(version)")
                         .font(.footnote)
                         .foregroundStyle(Theme.muted)
+                    // Stage 1: the credits the data's licences ask for
+                    Text("Journey times: Powered by TfL Open Data. Weather: Met Office. Card photos: Wikimedia Commons, credited on each card.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
                 }
                 .listRowBackground(Color.clear)
             }

@@ -442,5 +442,11 @@
   "ratings": 0,
   "feelings": 2,
   "kinds": 0
+ },
+ "weather": {
+  "temp_c": 12.0,
+  "rain_prob": 0.2,
+  "source": "hourly",
+  "line": "Forecast: about 12°C, 20% chance of rain (Met Office)"
  }
 }

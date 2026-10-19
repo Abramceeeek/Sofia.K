@@ -40,6 +40,7 @@ REFRESH_DAYS = 14           # timetables change; weekend works are caught by the
 CHECK_MAX = 12              # legs checked per plan (a day has at most 7)
 CHECK_TIMEOUT_S = 8.0
 DAY_TTL_S = 6 * 3600        # a day's checked leg is reused for six hours
+REFUSED_AFTER = 20          # failed calls, before any success, after which the table stops filling
 
 Fetch = Callable[[str, dict[str, str]], dict]
 
@@ -170,7 +171,9 @@ class TflTravel(LondonEstimate):
         self.clock = clock
         self.table: dict[tuple[str, str], tuple[float, Journey]] = {}     # (a, b) → (fetched_at, journey)
         self.day: dict[tuple[str, str, str], tuple[float, Journey]] = {}  # (a, b, yyyy-mm-dd) → …
-        self.wanted = 0
+        self.wanted_keys: set[tuple[str, str]] = set()
+        self.filling = False
+        self.refused = False                   # the first calls all failed: a wrong key, or TfL down
         self._stop = threading.Event()
         if store is not None:
             self.table.update(store.load())
@@ -202,9 +205,15 @@ class TflTravel(LondonEstimate):
 
     @property
     def status(self) -> str:
-        """For /v1/health: "tfl" once the table is full, "tfl_filling n/N" while it fills."""
-        have = len(self.table)
-        return "tfl" if self.wanted and have >= self.wanted else f"tfl_filling {have}/{self.wanted or '?'}"
+        """For /v1/health: "tfl_filling n/N" while the table fills; then "tfl", or "tfl n/N" when TfL found no journey
+        for some pairs (they keep the estimate); "tfl_error" when TfL refused the first calls (a wrong key?)."""
+        if self.refused:
+            return "tfl_error"
+        n = len(self.wanted_keys)
+        have = sum(k in self.table for k in self.wanted_keys)
+        if self.filling:
+            return f"tfl_filling {have}/{n}"
+        return "tfl" if have >= n else f"tfl {have}/{n}"
 
     # ---- filling the table -----------------------------------------------------------------------
     def pairs(self, points: Iterable[tuple[Point, Point]]) -> list[tuple[Point, Point]]:
@@ -222,24 +231,34 @@ class TflTravel(LondonEstimate):
 
     def fill(self, pairs: list[tuple[Point, Point]], when: datetime, per_min: int = WARM_PER_MIN,
              sleep: Callable[[float], None] = time.sleep) -> int:
-        """Asks TfL for the pairs not in the table (or older than REFRESH_DAYS). Returns how many were added."""
-        self.wanted = len(pairs)
+        """Asks TfL for the pairs not in the table (or older than REFRESH_DAYS). Returns how many were added. Stops
+        if the first REFUSED_AFTER calls all fail, rather than ask TfL thousands of times with a wrong key."""
+        self.wanted_keys = {(key(a), key(b)) for a, b in pairs}
         now = self.clock()
         todo = [(a, b) for a, b in pairs
                 if (hit := self.table.get((key(a), key(b)))) is None or now - hit[0] > REFRESH_DAYS * 86400]
-        added = 0
-        for a, b in todo:
-            if self._stop.is_set():
-                break
-            j = self.client.journey(a, b, when)
-            if j is not None:
-                self.table[(key(a), key(b))] = (self.clock(), j)
-                if self.store is not None:
-                    self.store.save(key(a), key(b), j)
-                added += 1
-            sleep(60.0 / per_min)
+        added, errors0 = 0, self.client.errors
+        self.filling = True
+        try:
+            for a, b in todo:
+                if self._stop.is_set():
+                    break
+                j = self.client.journey(a, b, when)
+                if j is not None:
+                    self.table[(key(a), key(b))] = (self.clock(), j)
+                    if self.store is not None:
+                        self.store.save(key(a), key(b), j)
+                    added += 1
+                elif not added and self.client.errors - errors0 >= REFUSED_AFTER:
+                    self.refused = True
+                    log.warning("TfL table: the first %s calls failed, so it stopped. Is TFL_APP_KEY right?",
+                                REFUSED_AFTER)
+                    break
+                sleep(60.0 / per_min)
+        finally:
+            self.filling = False
         if added:
-            log.info("TfL table: %s journeys added, %s of %s known", added, len(self.table), self.wanted)
+            log.info("TfL table: %s journeys added; %s", added, self.status)
         return added
 
     def fill_in_background(self, pairs: list[tuple[Point, Point]], when: datetime) -> threading.Thread:

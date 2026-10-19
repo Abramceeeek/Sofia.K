@@ -39,7 +39,11 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 | `src/brain/personal.py` | **δ_person**: a Laplace update over the three likelihood blocks (conjoint logit, swipe ordered logit, rating ordered logit) with fixed hyperparameters (Area 3). Numpy only and stateless, so it can move to the phone later (Area 17) |
 | `src/brain/scoring.py` | `S = x · (b_pop + δ)`; the named terms behind each stop's score (input for the explanation); named weights with P(β<0), and "unsure" unless P > 0.8 or < 0.2 |
 | `src/brain/planner.py` | An orienteering problem with time windows in OR-Tools. Prizes are utility above the 2|3 rating threshold, transfers cost the person's own transfer weights, and there is a stop limit. The **peak–end toggle is off by default** (D15). Travel runs from one moment's end to the next moment's start, so it is asymmetric |
-| `src/brain/travel.py` | A straight-line walking estimate; `LondonEstimate` (walk up to 20 min, otherwise a rough Tube/bus time; every parameter is a GUESS); a hook for precomputed OSRM/TfL matrices |
+| `src/brain/travel.py` | A straight-line walking estimate; `LondonEstimate` (walk up to 20 min, otherwise a rough Tube/bus time; every parameter is a GUESS) |
+| `src/brain/tfl.py` | **Stage 1: TfL's journey times.** A table of every card-to-card leg beyond a walk (and from Charing Cross), filled in the background at start and refreshed every 14 days; the chosen Tube and bus legs are checked again for the plan's own date. Stops name the lines ("Jubilee line to London Bridge"). Without a key, the estimate, as before |
+| `src/brain/weather.py` | **Stage 1: the Met Office forecast** for central London, cached (an hour, or three for the daily one). Fills a plan's temperature and chance of rain when the app sends none, and is saved with ratings. Not used for the Test B pair, which stays as designed |
+| `src/brain/ops.py` | **Stage 1:** the request log (route pattern, status, time; never an address, token or answer), error alerts to a person (rate-limited), and rate limits per phone and overall |
+| `src/brain/backup.py` | **Stage 1: the nightly backup**, sealed to Abram's public key on the server; commands to make the keys, open a backup and restore it |
 | `src/brain/dayplan.py` | **The day planner** shared by Test B and the app (D107): lunch, buffers, pace, the familiar favourite, disliked places, rain swaps, sunset-aware "Best" lines and the participant-facing wording |
 | `src/brain/sun.py` | Sunset for a date (NOAA equations), so the app's plans get sunset lines offline; checked against sunrise-sunset.org |
 | `src/brain/testb.py` | **Test B:** reads the results sheet, fits each person's weights from their swipes and choices, plans their day with `dayplan`, and writes both blind plans (WhatsApp text and PDF) plus a review sheet for you |
@@ -127,7 +131,7 @@ Run it locally: `CALIBRATION_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.calib
 | For | Endpoints |
 |---|---|
 | The app | `POST /v1/installs` (no login: consent plus an optional tester code, returns a token) · `GET /v1/onboarding` · `POST /v1/me/swipes` · `/conjoint` · `/answers` · `PUT /v1/me/profile` · `GET /v1/me/weights` · `GET /v1/moments` · `POST /v1/me/plans` · `GET /v1/me/plans` · `POST /v1/me/plans/{id}/feedback` · `POST /v1/me/ratings` (refits δ) · `POST /v1/me/events` · `POST /v1/me/safety` · `DELETE /v1/me` |
-| Abram | `POST /v1/admin/moments/reload` (reports drafts and what they're missing) · `POST /v1/admin/users/{id}/plans` (a curated plan for Test B, Wizard of Oz) · `GET /v1/admin/safety` and `POST /v1/admin/safety/{id}/reply` (a reply the person sees in the app, D118; tracks the "within a few hours" target, D46) · `GET /v1/admin/export` (the Phase 3 data, with no tokens) |
+| Abram | `POST /v1/admin/moments/reload` (reports drafts and what they're missing) · `POST /v1/admin/users/{id}/plans` (a curated plan for Test B, Wizard of Oz) · `GET /v1/admin/safety` and `POST /v1/admin/safety/{id}/reply` (a reply the person sees in the app, D118; tracks the "within a few hours" target, D46) · `GET /v1/admin/export` (the Phase 3 data, with no tokens) · `GET /v1/admin/backup` (Stage 1: the sealed backup; the backup token or the admin token) |
 
 **Answering a Help & safety message (D118).** The alert reaches you through the webhook (with the phone or email, if the person left one), and `GET /v1/admin/safety` lists those still waiting. Reply by phone or email if there's a contact, and always in the app too, so the person sees it under Help & safety. Run these in Terminal, with the admin token in an environment variable (never paste it anywhere else):
 
@@ -144,6 +148,35 @@ curl -s -H "Authorization: Bearer $T" "$B/v1/admin/safety?all=true"             
 
 A contact is deleted when you mark the message resolved, and at the latest after 30 days. The first reply is timed against the "within a few hours" target (D46).
 
+## Stage 1 keys, alerts and backups
+
+**Keys in Render** (Dashboard → moments-brain → Environment). Never in Git or a chat. `GET /v1/health` says whether each was found, never the value:
+
+| What | Variable (other spellings also read) | `/v1/health` shows |
+|---|---|---|
+| TfL journey times | `TFL_APP_KEY` (`TFL_API_KEY`, `TFL_KEY`, `TFL_PRIMARY_KEY`) | `"travel": "tfl"` (or `"tfl 2070/2077"`: TfL found no journey for a few pairs, which keep the estimate); `"tfl_filling 120/2077"` while the table fills (10 to 15 minutes after the first deploy, at 200 calls a minute; later deploys only refresh what's over 14 days old); `"tfl_error"` = found, but TfL refused the first 20 calls; `"estimate"` = not found |
+| Met Office forecast | `MET_OFFICE_API_KEY` (`MET_OFFICE_KEY`, `METOFFICE_API_KEY`, `MET_API_KEY`, `MET_OFFICE_DATAHUB_KEY`) | `"weather": "met_office"`; `"met_office_error"` = found, but the last call failed; `"off"` = not found |
+| Error alerts (optional) | `BRAIN_OPS_WEBHOOK_URL` | — (unset: errors go to `BRAIN_ALERT_WEBHOOK_URL`, marked "not a safety alert") |
+| Nightly backup | `BRAIN_BACKUP_PUBLIC_KEY`, `BRAIN_BACKUP_TOKEN` | — |
+
+**Uptime and backups** run in GitHub Actions (`.github/workflows/ops.yml`): an hourly `GET /v1/health`, and at 02:23 UTC the sealed backup, kept as a workflow artifact for 30 days. If the Brain doesn't answer, the run fails and GitHub emails whoever added the workflow; with the `BRAIN_OPS_WEBHOOK_URL` GitHub secret, a message also goes there. Run either now from GitHub → Actions → ops → Run workflow.
+
+**Setting up the backup (Abram, ~15 min, once):**
+
+```bash
+cd brain && pip install cryptography
+python -m brain.backup keygen            # writes odys-backup-private.key; prints a public key and a token
+```
+
+1. Put the private key in your password manager as well. Without it no backup can be opened; never put it in Git, a chat or Render.
+2. In Render, add `BRAIN_BACKUP_PUBLIC_KEY` (the public key) and `BRAIN_BACKUP_TOKEN` (the token).
+3. In GitHub → Settings → Secrets and variables → Actions, add `BRAIN_BACKUP_TOKEN` (the same token).
+4. Run the ops workflow with "backup" once: the run should keep a file named `odys-brain-YYYYMMDD.odysbk`.
+
+**Opening and restoring one:** download the artifact from the run, then `python -m brain.backup open odys-brain-20261020.odysbk --key odys-backup-private.key > backup.json`. To restore into a new, empty database: `python -m brain.backup restore backup.json --database-url postgresql://…`. The cards and TfL's times rebuild themselves at start. Contacts left with a safety message are never in a backup (D118).
+
+**Rate limits** (GUESSES, in `ops.py`): 10 new installs an hour from one address and 300 from everyone; 30 plans per phone in 10 minutes; 10 trip plans per phone in 10 minutes; 180 other requests per phone a minute; 60 a minute from an address without a token. Provider searches: 40 per phone an hour (as before), and 400 a day from everyone. Above a limit the app says "That's a lot in a short time. Please wait a minute, then try again." The request log shows each 429 with its kind of limit, so the limits can be checked in the friends' round.
+
 **Guardrails in the code:**
 - **No audio** is ever stored.
 - **No nationality, health or allergy fields** exist.
@@ -155,10 +188,9 @@ A contact is deleted when you mark the message resolved, and at the latest after
 
 | Item | Hours |
 |---|---|
-| **Travel matrices:** walking (OSRM or openrouteservice) and transit (TfL), precomputed (Area 4). Until then, check every Tube/bus leg in a Test B plan by hand | 2 |
-| **Weather:** Met Office DataHub. Plans currently take conditions in the request | 1 |
+| **Walking matrix** (OSRM or openrouteservice), for walks along streets rather than straight lines (Area 4). TfL's transit times are in (Stage 1, `tfl.py`); the Test B pair still uses the estimate, so check its Tube/bus legs by hand | 2 |
 | **LLM explanation** from each stop's `why` | 1 |
 | **LLM extraction** of the open answer, only for people who gave AI permission, plus the gold-set check (Area 1) | 3 |
 | **Pooled refit** from Phase 3 data into `priors.yaml`. The full hierarchical refit comes after v0 | 1 |
-| **Hosting** on Render with Postgres, secrets, migrations (Alembic) and backups | 2 |
+| **Migrations** (Alembic). Hosting, secrets and backups are in (Stage 1) | 2 |
 | **The 50 moments** and ~20 shot cards: your content (Area 2). **About 25 are needed before Test B** (≈ 3.5 h, pulled into Phase 3, D65) | 5 |

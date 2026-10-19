@@ -21,7 +21,9 @@ class Settings:
     liteapi_key: str | None = None      # D120: places to stay; unset = sample stays, clearly labelled
     tfl_app_key: str | None = None      # Stage 1: TfL journey times; unset = the straight-line estimate
     met_office_key: str | None = None   # Stage 1: Met Office forecast; unset = no weather, as before
-    backup_key: str | None = None       # Stage 1: the public key nightly backups are encrypted to (ops.py)
+    backup_key: str | None = None       # Stage 1: the public key nightly backups are encrypted to (backup.py)
+    backup_token: str | None = None     # Stage 1: unlocks the encrypted backup only (the nightly GitHub job)
+    ops_webhook_url: str | None = None  # Stage 1: where error alerts go; unset = the safety webhook, marked (ops.py)
 
 
 def driver_url(raw: str) -> str:
@@ -55,4 +57,6 @@ def get_settings() -> Settings:
         met_office_key=_first("MET_OFFICE_API_KEY", "MET_OFFICE_KEY", "METOFFICE_API_KEY", "MET_API_KEY",
                               "MET_OFFICE_DATAHUB_KEY"),
         backup_key=_first("BRAIN_BACKUP_PUBLIC_KEY"),
+        backup_token=_first("BRAIN_BACKUP_TOKEN"),
+        ops_webhook_url=_first("BRAIN_OPS_WEBHOOK_URL"),
     )

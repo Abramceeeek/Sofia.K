@@ -242,8 +242,16 @@ struct Plan: Codable, Hashable, Identifiable {
     let feelLine: String?          // D115: "Lunch to start, one big reveal, some history, then a big view"
     let basis: Basis?              // D115: what the reasons rest on so far
     let blind: Bool?               // D115: the blind Test B comparison: no reasons, no feeling line, no worth
+    let weather: Weather?          // Stage 1: the Met Office forecast the plan was made with, if any
 
     var isBlind: Bool { blind == true }
+}
+
+/// Stage 1: the forecast for the plan's hours (brain.weather.Outlook).
+struct Weather: Codable, Hashable {
+    let tempC: Double?
+    let rainProb: Double?
+    let line: String               // "Forecast: about 6°C, 80% chance of rain (Met Office)"
 }
 
 /// D115: one reason a stop was picked, from the person's own answers: "you" for the app, "me" for the share card.

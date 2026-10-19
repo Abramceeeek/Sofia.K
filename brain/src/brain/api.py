@@ -21,7 +21,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import dayplan, db, notify, reasons, share, summary, testb, trips, tripdays
+from . import backup, dayplan, db, notify, ops, reasons, share, summary, testb, trips, tripdays
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -88,6 +88,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         engine = db.make_engine(settings.database_url)
+        app.state.engine = engine
         app.state.Session = db.make_sessionmaker(engine)
         app.state.pop = load_population(settings.data_dir / "priors.yaml")
         with open(settings.data_dir / "onboarding.yaml", encoding="utf-8") as f:
@@ -137,6 +138,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine.dispose()
 
     app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan)
+    app.state.settings = settings
+    # Stage 1: the request log (no personal data), rate limits and error alerts (ops.py)
+    ops.configure_logging()
+    app.state.limiter = ops.Limiter()
+    app.state.alerts = ops.Alerts(settings.ops_webhook_url or settings.alert_webhook_url)
+    ops.install(app)
 
     # ---- dependencies -------------------------------------------------------------
     def session():
@@ -1119,6 +1126,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ("safety_replies", db.SafetyReply)]} | {   # D118: never the contacts people left
             # D116: visitors from abroad are their own group, left out of the Test B analysis
             "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
+
+    @app.get("/v1/admin/backup")
+    def backup_now(authorization: str = Header(default="")):
+        """Stage 1: the nightly backup, sealed to Abram's public key before it leaves (backup.py). Opened by the backup
+        token (the nightly GitHub job's only key) or the admin token."""
+        st = app.state.settings
+        token = authorization.removeprefix("Bearer ").strip()
+        if not token or not any(t and secrets.compare_digest(token, t) for t in (st.backup_token, st.admin_token)):
+            raise HTTPException(403, "backup or admin token only")
+        if not st.backup_key:
+            raise HTTPException(503, "BRAIN_BACKUP_PUBLIC_KEY isn't set in Render")
+        try:
+            blob, counts = backup.sealed_backup(app.state.engine, st.backup_key)
+        except backup.BackupError as e:
+            raise HTTPException(503, str(e))
+        ops.log.info("backup sealed: %d rows, %d bytes", sum(counts.values()), len(blob))
+        return Response(blob, media_type="application/octet-stream",
+                        headers={"Content-Disposition": "attachment; filename=odys-brain.odysbk",
+                                 "Cache-Control": "no-store"})
 
     return app
 

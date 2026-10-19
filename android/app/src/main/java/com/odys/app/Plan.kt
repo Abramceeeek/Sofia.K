@@ -596,6 +596,7 @@ fun PlanStats(plan: Plan, modifier: Modifier = Modifier) {
         val spend = if (t.spendGbp > 0) "${Money.text(t.spendGbp)} food and entry" else "Free entry"
         val fare = if (t.transportGbp > 0) "${Money.text(t.transportGbp)} Tube or bus" else "all on foot"
         Text("$spend, $fare." + (plan.summary?.firstOrNull()?.let { " $it." } ?: ""), style = Theme.footnote)
+        plan.weather?.line?.takeIf { it.isNotEmpty() }?.let { Text(it, style = Theme.footnote) }
     }
 }
 

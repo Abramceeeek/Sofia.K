@@ -8,6 +8,9 @@ enum BrainError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .status(401): return "This phone isn't registered any more. Please start again."
+        // Stage 1: the Brain's rate limits (brain/src/brain/ops.py)
+        case .status(429): return "That's a lot in a short time. Please wait a minute, then try again."
+        case .status(500...599): return "Something went wrong on our side. Please try again in a minute."
         case .status(let code): return "The planner answered with an error (\(code)). Please try again."
         case .noToken: return "Please agree to take part first."
         }

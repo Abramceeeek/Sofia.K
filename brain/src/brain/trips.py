@@ -718,6 +718,9 @@ class TripSearch:
     liteapi_key: str | None = None
     fetch: Fetch = http_fetch
     per_hour: int = 40
+    # Stage 1 (GUESS): provider searches by everyone together in a day, so many new installs can't get round
+    # per_hour. Beyond it, searches answer "unavailable" and the links out still work.
+    per_day_all: int = 400
     clock: Callable[[], float] = time.monotonic
     _cache: dict[str, tuple[float, list]] = field(default_factory=dict)
     _calls: dict[str, deque] = field(default_factory=dict)
@@ -735,11 +738,11 @@ class TripSearch:
         # sandbox keys start "sand_" (docs.liteapi.travel/reference/authentication, read 2026-10-06)
         return "liteapi_sandbox" if self.liteapi_key.startswith("sand_") else "liteapi"
 
-    def _allowed(self, who: str) -> bool:
+    def _allowed(self, who: str, limit: int | None = None, window_s: int = 3600) -> bool:
         now, calls = self.clock(), self._calls.setdefault(who, deque())
-        while calls and now - calls[0] > 3600:
+        while calls and now - calls[0] > window_s:
             calls.popleft()
-        if len(calls) >= self.per_hour:
+        if len(calls) >= (self.per_hour if limit is None else limit):
             return False
         calls.append(now)
         return True
@@ -751,6 +754,8 @@ class TripSearch:
             return hit[1]
         if not self._allowed(who):
             raise ProviderError("too_many")
+        if not self._allowed("*everyone*", self.per_day_all, 86400):
+            raise ProviderError("daily_cap")
         results = run()
         if len(self._cache) > 300:
             for k in sorted(self._cache, key=lambda k: self._cache[k][0])[:100]:
