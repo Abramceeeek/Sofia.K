@@ -1,18 +1,20 @@
-# Roadmap Stage 1, step 5: an hourly check that the Brain answers, and a nightly sealed backup.
+# Roadmap Stage 1, step 5: a check every 6 hours that the Brain answers, and a nightly sealed backup.
+# The repository is private, so each run uses Actions minutes (about 1 minute each): 4 checks and 1 backup a day
+# is about 150 minutes a month of the 2,000 included (an hourly check alone would use about 744).
 #
-# - Uptime: GET /v1/health every hour. If it doesn't answer (after one retry, allowing for the free server's ~1 minute
+# - Uptime: GET /v1/health every 6 hours. If it doesn't answer (after one retry, allowing for the free server's ~1 minute
 #   wake), the job fails: GitHub emails whoever added this workflow (docs.github.com, "Notifications for workflow
 #   runs", read 19 Oct 2026), and, if the BRAIN_OPS_WEBHOOK_URL secret is set, a message goes there too. A provider
 #   that is set but failing (the Met Office, TfL) shows as a warning on the run, not a failure.
 # - Backup: GET /v1/admin/backup each night with the BRAIN_BACKUP_TOKEN secret. The Brain seals it to Abram's public
-#   key before it leaves (brain/src/brain/backup.py), so this public repository only ever holds ciphertext. Kept as
+#   key before it leaves (brain/src/brain/backup.py), so GitHub only ever holds ciphertext. Kept as
 #   a workflow artifact for 30 days. Without the secret, the job says so and stops.
 # Secrets are read from GitHub Secrets only; none is ever printed.
 name: ops
 
 on:
   schedule:
-    - cron: "7 * * * *"      # uptime: every hour at :07
+    - cron: "7 */6 * * *"    # uptime: every 6 hours at :07
     - cron: "23 2 * * *"     # backup: 02:23 UTC, about 3 am in London
   workflow_dispatch:
     inputs:
@@ -30,7 +32,7 @@ env:
 
 jobs:
   uptime:
-    if: (github.event_name == 'schedule' && github.event.schedule == '7 * * * *') || (github.event_name == 'workflow_dispatch' && inputs.job == 'uptime')
+    if: (github.event_name == 'schedule' && github.event.schedule == '7 */6 * * *') || (github.event_name == 'workflow_dispatch' && inputs.job == 'uptime')
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:

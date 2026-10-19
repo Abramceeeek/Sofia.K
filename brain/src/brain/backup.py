@@ -9,7 +9,8 @@ copy is also kept away from Render.
   which are rebuilt at every start, and never the contacts left with a safety message (D118).
 - **Sealed on the server:** compressed, then encrypted to Abram's public key (X25519, HKDF-SHA256 and AES-256-GCM,
   from the `cryptography` library) before it leaves the server. Only his private key, kept on his own computer,
-  opens it. So the copy can sit in this public repository's workflow artifacts, which anyone may download.
+  opens it. So the copy can sit in GitHub (this private repository's workflow artifacts) without GitHub, or anyone
+  who can see the repository, being able to read it.
 - **Where:** a GitHub Actions job (`.github/workflows/ops.yml`) fetches it each night with `BRAIN_BACKUP_TOKEN`, a
   token that unlocks only this, and keeps it for 30 days.
 - **Commands** (on Abram's computer, from `brain/`, after `pip install cryptography`):

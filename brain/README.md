@@ -159,7 +159,7 @@ A contact is deleted when you mark the message resolved, and at the latest after
 | Error alerts (optional) | `BRAIN_OPS_WEBHOOK_URL` | — (unset: errors go to `BRAIN_ALERT_WEBHOOK_URL`, marked "not a safety alert") |
 | Nightly backup | `BRAIN_BACKUP_PUBLIC_KEY`, `BRAIN_BACKUP_TOKEN` | — |
 
-**Uptime and backups** run in GitHub Actions (`.github/workflows/ops.yml`), **once the workflow is on `main`**: GitHub runs schedules only on the default branch (m182). Then: an hourly `GET /v1/health`, and at 02:23 UTC the sealed backup, kept as a workflow artifact for 30 days. If the Brain doesn't answer, the run fails and GitHub emails whoever added the workflow; with the `BRAIN_OPS_WEBHOOK_URL` GitHub secret, a message also goes there. Run either now from GitHub → Actions → ops → Run workflow.
+**Uptime and backups** run in GitHub Actions (`.github/workflows/ops.yml`), **once the workflow is on `main`**: GitHub runs schedules only on the default branch (m182). Then: a `GET /v1/health` every 6 hours, and at 02:23 UTC the sealed backup, kept as a workflow artifact for 30 days. If the Brain doesn't answer, the run fails and GitHub emails whoever added the workflow; with the `BRAIN_OPS_WEBHOOK_URL` GitHub secret, a message also goes there. Run either now from GitHub → Actions → ops → Run workflow.
 
 **Setting up the backup (Abram, ~15 min, once):**
 
