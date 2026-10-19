@@ -182,14 +182,14 @@ def test_the_chosen_legs_are_checked_for_the_day_and_a_big_change_replans():
     tr.fill(tr.pairs([(A, B)]), next_weekday_1pm(date.today()), sleep=lambda s: None)
     view = tr.for_day(day, "12:00")
     assert view.minutes(A, B) == 18
-    view.mode(A, B)                      # the plan chose this leg
+    view.route(A, B)                     # the plan uses this leg
     assert view.check() is True          # new for that day (40 min: works): plan again
     assert view.minutes(A, B) == 40 and tr.minutes(A, B) == 18   # only that day changes
     view2 = tr.for_day(day, "12:00")
-    view2.mode(A, B)
+    view2.route(A, B)
     assert view2.check() is False        # already checked for that day: no new call, no change
     far = tr.for_day(date.today() + timedelta(days=60), "12:00")
-    far.mode(A, B)
+    far.route(A, B)
     assert far.check() is False          # too far ahead for TfL: the table stands
 
 
@@ -229,3 +229,15 @@ def test_pairs_tfl_finds_no_journey_for_keep_the_estimate_and_the_status_settles
     far = Point(lat=51.4613, lon=-0.3037)   # Richmond
     tr.fill(tr.pairs([(A, B), (A, far)]), next_weekday_1pm(date(2026, 10, 19)), sleep=lambda s: None)
     assert tr.status == "tfl 1/2" and tr.minutes(A, far) > 0
+
+
+def test_only_the_legs_the_plan_uses_are_checked_not_every_candidate():
+    asked = []
+    tr = TflTravel("k", fetch=lambda url, params: (asked.append(url), tfl_reply(25))[1])
+    view = tr.for_day(date.today() + timedelta(days=2), "10:00")
+    others = [Point(lat=51.45 + i / 200, lon=-0.30 + i / 100) for i in range(40)]
+    for o in others:                     # the planner weighs thousands of candidate legs
+        view.minutes(o, B), view.mode(o, B)
+    view.route(A, B)                     # the one leg the plan uses
+    assert view.check() is True and len(asked) == 1 and f"{A.lat:.5f},{A.lon:.5f}/to/{B.lat:.5f}" in asked[0]
+    assert view.route(A, B).startswith("walk to Westminster")

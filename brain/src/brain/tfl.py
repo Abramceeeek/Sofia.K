@@ -272,7 +272,9 @@ class TflTravel(LondonEstimate):
 
 class DayView:
     """One plan's view of the times: the day's checked legs first, then the table, then the estimate. It notes the
-    legs the plan chose (`mode` is asked for each one), so `check` can ask TfL about them for that day."""
+    legs the plan chose, so `check` can ask TfL about them for that day. A leg counts as chosen when the plan asks
+    for its route (`dayplan` does, for each Tube or bus leg it uses); the planner asks `minutes` and `mode` of
+    thousands of candidate legs, so those can't be the signal (19 Oct: 2,340 of them filled the check's 12 calls)."""
 
     def __init__(self, base: TflTravel, day: date | None, start: str):
         self.base, self.day_ = base, day
@@ -295,13 +297,13 @@ class DayView:
         return self.base.minutes(a, b)
 
     def mode(self, a: Point, b: Point) -> str:
-        self.chosen.setdefault((key(a), key(b)), (a, b, self.minutes(a, b)))
         j = self._dated(a, b)
         if j and self.walking.minutes(a, b) > self.walk_max_min:
             return j.mode
         return self.base.mode(a, b)
 
     def route(self, a: Point, b: Point) -> str | None:
+        self.chosen.setdefault((key(a), key(b)), (a, b, self.minutes(a, b)))   # a leg the plan uses
         j = self._dated(a, b)
         return j.route if j else self.base.route(a, b)
 
