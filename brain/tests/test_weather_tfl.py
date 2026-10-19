@@ -138,6 +138,8 @@ def test_the_journey_arriving_first_and_its_route_in_words():
     assert parse(tfl_reply(30, walk_only=True)) == Journey(30.0, "walk", None)
     assert parse({"journeys": []}) is None
     assert summarise([LEG("bus", "24 bus to Pimlico", 12)]) == "24 bus to Pimlico"
+    assert summarise([LEG("bus", "14 bus to Old Bond Street /Royal  Academy", 6)]) == \
+        "14 bus to Old Bond Street/Royal Academy"     # TfL's own spacing, tidied
 
 
 def test_leg_text_names_the_real_lines():

@@ -22,6 +22,7 @@ API: `GET https://api.tfl.gov.uk/Journey/JourneyResults/{lat,lon}/to/{lat,lon}` 
 from __future__ import annotations
 
 import logging
+import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
@@ -73,7 +74,7 @@ def summarise(legs: list[dict]) -> str | None:
     parts: list[str] = []
     for i, leg in enumerate(legs):
         mode = ((leg.get("mode") or {}).get("id") or "").lower()
-        text = ((leg.get("instruction") or {}).get("summary") or "").strip()
+        text = re.sub(r"\s*/\s*", "/", " ".join(((leg.get("instruction") or {}).get("summary") or "").split()))
         if not text:
             continue
         if mode == "walking":
