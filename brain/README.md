@@ -159,7 +159,7 @@ A contact is deleted when you mark the message resolved, and at the latest after
 | Error alerts (optional) | `BRAIN_OPS_WEBHOOK_URL` | — (unset: errors go to `BRAIN_ALERT_WEBHOOK_URL`, marked "not a safety alert") |
 | Nightly backup | `BRAIN_BACKUP_PUBLIC_KEY`, `BRAIN_BACKUP_TOKEN` | — |
 
-**Uptime and backups** run in GitHub Actions (`.github/workflows/ops.yml`): an hourly `GET /v1/health`, and at 02:23 UTC the sealed backup, kept as a workflow artifact for 30 days. If the Brain doesn't answer, the run fails and GitHub emails whoever added the workflow; with the `BRAIN_OPS_WEBHOOK_URL` GitHub secret, a message also goes there. Run either now from GitHub → Actions → ops → Run workflow.
+**Uptime and backups** run in GitHub Actions (`.github/workflows/ops.yml`), **once the workflow is on `main`**: GitHub runs schedules only on the default branch (m182). Then: an hourly `GET /v1/health`, and at 02:23 UTC the sealed backup, kept as a workflow artifact for 30 days. If the Brain doesn't answer, the run fails and GitHub emails whoever added the workflow; with the `BRAIN_OPS_WEBHOOK_URL` GitHub secret, a message also goes there. Run either now from GitHub → Actions → ops → Run workflow.
 
 **Setting up the backup (Abram, ~15 min, once):**
 
@@ -175,7 +175,7 @@ python -m brain.backup keygen            # writes odys-backup-private.key; print
 
 **Opening and restoring one:** download the artifact from the run, then `python -m brain.backup open odys-brain-20261020.odysbk --key odys-backup-private.key > backup.json`. To restore into a new, empty database: `python -m brain.backup restore backup.json --database-url postgresql://…`. The cards and TfL's times rebuild themselves at start. Contacts left with a safety message are never in a backup (D118).
 
-**Rate limits** (GUESSES, in `ops.py`): 10 new installs an hour from one address and 300 from everyone; 30 plans per phone in 10 minutes; 10 trip plans per phone in 10 minutes; 180 other requests per phone a minute; 60 a minute from an address without a token. Provider searches: 40 per phone an hour (as before), and 400 a day from everyone. Above a limit the app says "That's a lot in a short time. Please wait a minute, then try again." The request log shows each 429 with its kind of limit, so the limits can be checked in the friends' round.
+**Rate limits** (GUESSES, in `ops.py`): 10 new installs an hour from one address and 300 from everyone; 30 plans per phone in 10 minutes; 10 trip plans per phone in 10 minutes; 180 other requests per phone a minute; 60 a minute from an address without a token. Provider searches: 40 per phone an hour (as before), and 200 a day from everyone (with a live Duffel token, at most $1 a day: $0.005 a search, duffel.com/pricing, 19 Oct). Above a limit the app says "That's a lot in a short time. Please wait a minute, then try again." The request log shows each 429 with its kind of limit, so the limits can be checked in the friends' round.
 
 **Guardrails in the code:**
 - **No audio** is ever stored.

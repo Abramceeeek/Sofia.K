@@ -718,9 +718,11 @@ class TripSearch:
     liteapi_key: str | None = None
     fetch: Fetch = http_fetch
     per_hour: int = 40
-    # Stage 1 (GUESS): provider searches by everyone together in a day, so many new installs can't get round
-    # per_hour. Beyond it, searches answer "unavailable" and the links out still work.
-    per_day_all: int = 400
+    # Stage 1: provider searches by everyone together in a day, so many new installs can't get round per_hour. Beyond
+    # it, searches answer "unavailable" and the links out still work. Duffel charges $0.005 a search beyond 1,500 per
+    # order (duffel.com/pricing, read 19 Oct 2026); with no orders through Duffel every search counts, so this caps
+    # live flight searches at $1 a day ($30 a month at worst). LiteAPI's searches are free (sources.csv, 6 Oct).
+    per_day_all: int = 200
     clock: Callable[[], float] = time.monotonic
     _cache: dict[str, tuple[float, list]] = field(default_factory=dict)
     _calls: dict[str, deque] = field(default_factory=dict)

@@ -12,6 +12,7 @@
   - a server that never sleeps or loses data;
   - logs and alerts.
   - **Cost: Claude ~25 h, Abram ~4 h, about $13 a month plus small search fees.** This is what makes testers see "the real thing that works".
+  - **Status (19 Oct, D126):** Abram said go. Claude's steps 3–8 are built and tested: TfL times, the Met Office forecast, logs, alerts, rate limits, sealed nightly backups, the TestFlight text and the gates list (`decisions/testflight-external.md`). **Left for Abram:** the paid server and database before ~27 Oct (step 2), the live provider keys (step 1), the backup keys, putting the ops workflow on `main` (m182), and the gates.
 - **Stage 2, the tests (friends 16–25 Oct, strangers from ~27 Oct, Test B reports ~13 Nov).** No new features, only fixes from what testers say.
 - **Stage 3, public release (GUESS: Dec–Jan, only if Checkpoint 3 says go):**
   - the company, insurance, ICO, and a company Apple account;
@@ -95,6 +96,8 @@ I checked each point against the code on 6 Oct.
 ## 4. The stages, step by step
 
 ### Stage 1: real for testers (now to ~27 Oct)
+
+*Status 19 Oct (D126): steps 3–8 done on Claude's side; step 1 needs Abram's live keys, step 2 his upgrade in Render.*
 
 | # | Step | Claude | Abram | Money | Why |
 |---|---|---|---|---|---|
