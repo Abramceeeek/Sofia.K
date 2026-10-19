@@ -1,15 +1,20 @@
-"""A shareable PDF of the app's screens, for feedback from other people (D109).
+"""A shareable PDF of the app's screens, for feedback from other people (D109) and, since 19 Oct, from other AI
+models: every iPhone screen, then every Android screen, with the same numbers and captions.
 
-Takes the screenshots CI makes (`.github/workflows/ios.yml`, artifact "screenshots") and lays them out three to a
-page with a plain caption, after a cover page that says what the app is and asks four feedback questions.
+Takes the screenshots CI makes (`.github/workflows/ios.yml`, artifact "screenshots"; `.github/workflows/android.yml`,
+artifact "ODYS-android-screens-N") and lays them out three to a page with a plain caption, after a cover page for
+the reviewer (what the app is, who it's for, and what to look at) and a page listing the flows.
 
-    brain/.venv/bin/python design/make_screens_pdf.py <folder of PNGs> design/odys-screens.pdf
+    brain/.venv/bin/python design/make_screens_pdf.py <iOS PNG folder> [<Android PNG folder>] design/odys-screens.pdf
 """
 
 from __future__ import annotations
 
+import io
 import sys
 from pathlib import Path
+
+from PIL import Image
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
@@ -130,26 +135,56 @@ SCREENS = [
 ]
 N_SCREENS = len({s[1].rstrip("abcdefghij") for s in SCREENS})
 
+# Android's captures (android/app/src/test/.../ScreensTest.kt) are named "<number>-<name>". Most are the same screen
+# as an iPhone one, so they share its number and caption; these are the Android-only ones and the renamed ones.
+ANDROID_SAME = {"tripcreate": "tripwhere", "changeday": "daychange"}
+ANDROID_ONLY = {
+    "mustinclude": ("8b", "The plan and the day out", "Must include a place",
+                    "From Plan a day: pick one ready place the plan must keep (the iPhone has the same sheet)."),
+    "sharepreview": ("11c", "The plan and the day out", "Share: the preview",
+                     "The card as it will be sent, before Android's own share sheet opens."),
+    "airports": ("22b", "Trips (Abram's ODYS Trips design)", "Flying from: pick an airport",
+                 "Type a town, city or airport code; the list is airports and city codes, never countries."),
+}
+ANDROID_NOTE = ("Android differences: maps are OpenStreetMap tiles (the iPhone uses Apple Maps), directions open "
+                "Google Maps, and Material system controls replace iOS ones. The words and order are the same.")
+
+
+def android_screens(folder: Path) -> list[tuple]:
+    """(key, number, group, name, caption) for each Android capture, in file order, captions from the iPhone list."""
+    by_key = {s[0]: s for s in SCREENS}
+    out = []
+    for f in sorted(folder.glob("*.png")):
+        stem = f.stem.split("-", 1)[1] if "-" in f.stem else f.stem
+        if stem in ANDROID_ONLY:
+            num, group, name, what = ANDROID_ONLY[stem]
+        else:
+            _, num, group, name, what = by_key[ANDROID_SAME.get(stem, stem)]
+        out.append((f.stem, num, group, name, what))
+    return out
+
 INK = colors.HexColor("#1c2230")
 MUTED = colors.HexColor("#5b6475")
 ACCENT = colors.HexColor("#b4532f")
 RULE = colors.HexColor("#d9dce3")
 
 COVER_LINES = [
-    ("title", "ODYS: the test app, in its new design"),
-    ("sub", f"{N_SCREENS} screens, in the order you'd see them"),
+    ("title", "ODYS: every screen, iPhone and Android"),
+    ("sub", "A design, UI and UX review pack for AI models and people (19 October 2026)"),
     ("gap", ""),
-    ("body", "An iPhone app that plans a day out in London around how you want it to feel, not a list of famous sights."),
-    ("body", "You answer a few quick questions and react to some places you know. It plans a day with a map, and you rate each stop after you've been. More questions, all optional, come after the first plan."),
-    ("body", "These are screenshots from a test build with sample data. Nothing is live yet."),
+    ("head", "What ODYS is"),
+    ("body", "A test app that plans a day out in London around how a person wants to feel (restored, excited, connected, curious, peaceful), not around famous sights. The unit is a 'moment': a specific experience at a place and time, often including how you arrive. People answer a few questions and react to places they know; the app plans a day with real Tube times and the forecast, and they rate each stop 1-5 after they've been. Trips add flights and places to stay, found in the app and booked on the provider's own site."),
+    ("body", "Who it's for now: friends, then strangers in London, testing whether a personal plan beats a generic one. One founder, about 7.5 hours a week. Design language: dark always, amber light, the Newsreader serif, an arch motif, quiet motion."),
+    ("body", "These are screenshots from test builds with sample data (CI, 19 Oct). The iPhone pages come first (58 pictures), then Android (46). The same number means the same screen on both."),
     ("gap", ""),
-    ("head", "Your feedback (about 10 minutes)"),
-    ("body", "1.  Is there a screen that would make you stop or give up? Which one?"),
-    ("body", "2.  Is anything confusing or unclear? Give the screen number."),
-    ("body", "3.  Is there anything you'd change, add or remove?"),
-    ("body", "4.  Would you want to try it for a real day out? Why, or why not?"),
-    ("gap", ""),
-    ("body", "Reply to Abram with the screen numbers. Short answers are best, and honest ones help most, including \"this is boring\"."),
+    ("head", "What we'd like from you"),
+    ("body", "1. Flow: where would a first-time user hesitate or give up? There are 14 questions before the first plan."),
+    ("body", "2. Clarity: anything confusing, ambiguous or too long? Quote the words."),
+    ("body", "3. Visual design: hierarchy, typography, spacing, contrast on the dark theme, consistency between screens and platforms."),
+    ("body", "4. Accessibility: legibility, tap targets, large text, colour contrast, motion."),
+    ("body", "5. Trust: do safety, privacy and 'we earn nothing from these links' come across? Anything that feels pushy or creepy?"),
+    ("body", "6. Platform fit: does each app feel native (iOS Human Interface Guidelines, Android Material)?"),
+    ("body", "7. Your top 10 changes, as a table: Screen number | Problem | Why it matters | Suggested fix | Severity (high, medium, low)."),
 ]
 
 
@@ -186,7 +221,61 @@ def cover(c: canvas.Canvas, w: float, h: float) -> None:
     c.drawString(x, 14 * mm, "ODYS · test build · October 2026")
 
 
-def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
+def small(path: Path) -> ImageReader:
+    """The screenshot as a JPEG about 1,000 px tall: sharp at this size on the page, and a file small enough to
+    upload to an AI model or send by email."""
+    im = Image.open(path).convert("RGB")
+    if im.height > 1000:
+        im = im.resize((round(im.width * 1000 / im.height), 1000), Image.LANCZOS)
+    buf = io.BytesIO()
+    im.save(buf, "JPEG", quality=82, optimize=True)
+    buf.seek(0)
+    return ImageReader(buf)
+
+
+def flows_page(c: canvas.Canvas, w: float, h: float, screens: list[tuple]) -> None:
+    c.showPage()
+    x, y = 28 * mm, h - 30 * mm
+    c.setFont("Helvetica-Bold", 18)
+    c.setFillColor(INK)
+    c.drawString(x, y, "The flows, and the screens in each")
+    y -= 12 * mm
+    groups: dict[str, list[str]] = {}
+    for _, num, group, name, _ in screens:
+        groups.setdefault(group, []).append(f"{num} {name}")
+    col_w = (w - 56 * mm) / 2
+    col, top = 0, y
+    for group, items in groups.items():
+        text = ", ".join(items)
+        need = 6 * mm + 4.4 * mm * len(wrap(c, text, "Helvetica", 9.5, col_w))
+        if y - need < 16 * mm and col == 0:
+            col, y = 1, top
+        cx = x + col * (col_w + 10 * mm)
+        c.setFont("Helvetica-Bold", 11)
+        c.setFillColor(ACCENT)
+        c.drawString(cx, y, group)
+        y -= 5.5 * mm
+        c.setFont("Helvetica", 9.5)
+        c.setFillColor(INK)
+        for line in wrap(c, text, "Helvetica", 9.5, col_w):
+            c.drawString(cx, y, line)
+            y -= 4.4 * mm
+        y -= 3 * mm
+
+
+def divider(c: canvas.Canvas, w: float, h: float, title: str, sub: str) -> None:
+    c.showPage()
+    c.setFont("Helvetica-Bold", 28)
+    c.setFillColor(INK)
+    c.drawString(28 * mm, h / 2 + 6 * mm, title)
+    c.setFont("Helvetica", 12)
+    c.setFillColor(MUTED)
+    for i, line in enumerate(wrap(c, sub, "Helvetica", 12, w - 56 * mm)):
+        c.drawString(28 * mm, h / 2 - 6 * mm - i * 6 * mm, line)
+
+
+def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path, screens: list[tuple] | None = None,
+                  platform: str = "iPhone") -> None:
     per_page, margin, gap = 3, 16 * mm, 14 * mm
     caption_h = 22 * mm
     img_h = h - 2 * margin - caption_h
@@ -194,7 +283,7 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
         png = shots / f"{key}.png"
         return png if png.exists() else shots / f"{key}.jpg"
 
-    present = [(s[1], s) for s in SCREENS if img_path(s[0]).exists()]
+    present = [(s[1], s) for s in (screens or SCREENS) if img_path(s[0]).exists()]
     for start in range(0, len(present), per_page):
         c.showPage()
         group = present[start:start + per_page]
@@ -206,7 +295,7 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
         for k, (num, (key, _, _, name, what)) in enumerate(group):
             x = x0 + k * (img_w + gap)
             y = margin + caption_h
-            c.drawImage(ImageReader(str(img_path(key))), x, y, img_w, img_h, preserveAspectRatio=True)
+            c.drawImage(small(img_path(key)), x, y, img_w, img_h, preserveAspectRatio=True)
             c.setStrokeColor(RULE)
             c.setLineWidth(0.6)
             c.roundRect(x, y, img_w, img_h, 4 * mm, stroke=1, fill=0)
@@ -225,19 +314,28 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path) -> None:
         c.setFillColor(MUTED)
         first, last = group[0][0], group[-1][0]
         span = first if first == last else f"{first}–{last}"
-        c.drawRightString(w - margin, 8 * mm, f"ODYS · screens {span} of {N_SCREENS}")
+        c.drawRightString(w - margin, 8 * mm, f"ODYS · {platform} · screens {span}")
 
 
-def main(shots: str, out: str) -> None:
+def main(args: list[str]) -> None:
+    ios, out = Path(args[0]), args[-1]
+    android = Path(args[1]) if len(args) == 3 else None
     w, h = landscape(A4)
     c = canvas.Canvas(out, pagesize=(w, h))
-    c.setTitle("ODYS: the test app")
+    c.setTitle("ODYS: every screen, iPhone and Android")
     c.setAuthor("Abram")
     cover(c, w, h)
-    screens_pages(c, w, h, Path(shots))
+    flows_page(c, w, h, SCREENS)
+    divider(c, w, h, "iPhone", f"{len(SCREENS)} pictures of {N_SCREENS} screens, in the order a person sees them. "
+                               "Sample data from a test build.")
+    screens_pages(c, w, h, ios, SCREENS, "iPhone")
+    if android:
+        shots = android_screens(android)
+        divider(c, w, h, "Android", f"{len(shots)} pictures. {ANDROID_NOTE}")
+        screens_pages(c, w, h, android, shots, "Android")
     c.save()
     print(f"wrote {out}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1:])
