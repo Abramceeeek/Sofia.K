@@ -146,3 +146,17 @@ def test_the_keygen_command_writes_the_private_key_once(tmp_path, capsys):
     assert "BRAIN_BACKUP_TOKEN" in printed[-2] and len(printed[-1]) >= 40
     assert backup.unseal(backup.seal(b"hello", public), out.read_text()) == b"hello"
     assert backup.main(["keygen", "--out", str(out)]) == 1        # never overwrites a key
+
+
+def test_keys_saved_under_other_names_are_found(monkeypatch):
+    from brain.config import get_settings
+    for n in list(__import__("os").environ):
+        if any(w in n.upper() for w in ("TFL", "MET", "WEATHER", "DATAHUB")):
+            monkeypatch.delenv(n, raising=False)
+    assert get_settings().met_office_key is None and get_settings().tfl_app_key is None
+    monkeypatch.setenv("Met Office DataHub api", " abc ")
+    monkeypatch.setenv("TFL_UNIFIED_API_KEY", "xyz")
+    s = get_settings()
+    assert s.met_office_key == "abc" and s.tfl_app_key == "xyz"
+    monkeypatch.setenv("MET_OFFICE_API_KEY", "exact")          # an exact name wins
+    assert get_settings().met_office_key == "exact"

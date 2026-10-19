@@ -150,7 +150,7 @@ A contact is deleted when you mark the message resolved, and at the latest after
 
 ## Stage 1 keys, alerts and backups
 
-**Keys in Render** (Dashboard → moments-brain → Environment). Never in Git or a chat. `GET /v1/health` says whether each was found, never the value:
+**Keys in Render** (Dashboard → moments-brain → Environment). Never in Git or a chat. `GET /v1/health` says whether each was found, never the value. Besides the names below, any variable whose name has TFL, or METOFFICE, DATAHUB or WEATHER, together with KEY, API, TOKEN or SECRET, is found too:
 
 | What | Variable (other spellings also read) | `/v1/health` shows |
 |---|---|---|

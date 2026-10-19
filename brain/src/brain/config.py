@@ -43,6 +43,16 @@ def _first(*names: str) -> str | None:
     return None
 
 
+def _named_like(includes: tuple[str, ...], kinds: tuple[str, ...] = ("KEY", "API", "TOKEN", "SECRET")) -> str | None:
+    """The first variable (in name order, so the choice is stable) whose name, without spaces or punctuation, contains
+    one of `includes` and one of `kinds`: for a key saved in Render under a name we didn't think of."""
+    for n in sorted(os.environ):
+        u = "".join(ch for ch in n.upper() if ch.isalnum())
+        if any(w in u for w in includes) and any(k in u for k in kinds) and (v := os.environ[n].strip()):
+            return v
+    return None
+
+
 def get_settings() -> Settings:
     return Settings(
         database_url=driver_url(os.environ.get("BRAIN_DATABASE_URL", "sqlite:///./brain.db")),
@@ -53,9 +63,9 @@ def get_settings() -> Settings:
         testflight_url=os.environ.get("BRAIN_TESTFLIGHT_URL") or None,
         duffel_token=os.environ.get("DUFFEL_ACCESS_TOKEN") or None,
         liteapi_key=os.environ.get("LITEAPI_KEY") or None,
-        tfl_app_key=_first("TFL_APP_KEY", "TFL_API_KEY", "TFL_KEY", "TFL_PRIMARY_KEY"),
+        tfl_app_key=_first("TFL_APP_KEY", "TFL_API_KEY", "TFL_KEY", "TFL_PRIMARY_KEY") or _named_like(("TFL",)),
         met_office_key=_first("MET_OFFICE_API_KEY", "MET_OFFICE_KEY", "METOFFICE_API_KEY", "MET_API_KEY",
-                              "MET_OFFICE_DATAHUB_KEY"),
+                              "MET_OFFICE_DATAHUB_KEY") or _named_like(("METOFFICE", "DATAHUB", "WEATHER")),
         backup_key=_first("BRAIN_BACKUP_PUBLIC_KEY"),
         backup_token=_first("BRAIN_BACKUP_TOKEN"),
         ops_webhook_url=_first("BRAIN_OPS_WEBHOOK_URL"),
