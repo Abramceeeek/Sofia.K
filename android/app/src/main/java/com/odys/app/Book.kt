@@ -146,7 +146,7 @@ fun BookResults(model: AppModel, trip: Trip, onHelp: () -> Unit, chooseAirport: 
                 "stays" -> StayList(model, trip)
                 else -> Column(Modifier.surfaceCard(padding = 20.dp, radius = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Nothing to book for this trip.", style = Theme.title3)
-                    Text("It's one day and you don't need a flight. Your day is on the Trip tab.", style = Theme.body.copy(color = Theme.inkSoft))
+                    Text("It's one day and you don't need a flight. Your day is on the home screen.", style = Theme.body.copy(color = Theme.inkSoft))
                 }
             }
         }
@@ -160,10 +160,12 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
     Column(Modifier.fillMaxWidth().background(Theme.background).padding(horizontal = 20.dp).padding(top = 4.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {   // m176: the way back to the trip, and Help, on Book too
-            ArrowLink("Your trip") {   // 19 Oct review: Android's arrow, not "‹"; the words say it's another tab
-                model.tab = MainTab.Trip
-                model.tripPath.clear()
-                model.tripPath += Dest.TripOverview(trip.id)
+            ArrowLink("Your trip") {   // D131: flights and stays sit inside the trip, so back goes to it
+                if (model.tripPath.lastOrNull() == Dest.Book) model.tripPath.removeAt(model.tripPath.lastIndex)
+                if (model.tripPath.lastOrNull() != Dest.TripOverview(trip.id)) {
+                    model.tripPath.clear()
+                    model.tripPath += Dest.TripOverview(trip.id)
+                }
             }
             Spacer(Modifier.weight(1f))
             HelpPill(model.unreadSafety, onHelp)
@@ -364,7 +366,7 @@ fun FlightRow(flight: Flight, adults: Int, onClick: () -> Unit) {
             val tags = flight.tags
             if (!tags.isNullOrEmpty()) {
                 Text(tags.joinToString(" · "), style = Theme.caption.copy(color = Theme.accent),
-                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF3A2F1C)).padding(horizontal = 9.dp, vertical = 3.dp))
+                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Theme.savedBg).padding(horizontal = 9.dp, vertical = 3.dp))
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -375,7 +377,7 @@ fun FlightRow(flight: Flight, adults: Int, onClick: () -> Unit) {
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(Dates.duration(out.durationMin), style = Theme.footnote)
                 Box(Modifier.fillMaxWidth().height(8.dp), contentAlignment = Alignment.Center) {
-                    Box(Modifier.fillMaxWidth().height(2.dp).background(Color(0xFF3A3E46)))
+                    Box(Modifier.fillMaxWidth().height(2.dp).background(Theme.track))
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         repeat(minOf(out.stops, 3)) {
                             Box(Modifier.size(7.dp).background(Theme.accent, CircleShape).border(2.dp, Theme.surface, CircleShape))
@@ -492,7 +494,7 @@ fun LegCard(label: String, leg: FlightLeg) {
             Column(Modifier.width(10.dp).fillMaxHeight().padding(top = 6.dp, bottom = 6.dp), horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(Modifier.size(9.dp).border(2.dp, Theme.accent, CircleShape))
-                Box(Modifier.width(2.dp).weight(1f).background(Color(0xFF3A3E46)))
+                Box(Modifier.width(2.dp).weight(1f).background(Theme.track))
                 Box(Modifier.size(9.dp).background(Theme.accent, CircleShape))
             }
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

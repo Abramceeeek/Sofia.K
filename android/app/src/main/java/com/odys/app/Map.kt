@@ -117,7 +117,7 @@ fun OsmMap(
                 }
             },
         ) {
-            drawRect(Color.Black.copy(alpha = 0.25f))   // dim the tiles so the amber reads (dark always)
+            if (!Theme.day) drawRect(Color.Black.copy(alpha = 0.25f))   // at night, dim the tiles so the amber reads (D130)
             if (route && points.size > 1) {
                 val path = Path().apply {
                     moveTo(points[0].x, points[0].y)

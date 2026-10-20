@@ -37,18 +37,22 @@ enum class Step(val title: String) {
     }
 }
 
-enum class MainTab { Trip, Book, You }
 
-/** Where the Trip tab can go. */
+/** Where the home can go (D131: no tabs). */
+/** D131: what the home leads with. */
+enum class HomePhase { Before, Today, After }
+
 sealed class Dest {
     data object Day : Dest()
     data class TripOverview(val tripId: String) : Dest()
     data class TripDay(val tripId: String, val index: Int, val openChange: Boolean = false) : Dest()
     data class StopCard(val stop: Stop, val planId: Int? = null) : Dest()
     data class Share(val stop: Stop) : Dest()
+    data object Book : Dest()      // D131: flights and stays, inside a trip
+    data object You : Dest()       // D131: behind the home's menu
 }
 
-/** Where the Book tab can go. */
+/** Where flights and stays can go, inside a trip (D131). */
 sealed class BookDest {
     data class FlightDetail(val flight: Flight) : BookDest()
     data class StayDetail(val stay: StayResult) : BookDest()
@@ -139,8 +143,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var revealPlanId by mutableStateOf<Int?>(null)
     var stepProgress by mutableStateOf(0)
 
-    // D120: three tabs, trips kept on the phone, booking on the providers' own sites
-    var tab by mutableStateOf(MainTab.Trip)
+    // D120: trips kept on the phone, booking on the providers' own sites. D131: one home, no tabs
     val tripPath = mutableStateListOf<Dest>()
     val bookPath = mutableStateListOf<BookDest>()
     var trips by mutableStateOf<List<Trip>>(emptyList())
@@ -173,6 +176,23 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     private var sendingRatings = false
     var improved by mutableStateOf(prefs.bool("improved"))
     var morePlacesDone by mutableStateOf(prefs.bool("morePlacesDone"))
+
+    // D130 (Daylight): the colours follow London's light, unless "Always dark" is on
+    var alwaysDark by mutableStateOf(prefs.bool("alwaysDark"))
+        private set
+
+    fun chooseAlwaysDark(on: Boolean) {
+        alwaysDark = on
+        prefs.set("alwaysDark", on)
+        refreshSky()
+    }
+
+    /** D130: the light is set when the app opens or comes back to the front, and when "Now" moves on a step; never
+     *  while someone is reading. Rain comes from today's plan's forecast, when it has one. */
+    fun refreshSky(now: java.time.Instant = java.time.Instant.now()) {
+        val rain = plan?.takeIf { it.date == Dates.todayIso() }?.weather?.rainProb
+        Theme.sky = Sky.at(now, rain, alwaysDark)
+    }
     var moreTasksDone by mutableStateOf(prefs.bool("moreTasksDone"))
     var swappedIn by mutableStateOf<String?>(null)
     var lastRequest by mutableStateOf<PlanRequest?>(null)
@@ -660,7 +680,6 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun openStop(momentId: String) {
         val stop = plan?.stops?.firstOrNull { it.momentId == momentId } ?: return
         route = Route.Home
-        tab = MainTab.Trip
         showNow = false
         tripPath.clear()
         tripPath += Dest.Day
@@ -669,17 +688,51 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     // ---- D119: "Now", during the day --------------------------------------------------------------------------
 
+    /** D130 (the arrival moment): the stops reached today, by "I'm here" or the phone's location. Kept per plan. */
+    var arrivedStops by mutableStateOf<Set<String>>(emptySet())
+
+    fun markArrived(stop: Stop) {
+        val p = plan ?: return
+        if (stop.id in arrivedStops) return
+        arrivedStops = arrivedStops + stop.id
+        prefs.set("arrived.${p.id}", arrivedStops.joinToString("|"))
+    }
+
     fun startDay() {
         val p = plan ?: return
         nowIndex = prefs.int("nowIndex.${p.id}") ?: p.stops.indexOfFirst { it.momentId !in rated }.coerceAtLeast(0)
+        arrivedStops = prefs.string("arrived.${p.id}")?.split("|")?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
         showNow = true
         launch { client.event("start_day", mapOf("stop" to "$nowIndex")) }
+    }
+
+    /** D131: where the day has got to, for the home: the stop "Now" is on, or the first one not yet rated. Reads
+     *  `nowIndex` so the home follows each step. */
+    fun dayProgress(p: Plan): Int {
+        @Suppress("UNUSED_VARIABLE") val follow = nowIndex
+        return prefs.int("nowIndex.${p.id}")
+            ?: p.stops.indexOfFirst { it.rateable && it.momentId !in rated }.let { if (it < 0) p.stops.size else it }
+    }
+
+    /** D131 (shape A): what the home shows first. On the day, the day; once it's done (and for a week, if anything
+     *  was rated), what you rated; otherwise what's next. */
+    fun homePhase(): HomePhase {
+        val p = plan ?: return HomePhase.Before
+        val d = p.date ?: return HomePhase.Before
+        val today = Dates.todayIso()
+        return when {
+            d == today && dayProgress(p) < p.stops.size -> HomePhase.Today
+            d == today -> HomePhase.After
+            d < today && d >= Dates.today().minusDays(7).toString() && p.stops.any { it.momentId in rated } -> HomePhase.After
+            else -> HomePhase.Before
+        }
     }
 
     fun advanceNow() {
         val p = plan ?: return
         nowIndex = minOf(nowIndex + 1, p.stops.size)
         prefs.set("nowIndex.${p.id}", nowIndex)
+        refreshSky()   // D130: the light can change between steps, never while someone is reading
     }
 
     // ---- D118: Help & safety replies ------------------------------------------------------------------------
@@ -748,7 +801,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         for (k in listOf("onboardingDone", "improved", "morePlacesDone", "moreTasksDone", "onboardingStep", "ratedOnce",
             "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone", "testerCode",
             "testBPlanId")) prefs.remove(k)
-        for (k in prefs.keys()) if (k.startsWith("ratings.") || k.startsWith("nowIndex.")) prefs.remove(k)
+        for (k in prefs.keys()) if (k.startsWith("ratings.") || k.startsWith("nowIndex.") || k.startsWith("arrived.")) prefs.remove(k)
         for (f in listOf("plan.json", "request.json", "profile.json", "trips.json", "pending_ratings.json", "handoff.json")) {
             files.delete(f)
         }
@@ -783,7 +836,6 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         surveyDone = false
         pairDone = false
         pair = null
-        tab = MainTab.Trip
         showNow = false
         step = Step.Based
         route = Route.Welcome
@@ -811,7 +863,6 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         makePlan(Dates.nextSaturday(), "12:00", "17:00", 4)
         if (plan == null) return
         client.event("visitor_first_day")
-        tab = MainTab.Trip
         tripPath.clear()
         tripPath += Dest.Day
     }
@@ -858,7 +909,6 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         files.save(Plan.serializer(), chosen, "plan.json")
         files.delete("request.json")
         showPair = false
-        tab = MainTab.Trip
         tripPath.clear()
         tripPath += Dest.Day
     }
@@ -1043,7 +1093,6 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun openTripDay(tripId: String, index: Int, from: String) {
-        tab = MainTab.Trip
         showNow = false
         tripPath.clear()
         tripPath += Dest.TripOverview(tripId)
@@ -1179,7 +1228,9 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         files.delete("handoff.json")
         if (route != Route.Home || System.currentTimeMillis() - saved.at > 24 * 3600 * 1000 || findTrip(saved.tripId) == null) return
         currentTripId = saved.tripId
-        tab = MainTab.Book
+        tripPath.clear()
+        tripPath += Dest.TripOverview(saved.tripId)
+        tripPath += Dest.Book
         book.handoff = Handoff(saved.provider, saved.url, saved.what, saved.price, saved.searchedAt, saved.choice, back = true)
     }
 
@@ -1202,6 +1253,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     /** When the app comes back to the front. */
     fun onResume() {
         clock = System.currentTimeMillis()
+        refreshSky()
         launch {
             wake()
             sendPendingRatings()

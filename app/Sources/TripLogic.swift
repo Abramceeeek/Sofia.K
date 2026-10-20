@@ -2,17 +2,18 @@ import Foundation
 import Observation
 import SwiftUI
 
-/// D120 (ODYS Trips): the three tabs. Trip is home (your day and your trips), Book is flights and stays for the current
-/// trip, You is help, what the app has learned, and your data.
-enum MainTab: Hashable {
-    case trip, book, you
+/// D131 (shape A): what the home leads with: what's next, the day itself, or what you rated.
+enum HomePhase {
+    case before, today, after
 }
 
-/// Where the Trip tab can go.
+/// Where the home can go (D131: no tabs; flights and stays open inside a trip, You from the menu).
 enum TripDest: Hashable {
     case day                       // the current day plan (screen 9)
     case trip(UUID)                // a trip's overview
     case tripDay(UUID, Int)        // one day of a trip
+    case book                      // flights and stays for the current trip
+    case you                       // help, what the app has learned, the light, and your data
 }
 
 /// A link out, about to open: "You're going to Skyscanner", then "Did you book it?" when they come back.
@@ -103,7 +104,6 @@ extension AppModel {
         await makePlan(date: saturday, start: Dates.time(12), end: Dates.time(17), stops: 4)
         guard plan != nil else { return }
         await client.event("visitor_first_day")
-        tab = .trip
         var p = NavigationPath()
         p.append(TripDest.day)
         path = p
@@ -155,7 +155,6 @@ extension AppModel {
         AppModel.cache(chosen, "plan.json")
         AppModel.cache(nil as PlanRequest?, "request.json")
         showPair = false
-        tab = .trip
         var p = NavigationPath()
         p.append(TripDest.day)
         path = p
@@ -374,9 +373,8 @@ extension AppModel {
         if findTrip(tripId)?.days.contains(where: { $0.index == index }) != true { await planDay(tripId, index) }
     }
 
-    /// Opens one day of a trip on the Trip tab, to look at (and change) before it's "your day".
+    /// Opens one day of a trip from the home, to look at (and change) before it's "your day".
     func openTripDay(_ tripId: UUID, _ index: Int, from source: String) {
-        tab = .trip
         var p = NavigationPath()
         p.append(TripDest.trip(tripId))
         p.append(TripDest.tripDay(tripId, index))
@@ -536,7 +534,10 @@ extension AppModel {
         AppModel.cache(nil as SavedHandoff?, "handoff.json")
         guard route == .home, Date.now.timeIntervalSince(saved.at) < 24 * 3600, findTrip(saved.tripId) != nil else { return }
         currentTripId = saved.tripId
-        tab = .book
+        var p = NavigationPath()   // D131: back inside the trip's flights and stays
+        p.append(TripDest.trip(saved.tripId))
+        p.append(TripDest.book)
+        path = p
         book.handoff = Handoff(provider: saved.provider, url: saved.url, what: saved.what, price: saved.price,
                                searchedAt: saved.searchedAt, choice: saved.choice, back: true)
     }

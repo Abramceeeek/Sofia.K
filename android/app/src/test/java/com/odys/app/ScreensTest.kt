@@ -67,6 +67,7 @@ class ScreensTest {
         model.book.stays = stays
         model.book.resultsFor = trip.id
         model.route = Route.Home
+        Theme.sky = Sky.Night   // D130: the night look unless a test asks for the day
     }
 
     /** Draws the app and saves the top window (a sheet, when one is open), drawn straight into a picture. */
@@ -121,12 +122,54 @@ class ScreensTest {
     @Test fun tripDays() = show("22a-tripdays") { editingTrip = trips.first(); editStep = 3; showCreate = true }
     // 20 Oct (round 2): a new trip on its last question, as on the iPhone ("Make my trip", not "Plan the trip again")
     @Test fun tripFeel() = show("23-tripfeel") { editingTrip = trips.first().copy(id = "draft"); editStep = 4; showCreate = true }
-    @Test fun flights() = show("26-flights") { tab = MainTab.Book; book.segment = "flights" }
-    @Test fun flightFilters() = show("27-flightfilters") { tab = MainTab.Book; book.segment = "flights"; book.showFilters = true }
-    @Test fun flight() = show("28-flight") { tab = MainTab.Book; bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }
-    @Test fun stays() = show("29-stays") { tab = MainTab.Book; book.segment = "stays" }
-    @Test fun stay() = show("32-stay") { tab = MainTab.Book; bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
-    @Test fun you() = show("33-you") { tab = MainTab.You }
+    // D131: flights and stays open inside the trip, and You from the home's menu
+    private fun AppModel.openBook() { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.Book }
+    @Test fun flights() = show("26-flights") { openBook(); book.segment = "flights" }
+    @Test fun flightFilters() = show("27-flightfilters") { openBook(); book.segment = "flights"; book.showFilters = true }
+    @Test fun flight() = show("28-flight") { openBook(); bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }
+    @Test fun stays() = show("29-stays") { openBook(); book.segment = "stays" }
+    @Test fun stay() = show("32-stay") { openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
+    @Test fun you() = show("33-you") { tripPath += Dest.You }
+
+    // D131 (shape A): the home on the day (part-way through) and after it (everything rated)
+    private fun AppModel.today(at: Int) {
+        plan = plan!!.copy(date = Dates.todayIso())
+        prefs.set("nowIndex.${plan!!.id}", at)
+        nowIndex = at
+    }
+    @Test fun homeToday() = show("19b-hometoday") { today(1) }
+    @Test fun homeAfter() = show("19c-homeafter") {
+        today(plan!!.stops.size)
+        val r = plan!!.stops.filter { it.rateable }.mapIndexed { i, st -> st.momentId to listOf(5, 4, 3, 4, 5)[i % 5] }.toMap()
+        myRatings = r; rated = r.keys
+    }
+
+    // D130 (Daylight): the main screens again by day, as they look between sunrise and sunset
+    private fun day(name: String, setup: AppModel.() -> Unit = {}) = show(name) { Theme.sky = Sky.Day; setup() }
+    @Test fun homeDay() = day("19d-home-day")
+    @Test fun homeTodayDay() = day("19e-hometoday-golden") { Theme.sky = Sky.Golden; today(1) }
+    @Test fun planDayLight() = day("09e-plan-day") { tripPath += Dest.Day }
+    @Test fun nowDay() = day("10d-now-day") { today(1); showNow = true }
+    @Test fun nowArrived() = day("10e-now-arrived") {
+        today(1); arrivedStops = setOf(plan!!.stops[1].id); showNow = true
+    }
+    @Test fun tripDayLight() = day("24b-trip-day") { tripPath += Dest.TripOverview(trips.first().id) }
+    @Test fun youDay() = day("33b-you-day") { tripPath += Dest.You }
+    @Test fun archSun() {   // D130: the sun on "Now" at 70% of the daylight, in the golden hour
+        Theme.sky = Sky.Golden
+        compose.setContent {
+            androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.screen()
+                .then(androidx.compose.ui.Modifier.skyBackground()), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                BreathingArch(showSun = true, sunAt = 0.7)
+            }
+        }
+        shoot("10f-arch-sun")
+    }
+    @Test fun safetyDay() {
+        Theme.sky = Sky.Day
+        compose.setContent { RootView(model); SafetyView(model) {} }
+        shoot("13b-safety-day")
+    }
 
     @Test fun rating() {
         val stop = model.plan!!.stops.first { it.rateable }
@@ -173,14 +216,14 @@ class ScreensTest {
     }
 
     @Test fun handoff() = show("28a-handoff") {
-        tab = MainTab.Book
+        openBook()
         val f = book.flights!!.results.first()
         book.handoff = Handoff("Skyscanner", "https://www.skyscanner.net", "Return flight", f.price, null,
             TripChoice("flight", f.airline, "Skyscanner", f.price, false))
     }
 
     @Test fun handoffBack() = show("28b-handoffback") {
-        tab = MainTab.Book
+        openBook()
         val f = book.flights!!.results.first()
         book.handoff = Handoff("Skyscanner", "https://www.skyscanner.net", "Return flight", f.price, null,
             TripChoice("flight", f.airline, "Skyscanner", f.price, false), back = true)

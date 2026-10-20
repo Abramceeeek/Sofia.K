@@ -4,6 +4,8 @@ The answers are kept in `design/reviews/2026-10-20-ai-natural-feel.md` (Answers 
 
 ## Decision first
 
+**Built (D131, 20 Oct), in both apps:** Daylight with "Always dark", settling motion, the day as a path and the arrival moment, with the shape Abram picked (A, with D's path). Still to do: the 5-person test below, and the outdoor check on Abram's iPhone.
+
 **The idea behind the pick:** the nature is in the day out. The app shouldn't decorate itself with leaves. It should feel as if it belongs to the day you're having, then get out of the way (Answer 2, and Claude agrees).
 
 **Build these five, in this order:**

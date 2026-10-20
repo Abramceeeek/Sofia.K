@@ -1,45 +1,75 @@
 import SwiftUI
 import UIKit
 
-/// ODYS (D119, from Abram's design files): warm ink on charcoal, one amber light, Newsreader serif for what matters
-/// and the system font for the rest. Dark always (`.preferredColorScheme(.dark)` at the root), so every colour here is
-/// fixed. The older token names (surface, inkSoft, accentFill …) are kept, so every screen picks up the new look.
+/// ODYS (D119, from Abram's design files): warm ink, one amber light, Newsreader serif for what matters and the system
+/// font for the rest. D130 (Daylight): every colour is a night and a day value; the root sets the colour scheme from
+/// London's light (`AppModel.sky`), so each screen and sheet follows it. The night values are the D119 look. The same
+/// values as android/…/Theme.kt, where ThemeTest checks every text colour is 4.5:1 or better on every ground and sky.
 enum Theme {
     // ---- colours ---------------------------------------------------------------------------------
-    static let uiBackground = UIColor(hex: 0x111317)
-    static let uiInk = UIColor(hex: 0xF4EBDD)
+    /// A colour with its night value and its day value.
+    static func ui(_ night: UInt32, _ day: UInt32, _ nightAlpha: CGFloat = 1, _ dayAlpha: CGFloat = 1) -> UIColor {
+        UIColor { $0.userInterfaceStyle == .light ? UIColor(hex: day, alpha: dayAlpha) : UIColor(hex: night, alpha: nightAlpha) }
+    }
 
-    static let background = Color(hex: 0x111317)     // the phone
-    static let calm = Color(hex: 0x0B0C0E)           // "Now": the screen gets quieter while you're out
-    static let surface = Color(hex: 0x1A1D23)        // cards and tiles
-    static let deep = Color(hex: 0x15171C)           // the day's curve and the map
-    static let surfaceHigh = Color(hex: 0x2A2E36)    // a chosen tab, a field
-    static let selected = Color(hex: 0x241F17)       // a chosen tile: a little warmth
-    static let ink = Color(hex: 0xF4EBDD)
-    static let inkSoft = Color(hex: 0xCFC6B8)
-    static let inkTertiary = Color(hex: 0xB5AB9C)
-    static let muted = Color(hex: 0xA89F92)          // labels; 7:1 on the background
-    static let line = Color(hex: 0x2C2F36)           // the arch's frame, the path not yet walked
-    static let outline = Color(hex: 0xF4EBDD).opacity(0.12)
-    static let outlineStrong = Color(hex: 0xF4EBDD).opacity(0.18)
-    static let hairline = Color(hex: 0xF4EBDD).opacity(0.07)
-    /// The one light: amber for text, icons, fills and the tint.
-    static let accent = Color(hex: 0xFFC665)
+    static func pair(_ night: UInt32, _ day: UInt32, _ nightAlpha: CGFloat = 1, _ dayAlpha: CGFloat = 1) -> Color {
+        Color(uiColor: ui(night, day, nightAlpha, dayAlpha))
+    }
+
+    static let uiBackground = ui(0x111317, 0xF4F1EA)
+    static let uiInk = ui(0xF4EBDD, 0x1E2326)
+
+    static let background = pair(0x111317, 0xF4F1EA)     // the phone
+    static let calm = pair(0x0B0C0E, 0xF4F1EA)           // "Now": the screen gets quieter while you're out
+    static let surface = pair(0x1A1D23, 0xFFFDF8)        // cards and tiles
+    static let deep = pair(0x15171C, 0xECE8DF)           // the day's curve and the map
+    static let surfaceHigh = pair(0x2A2E36, 0xE7E2D8)    // a chosen tab, a field
+    static let selected = pair(0x241F17, 0xF5E8D2)       // a chosen tile: a little warmth
+    static let ink = pair(0xF4EBDD, 0x1E2326)
+    static let inkSoft = pair(0xCFC6B8, 0x3B4044)
+    static let inkTertiary = pair(0xB5AB9C, 0x4C5156)
+    static let muted = pair(0xA89F92, 0x5A5F64)          // labels
+    static let line = pair(0x2C2F36, 0xD6D0C4)           // the arch's frame, the path not yet walked
+    static let outline = pair(0xF4EBDD, 0x1E2326, 0.12, 0.16)
+    static let outlineStrong = pair(0xF4EBDD, 0x1E2326, 0.18, 0.24)
+    static let hairline = pair(0xF4EBDD, 0x1E2326, 0.07, 0.09)
+    /// The one light: amber for text, icons, fills and the tint (deepened by day so it reads on paper).
+    static let accent = pair(0xFFC665, 0x80521A)
     static let accentFill = accent
-    static let amberDeep = Color(hex: 0xE5A93C)      // eyebrows, a pressed button
-    static let amberLight = Color(hex: 0xFFE7B0)     // the top of the arch's light
-    static let onAccent = Color(hex: 0x111317)
+    static let amberDeep = pair(0xE5A93C, 0x6E4614)      // eyebrows, a pressed button
+    static let amberLight = pair(0xFFE7B0, 0xE8B76A)     // the top of the arch's light
+    static let onAccent = pair(0x111317, 0xFFFDF8)
     // Help & safety: one red, only for emergencies
-    static let danger = Color(hex: 0xD0363B)         // "Call 999": white on it is 4.9:1 (UX checklist, 9 Oct; was E5484D, 3.9:1)
-    static let emergencyBg = Color(hex: 0x3A1416)
-    static let emergencyBorder = Color(hex: 0x7A2A2E)
-    static let emergencyTitle = Color(hex: 0xFFDCDC)
-    static let emergencyText = Color(hex: 0xF6D2D2)
+    static let danger = pair(0xD0363B, 0xB8262C)         // "Call 999": white on it is 4.9:1 at night, 6.3:1 by day
+    static let dangerInk = pair(0xFF8A8D, 0xB8262C)      // red as text (D130: the fill was 3.8:1 as text at night)
+    static let emergencyBg = pair(0x3A1416, 0xFBE4E2)
+    static let emergencyBorder = pair(0x7A2A2E, 0xE7AEAD)
+    static let emergencyTitle = pair(0xFFDCDC, 0x7A1518)
+    static let emergencyText = pair(0xF6D2D2, 0x6A2023)
+    // Small parts that had their own colours
+    static let track = pair(0x3A3E46, 0xCFC8BB)          // a progress track, a timeline
+    static let ring = pair(0x4A4E57, 0xA9A398)           // a step not yet done
+    static let warnBg = pair(0x3A1F1C, 0xF8E1DC)
+    static let warnInk = pair(0xF0A090, 0x8A2A1C)
+    static let okBg = pair(0x1F3A2A, 0xDDEFE3)
+    static let okInk = pair(0x9BE0B0, 0x1F5A35)
+    static let savedBg = pair(0x3A2F1C, 0xF5E8D2)
     // The share card is cream, so it reads the same wherever it's sent
     static let cream = Color(hex: 0xF4EBDD)
     static let creamInk = Color(hex: 0x111317)
     static let creamSoft = Color(hex: 0x6B5E4C)
     static let creamQuote = Color(hex: 0x3A3128)
+
+    /// D130: the sky at the top of the main screens, which fades into the page.
+    static func skyTop(_ sky: Sky) -> Color {
+        switch sky {
+        case .morning: return Color(hex: 0xE9DCE3)
+        case .day: return Color(hex: 0xDDEBE6)
+        case .golden: return Color(hex: 0xF4D6B3)
+        case .rain: return Color(hex: 0xD5DCE2)
+        case .night: return Color(hex: 0x1A2030)
+        }
+    }
 
     // ---- type: serif for titles, answers and reactions; system for the rest. All scale with Dynamic Type --------
     static let serifName = "Newsreader16pt-Regular"   // the variable font's default instance (Sources/Fonts)
@@ -79,31 +109,13 @@ enum Theme {
         UINavigationBar.appearance().scrollEdgeAppearance = edge
         UINavigationBar.appearance().compactAppearance = bar
 
-        // D120 (ODYS Trips): the tab bar, nearly opaque on the page colour with a hairline above; amber when chosen
-        let tab = UITabBarAppearance()
-        tab.configureWithDefaultBackground()
-        tab.backgroundEffect = UIBlurEffect(style: .dark)
-        tab.backgroundColor = uiBackground.withAlphaComponent(0.92)
-        tab.shadowColor = uiInk.withAlphaComponent(0.08)
-        let item = UITabBarItemAppearance()
-        let off = UIColor(hex: 0x8E867A), on = UIColor(hex: 0xFFC665)
-        let font = UIFont.systemFont(ofSize: 11, weight: .medium)
-        item.normal.iconColor = off
-        item.normal.titleTextAttributes = [.foregroundColor: off, .font: font]
-        item.selected.iconColor = on
-        item.selected.titleTextAttributes = [.foregroundColor: on, .font: font]
-        tab.stackedLayoutAppearance = item
-        tab.inlineLayoutAppearance = item
-        tab.compactInlineLayoutAppearance = item
-        UITabBar.appearance().standardAppearance = tab
-        UITabBar.appearance().scrollEdgeAppearance = tab
     }
 }
 
 extension UIColor {
-    convenience init(hex: UInt32) {
+    convenience init(hex: UInt32, alpha: CGFloat = 1) {
         self.init(red: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
-                  blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
+                  blue: CGFloat(hex & 0xFF) / 255, alpha: alpha)
     }
 }
 

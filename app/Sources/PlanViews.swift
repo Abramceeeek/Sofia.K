@@ -1,8 +1,8 @@
 import MapKit
 import SwiftUI
 
-/// D120 (ODYS Trips): the Trip tab. Home is "Where to next?" (plan a trip, your day, your trips); your day, a trip and
-/// a trip's day open from it. Help & safety and your data stay one tap away at the top (and in the You tab).
+/// D131 (shape A): the home and everything that opens from it: your day, a trip, its flights and stays, a trip's day
+/// and You. Help & safety stays one tap away at the top; You, your data and the light are behind the menu.
 struct HomeView: View {
     @State private var showSafety = false
     @State private var showSettings = false
@@ -13,12 +13,14 @@ struct HomeView: View {
         NavigationStack(path: $model.path) {   // D118: a rating reminder opens its stop
             TripHome(onHelp: { showSafety = true }, onData: { showSettings = true })
                 .toolbar(.hidden, for: .navigationBar)
-                .statusBarShade()
+                .skyStatusBarShade()
                 .navigationDestination(for: TripDest.self) { dest in
                     switch dest {
                     case .day: DayView(onHelp: { showSafety = true }, onData: { showSettings = true }, pushed: true)
                     case .trip(let id): TripOverview(tripId: id, onHelp: { showSafety = true })
                     case .tripDay(let id, let index): TripDayView(tripId: id, index: index)
+                    case .book: BookView()
+                    case .you: YouView(onBack: { if !model.path.isEmpty { model.path.removeLast() } })
                     }
                 }
                 .navigationDestination(for: Stop.self) { stop in
@@ -53,7 +55,7 @@ struct DayView: View {
         }
         .navigationTitle("Your day")
         .toolbar(.hidden, for: .navigationBar)
-        .statusBarShade()
+        .skyStatusBarShade()
     }
 }
 
@@ -372,7 +374,7 @@ struct PlanView: View {
     var demoScroll: String?                    // CI screenshots only: scrolled to this part
     var onHelp: () -> Void = {}
     var onData: () -> Void = {}
-    var onBack: (() -> Void)?                  // D120: opened from the Trip tab's home
+    var onBack: (() -> Void)?                  // D120, D131: opened from the home
     @AppStorage("planLayout") private var savedLayout = "list"
     @State private var reveal: Double = 1      // D117: 0…1 through the reveal; 1 = everything shown
     @State private var showNewPlan = false
@@ -393,6 +395,13 @@ struct PlanView: View {
                 header
                 // 19 Oct review: List or Map straight under the headline, so the map is there the moment it's chosen
                 ViewToggle(selection: layout)
+                if asList {   // D130: the day as a path, drawn where the stops really are; the list sits under it
+                    DayPath(stops: plan.stops,
+                            current: plan.date == Dates.isoDay.string(from: .now) ? model.dayProgress(plan) : nil,
+                            height: 170)
+                        .background(Theme.deep, in: RoundedRectangle(cornerRadius: 22))
+                        .opacity(phase(Self.route.lowerBound, Self.route.upperBound))
+                }
                 if !asList {
                     VStack(alignment: .leading, spacing: 8) {
                         PlanMap(stops: plan.stops, progress: phase(Self.route.lowerBound, Self.route.upperBound))
@@ -431,7 +440,7 @@ struct PlanView: View {
             if let demoScroll { proxy.scrollTo(demoScroll, anchor: .top) }
         }
         }
-        .background(Theme.background)
+        .skyBackground()   // D130
         .animation(reduceMotion ? nil : Motion.fade, value: model.reminderAsked)
         .confirmationDialog("Make a new plan for this day?", isPresented: $confirmRegenerate, titleVisibility: .visible) {
             Button("Plan this day again") { Task { await model.regenerate() } }
@@ -1264,7 +1273,7 @@ struct WayIn: View {
                         VStack(spacing: 0) {
                             Circle()
                                 .fill(on || done ? Theme.accent : Color.clear)
-                                .overlay(Circle().strokeBorder(on || done ? Theme.accent : Color(hex: 0x4A4E57), lineWidth: 2))
+                                .overlay(Circle().strokeBorder(on || done ? Theme.accent : Theme.ring, lineWidth: 2))
                                 .frame(width: on ? 16 : 12, height: on ? 16 : 12)
                                 .shadow(color: isReveal && on ? Theme.accent.opacity(0.9) : .clear, radius: 8)
                                 .frame(width: 22, height: 22)

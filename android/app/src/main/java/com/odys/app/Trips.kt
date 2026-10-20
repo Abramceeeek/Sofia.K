@@ -1,5 +1,8 @@
 package com.odys.app
 
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.layout.RowScope
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -92,14 +95,20 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-// D120: the ODYS Trips design: three tabs, "Plan a trip" in five questions (D122 added "Your days"), the trip as a
-// checklist (getting there, where you'll stay, your days) and a running total (app/Sources/TripViews.swift).
+// D120: the ODYS Trips design: "Plan a trip" in five questions (D122 added "Your days"), the trip as a checklist
+// (getting there, where you'll stay, your days) and a running total (app/Sources/TripViews.swift). D131: its three tabs
+// became one home that follows the time.
 
-// ---- the tabs -------------------------------------------------------------------------------------------------
+// ---- the living home (D131: shape A) -----------------------------------------------------------------------
 
-/** Home after onboarding. Before the first plan, people in the UK get the survey and the blind pair (Build 2) first. */
+/**
+ * Home after onboarding (D131, shape A): no tabs. One home that follows the time: before a day it offers a day out or
+ * a trip; on the day it is the day; afterwards it holds what you rated. Flights and stays open inside a trip; You,
+ * your data and the light sit behind the menu, and Help stays one tap away. Before the first plan, people in the UK
+ * get the survey and the blind pair (Build 2) first.
+ */
 @Composable
-fun MainTabs(model: AppModel) {
+fun LivingHome(model: AppModel) {
     if (model.needsFirstRun) {
         FirstPlanFlow(model)
         return
@@ -108,16 +117,7 @@ fun MainTabs(model: AppModel) {
     var showSettings by remember { mutableStateOf(false) }
     val onHelp = { showSafety = true }
     val onData = { showSettings = true }
-    Column(Modifier.screen()) {
-        Box(Modifier.weight(1f)) {
-            when (model.tab) {
-                MainTab.Trip -> TripTab(model, onHelp, onData)
-                MainTab.Book -> Box(Modifier.statusBarsPadding()) { BookView(model, onHelp) }
-                MainTab.You -> Box(Modifier.statusBarsPadding()) { YouView(model, onHelp, onData) }
-            }
-        }
-        TabBar(model)
-    }
+    Box(Modifier.screen()) { HomeStack(model, onHelp, onData) }
     if (model.showCreate) TripCreateFlow(model)
     if (model.showPair) FullSheet(model, { model.showPair = false }) { PairFlow(model) }
     if (model.showNow) NowView(model)
@@ -126,125 +126,77 @@ fun MainTabs(model: AppModel) {
     model.book.handoff?.let { HandoffSheet(model, it) }
 }
 
-/** The design's tab bar: an arch for Trip, a paper plane for Book, a person for You. Tapping the open tab goes to its top. */
+/** Home, then your day, a trip, its flights and stays, a trip's day, a stop or You, one on top of another. Back goes
+ *  down a level. */
 @Composable
-fun TabBar(model: AppModel) {
-    Column(Modifier.fillMaxWidth().background(Theme.background).navigationBarsPadding()) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Theme.hairline))
-        Row(Modifier.fillMaxWidth().height(58.dp)) {
-            for ((tab, label) in listOf(MainTab.Trip to "Trip", MainTab.Book to "Book", MainTab.You to "You")) {
-                val on = model.tab == tab
-                val color = if (on) Theme.accent else Theme.tabOff
-                Column(
-                    Modifier.weight(1f).fillMaxHeight().clickable(role = Role.Tab) {
-                        if (on && tab == MainTab.Trip) model.tripPath.clear()
-                        if (on && tab == MainTab.Book) model.bookPath.clear()
-                        model.tab = tab
-                    }.semantics { selected = on },
-                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
-                ) {
-                    TabIcon(tab, color)
-                    Text(label, style = Theme.caption.copy(color = color, fontSize = 11.sp))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun TabIcon(tab: MainTab, color: Color) {
-    Canvas(Modifier.size(24.dp, 22.dp)) {
-        val s = density
-        val p = Path()
-        when (tab) {
-            MainTab.Trip -> {
-                p.moveTo(12 * s, 2 * s)
-                p.cubicTo(8 * s, 2 * s, 5 * s, 5 * s, 5 * s, 9 * s)
-                p.lineTo(5 * s, 20 * s)
-                p.lineTo(19 * s, 20 * s)
-                p.lineTo(19 * s, 9 * s)
-                p.cubicTo(19 * s, 5 * s, 16 * s, 2 * s, 12 * s, 2 * s)
-                p.close()
-            }
-            MainTab.Book -> {
-                p.moveTo(3 * s, 12 * s)
-                p.lineTo(21 * s, 4 * s)
-                p.lineTo(15 * s, 20 * s)
-                p.lineTo(12 * s, 13 * s)
-                p.close()
-            }
-            MainTab.You -> {
-                p.addOval(androidx.compose.ui.geometry.Rect(8 * s, 3 * s, 16 * s, 11 * s))
-                p.moveTo(4 * s, 21 * s)
-                p.cubicTo(4 * s, 16 * s, 8 * s, 14 * s, 12 * s, 14 * s)
-                p.cubicTo(16 * s, 14 * s, 20 * s, 16 * s, 20 * s, 21 * s)
-            }
-        }
-        drawPath(p, color, style = Stroke(1.8f * s, cap = StrokeCap.Round, join = StrokeJoin.Round))
-    }
-}
-
-/** The Trip tab: home, then your day, a trip, a trip's day or a stop, one on top of another. Back goes down a level. */
-@Composable
-fun TripTab(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
+fun HomeStack(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
     val holder = rememberSaveableStateHolder()
     val top = model.tripPath.lastOrNull()
     val pop: () -> Unit = { if (model.tripPath.isNotEmpty()) model.tripPath.removeAt(model.tripPath.lastIndex) }
     BackHandler(enabled = top != null, onBack = pop)
     holder.SaveableStateProvider("${model.tripPath.size}:${top.hashCode()}") {
         when (top) {
-            null -> Box(Modifier.statusBarsPadding()) { TripHome(model, onHelp, onData) }
-            Dest.Day -> Box(Modifier.statusBarsPadding()) { DayView(model, onHelp, onData, onBack = pop) }
+            null -> Box(Modifier.skyBackground().statusBarsPadding()) { TripHome(model, onHelp, onData) }
+            Dest.Day -> Box(Modifier.skyBackground().statusBarsPadding()) { DayView(model, onHelp, onData, onBack = pop) }
+            Dest.Book -> Box(Modifier.statusBarsPadding()) { BookView(model, onHelp) }
+            Dest.You -> Box(Modifier.statusBarsPadding()) { YouView(model, onHelp, onData, onBack = pop) }
             is Dest.TripOverview -> Box(Modifier.statusBarsPadding()) { TripOverview(model, top.tripId, onHelp, pop) }
             is Dest.TripDay -> Box(Modifier.statusBarsPadding()) { TripDayView(model, top.tripId, top.index, top.openChange, pop) }
             is Dest.StopCard -> StopView(model, top.stop, top.planId, pop)
             is Dest.Share -> {
-                Box(Modifier.statusBarsPadding()) { TripHome(model, onHelp, onData) }
+                Box(Modifier.skyBackground().statusBarsPadding()) { TripHome(model, onHelp, onData) }
                 SharePreview(model, top.stop, model.myRatings[top.stop.momentId] ?: 5, pop)
             }
         }
     }
 }
 
-// ---- Trip tab: home ---------------------------------------------------------------------------------------------
+// ---- home ---------------------------------------------------------------------------------------------
 
-/** "Where to next?": one big action (Plan a trip), then your day and your trips underneath. */
+/**
+ * The home (D131, shape A): it follows the time. On the day, the day leads (its path, and one button back to "Now");
+ * once it's done, what you rated; then "Where to next?" with a day out and a trip as equals (D129).
+ */
 @Composable
 fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
     var planningDay by remember { mutableStateOf(false) }
     @Suppress("UNUSED_VARIABLE") val tick = model.clock   // journey round 2: Today / Tomorrow follow the date
+    val plan = model.plan
+    val phase = model.homePhase()
     ScrollPage(spacing = 22) {
-        TopBar(Dates.greeting, model.unreadSafety, onHelp, onData)
-        PageTitle("Where to next?", Modifier.settle(0), style = Theme.display)
-        val today = model.todayInTrip()
+        TopBar(Dates.greeting, model.unreadSafety, onHelp, null, onMenu = { model.tripPath += Dest.You })
+        if (plan != null && phase == HomePhase.Today) TodayHome(model, plan)
+        if (plan != null && phase == HomePhase.After) MemoriesCard(model, plan)
+        PageTitle(if (phase == HomePhase.Before) "Where to next?" else "And next?", Modifier.settle(1),
+            style = if (phase == HomePhase.Before) Theme.display else Theme.h1)
+        val today = if (phase == HomePhase.Today) null else model.todayInTrip()
         val tomorrow = if (today == null) model.tomorrowInTrip() else null
         if (today != null) {   // journey audit: during a trip, today comes first
             Box(Modifier.settle(1)) { TodayInTripCard(model, today.first, today.second, today.third) }
         } else if (tomorrow != null) {   // Abram's comment (8 Oct): then tomorrow, to look ahead
             Box(Modifier.settle(1)) { TomorrowInTripCard(model, tomorrow.first, tomorrow.second, tomorrow.third) }
         }
-        val plan = model.plan
         @Composable
-        fun yourDay(p: Plan, m: Modifier) = Column(m, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Your day", style = Theme.subheadline.copy(color = Theme.muted))
+        fun comingUp(p: Plan, m: Modifier) = Column(m, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            val past = (p.date ?: "") < Dates.todayIso()
+            Text(if (past) "Your last day out" else "Coming up", style = Theme.subheadline.copy(color = Theme.muted))
             DayRow(p) { model.tripPath += Dest.Day }
         }
-        if (model.isVisitor) {
-            Box(Modifier.settle(1)) { PlanTripCard { model.showCreate = true } }
-            if (plan != null) yourDay(plan, Modifier.settle(2))
-            else {   // journey round 2: with no day yet, "Plan a day" was out of reach
-                SecondaryButton("Plan a day out instead", Modifier.settle(2), icon = Icons.Filled.WbSunny) { planningDay = true }
+        val showDay = plan != null && phase == HomePhase.Before
+        // D129: a day out and a trip are equals, side by side; people abroad see the trip first
+        Row(Modifier.fillMaxWidth().settle(2).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            val dayOut: @Composable RowScope.() -> Unit = {
+                ChoiceCard("A day out", "In London, around what you enjoy: your hours, your start, places that fit you.",
+                    Icons.Filled.WbSunny, lead = !model.isVisitor, modifier = Modifier.weight(1f).fillMaxHeight()) { planningDay = true }
             }
-        } else {
-            // 20 Oct (round 2): people who live here mostly want a day out, so that leads; a trip is one tap below
-            if (plan != null) yourDay(plan, Modifier.settle(1))
-            Box(Modifier.settle(1)) {
-                PlanTripCard("Plan a day out",
-                    "A day in London around what you enjoy: your hours, where you start, and the places that fit you.") { planningDay = true }
+            val trip: @Composable RowScope.() -> Unit = {
+                ChoiceCard("A trip", "A few days away: getting there, a place to stay, and days that fit you.",
+                    Icons.Filled.Flight, lead = model.isVisitor, modifier = Modifier.weight(1f).fillMaxHeight()) { model.showCreate = true }
             }
-            SecondaryButton("Plan a trip instead", Modifier.settle(2), icon = Icons.Filled.Flight) { model.showCreate = true }
-            if (!model.pairDone) Box(Modifier.settle(2)) { PairInviteRow { model.showPair = true } }
+            if (model.isVisitor) { trip(); dayOut() } else { dayOut(); trip() }
         }
+        if (showDay) comingUp(plan!!, Modifier.settle(3))
+        if (!model.isVisitor && !model.pairDone) Box(Modifier.settle(3)) { PairInviteRow { model.showPair = true } }
         if (model.trips.isNotEmpty()) {
             Column(Modifier.settle(3), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Your trips", style = Theme.subheadline.copy(color = Theme.muted))
@@ -262,6 +214,91 @@ fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
                 })
             }
         }
+    }
+}
+
+/** D129: a day out or a trip, as two equal cards. The one that leads for this person is lit a little. */
+@Composable
+fun ChoiceCard(title: String, text: String, icon: ImageVector, lead: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
+        modifier.pressable(haptic = true, onClick = onClick).clip(RoundedCornerShape(22.dp))
+            .background(if (lead) Theme.selected else Theme.surface)
+            .border(1.dp, if (lead) Theme.accent.copy(alpha = 0.35f) else Theme.outline, RoundedCornerShape(22.dp))
+            .padding(18.dp).semantics(mergeDescendants = true) { role = Role.Button },
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(icon, null, tint = Theme.accent, modifier = Modifier.size(26.dp))
+        Text(title, style = Theme.serif(23.sp))
+        Text(text, style = Theme.subheadline.copy(color = Theme.inkTertiary))
+    }
+}
+
+/** D131, on the day: the day's path with where you've got to, the stops and times under it, and one way back to
+ *  "Now". The whole plan is one tap away. */
+@Composable
+fun TodayHome(model: AppModel, plan: Plan) {
+    val i = model.dayProgress(plan)
+    val (head, _) = headlineParts(plan.feelLine?.takeIf { !plan.isBlind && it.isNotEmpty() } ?: plan.title ?: "Your day")
+    Column(Modifier.settle(0), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Eyebrow("Today · ${Dates.shortDay(plan.date ?: Dates.todayIso())}")
+        Text(head, style = Theme.h1)
+        Column(Modifier.surfaceCard(padding = 16.dp, radius = 24.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            DayPath(plan.stops, current = i, height = 170.dp)
+            plan.stops.forEachIndexed { j, stop -> PathStopRow(j, stop, done = j < i, here = j == i, first = j == 0) }
+        }
+        PrimaryButton(if (i == 0) "Start the day" else "Back to now") { model.startDay() }
+        QuietButton("See the whole day", Modifier.fillMaxWidth()) { model.tripPath += Dest.Day }
+    }
+}
+
+/** A stop under the path: its number, name, time and the word for how it moves the day. */
+@Composable
+fun PathStopRow(index: Int, stop: Stop, done: Boolean, here: Boolean, first: Boolean) {
+    Column {
+        if (!first) Hairline()
+        Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).semantics(mergeDescendants = true) {},
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(Modifier.size(28.dp).clip(CircleShape).background(if (here || done) Theme.accent else Color.Transparent)
+                .border(1.5.dp, Theme.accent, CircleShape), contentAlignment = Alignment.Center) {
+                Text("${index + 1}", style = Theme.footnote.copy(color = if (here || done) Theme.onAccent else Theme.accent,
+                    fontWeight = FontWeight.SemiBold))
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stop.title, style = Theme.body.copy(color = if (done) Theme.inkTertiary else Theme.ink))
+                Text(listOfNotNull(stop.arrive, stop.feelWord).joinToString(" · "), style = Theme.footnote)
+            }
+        }
+    }
+}
+
+/** D131, after the day: what you rated, in your own words (Disappointing … Unforgettable). */
+@Composable
+fun MemoriesCard(model: AppModel, plan: Plan) {
+    val d = plan.date ?: Dates.todayIso()
+    val label = when (d) {
+        Dates.todayIso() -> "Earlier today"
+        Dates.today().minusDays(1).toString() -> "Yesterday"
+        else -> Dates.longDay(d) ?: "Your day"
+    }
+    val (head, _) = headlineParts(plan.feelLine?.takeIf { !plan.isBlind && it.isNotEmpty() } ?: plan.title ?: "Your day")
+    Column(Modifier.settle(0), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Eyebrow(label)
+        Text(head, style = Theme.h1)
+        for (stop in plan.stops.filter { it.rateable }) {
+            val rating = model.myRatings[stop.momentId]
+            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Theme.surface).padding(10.dp)
+                .semantics(mergeDescendants = true) {},
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(fieldBrush(stop.feelWord)))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(stop.title, style = Theme.subheadline)
+                    Text(stop.arrive, style = Theme.footnote)
+                }
+                if (rating != null) Text(Labels.feel[rating - 1], style = Theme.italic(17.sp))
+                else Text("Not rated", style = Theme.footnote)
+            }
+        }
+        QuietButton("See the day", Modifier.fillMaxWidth()) { model.tripPath += Dest.Day }
     }
 }
 
@@ -327,7 +364,7 @@ fun PlanTripCard(
 ) {
     Column(
         Modifier.fillMaxWidth().pressable(haptic = true, onClick = onClick).clip(RoundedCornerShape(24.dp))
-            .background(Brush.radialGradient(listOf(Color(0xFF3B2E1E), Theme.surface), center = Offset(900f, 0f), radius = 900f))
+            .background(Brush.radialGradient(listOf(Theme.selected, Theme.surface), center = Offset(900f, 0f), radius = 900f))
             .background(Theme.surface.copy(alpha = 0f)).padding(22.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -388,9 +425,9 @@ fun TripRow(trip: Trip, onClick: () -> Unit) {
 @Composable
 fun ChoiceStatus(choice: TripChoice?, fits: Boolean = true) = when {
     choice == null -> StatusLabel("To do", Theme.surfaceHigh, Theme.inkSoft)
-    !fits -> StatusLabel("For other dates", Color(0xFF3A1F1C), Color(0xFFF0A090))
-    choice.booked -> StatusLabel("Booked", Color(0xFF1F3A2A), Color(0xFF9BE0B0))
-    else -> StatusLabel("Saved, not booked", Color(0xFF3A2F1C), Theme.accent)
+    !fits -> StatusLabel("For other dates", Theme.warnBg, Theme.warnInk)
+    choice.booked -> StatusLabel("Booked", Theme.okBg, Theme.okInk)
+    else -> StatusLabel("Saved, not booked", Theme.savedBg, Theme.accent)
 }
 
 /**
@@ -479,7 +516,6 @@ fun TripCreateFlow(model: AppModel) {
             if (model.makeTrip(t, keepFrom = old)) {
                 if (editing) model.book.resultsFor = null
                 dismiss()
-                model.tab = MainTab.Trip
                 model.tripPath.clear()
                 model.tripPath += Dest.TripOverview(t.id)
             }
@@ -508,7 +544,7 @@ fun TripCreateFlow(model: AppModel) {
                     horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
                     for (i in 0 until TRIP_QUESTIONS) {
                         Box(Modifier.size(if (i == step) 22.dp else 6.dp, 6.dp).clip(CircleShape)
-                            .background(if (i <= step) Theme.accent else Color(0xFF3A3E46)))
+                            .background(if (i <= step) Theme.accent else Theme.track))
                     }
                 }
                 Spacer(Modifier.width(72.dp))
@@ -557,7 +593,7 @@ fun WhereStep() {
 fun CityLine(name: String, note: String, ready: Boolean) {
     Column {
         Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(name, style = Theme.body.copy(color = if (ready) Theme.ink else Color(0xFF7A746B)),
+            Text(name, style = Theme.body.copy(color = if (ready) Theme.ink else Theme.muted),
                 modifier = Modifier.weight(1f).padding(end = 12.dp))
             Text(note, style = Theme.footnote)
         }
@@ -596,7 +632,7 @@ fun WhenStep(trip: Trip, onChange: (Trip) -> Unit) {
 @Composable
 fun TripCalendar(trip: Trip, pickingEnd: Boolean, setPickingEnd: (Boolean) -> Unit, onChange: (Trip) -> Unit) {
     val maxNights = 30
-    val band = Color(0xFF3A2F1C)
+    val band = Theme.savedBg
     val today = Dates.today()
     val lastStart = today.plusDays(329)
     var month by remember { mutableStateOf(maxOf(trip.startDate, today).withDayOfMonth(1)) }
@@ -941,7 +977,8 @@ fun TripOverview(model: AppModel, tripId: String, onHelp: () -> Unit, onBack: ()
     fun openBook(t: Trip, segment: String) {
         model.currentTripId = t.id
         model.book.segment = segment
-        model.tab = MainTab.Book
+        model.bookPath.clear()
+        model.tripPath += Dest.Book   // D131: flights and stays open inside the trip
     }
     ScrollPage(spacing = 18, bottom = 40) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -1289,13 +1326,14 @@ fun TripDayStop(stop: Stop) {
 
 /** The You tab: safety first (999, then a person), what the app has learned in plain words, and your data. */
 @Composable
-fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
+fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (() -> Unit)? = null) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         model.loadSafety()
         if (model.learned == null) model.learned = runCatching { model.client.summary() }.getOrNull()
     }
-    ScrollPage(spacing = 18, top = 30, bottom = 40) {
+    ScrollPage(spacing = 18, top = if (onBack == null) 30 else 8, bottom = 40) {
+        if (onBack != null) BackLink(onClick = onBack)
         PageTitle("You", style = Theme.serif(36.sp))
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Theme.emergencyBg)
             .border(1.dp, Theme.emergencyBorder, RoundedCornerShape(20.dp)).padding(18.dp),
@@ -1329,6 +1367,23 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
                 Text(item.text, style = Theme.serif(19.sp), modifier = Modifier.padding(vertical = 12.dp))
                 Hairline()
             }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {   // D130 (Daylight)
+            SectionLabel("The light")
+            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.surface).padding(3.dp)) {
+                for ((title, dark) in listOf("Follow the sky" to false, "Always dark" to true)) {
+                    val on = model.alwaysDark == dark
+                    Box(Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(11.dp))
+                        .background(if (on) Theme.surfaceHigh else Color.Transparent)
+                        .clickable(role = Role.RadioButton) { model.chooseAlwaysDark(dark) }
+                        .semantics { selected = on }, contentAlignment = Alignment.Center) {
+                        Text(title, style = Theme.subheadline.copy(color = if (on) Theme.ink else Theme.muted,
+                            fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal))
+                    }
+                }
+            }
+            Text("By day the app is light, and it turns dark after sunset, following London's sky. Always dark keeps the night look.",
+                style = Theme.footnote)
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button, onClick = onData),
             verticalAlignment = Alignment.CenterVertically) {

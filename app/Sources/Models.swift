@@ -245,6 +245,12 @@ struct Plan: Codable, Hashable, Identifiable {
     let weather: Weather?          // Stage 1: the Met Office forecast the plan was made with, if any
 
     var isBlind: Bool { blind == true }
+
+    /// The same plan on another day (CI screenshots: the home on the day, D131).
+    func dated(_ day: String) -> Plan {
+        Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
+             basis: basis, blind: blind, weather: weather)
+    }
 }
 
 /// Stage 1: the forecast for the plan's hours (brain.weather.Outlook).

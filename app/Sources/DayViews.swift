@@ -5,6 +5,9 @@ import SwiftUI
 /// is over, D110), then moves on to the next stop. Where you are in the day is kept per plan. D123: with location on,
 /// how far the stop is, and the rating asked for once they've left it. m176: a trip day's journeys at each end.
 /// Abram's comment (8 Oct): at the end of a trip's day, "Preview tomorrow", where the day can still be changed.
+/// D130 (the arrival moment): on the way, the stop's way in and "I'm here"; once there (tapped, or seen by the phone),
+/// the screen brightens once, like coming out of the station into the open, and shows what to notice. With Reduce
+/// Motion on it only fades. The day's path sits under the way in.
 struct NowView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -14,8 +17,9 @@ struct NowView: View {
     @State private var card: Stop?
     @State private var onTheWay: Stop?               // journey round 2: rating the place on the way (its own plan)
     @State private var replanning = false            // decision 3: "Re-plan the rest of today"
-    @State private var arrived: Set<String> = []     // D123: stops the phone saw them reach, this session
-    @State private var asked: Set<String> = []       // and the ones already asked about after leaving
+    @State private var asked: Set<String> = []       // D123: stops already asked about after leaving
+    @State private var glow = 0.0                    // D130: the light opening out as you arrive
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let stops = model.plan?.stops ?? []
@@ -39,7 +43,8 @@ struct NowView: View {
                 }
                 if i < stops.count {
                     let stop = stops[i]
-                    Eyebrow("Now")
+                    let here = model.arrivedStops.contains(stop.id) || lookAhead != nil
+                    Eyebrow(here ? "Now" : "Next · around \(stop.arrive)")
                     Button { card = stop } label: {
                         Text(stop.title)
                             .font(Theme.hero)
@@ -50,34 +55,62 @@ struct NowView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityHint("Opens the stop's card")
-                    Text(lookAhead.map { "A look ahead: this day is \($0). Ratings open on the day." }
-                         ?? "Enjoy it. I'll stay quiet until you need me.")
-                        .foregroundStyle(Theme.inkSoft)
-                        .fixedSize(horizontal: false, vertical: true)
                     if let line = distanceLine(stop) {   // D123: from the phone's location, never sent
                         Label(line, systemImage: "location.fill")
                             .font(.subheadline)
                             .foregroundStyle(Theme.accent)
                     }
-                    Spacer(minLength: 12)
-                    BreathingArch().frame(maxWidth: .infinity)
-                    Spacer(minLength: 12)
-                    if i + 1 < stops.count {
-                        NextUp(stop: stops[i + 1])
-                    } else if let leave = tripDay?.journeys("leave").first {   // journey round 2: the way home, ahead
-                        Label("After this: \(leave.title)", systemImage: "airplane.departure")
-                            .font(.subheadline)
+                    if !here {
+                        // D130: on the way, how you arrive is part of the moment
+                        let steps = stop.approachSteps ?? []
+                        if !steps.isEmpty || !stop.approach.isEmpty || !stop.travelText.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                SectionLabel(text: "The way in")
+                                if !steps.isEmpty {
+                                    WayIn(steps: steps, reveal: stop.reveal == true)
+                                } else {
+                                    Text(stop.approach.isEmpty ? stop.travelText : stop.approach)
+                                        .foregroundStyle(Theme.inkSoft)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .surfaceCard(padding: 18, radius: 20)
+                            .transition(.opacity)
+                        }
+                        DayPath(stops: stops, current: i, height: 120)
+                        if let pin = stop.pin {
+                            // 20 Oct (round 2): the way there without opening the card; by Tube or bus when the leg is
+                            let mode = stop.travelMode == "transit" ? "r" : "w"
+                            SecondaryButton(title: "Directions") {
+                                if let url = URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=\(mode)") { openURL(url) }
+                            }
+                        }
+                        PrimaryButton(title: "I'm here") { arrive(stop, how: "tap") }
+                    } else {
+                        if !stop.what.isEmpty, lookAhead == nil {
+                            Text(stop.what)
+                                .font(Theme.italic(21, relativeTo: .title3))
+                                .foregroundStyle(Theme.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .transition(.opacity)
+                        }
+                        Text(lookAhead.map { "A look ahead: this day is \($0). Ratings open on the day." }
+                             ?? "Enjoy it. I'll stay quiet until you need me.")
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
-                    }
-                    if let pin = stop.pin, distanceLine(stop) != "You're here" {
-                        // 20 Oct (round 2): the way there without opening the card; by Tube or bus when the leg is
-                        let mode = stop.travelMode == "transit" ? "r" : "w"
-                        SecondaryButton(title: "Directions") {
-                            if let url = URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=\(mode)") { openURL(url) }
+                        Spacer(minLength: 12)
+                        BreathingArch(showSun: true).frame(maxWidth: .infinity)
+                        Spacer(minLength: 12)
+                        if i + 1 < stops.count {
+                            NextUp(stop: stops[i + 1])
+                        } else if let leave = tripDay?.journeys("leave").first {   // journey round 2: the way home, ahead
+                            Label("After this: \(leave.title)", systemImage: "airplane.departure")
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.inkSoft)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
+                        PrimaryButton(title: "I'm done here") { done(stop) }
                     }
-                    PrimaryButton(title: "I'm done here") { done(stop) }
                     if lookAhead == nil {   // journey round 2: a closed place or a long queue needn't be rated to move on
                         QuietButton("Didn't go? Skip this stop") { skip(stop) }
                         if model.lastRequest != nil {   // decision 3; never on the Test B plan
@@ -134,7 +167,15 @@ struct NowView: View {
             .padding(.top, 40)
             .padding(.bottom, 12)
             }
-            .background(Theme.calm.ignoresSafeArea())
+            .skyBackground(base: Theme.calm)   // D130
+            .overlay {   // D130: the light opening out as you arrive; it never takes a tap
+                RadialGradient(colors: [Theme.amberLight.opacity(glow), .clear], center: UnitPoint(x: 0.5, y: 0.2),
+                               startRadius: 0, endRadius: 700)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+            .animation(reduceMotion ? Motion.fade : Motion.settle, value: model.arrivedStops)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $card) { StopView(stop: $0) }
         }
@@ -154,7 +195,22 @@ struct NowView: View {
     /// D123: "You're here", or how far the stop is, while location is on.
     private func distanceLine(_ stop: Stop) -> String? {
         guard model.location.usable, let pin = stop.pin, let m = model.location.metres(to: pin) else { return nil }
-        return m < 120 || arrived.contains(stop.id) && m < 250 ? "You're here" : Location.walkText(m)
+        return m < 120 || model.arrivedStops.contains(stop.id) && m < 250 ? "You're here" : Location.walkText(m)
+    }
+
+    /// D130: they've arrived. The way in gives way to what to notice, and the light opens out once (a fade only with
+    /// Reduce Motion on). Counted, by how, so the test knows whether "I'm here" is used.
+    private func arrive(_ stop: Stop, how: String) {
+        guard !model.arrivedStops.contains(stop.id) else { return }
+        Haptics.light()
+        model.markArrived(stop)
+        Task { await model.client.event("arrived", ["how": how]) }
+        guard !reduceMotion else { return }
+        withAnimation(.easeOut(duration: 0.26)) {
+            glow = 0.6
+        } completion: {
+            withAnimation(.timingCurve(0.2, 0.7, 0.2, 1, duration: 1.1)) { glow = 0 }
+        }
     }
 
     /// D123: once the phone has seen them at the stop (within 120 m) and then about 250 m away, the visit is over, so
@@ -163,8 +219,8 @@ struct NowView: View {
         guard model.location.usable, i < stops.count, rating == nil else { return }
         let stop = stops[i]
         guard let pin = stop.pin, let m = model.location.metres(to: pin) else { return }
-        if m < 120 { arrived.insert(stop.id); return }
-        if m > 250, arrived.contains(stop.id), !asked.contains(stop.id), stop.rateable, !model.rated.contains(stop.momentId) {
+        if m < 120 { arrive(stop, how: "location"); return }
+        if m > 250, model.arrivedStops.contains(stop.id), !asked.contains(stop.id), stop.rateable, !model.rated.contains(stop.momentId) {
             asked.insert(stop.id)
             rating = stop
             Task { await model.client.event("rating_on_leaving") }

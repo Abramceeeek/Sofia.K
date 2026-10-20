@@ -23,19 +23,19 @@ struct BookView: View {
 
     var body: some View {
         @Bindable var book = model.book
-        NavigationStack {
-            Group {
-                if let trip = model.currentTrip {
-                    BookResults(trip: trip, openStay: $openStay)
-                } else {
-                    BookEmpty()
-                }
+        // D131: pushed onto the home's stack from a trip, so no stack of its own
+        Group {
+            if let trip = model.currentTrip {
+                BookResults(trip: trip, openStay: $openStay)
+            } else {
+                BookEmpty()
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: Flight.self) { FlightDetailView(flight: $0) }
-            .navigationDestination(for: StayResult.self) { StayDetailView(stay: $0) }
-            .navigationDestination(item: $openStay) { StayDetailView(stay: $0) }
         }
+        .toolbar(.hidden, for: .navigationBar)
+        .statusBarShade()
+        .navigationDestination(for: Flight.self) { FlightDetailView(flight: $0) }
+        .navigationDestination(for: StayResult.self) { StayDetailView(stay: $0) }
+        .navigationDestination(item: $openStay) { StayDetailView(stay: $0) }
         .sheet(isPresented: $book.showFilters) {
             Group {
                 if book.segment == .flights { FlightFilterSheet() } else { StayFilterSheet() }
@@ -133,7 +133,7 @@ struct BookResults: View {
     private var nothingToBook: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Nothing to book for this trip.").font(Theme.title3).foregroundStyle(Theme.ink)
-            Text("It's one day and you don't need a flight. Your day is on the Trip tab.")
+            Text("It's one day and you don't need a flight. Your day is on the home screen.")
                 .foregroundStyle(Theme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -151,8 +151,7 @@ struct BookHeader: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack {   // m176: the way back to the trip, and Help, on Book too
-                Button {
-                    model.tab = .trip
+                Button {   // D131: flights and stays sit inside the trip, so back goes to it
                     var p = NavigationPath()
                     p.append(TripDest.trip(trip.id))
                     model.path = p
@@ -464,7 +463,7 @@ struct FlightRow: View {
                         .foregroundStyle(Theme.accent)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 3)
-                        .background(Color(hex: 0x3A2F1C), in: RoundedRectangle(cornerRadius: 10))
+                        .background(Theme.savedBg, in: RoundedRectangle(cornerRadius: 10))
                 }
             }
             HStack(alignment: .center, spacing: 12) {
@@ -475,7 +474,7 @@ struct FlightRow: View {
                 VStack(spacing: 4) {
                     Text(Dates.duration(out.durationMin)).font(.footnote).foregroundStyle(Theme.muted)
                     ZStack {
-                        Rectangle().fill(Color(hex: 0x3A3E46)).frame(height: 2)
+                        Rectangle().fill(Theme.track).frame(height: 2)
                         HStack(spacing: 14) {
                             ForEach(0..<min(out.stops, 3), id: \.self) { _ in
                                 Circle().fill(Theme.accent).frame(width: 7, height: 7)
@@ -678,7 +677,7 @@ struct LegCard: View {
             HStack(alignment: .top, spacing: 14) {
                 VStack(spacing: 4) {
                     Circle().stroke(Theme.accent, lineWidth: 2).frame(width: 9, height: 9)
-                    Rectangle().fill(Color(hex: 0x3A3E46)).frame(width: 2).frame(maxHeight: .infinity)
+                    Rectangle().fill(Theme.track).frame(width: 2).frame(maxHeight: .infinity)
                     Circle().fill(Theme.accent).frame(width: 9, height: 9)
                 }
                 .frame(width: 10)

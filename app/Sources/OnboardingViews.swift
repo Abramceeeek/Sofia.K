@@ -1031,6 +1031,7 @@ struct DayOption: View {
 struct ImproveView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var startAt = -1               // CI screenshots: 0 opens the first question
     @State private var step = -2   // -2: not set yet (startAt is used); -1: the invitation
     @State private var morePlaces = false
@@ -1101,7 +1102,7 @@ struct ImproveView: View {
     }
 
     private func go(_ next: Int) {
-        withAnimation { step = max(0, next) }
+        withAnimation(reduceMotion ? Motion.fade : Motion.settle) { step = max(0, next) }   // D130: one settle rule
         // journey round 2: saved here at the end; "Done" then only closes (it sent "improve_done" twice)
         if next >= Q.allCases.count { Task { await model.saveImprovements(done: true) } }
     }

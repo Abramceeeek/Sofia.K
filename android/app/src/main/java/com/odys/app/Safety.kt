@@ -220,7 +220,7 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
                             .clickable(role = Role.Button) { openUrl(context, AppConfig.BASE_URL.trimEnd('/') + "/privacy") })
                 }
                 SettingsSection(null, "This removes everything we hold about this phone, straight away. It can't be undone.") {
-                    Text("Delete my data", style = Theme.body.copy(color = Theme.danger, fontWeight = FontWeight.SemiBold),
+                    Text("Delete my data", style = Theme.body.copy(color = Theme.dangerInk, fontWeight = FontWeight.SemiBold),
                         modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(top = 10.dp)
                             .clickable(role = Role.Button) { confirmDelete = true })
                 }

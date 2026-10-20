@@ -82,9 +82,8 @@ final class AppModel {
     var learned: Learned?                  // D117: "So far, I've learned…"
     var revealPlanId: Int?                 // D117: a new plan plays its reveal once
     var stepProgress = 0                   // D118: answers given within the current step, for "Question 7 of 14"
-    var path = NavigationPath()            // D118: the Trip tab's navigation, so a rating reminder can open its stop
-    // ---- D120 (ODYS Trips): three tabs, trips kept on the phone, booking on the providers' own sites ----
-    var tab: MainTab = .trip
+    var path = NavigationPath()            // D118, D131: the home's navigation, so a rating reminder can open its stop
+    // ---- D120 (ODYS Trips): trips kept on the phone, booking on the providers' own sites. D131: one home, no tabs ----
     var trips: [Trip] = []
     var currentTripId: UUID?               // the trip the Book tab searches for
     var showCreate = false                 // "Plan a trip": the four questions, full screen
@@ -102,6 +101,10 @@ final class AppModel {
     var reminderAsked = UserDefaults.standard.bool(forKey: "reminderAsked")
     var showNow = false                    // D119: "Now", the quiet screen while you're out
     var nowIndex = 0                       // which stop of the plan "Now" is on (kept per plan)
+    var arrivedStops: Set<String> = []     // D130: the stops reached today ("I'm here" or the phone's location)
+    // ---- D130 (Daylight): the colours follow London's light, unless "Always dark" is on ----
+    var sky: Sky = .night
+    private(set) var alwaysDark = UserDefaults.standard.bool(forKey: "alwaysDark")
 
     /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
     var isVisitor: Bool { profile.based == "abroad" }
@@ -725,7 +728,6 @@ final class AppModel {
     func openStop(_ momentId: String) {
         guard let stop = plan?.stops.first(where: { $0.momentId == momentId }) else { return }
         route = .home
-        tab = .trip
         showNow = false
         var p = NavigationPath()
         p.append(TripDest.day)
@@ -740,6 +742,8 @@ final class AppModel {
         guard let plan else { return }
         let saved = UserDefaults.standard.object(forKey: "nowIndex.\(plan.id)") as? Int
         nowIndex = saved ?? (plan.stops.firstIndex { !rated.contains($0.momentId) } ?? 0)
+        let arrived = UserDefaults.standard.string(forKey: "arrived.\(plan.id)") ?? ""
+        arrivedStops = Set(arrived.split(separator: "|").map(String.init))
         showNow = true
         Task { await client.event("start_day", ["stop": "\(nowIndex)"]) }
     }
@@ -749,6 +753,52 @@ final class AppModel {
         guard let plan else { return }
         nowIndex = min(nowIndex + 1, plan.stops.count)
         UserDefaults.standard.set(nowIndex, forKey: "nowIndex.\(plan.id)")
+        refreshSky()   // D130: the light can change between steps, never while someone is reading
+    }
+
+    /// D130 (the arrival moment): "I'm here", or the phone saw them at the stop. Kept per plan.
+    func markArrived(_ stop: Stop) {
+        guard let plan, !arrivedStops.contains(stop.id) else { return }
+        arrivedStops.insert(stop.id)
+        UserDefaults.standard.set(arrivedStops.sorted().joined(separator: "|"), forKey: "arrived.\(plan.id)")
+    }
+
+    /// D131: where the day has got to, for the home: the stop "Now" is on, or the first one not yet rated. Reads
+    /// `nowIndex`, so the home follows each step.
+    func dayProgress(_ plan: Plan) -> Int {
+        _ = nowIndex
+        if let saved = UserDefaults.standard.object(forKey: "nowIndex.\(plan.id)") as? Int { return saved }
+        return plan.stops.firstIndex { $0.rateable && !rated.contains($0.momentId) } ?? plan.stops.count
+    }
+
+    /// D131 (shape A): what the home leads with. On the day, the day; once it's done (and for a week, if anything was
+    /// rated), what you rated; otherwise what's next.
+    var homePhase: HomePhase {
+        guard let plan, let d = plan.date else { return .before }
+        let today = Dates.isoDay.string(from: .now)
+        let weekAgo = Dates.isoDay.string(from: Date.now.addingTimeInterval(-7 * 86400))
+        if d == today { return dayProgress(plan) < plan.stops.count ? .today : .after }
+        if d < today, d >= weekAgo, plan.stops.contains(where: { rated.contains($0.momentId) }) { return .after }
+        return .before
+    }
+
+    // ---- D130 (Daylight) ----------------------------------------------------------------------------------------
+
+    func setAlwaysDark(_ on: Bool) {
+        alwaysDark = on
+        UserDefaults.standard.set(on, forKey: "alwaysDark")
+        refreshSky()
+    }
+
+    /// The light is set when the app opens or comes back to the front, and when "Now" moves on a step; never while
+    /// someone is reading. Rain comes from today's plan's forecast, when it has one.
+    func refreshSky(_ now: Date = .now) {
+        if client.demo {   // CI screenshots: night unless `-sky day` (or morning, golden, rain), whatever the hour
+            sky = Sky(rawValue: UserDefaults.standard.string(forKey: "sky") ?? "") ?? .night
+            return
+        }
+        let rain = plan?.date == Dates.isoDay.string(from: now) ? plan?.weather?.rainProb : nil
+        sky = Sky.at(now, rainProb: rain, alwaysDark: alwaysDark)
     }
 
     // ---- D118: Help & safety replies ------------------------------------------------------------------------
@@ -884,12 +934,11 @@ final class AppModel {
         self.surveyDone = false
         self.pairDone = false
         self.pair = nil
-        self.tab = .trip
         self.showNow = false
         self.step = .based
         self.route = .welcome
         for key in UserDefaults.standard.dictionaryRepresentation().keys
-        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") {
+        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") || key.hasPrefix("arrived.") {
             UserDefaults.standard.removeObject(forKey: key)
         }
         self.myRatings = [:]

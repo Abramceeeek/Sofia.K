@@ -33,9 +33,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import android.app.Activity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,8 +49,23 @@ import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun RootView(model: AppModel) {
+    // D130 (Daylight): the system's own parts (dialogs, the status bar's icons) follow the day or night colours
+    val view = LocalView.current
+    val day = Theme.day
+    SideEffect {
+        (view.context as? Activity)?.window?.let { window ->
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = day
+                isAppearanceLightNavigationBars = day
+            }
+        }
+    }
     MaterialTheme(
-        colorScheme = darkColorScheme(
+        colorScheme = if (day) lightColorScheme(
+            primary = Theme.accent, onPrimary = Theme.onAccent, background = Theme.background,
+            surface = Theme.surface, onSurface = Theme.ink, onBackground = Theme.ink, surfaceVariant = Theme.surfaceHigh,
+            secondary = Theme.accent, outline = Theme.outlineStrong,
+        ) else darkColorScheme(
             primary = Theme.accent, onPrimary = Theme.onAccent, background = Theme.background,
             surface = Theme.surface, onSurface = Theme.ink, onBackground = Theme.ink, surfaceVariant = Theme.surfaceHigh,
             secondary = Theme.accent, outline = Theme.outlineStrong,
@@ -57,7 +77,7 @@ fun RootView(model: AppModel) {
                 Route.Example -> ExampleDayView(model)
                 Route.Consent -> ConsentView(model)
                 Route.Onboarding -> OnboardingView(model)
-                Route.Home -> MainTabs(model)
+                Route.Home -> LivingHome(model)
             }
             AnimatedVisibility(model.waking, Modifier.align(Alignment.TopCenter).statusBarsPadding(),
                 enter = fadeIn(), exit = fadeOut()) { WakingBanner() }
@@ -104,7 +124,7 @@ fun ConfirmDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton({ onDismiss(); onConfirm() }) {
-                Text(confirm, color = if (destructive) Theme.danger else Theme.accent, fontWeight = FontWeight.SemiBold)
+                Text(confirm, color = if (destructive) Theme.dangerInk else Theme.accent, fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = { TextButton(onDismiss) { Text(cancel, color = Theme.inkSoft) } },

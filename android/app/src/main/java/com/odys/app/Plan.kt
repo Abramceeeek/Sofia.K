@@ -455,6 +455,12 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
             layout = it
             model.prefs.set("planLayout", it)
         }
+        if (layout != "map") {   // D130: the day as a path, drawn where the stops really are; the list sits under it
+            val onTheDay = plan.date == Dates.todayIso()
+            DayPath(plan.stops, current = if (onTheDay) model.dayProgress(plan) else null,
+                modifier = Modifier.clip(RoundedCornerShape(22.dp)).background(Theme.deep)
+                    .graphicsLayer { alpha = phase(ROUTE_FROM, ROUTE_TO) }, height = 170.dp)
+        }
         if (layout == "map") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val pins = plan.stops.mapIndexedNotNull { i, s -> s.pin?.let { MapPin(it, s.title, i + 1) } }
@@ -927,7 +933,7 @@ fun WayIn(steps: List<ApproachStep>, reveal: Boolean) {
                         Box(Modifier.size(dot)
                             .then(if (isReveal && on) Modifier.shadow(8.dp, CircleShape, ambientColor = Theme.accent, spotColor = Theme.accent) else Modifier)
                             .background(if (on || done) Theme.accent else Color.Transparent, CircleShape)
-                            .border(2.dp, if (on || done) Theme.accent else Color(0xFF4A4E57), CircleShape))
+                            .border(2.dp, if (on || done) Theme.accent else Theme.ring, CircleShape))
                     }
                     if (!last) Box(Modifier.width(2.dp).weight(1f).background(if (done) Theme.accent else Theme.line))
                 }

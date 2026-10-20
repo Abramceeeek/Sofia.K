@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -88,6 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.min
 
 // D119: the ODYS parts every screen is built from: the arch, buttons, tiles, the eyebrow, and the motion vocabulary
@@ -293,11 +295,22 @@ fun HelpPill(unread: Boolean, onClick: () -> Unit) {
 
 /** The top of a main screen: an eyebrow, then Help and "Your data". */
 @Composable
-fun TopBar(eyebrow: String, unread: Boolean, onHelp: (() -> Unit)?, onData: (() -> Unit)?) {
+fun TopBar(eyebrow: String, unread: Boolean, onHelp: (() -> Unit)?, onData: (() -> Unit)?, onMenu: (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
         Eyebrow(eyebrow, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(8.dp))
         if (onHelp != null) HelpPill(unread, onHelp)
+        if (onMenu != null) {   // D131: the home's menu: You, your data and the light
+            Spacer(Modifier.width(6.dp))
+            Box(
+                Modifier.size(44.dp).pressable(onClick = onMenu).semantics { contentDescription = "You, your data and the light" },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(Modifier.size(36.dp).border(1.dp, Theme.outlineStrong, CircleShape), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Filled.Menu, null, tint = Theme.ink, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
         if (onData != null) {
             Spacer(Modifier.width(6.dp))
             Box(
@@ -755,18 +768,29 @@ fun ListenRings(active: Boolean, modifier: Modifier = Modifier) {
 
 /** Breathe (6 s loop): the glow behind the arch on "Now". */
 @Composable
-fun BreathingArch() {
+fun BreathingArch(showSun: Boolean = false, sunAt: Double? = null /* CI screenshots only */) {
     val reduce = rememberReduceMotion()
+    // D130: by day the arch's light takes the sky's colour; on "Now" the sun sits where the real sun is, set once
+    val sun = remember(showSun) { if (showSun && Theme.day) sunAt ?: Sun.dayFraction(java.time.Instant.now()) else null }
+    val light = if (Theme.day) Theme.skyTop else Theme.accent
+    val glow = if (Theme.day) 0.75f else 0.1f
     val t by if (reduce) remember { androidx.compose.runtime.mutableFloatStateOf(0.5f) } else
         rememberInfiniteTransition(label = "breathe").animateFloat(0f, 1f,
             infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Restart), label = "b")
     val b = if (reduce) 0.5f else ((1 - cos(t * 2 * Math.PI)) / 2).toFloat()
     Box(Modifier.size(160.dp), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(160.dp).scale(0.94f + 0.06f * b)) {
-            drawCircle(Brush.radialGradient(listOf(Theme.accent.copy(alpha = 0.1f + 0.1f * b),
-                Theme.accent.copy(alpha = 0f)), radius = size.minDimension / 2))
+            drawCircle(Brush.radialGradient(listOf(light.copy(alpha = glow + 0.1f * b),
+                light.copy(alpha = 0f)), radius = size.minDimension / 2))
         }
         ArchGlyph(Theme.accent.copy(alpha = 0.62f + 0.18f * b), 40.dp)
+        if (sun != null) Canvas(Modifier.size(160.dp)) {
+            // sunrise on the left, sunset on the right, over the arch
+            val a = Math.PI * (1 - sun)
+            val c = Offset(size.width / 2 + 62.dp.toPx() * cos(a).toFloat(), size.height * 0.62f - 62.dp.toPx() * sin(a).toFloat())
+            drawCircle(Theme.amberLight.copy(alpha = 0.5f), 11.dp.toPx(), c)
+            drawCircle(Theme.accent, 6.dp.toPx(), c)
+        }
     }
 }
 

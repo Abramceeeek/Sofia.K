@@ -1,15 +1,17 @@
 import SwiftUI
 import UIKit
 
-// D120: the ODYS Trips design (Abram's "ODYS Trips" file): three tabs, "Plan a trip" in five questions (D122 added
-// "Your days"), the trip as a
-// checklist (getting there, where you'll stay, your days) and a running total. What differs from the design, and why,
-// is in decisions/decision-log.md (D121).
+// D120: the ODYS Trips design (Abram's "ODYS Trips" file): "Plan a trip" in five questions (D122 added "Your days"),
+// the trip as a checklist (getting there, where you'll stay, your days) and a running total. What differs from the
+// design, and why, is in decisions/decision-log.md (D121). D131: its three tabs became one home that follows the time.
 
-// ---- the tabs -------------------------------------------------------------------------------------------------
+// ---- the living home (D131: shape A) -----------------------------------------------------------------------
 
-/// Home after onboarding. Before the first plan, people in the UK get the survey and the blind pair (Build 2) first.
-struct MainTabs: View {
+/// Home after onboarding (D131, shape A): no tabs. One home that follows the time: before a day it offers a day out or
+/// a trip; on the day it is the day; afterwards it holds what you rated. Flights and stays open inside a trip; You,
+/// your data and the light sit behind the menu, and Help stays one tap away. Before the first plan, people in the UK
+/// get the survey and the blind pair (Build 2) first.
+struct LivingHome: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
@@ -17,64 +19,14 @@ struct MainTabs: View {
         if model.needsFirstRun {
             FirstPlanFlow()
         } else {
-            TabView(selection: $model.tab) {
-                HomeView()
-                    .tabItem { Label { Text("Trip") } icon: { Image(uiImage: TabIcons.image(.trip)) } }
-                    .tag(MainTab.trip)
-                BookView()
-                    .tabItem { Label { Text("Book") } icon: { Image(uiImage: TabIcons.image(.book)) } }
-                    .tag(MainTab.book)
-                YouView()
-                    .tabItem { Label { Text("You") } icon: { Image(uiImage: TabIcons.image(.you)) } }
-                    .tag(MainTab.you)
-            }
-            .tint(Theme.accent)
-            .fullScreenCover(isPresented: $model.showCreate, onDismiss: { model.editingTrip = nil; model.editStep = nil }) {
-                TripCreateFlow(trip: model.editingTrip ?? model.newTrip(), editing: model.editingTrip != nil,
-                               startAt: model.editStep)
-                    .brainFeedback()
-            }
-            .fullScreenCover(isPresented: $model.showPair) { PairFlow().brainFeedback() }
+            HomeView()
+                .fullScreenCover(isPresented: $model.showCreate, onDismiss: { model.editingTrip = nil; model.editStep = nil }) {
+                    TripCreateFlow(trip: model.editingTrip ?? model.newTrip(), editing: model.editingTrip != nil,
+                                   startAt: model.editStep)
+                        .brainFeedback()
+                }
+                .fullScreenCover(isPresented: $model.showPair) { PairFlow().brainFeedback() }
         }
-    }
-}
-
-/// The design's tab icons, drawn from its own paths (24 × 22): an arch for Trip, a paper plane for Book, a person for You.
-enum TabIcons {
-    static func image(_ tab: MainTab) -> UIImage {
-        let image = UIGraphicsImageRenderer(size: CGSize(width: 24, height: 22)).image { _ in
-            let p = UIBezierPath()
-            switch tab {
-            case .trip:
-                p.move(to: CGPoint(x: 12, y: 2))
-                p.addCurve(to: CGPoint(x: 5, y: 9), controlPoint1: CGPoint(x: 8, y: 2), controlPoint2: CGPoint(x: 5, y: 5))
-                p.addLine(to: CGPoint(x: 5, y: 20))
-                p.addLine(to: CGPoint(x: 19, y: 20))
-                p.addLine(to: CGPoint(x: 19, y: 9))
-                p.addCurve(to: CGPoint(x: 12, y: 2), controlPoint1: CGPoint(x: 19, y: 5), controlPoint2: CGPoint(x: 16, y: 2))
-                p.close()
-            case .book:
-                p.move(to: CGPoint(x: 3, y: 12))
-                p.addLine(to: CGPoint(x: 21, y: 4))
-                p.addLine(to: CGPoint(x: 15, y: 20))
-                p.addLine(to: CGPoint(x: 12, y: 13))
-                p.close()
-            case .you:
-                p.append(UIBezierPath(arcCenter: CGPoint(x: 12, y: 7), radius: 4, startAngle: 0, endAngle: .pi * 2,
-                                      clockwise: true))
-                let body = UIBezierPath()
-                body.move(to: CGPoint(x: 4, y: 21))
-                body.addCurve(to: CGPoint(x: 12, y: 14), controlPoint1: CGPoint(x: 4, y: 16), controlPoint2: CGPoint(x: 8, y: 14))
-                body.addCurve(to: CGPoint(x: 20, y: 21), controlPoint1: CGPoint(x: 16, y: 14), controlPoint2: CGPoint(x: 20, y: 16))
-                p.append(body)
-            }
-            p.lineWidth = 1.8
-            p.lineJoinStyle = .round
-            p.lineCapStyle = .round
-            UIColor.black.setStroke()
-            p.stroke()
-        }
-        return image.withRenderingMode(.alwaysTemplate)
     }
 }
 
@@ -168,10 +120,10 @@ struct StatusLabel: View {
     static func of(_ choice: TripChoice?, fits: Bool = true) -> StatusLabel {
         guard let choice else { return StatusLabel(text: "To do", fill: Theme.surfaceHigh, color: Theme.inkSoft) }
         if !fits {   // journey audit: the trip's dates changed after this was chosen
-            return StatusLabel(text: "For other dates", fill: Color(hex: 0x3A1F1C), color: Color(hex: 0xF0A090))
+            return StatusLabel(text: "For other dates", fill: Theme.warnBg, color: Theme.warnInk)
         }
-        return choice.booked ? StatusLabel(text: "Booked", fill: Color(hex: 0x1F3A2A), color: Color(hex: 0x9BE0B0))
-                             : StatusLabel(text: "Saved, not booked", fill: Color(hex: 0x3A2F1C), color: Theme.accent)
+        return choice.booked ? StatusLabel(text: "Booked", fill: Theme.okBg, color: Theme.okInk)
+                             : StatusLabel(text: "Saved, not booked", fill: Theme.savedBg, color: Theme.accent)
     }
 
     var body: some View {
@@ -196,9 +148,11 @@ struct SectionLabel: View {
     }
 }
 
-// ---- Trip tab: home ---------------------------------------------------------------------------------------------
+// ---- home ---------------------------------------------------------------------------------------------
 
 /// "Where to next?": one big action (Plan a trip), then your day and your trips underneath.
+/// The home (D131, shape A): it follows the time. On the day, the day leads (its path, and one button back to "Now");
+/// once it's done, what you rated; then "Where to next?" with a day out and a trip as equals (D129).
 struct TripHome: View {
     @Environment(AppModel.self) private var model
     var onHelp: () -> Void = {}
@@ -207,35 +161,42 @@ struct TripHome: View {
 
     var body: some View {
         let _ = model.clock   // journey round 2: Today / Tomorrow and the greeting follow the date after a night away
+        let phase = model.homePhase
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                TopBar(eyebrow: AppModel.greeting, onHelp: onHelp, onData: onData)
-                PageTitle(text: "Where to next?", font: Theme.display).settle(0)
-                if let today = model.todayInTrip {   // journey audit: during a trip, today comes first
+                TopBar(eyebrow: AppModel.greeting, onHelp: onHelp, onMenu: { model.path.append(TripDest.you) })
+                if let plan = model.plan, phase == .today { TodayHome(plan: plan) }
+                if let plan = model.plan, phase == .after { MemoriesCard(plan: plan) }
+                PageTitle(text: phase == .before ? "Where to next?" : "And next?",
+                          font: phase == .before ? Theme.display : Theme.h1).settle(1)
+                if phase != .today, let today = model.todayInTrip {   // journey audit: during a trip, today comes first
                     TodayInTripCard(trip: today.trip, index: today.index, day: today.day).settle(1)
                 } else if let next = model.tomorrowInTrip {   // Abram's comment (8 Oct): then tomorrow, to look ahead
                     TomorrowInTripCard(trip: next.trip, index: next.index, day: next.day).settle(1)
                 }
-                if model.isVisitor {
-                    PlanTripCard { model.showCreate = true }.settle(1)
-                    if let plan = model.plan {
-                        yourDay(plan).settle(2)
-                    } else if !model.client.demo {   // journey round 2: with no day yet, "Plan a day" was out of reach
-                        SecondaryButton(title: "Plan a day out instead", icon: "sun.max") { planningDay = true }
-                            .settle(2)
+                // D129: a day out and a trip are equals, side by side; people abroad see the trip first
+                HStack(alignment: .top, spacing: 12) {
+                    if model.isVisitor {
+                        tripCard
+                        dayOutCard
+                    } else {
+                        dayOutCard
+                        tripCard
                     }
-                } else {
-                    // 20 Oct (round 2): people who live here mostly want a day out, so that leads; a trip is one tap below
-                    if let plan = model.plan { yourDay(plan).settle(1) }
-                    PlanTripCard(title: "Plan a day out",
-                                 text: "A day in London around what you enjoy: your hours, where you start, and the places that fit you.") {
-                        planningDay = true
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .settle(2)
+                if let plan = model.plan, phase == .before {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text((plan.date ?? "") < Dates.isoDay.string(from: .now) ? "Your last day out" : "Coming up")
+                            .font(.subheadline).foregroundStyle(Theme.muted)
+                        NavigationLink(value: TripDest.day) { DayRow(plan: plan) }
+                            .buttonStyle(PressStyle())
                     }
-                    .settle(1)
-                    SecondaryButton(title: "Plan a trip instead", icon: "airplane") { model.showCreate = true }.settle(2)
-                    if !model.pairDone, !model.client.demo {
-                        PairInviteRow { model.showPair = true }.settle(2)
-                    }
+                    .settle(3)
+                }
+                if !model.isVisitor, !model.pairDone, !model.client.demo {
+                    PairInviteRow { model.showPair = true }.settle(3)
                 }
                 if !model.trips.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
@@ -252,7 +213,7 @@ struct TripHome: View {
             .padding(.top, 8)
             .padding(.bottom, 32)
         }
-        .background(Theme.background)
+        .skyBackground()
         .sheet(isPresented: $planningDay) {
             NavigationStack {
                 PlanFormView(onDone: { planningDay = false })
@@ -263,15 +224,160 @@ struct TripHome: View {
             .brainFeedback()
         }
     }
+
+    private var dayOutCard: some View {
+        ChoiceCard(title: "A day out", text: "In London, around what you enjoy: your hours, your start, places that fit you.",
+                   icon: "sun.max", lead: !model.isVisitor) { planningDay = true }
+    }
+
+    private var tripCard: some View {
+        ChoiceCard(title: "A trip", text: "A few days away: getting there, a place to stay, and days that fit you.",
+                   icon: "airplane", lead: model.isVisitor) { model.showCreate = true }
+    }
 }
 
-extension TripHome {
-    func yourDay(_ plan: Plan) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Your day").font(.subheadline).foregroundStyle(Theme.muted)
-            NavigationLink(value: TripDest.day) { DayRow(plan: plan) }
-                .buttonStyle(PressStyle())
+/// D129: a day out or a trip, as two equal cards. The one that leads for this person is lit a little.
+struct ChoiceCard: View {
+    let title: String
+    let text: String
+    let icon: String
+    let lead: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            Haptics.light()
+            action()
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                Image(systemName: icon).font(.title2).foregroundStyle(Theme.accent)
+                Text(title).font(Theme.serif(23, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                Text(text).font(.subheadline).foregroundStyle(Theme.inkTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .multilineTextAlignment(.leading)
+            .padding(18)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(lead ? Theme.selected : Theme.surface, in: RoundedRectangle(cornerRadius: 22))
+            .overlay(RoundedRectangle(cornerRadius: 22).stroke(lead ? Theme.accent.opacity(0.35) : Theme.outline, lineWidth: 1))
         }
+        .buttonStyle(PressStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
+/// D131, on the day: the day's path with where you've got to, the stops and times under it, and one way back to
+/// "Now". The whole plan is one tap away.
+struct TodayHome: View {
+    @Environment(AppModel.self) private var model
+    let plan: Plan
+
+    var body: some View {
+        let i = model.dayProgress(plan)
+        VStack(alignment: .leading, spacing: 14) {
+            Eyebrow("Today · " + Dates.shortDay(plan.date ?? Dates.isoDay.string(from: .now)))
+            Text(plan.homeHeadline).font(Theme.h1).foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 4) {
+                DayPath(stops: plan.stops, current: i, height: 170)
+                ForEach(Array(plan.stops.enumerated()), id: \.element.id) { j, stop in
+                    PathStopRow(index: j, stop: stop, done: j < i, here: j == i, first: j == 0)
+                }
+            }
+            .surfaceCard(padding: 16, radius: 24)
+            PrimaryButton(title: i == 0 ? "Start the day" : "Back to now") { model.startDay() }
+            QuietButton("See the whole day") { model.path.append(TripDest.day) }
+                .frame(maxWidth: .infinity)
+        }
+        .settle(0)
+    }
+}
+
+/// A stop under the path: its number, name, time and the word for how it moves the day.
+struct PathStopRow: View {
+    let index: Int
+    let stop: Stop
+    let done: Bool
+    let here: Bool
+    let first: Bool
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if !first { Rectangle().fill(Theme.hairline).frame(height: 1) }
+            HStack(spacing: 12) {
+                Text("\(index + 1)")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(here || done ? Theme.onAccent : Theme.accent)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(here || done ? Theme.accent : .clear))
+                    .overlay(Circle().stroke(Theme.accent, lineWidth: 1.5))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(stop.title).foregroundStyle(done ? Theme.inkTertiary : Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text([stop.arrive, stop.feelWord].compactMap { $0 }.joined(separator: " · "))
+                        .font(.footnote).foregroundStyle(Theme.muted)
+                }
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: 52)
+            .accessibilityElement(children: .combine)
+            .accessibilityValue(here ? "You're here" : (done ? "Done" : ""))
+        }
+    }
+}
+
+/// D131, after the day: what you rated, in your own words (Disappointing … Unforgettable).
+struct MemoriesCard: View {
+    @Environment(AppModel.self) private var model
+    let plan: Plan
+
+    private var label: String {
+        let d = plan.date ?? ""
+        if d == Dates.isoDay.string(from: .now) { return "Earlier today" }
+        if d == Dates.isoDay.string(from: Date.now.addingTimeInterval(-86400)) { return "Yesterday" }
+        return Dates.longDay(d) ?? "Your day"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Eyebrow(label)
+            Text(plan.homeHeadline).font(Theme.h1).foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(plan.stops.filter(\.rateable)) { stop in
+                HStack(spacing: 12) {
+                    Field(feel: stop.feelWord).frame(width: 44, height: 44).clipShape(RoundedRectangle(cornerRadius: 12))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(stop.title).font(.subheadline).foregroundStyle(Theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(stop.arrive).font(.footnote).foregroundStyle(Theme.muted)
+                    }
+                    Spacer(minLength: 8)
+                    if let r = model.myRatings[stop.momentId], (1...5).contains(r) {
+                        Text(Labels.feel[r - 1]).font(Theme.italic(17, relativeTo: .body)).foregroundStyle(Theme.accent)
+                    } else {
+                        Text("Not rated").font(.footnote).foregroundStyle(Theme.muted)
+                    }
+                }
+                .padding(10)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
+                .accessibilityElement(children: .combine)
+            }
+            QuietButton("See the day") { model.path.append(TripDest.day) }
+                .frame(maxWidth: .infinity)
+        }
+        .settle(0)
+    }
+}
+
+extension Plan {
+    /// D131: the day's own headline on the home ("A curious, peaceful day"), never on the blind Test B pair.
+    var homeHeadline: String {
+        let text = !isBlind && !(feelLine ?? "").isEmpty ? feelLine! : (title ?? "Your day")
+        return text.headlineParts.0
     }
 }
 
@@ -471,7 +577,7 @@ struct PlanTripCard: View {
             .padding(22)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RadialGradient(colors: [Color(hex: 0x3B2E1E), Theme.surface], center: UnitPoint(x: 0.8, y: 0),
+                RadialGradient(colors: [Theme.selected, Theme.surface], center: UnitPoint(x: 0.8, y: 0),
                                startRadius: 0, endRadius: 260),
                 in: RoundedRectangle(cornerRadius: 24))
         }
@@ -623,7 +729,7 @@ struct TripCreateFlow: View {
             HStack(spacing: 6) {
                 ForEach(0..<Self.questions, id: \.self) { i in
                     Capsule()
-                        .fill(i <= step ? Theme.accent : Color(hex: 0x3A3E46))
+                        .fill(i <= step ? Theme.accent : Theme.track)
                         .frame(width: i == step ? 22 : 6, height: 6)
                 }
             }
@@ -676,7 +782,6 @@ struct TripCreateFlow: View {
             if await model.makeTrip(t, keepFrom: old) {
                 if editing { model.book.resultsFor = nil }
                 dismiss()
-                model.tab = .trip
                 var p = NavigationPath()
                 p.append(TripDest.trip(t.id))
                 model.path = p
@@ -715,7 +820,7 @@ struct CityLine: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text(name).foregroundStyle(ready ? Theme.ink : Color(hex: 0x7A746B))
+                Text(name).foregroundStyle(ready ? Theme.ink : Theme.muted)
                 Spacer(minLength: 8)
                 Text(note).font(.footnote).foregroundStyle(Theme.muted)
             }
@@ -778,7 +883,7 @@ struct TripCalendar: View {
     @State private var month: Date              // the first of the month on show
 
     private static let maxNights = 30
-    private static let band = Color(hex: 0x3A2F1C)
+    private static let band = Theme.savedBg
 
     init(trip: Binding<Trip>, pickingEnd: Binding<Bool>) {
         _trip = trip
@@ -1409,7 +1514,7 @@ struct TripOverview: View {
     private func openBook(_ trip: Trip, _ segment: BookState.Segment) {
         model.currentTripId = trip.id
         model.book.segment = segment
-        model.tab = .book
+        model.path.append(TripDest.book)   // D131: flights and stays open inside the trip
     }
 }
 
@@ -1881,12 +1986,14 @@ struct YouView: View {
     @Environment(\.openURL) private var openURL
     @State private var showSafety = false
     @State private var showSettings = false
+    var onBack: (() -> Void)?      // D131: opened from the home's menu
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                if let onBack { BackLink(action: onBack) }
                 PageTitle(text: "You", font: Theme.serif(36, relativeTo: .largeTitle))
-                    .padding(.top, 30)
+                    .padding(.top, onBack == nil ? 30 : 0)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Emergency in the UK").font(.headline).foregroundStyle(Theme.emergencyTitle)
                     Text("If you or someone else is in danger, call 999 first.")
@@ -1934,6 +2041,19 @@ struct YouView: View {
                         }
                     }
                 }
+                VStack(alignment: .leading, spacing: 10) {   // D130 (Daylight)
+                    SectionLabel(text: "The light")
+                    HStack(spacing: 0) {
+                        lightChoice("Follow the sky", dark: false)
+                        lightChoice("Always dark", dark: true)
+                    }
+                    .padding(3)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+                    Text("By day the app is light, and it turns dark after sunset, following London's sky. Always dark keeps the night look.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 Button { showSettings = true } label: {
                     HStack {
                         Text("Your data · what's stored and how to delete it")
@@ -1950,6 +2070,7 @@ struct YouView: View {
             .padding(.bottom, 40)
         }
         .background(Theme.background)
+        .toolbar(.hidden, for: .navigationBar)
         .statusBarShade()
         .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
         .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
@@ -1957,6 +2078,23 @@ struct YouView: View {
             await model.loadSafety()
             if model.learned == nil { model.learned = try? await model.client.summary() }
         }
+    }
+
+    private func lightChoice(_ title: String, dark: Bool) -> some View {
+        let on = model.alwaysDark == dark
+        return Button {
+            Haptics.light()
+            model.setAlwaysDark(dark)
+        } label: {
+            Text(title)
+                .font(.subheadline.weight(on ? .semibold : .regular))
+                .foregroundStyle(on ? Theme.ink : Theme.muted)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(on ? Theme.surfaceHigh : .clear, in: RoundedRectangle(cornerRadius: 11))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(on ? [.isSelected] : [])
     }
 }
 
@@ -1982,7 +2120,7 @@ struct TripDemoScreen: View {
                                startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4][name] ?? 0)
             }
         case "trip", "tripday":                                                           // 24, 25
-            MainTabs().onAppear {
+            LivingHome().onAppear {
                 guard let trip = model.trips.first else { return }
                 var p = NavigationPath()
                 p.append(TripDest.trip(trip.id))
@@ -1998,10 +2136,14 @@ struct TripDemoScreen: View {
                 NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: true) }
             }
         case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31
-            MainTabs().onAppear {
+            LivingHome().onAppear {
                 model.book.segment = name.hasPrefix("flight") ? .flights : .stays
                 model.book.stayMap = name == "staysmap"
-                model.tab = .book
+                guard let trip = model.trips.first else { return }
+                var p = NavigationPath()   // D131: flights and stays open inside the trip
+                p.append(TripDest.trip(trip.id))
+                p.append(TripDest.book)
+                model.path = p
                 if name.hasSuffix("filters") { model.book.showFilters = true }
             }
         case "flight", "handoff", "handoffback":                                          // 28, 28a, 28b
@@ -2014,8 +2156,32 @@ struct TripDemoScreen: View {
             }
         case "stay":                                                                      // 32
             if let s = model.book.stays?.results.first { NavigationStack { StayDetailView(stay: s) } }
-        case "you": MainTabs().onAppear { model.tab = .you }                              // 33
-        default: MainTabs()                                                               // 19 ("triphome")
+        case "you": LivingHome().onAppear { model.path.append(TripDest.you) }            // 33 (D131: from the menu)
+        case "hometoday", "homeafter":                                                    // 19b, 19c (D131)
+            LivingHome().onAppear {
+                guard let plan = model.plan else { return }
+                let today = plan.dated(Dates.isoDay.string(from: .now))
+                model.plan = today
+                let at = name == "hometoday" ? 1 : today.stops.count
+                UserDefaults.standard.set(at, forKey: "nowIndex.\(today.id)")
+                model.nowIndex = at
+                if name == "homeafter" {
+                    var ratings: [String: Int] = [:]
+                    for (k, stop) in today.stops.filter(\.rateable).enumerated() { ratings[stop.momentId] = [5, 4, 3, 4, 5][k % 5] }
+                    model.myRatings = ratings
+                    model.rated = Set(ratings.keys)
+                }
+            }
+        case "nowarrived":                                                                // 10d (D130): at the stop
+            DayScreen().onAppear {
+                guard let plan = model.plan else { return }
+                let today = plan.dated(Dates.isoDay.string(from: .now))
+                model.plan = today
+                UserDefaults.standard.set(1, forKey: "nowIndex.\(today.id)")
+                UserDefaults.standard.set(today.stops[1].id, forKey: "arrived.\(today.id)")
+                model.startDay()
+            }
+        default: LivingHome()                                                             // 19 ("triphome")
         }
     }
 

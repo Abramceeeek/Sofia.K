@@ -114,7 +114,7 @@ struct PairFlow: View {
         }
         .background(Theme.background)
         .overlay(alignment: .topTrailing) {
-            // m176: opened from home, it can be left for later (the comparison stays open on the Trip tab)
+            // m176: opened from home, it can be left for later (the comparison stays open from the home)
             if model.showPair && !(model.pair?.done ?? false) {
                 Button("Not now") { model.showPair = false }
                     .font(.subheadline)

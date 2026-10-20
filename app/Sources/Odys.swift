@@ -232,12 +232,26 @@ struct TopBar: View {
     let eyebrow: String
     var onHelp: (() -> Void)?
     var onData: (() -> Void)?
+    var onMenu: (() -> Void)?     // D131: the home's menu: You, your data and the light
 
     var body: some View {
         HStack(spacing: 10) {
             Eyebrow(eyebrow)
             Spacer(minLength: 8)
             if let onHelp { HelpPill(action: onHelp) }
+            if let onMenu {
+                Button(action: onMenu) {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.ink)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Theme.outlineStrong, lineWidth: 1))
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(PressStyle())
+                .accessibilityLabel("You, your data and the light")
+            }
             if let onData {
                 Button(action: onData) {
                     Image(systemName: "gearshape")
@@ -720,22 +734,39 @@ struct ListenRings: View {
 /// Motion.
 struct BreathingArch: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AppModel.self) private var model
+    var showSun = false
+    @State private var sun: Double?    // D130: set once, so the sun never moves while someone is looking
 
     var body: some View {
+        // D130: by day the arch's light takes the sky's colour; on "Now" the sun sits where the real sun is
+        let day = model.sky.isDay
+        let light = day ? Theme.skyTop(model.sky) : Theme.accent
+        let glow = day ? 0.75 : 0.1
         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: reduceMotion)) { tl in
             let t = tl.date.timeIntervalSinceReferenceDate
             let b = reduceMotion ? 0.5 : (1 - cos(t / 6 * 2 * .pi)) / 2
             ZStack {
                 Circle()
-                    .fill(RadialGradient(colors: [Theme.accent.opacity(0.1 + 0.1 * b), Theme.accent.opacity(0)],
+                    .fill(RadialGradient(colors: [light.opacity(glow + 0.1 * b), light.opacity(0)],
                                          center: .center, startRadius: 0, endRadius: 80))
                     .frame(width: 160, height: 160)
                     .scaleEffect(0.94 + 0.06 * b)
                 ArchGlyph(color: Theme.accent.opacity(0.62 + 0.18 * b), width: 40)
+                if let sun {
+                    // sunrise on the left, sunset on the right, over the arch
+                    let a = Double.pi * (1 - sun)
+                    ZStack {
+                        Circle().fill(Theme.amberLight.opacity(0.5)).frame(width: 22, height: 22)
+                        Circle().fill(Theme.accent).frame(width: 12, height: 12)
+                    }
+                    .offset(x: 62 * cos(a), y: 160 * 0.12 - 62 * sin(a))
+                }
             }
         }
         .frame(width: 160, height: 160)
         .accessibilityHidden(true)
+        .onAppear { if showSun, model.sky.isDay { sun = Sun.dayFraction(.now) } }
     }
 }
 

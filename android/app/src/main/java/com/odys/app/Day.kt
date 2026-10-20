@@ -1,5 +1,13 @@
 package com.odys.app
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +52,9 @@ import kotlinx.coroutines.launch
  * it. I'll stay quiet until you need me.", a slowly breathing arch, and what's next. "I'm done here" asks for the rating
  * (the visit is over, D110), then moves on. D123: with location on, how far the stop is, and the rating asked for once
  * they've left it. m176: a trip day's journeys at each end; at the end of a trip's day, "Preview tomorrow".
+ * D130 (the arrival moment): on the way, the stop's way in and "I'm here"; once there (tapped, or seen by the phone),
+ * the screen brightens once, like coming out of the station into the open, and shows what to notice. With Reduce
+ * Motion on it only fades. The day's path sits under the way in.
  */
 @Composable
 fun NowView(model: AppModel) {
@@ -53,8 +64,9 @@ fun NowView(model: AppModel) {
     var card by remember { mutableStateOf<Stop?>(null) }
     var onTheWay by remember { mutableStateOf<Stop?>(null) }
     var replanning by remember { mutableStateOf(false) }
-    var arrived by remember { mutableStateOf(setOf<String>()) }
     var asked by remember { mutableStateOf(setOf<String>()) }
+    val reduce = rememberReduceMotion()
+    val glow = remember { Animatable(0f) }
     val stops = model.plan?.stops ?: emptyList()
     val i = minOf(model.nowIndex, stops.size)
     val tripDay = model.currentTripDay()?.second
@@ -70,6 +82,16 @@ fun NowView(model: AppModel) {
 
     fun done(stop: Stop) {
         if (stop.rateable && stop.momentId !in model.rated && lookAhead == null) rating = stop else advance()
+    }
+
+    fun arrive(stop: Stop, how: String) {
+        if (stop.id in model.arrivedStops) return
+        model.markArrived(stop)
+        scope.launch { model.client.event("arrived", mapOf("how" to how)) }
+        if (!reduce) scope.launch {
+            glow.animateTo(0.6f, tween(260))
+            glow.animateTo(0f, tween(1100, easing = Motion.settleEasing))
+        }
     }
 
     fun skip(stop: Stop) {
@@ -88,8 +110,8 @@ fun NowView(model: AppModel) {
         val stop = stops[i]
         val m = stop.pin?.let { loc.metres(it) } ?: return@LaunchedEffect
         if (m < 120) {
-            arrived = arrived + stop.id
-        } else if (m > 250 && stop.id in arrived && stop.id !in asked && stop.rateable && stop.momentId !in model.rated) {
+            arrive(stop, "location")
+        } else if (m > 250 && stop.id in model.arrivedStops && stop.id !in asked && stop.rateable && stop.momentId !in model.rated) {
             asked = asked + stop.id
             rating = stop
             model.client.event("rating_on_leaving")
@@ -102,6 +124,7 @@ fun NowView(model: AppModel) {
             StopView(model, open) { card = null }
             return@FullSheet
         }
+        Box(Modifier.fillMaxSize().skyBackground(Theme.calm)) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp)
             .padding(top = 40.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (i == 0 && tripDay != null) {   // m176: the trip's first journeys come before the first stop
@@ -119,38 +142,64 @@ fun NowView(model: AppModel) {
             }
             if (i < stops.size) {
                 val stop = stops[i]
-                Eyebrow("Now")
-                Text(stop.title, style = Theme.hero, maxLines = 4, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.clickable(role = Role.Button) { card = stop }
-                        .semantics { contentDescription = "${stop.title}. Opens the stop's card" })
-                Text(lookAhead?.let { "A look ahead: this day is $it. Ratings open on the day." }
-                    ?: "Enjoy it. I'll stay quiet until you need me.", style = Theme.body.copy(color = Theme.inkSoft))
                 val pin = stop.pin
                 val m = if (loc.usable && pin != null) loc.metres(pin) else null
+                val here = stop.id in model.arrivedStops || lookAhead != null
+                androidx.compose.runtime.key(i) {   // D130: each new stop settles into place (a fade with Reduce Motion)
+                    Column(Modifier.settle(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Eyebrow(if (here) "Now" else "Next · around ${stop.arrive}")
+                        Text(stop.title, style = Theme.hero, maxLines = 4, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.clickable(role = Role.Button) { card = stop }
+                                .semantics { contentDescription = "${stop.title}. Opens the stop's card" })
+                    }
+                }
                 if (m != null) {   // D123: from the phone's location, never sent
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(Icons.Filled.LocationOn, null, tint = Theme.accent, modifier = Modifier.size(16.dp))
-                        Text(if (m < 120 || (stop.id in arrived && m < 250)) "You're here" else Location.walkText(m),
+                        Text(if (m < 120 || (here && m < 250)) "You're here" else Location.walkText(m),
                             style = Theme.subheadline.copy(color = Theme.accent))
                     }
                 }
-                Spacer(Modifier.height(12.dp))
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { BreathingArch() }
-                Spacer(Modifier.height(12.dp))
-                val leave = tripDay?.journeys("leave")?.firstOrNull()
-                if (i + 1 < stops.size) {
-                    NextUp(stops[i + 1])
-                } else if (leave != null) {   // journey round 2: the way home, ahead
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Filled.FlightTakeoff, null, tint = Theme.inkSoft, modifier = Modifier.size(18.dp))
-                        Text("After this: ${leave.title}", style = Theme.subheadline.copy(color = Theme.inkSoft))
+                Crossfade(here, animationSpec = tween(if (reduce) 200 else 450, easing = Motion.settleEasing), label = "arrival") { there ->
+                    if (!there) {
+                        // D130: on the way, how you arrive is part of the moment
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            val steps = stop.approachSteps.orEmpty()
+                            if (steps.isNotEmpty() || stop.approach.isNotEmpty() || stop.travelText.isNotEmpty()) {
+                                Column(Modifier.surfaceCard(padding = 18.dp, radius = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    SectionLabel("The way in")
+                                    if (steps.isNotEmpty()) WayIn(steps, stop.reveal == true)
+                                    else Text(stop.approach.ifEmpty { stop.travelText }, style = Theme.body.copy(color = Theme.inkSoft))
+                                }
+                            }
+                            DayPath(stops, current = i, height = 120.dp)
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            if (stop.what.isNotEmpty() && lookAhead == null) Text(stop.what, style = Theme.italic(21.sp, Theme.ink))
+                            Text(lookAhead?.let { "A look ahead: this day is $it. Ratings open on the day." }
+                                ?: "Enjoy it. I'll stay quiet until you need me.", style = Theme.body.copy(color = Theme.inkSoft))
+                            Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) { BreathingArch(showSun = true) }
+                            val leave = tripDay?.journeys("leave")?.firstOrNull()
+                            if (i + 1 < stops.size) {
+                                NextUp(stops[i + 1])
+                            } else if (leave != null) {   // journey round 2: the way home, ahead
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Icon(Icons.Filled.FlightTakeoff, null, tint = Theme.inkSoft, modifier = Modifier.size(18.dp))
+                                    Text("After this: ${leave.title}", style = Theme.subheadline.copy(color = Theme.inkSoft))
+                                }
+                            }
+                        }
                     }
                 }
-                if (pin != null && !(m != null && (m < 120 || (stop.id in arrived && m < 250)))) {
-                    // 20 Oct (round 2): the way there without opening the card; by Tube or bus when the leg is
-                    SecondaryButton("Directions") { openUrl(context, directionsUrl(pin, stop.travelMode == "transit")) }
+                if (!here) {
+                    if (pin != null) {   // 20 Oct (round 2): the way there without opening the card; by Tube or bus when the leg is
+                        SecondaryButton("Directions") { openUrl(context, directionsUrl(pin, stop.travelMode == "transit")) }
+                    }
+                    PrimaryButton("I'm here") { arrive(stop, "tap") }
+                } else {
+                    PrimaryButton("I'm done here") { done(stop) }
                 }
-                PrimaryButton("I'm done here") { done(stop) }
                 if (lookAhead == null) {   // journey round 2: a closed place or a long queue needn't be rated to move on
                     QuietButton("Didn't go? Skip this stop", Modifier.fillMaxWidth()) { skip(stop) }
                     if (model.lastRequest != null) {   // decision 3; never on the Test B plan
@@ -193,6 +242,12 @@ fun NowView(model: AppModel) {
                 Spacer(Modifier.weight(1f))
                 QuietButton("Help") { showSafety = true }
             }
+        }
+        // D130: the light opening out as you arrive; it never takes a tap
+        Box(Modifier.fillMaxSize().drawBehind {
+            if (glow.value > 0f) drawRect(Brush.radialGradient(listOf(Theme.amberLight.copy(alpha = glow.value), Color.Transparent),
+                center = Offset(size.width / 2, size.height * 0.2f), radius = size.maxDimension))
+        })
         }
     }
     rating?.let { stop -> RatingView(model, stop, onNext = { advance() }) { rating = null } }
