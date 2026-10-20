@@ -755,12 +755,14 @@ struct BreathingArch: View {
                 ArchGlyph(color: Theme.accent.opacity(0.62 + 0.18 * b), width: 40)
                 if let sun {
                     // sunrise on the left, sunset on the right, over the arch
-                    let a = Double.pi * (1 - sun)
+                    let a: Double = Double.pi * (1 - sun)
+                    let dx: CGFloat = 62 * cos(a)
+                    let dy: CGFloat = 19.2 - 62 * sin(a)
                     ZStack {
                         Circle().fill(Theme.amberLight.opacity(0.5)).frame(width: 22, height: 22)
                         Circle().fill(Theme.accent).frame(width: 12, height: 12)
                     }
-                    .offset(x: 62 * cos(a), y: 160 * 0.12 - 62 * sin(a))
+                    .offset(x: dx, y: dy)
                 }
             }
         }
