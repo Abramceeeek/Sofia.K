@@ -44,6 +44,7 @@ class User(Base):
     referral = relationship("Referral", cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     categories = relationship("CategoryAnswer", cascade="all, delete-orphan", passive_deletes=True)
     corrections = relationship("Correction", cascade="all, delete-orphan", passive_deletes=True)
+    day_feedback = relationship("DayFeedback", cascade="all, delete-orphan", passive_deletes=True)
 
 
 class Swipe(Base):
@@ -113,6 +114,18 @@ class Event(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     name: Mapped[str] = mapped_column(String(64))
     props: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class DayFeedback(Base):
+    """D127: two taps at the end of a day: was it worth what you spent, and would you do it again. The product's second
+    outcome (CLAUDE.md: "how worthwhile the money feels"), which nothing else measures. One row per plan."""
+    __tablename__ = "day_feedback"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    plan_id: Mapped[int | None] = mapped_column(ForeignKey("plans.id", ondelete="SET NULL"))
+    worth: Mapped[str | None] = mapped_column(String(16))      # less | about_right | more (than what they spent)
+    again: Mapped[bool | None] = mapped_column(Boolean)        # "Would you do this day again?"
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 

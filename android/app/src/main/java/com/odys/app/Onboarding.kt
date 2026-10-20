@@ -33,6 +33,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
@@ -97,10 +101,18 @@ object Labels {
     val reactions = listOf("loved" to "Loved it", "fine" to "It was fine", "didnt_enjoy" to "Didn't enjoy it",
         "havent_been" to "Haven't been")
     /** The rating's words (D115: one dimension), 1–5. */
-    val feel = listOf("Flat", "Fine", "Good", "Great", "Unforgettable")
+    val feel = listOf("Disappointing", "Fine", "Good", "Great", "Unforgettable")
     /** The "this or that" attributes, always in the same order with the same icons (D95). */
     val attributeIcons = listOf(Icons.Filled.SwapHoriz, Icons.Filled.WbCloudy, Icons.Filled.Speed, Icons.Filled.Groups,
         Icons.Filled.CurrencyPound, Icons.AutoMirrored.Filled.DirectionsWalk)
+
+    /** 20 Oct (round 2): the weather line's icon follows its words (rain, cold, mild). */
+    fun attributeIcon(i: Int, text: String) = when {
+        i == 1 && "rain" in text -> Icons.Filled.WaterDrop
+        i == 1 && "cold" in text -> Icons.Filled.AcUnit
+        i == 1 && "mild" in text -> Icons.Filled.WbSunny
+        else -> attributeIcons.getOrNull(i) ?: Icons.Outlined.Circle
+    }
 }
 
 @Composable
@@ -763,13 +775,20 @@ fun DayOption(label: String, text: String, field: Int, on: Boolean, onClick: () 
             }
             parts.forEachIndexed { i, part ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Icon(Labels.attributeIcons.getOrNull(i) ?: Icons.Outlined.Circle, null, tint = Theme.accent,
+                    Icon(Labels.attributeIcon(i, part), null, tint = Theme.accent,
                         modifier = Modifier.size(20.dp).padding(top = 2.dp))
                     Text(part.replaceFirstChar { it.uppercase() }, style = Theme.body)
                 }
             }
-            Text(if (on) "Chosen" else "Choose this day", style = Theme.subheadline.copy(color = Theme.accent,
-                fontWeight = FontWeight.SemiBold), modifier = Modifier.padding(top = 4.dp))
+            // 20 Oct (round 2): a pill, so it reads as the thing to tap
+            Row(Modifier.padding(top = 4.dp).clip(RoundedCornerShape(50)).background(if (on) Theme.accent else Color.Transparent)
+                .border(1.dp, Theme.accent, RoundedCornerShape(50)).heightIn(min = 40.dp).padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Icon(if (on) Icons.Filled.Check else Icons.Filled.TouchApp, null, tint = if (on) Theme.background else Theme.accent,
+                    modifier = Modifier.size(16.dp))
+                Text(if (on) "Chosen" else "Choose this day", style = Theme.subheadline.copy(color = if (on) Theme.background else Theme.accent,
+                    fontWeight = FontWeight.SemiBold))
+            }
         }
     }
 }
@@ -801,7 +820,7 @@ fun ImproveView(model: AppModel, onClose: () -> Unit) {
                     step < 0 -> {
                         Box(Modifier.padding(top = 12.dp)) { ArchGlyph(width = 22.dp) }
                         PageTitle("Make your next day even better?")
-                        Text("About 30 seconds. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.",
+                        Text("About a minute. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.",
                             style = Theme.body.copy(color = Theme.inkSoft))
                         Text("Your budget and interests shape your next plans; the other answers help us test the idea.", style = Theme.footnote)
                         PrimaryButton(if (model.improved) "Change my answers" else "Start", Modifier.padding(top = 8.dp)) { go(0) }
@@ -828,7 +847,7 @@ fun ImproveView(model: AppModel, onClose: () -> Unit) {
                         val later = if (model.isVisitor) emptyList() else (model.onboarding?.swipePlacesLater ?: emptyList())
                         val laterTasks = model.onboarding?.conjointTasksLater ?: emptyList()
                         if (later.isNotEmpty() || laterTasks.isNotEmpty()) {
-                            Text("Want to go further? About a minute more.", style = Theme.headline, modifier = Modifier.padding(top = 8.dp))
+                            Text("Want to go further? About 2 minutes more.", style = Theme.headline, modifier = Modifier.padding(top = 8.dp))
                             if (later.isNotEmpty()) MoreRow("${later.size} more places you may have been", model.morePlacesDone) { morePlaces = true }
                             if (laterTasks.isNotEmpty()) MoreRow("${laterTasks.size} more made-up example days", model.moreTasksDone) { moreTasks = true }
                         }

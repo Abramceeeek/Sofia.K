@@ -142,9 +142,16 @@ fun DayView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (()
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanFormView(model: AppModel, onDone: (() -> Unit)? = null, onHelp: (() -> Unit)? = null, onData: (() -> Unit)? = null) {
+    // D127 (algorithm reviews: use the answers you collect): "Morning or night person?" sets the hours a new plan starts
+    // with. 10:00–16:00 for a morning person, 14:00–20:00 for a night person, else 12:00–17:00. They can still change them.
+    val hours = when (model.profile.chronotype) {
+        "morning" -> 10 * 60 to 16 * 60
+        "night" -> 14 * 60 to 20 * 60
+        else -> 12 * 60 to 17 * 60
+    }
     var date by remember { mutableStateOf(Dates.nextSaturday()) }
-    var start by remember { mutableIntStateOf(12 * 60) }
-    var end by remember { mutableIntStateOf(17 * 60) }
+    var start by remember { mutableIntStateOf(hours.first) }
+    var end by remember { mutableIntStateOf(hours.second) }
     var stops by remember { mutableIntStateOf(4) }
     var fromHere by remember { mutableStateOf(false) }
     var mustDo by remember { mutableStateOf<MomentSummary?>(null) }
@@ -163,18 +170,18 @@ fun PlanFormView(model: AppModel, onDone: (() -> Unit)? = null, onHelp: (() -> U
 
     fun pick(day: LocalDate) {
         date = day
-        start = 12 * 60
-        end = 17 * 60
+        start = hours.first
+        end = hours.second
     }
 
-    /** Today: from the next half hour (at the earliest 12:00), for at least three hours, ending by 22:00. */
+    /** Today: from the next half hour (at the earliest the usual start), for at least three hours, ending by 22:00. */
     fun pickToday() {
         date = today
         val now = Dates.now()
         val soon = now.hour * 60 + now.minute + 15
         val rounded = ((soon + 29) / 30) * 30
-        start = max(12 * 60, rounded)
-        end = min(max(17 * 60, start + 180), 22 * 60)
+        start = max(hours.first, rounded)
+        end = min(max(hours.second, start + 180), 22 * 60)
     }
 
     fun make() {
@@ -432,10 +439,15 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
         val settle = phase(0f, 0.15f)
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val headline = if (!plan.isBlind && !plan.feelLine.isNullOrEmpty()) plan.feelLine else plan.title ?: "Your day"
-            Text(headline, style = Theme.serif(31.sp), modifier = Modifier.semantics { heading() }.graphicsLayer {
+            // 20 Oct (round 2): "A curious, peaceful day: some history, …" as a headline and a line under it
+            val (title, sub) = headlineParts(headline)
+            Column(Modifier.graphicsLayer {
                 alpha = settle
                 translationY = if (reduce) 0f else (1 - settle) * 14.dp.toPx()
-            })
+            }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(title, style = Theme.serif(31.sp), modifier = Modifier.semantics { heading() })
+                if (sub != null) Text(sub, style = Theme.serif(19.sp).copy(color = Theme.inkSoft))
+            }
             PlanStats(plan, Modifier.graphicsLayer { alpha = phase(if (plan.isBlind) 0f else 0.12f, 0.25f) })
         }
         // 19 Oct review: List or Map straight under the headline, so the map is there the moment it's chosen
@@ -443,7 +455,6 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
             layout = it
             model.prefs.set("planLayout", it)
         }
-        if (layout != "map") DayMoves(plan, phase(0.2f, 0.6f), Modifier.graphicsLayer { alpha = phase(0.18f, 0.3f) })
         if (layout == "map") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val pins = plan.stops.mapIndexedNotNull { i, s -> s.pin?.let { MapPin(it, s.title, i + 1) } }
@@ -471,6 +482,8 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
                 }
             }
         }
+        // 20 Oct (round 2): the stops first; the day's shape is a summary of them, after
+        if (layout != "map") DayMoves(plan, phase(0.3f, 0.9f), Modifier.graphicsLayer { alpha = phase(0.28f, 0.4f) })
         val free = model.freeTime(plan)
         if (free != null && shown >= 1f) {   // journey round 2: free time, said plainly
             FreeTimeRow(model, free.first, free.second, (model.lastRequest?.stops ?: 6) < 6) {
@@ -497,7 +510,7 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(if (model.improved) "Change your answers" else "Your first stop taught us something", style = Theme.title3)
                         Text(if (model.improved) "Your budget, pace and interests, a few more places and example days."
-                             else "Make the next day even better? About 30 seconds, then more if you like.",
+                             else "Make the next day even better? About a minute, then more if you like.",
                             style = Theme.subheadline.copy(color = Theme.muted))
                     }
                 }
@@ -606,8 +619,9 @@ fun PlanStats(plan: Plan, modifier: Modifier = Modifier) {
 /** One of the plan's numbers, as a quiet chip (not a button). */
 @Composable
 fun StatChip(text: String) {
-    Text(text, style = Theme.subheadline.copy(color = Theme.ink),
-        modifier = Modifier.clip(RoundedCornerShape(50)).background(Theme.surface).padding(horizontal = 12.dp, vertical = 6.dp))
+    // 20 Oct (round 2): quieter than the headline and the stops
+    Text(text, style = Theme.footnote.copy(color = Theme.inkSoft),
+        modifier = Modifier.clip(RoundedCornerShape(50)).background(Theme.surface).padding(horizontal = 10.dp, vertical = 5.dp))
 }
 
 /**
@@ -688,7 +702,8 @@ fun DayCurve(points: List<CurvePoint>, progress: Float, peak: Int?, modifier: Mo
             val k = if (i == peak) pulse.value else 1f
             drawCircle(Theme.deep, 7.5f * d * k, Offset(px, y(p.level)))
             drawCircle(Theme.accent, 4.5f * d * k, Offset(px, y(p.level)))
-            val word = measurer.measure(p.word, Theme.italic(16.sp, Theme.ink))
+            // 20 Oct (round 2): numbered like the stops, so the two staggered rows still read in order
+            val word = measurer.measure("${i + 1} · ${p.word}", Theme.italic(16.sp, Theme.ink))
             val time = measurer.measure(p.time, Theme.caption)
             val cx = px.coerceIn(34 * d, w - 34 * d)
             val row = if (rows == 2) i % 2 else 0
@@ -712,7 +727,7 @@ fun TravelLine(stop: Stop) {
 
 /**
  * One stop on the day (D119): its photo or field, "13:30–14:15 · Awe", the title, the reason in plain words (D115),
- * and the worth to you in amber (D88, D118).
+ * and the price and the match words (D127; was the worth to you, D88, D118).
  */
 @Composable
 fun StopCard(number: Int, stop: Stop, rated: Boolean = false, swapped: Boolean = false, showWhy: Boolean = true,
@@ -735,7 +750,7 @@ fun StopCard(number: Int, stop: Stop, rated: Boolean = false, swapped: Boolean =
             if (showWhy) stop.reasons?.firstOrNull()?.you?.let {
                 Text(it, style = Theme.subheadline.copy(color = Theme.inkSoft))
             }
-            if (showWhy) stop.worthLine?.let { Text(it, style = Theme.subheadline.copy(color = Theme.muted)) }   // 19 Oct: amber is for actions
+            if (showWhy) stop.matchLine?.let { Text(it, style = Theme.subheadline.copy(color = Theme.muted)) }   // 19 Oct: amber is for actions
             val badges = listOfNotNull(if (swapped) "Swapped in" else null, if (stop.familiar) "A place you loved" else null,
                 if (rated) "Rated" else null)
             if (badges.isNotEmpty()) Text(badges.joinToString(" · "), style = Theme.italic(15.sp))
@@ -817,15 +832,15 @@ fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean 
             }
         }
         val reasons = if (showWhy) stop.reasons ?: emptyList() else emptyList()
-        if (reasons.isNotEmpty() || (showWhy && stop.worthLine != null)) {
+        if (reasons.isNotEmpty() || (showWhy && stop.matchLine != null)) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Why we picked this for you", style = Theme.subheadline.copy(color = Theme.muted))
                 for (r in reasons) Text(r.you, style = Theme.serif(22.sp))
                 if (basis != null && reasons.isNotEmpty()) Text(basis.soFar, style = Theme.footnote)
-                stop.worthLine?.let {
+                stop.matchLine?.let {
                     Text(it, style = Theme.body.copy(color = Theme.inkSoft), modifier = Modifier.padding(top = 4.dp))
-                    // D118: plainly a first estimate; 19 Oct: and not a price or a promise
-                    Text("A first estimate from your answers so far: not a price, and not a promise of how you'll feel.",
+                    // D118: plainly a first estimate; D127: in words, from the chance you'd rate it Good or better
+                    Text("A first guess from your answers so far, not a promise of how you'll feel. It gets sharper as you rate stops.",
                         style = Theme.footnote)
                 }
             }
@@ -857,12 +872,19 @@ fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean 
         val light = stop.bestLight ?: ""
         val window = stop.bestWindow ?: ""
         // 19 Oct review: say plainly whether this plan has them there at that time, never leave it to look like a mistake
+        // 20 Oct (round 2): which side of the visit the light falls, and what that means for what you'll see
         val ends = window.split("–")
-        val here = ends.size == 2 && Dates.minutes(stop.arrive) < Dates.minutes(ends[1]) &&
-            Dates.minutes(ends[0]) < Dates.minutes(stop.depart)
-        val best = if (light.isEmpty()) "" else (if (light.endsWith(".")) light else "$light.") +
-            (if (window.isEmpty()) "" else if (here) " On your day that's $window, while you're here."
-             else " On your day that's $window; this plan has you here at ${stop.arrive}.")
+        val visit = "${stop.arrive}–${stop.depart}"
+        val whenLine = when {
+            window.isEmpty() -> ""
+            ends.size != 2 -> " On your day that's $window."
+            Dates.minutes(ends[0]) >= Dates.minutes(stop.depart) ->
+                " On your day that's $window, after this plan has you here ($visit), so you'll see it in earlier light."
+            Dates.minutes(ends[1]) <= Dates.minutes(stop.arrive) ->
+                " On your day that's $window, before this plan has you here ($visit), so you'll see it in later light."
+            else -> " On your day that's $window, while you're here."
+        }
+        val best = if (light.isEmpty()) "" else (if (light.endsWith(".")) light else "$light.") + whenLine
         DetailRows(listOf(
             "Best time and light" to best,
             "What happens" to stop.what,
@@ -996,13 +1018,14 @@ fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Uni
                 QuietButton("Something wrong with this place? Tell us", Modifier.fillMaxWidth()) { reporting = true }
             }
         }
+        // 20 Oct (round 2): a firmer scrim, so the arrow reads over a bright photo
         Box(Modifier.statusBarsPadding().padding(start = 12.dp, top = 4.dp)
-            .clip(CircleShape).background(Theme.background.copy(alpha = 0.55f))) {
+            .clip(CircleShape).background(Theme.background.copy(alpha = 0.7f))) {
             BackLink(onClick = onBack)
         }
         // 19 Oct review: Help on the stop too, where people are when they're out
         Box(Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 4.dp)
-            .clip(RoundedCornerShape(50)).background(Theme.background.copy(alpha = 0.55f))
+            .clip(RoundedCornerShape(50)).background(Theme.background.copy(alpha = 0.7f))
             .clickable(role = Role.Button) { helping = true }.heightIn(min = 48.dp).padding(horizontal = 18.dp),
             contentAlignment = Alignment.Center) {
             Text("Help", style = Theme.body)
@@ -1037,7 +1060,7 @@ fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Uni
 private val ratingLevels = listOf(0.12f, 0.32f, 0.55f, 0.8f, 1f)
 
 /**
- * After the visit, one word on a 1–5 scale. The arch fills with light to the word (Flat … Unforgettable). Save sends it
+ * After the visit, one word on a 1–5 scale. The arch fills with light to the word (Disappointing … Unforgettable). Save sends it
  * (so a mis-tap isn't sent); then a mote of light rises into the arch, a thank-you, and "Share this moment" (for any
  * rating, D114) or on to the next stop.
  */
@@ -1076,7 +1099,7 @@ fun RatingView(model: AppModel, stop: Stop, planId: Int? = null, onNext: (() -> 
                         }
                     }
                 } else {
-                    ScaleRow("Flat", "Unforgettable", rating, Labels.feel) { rating = it }
+                    ScaleRow("Disappointing", "Unforgettable", rating, Labels.feel) { rating = it }
                     AnimatedVisibility(rating != null, enter = fadeIn(), exit = fadeOut()) {
                         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             Column(Modifier.padding(top = 6.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

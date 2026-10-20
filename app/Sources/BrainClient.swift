@@ -118,7 +118,7 @@ final class BrainClient {
     }
 
     func referral() async throws -> ReferralResponse {
-        if demo { return ReferralResponse(code: "DEMOCARD", text: "I think you'd love this day — try it") }
+        if demo { return ReferralResponse(code: "DEMOCARD", text: "A moment from my day out, planned with ODYS") }
         return try await call("GET", "v1/me/referral")
     }
 
@@ -126,9 +126,14 @@ final class BrainClient {
         try await send("POST", "v1/me/ratings", request)
     }
 
+    /// D127: answering again replaces the earlier answer.
+    func dayFeedback(_ planId: Int, _ body: DayFeedback) async throws {
+        try await send("POST", "v1/me/plans/\(planId)/day", body)
+    }
+
     func safety(_ message: String, contact: String?) async throws -> String {
         if demo {
-            return "If you or someone else is in danger or hurt, call 999 now. We've told a person: Abram, or whoever is covering for him. They'll reply within a few hours, here in Help & safety, and by phone or email if you left one."
+            return "If you or someone else is in danger or hurt, call 999 now. A person reads every message and will reply here in Help & safety, and by phone or email if you left one, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning."
         }
         let out: SafetyResponse = try await call("POST", "v1/me/safety", SafetyRequest(message: message, contact: contact))
         return out.message

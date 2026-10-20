@@ -166,6 +166,12 @@ class SurveyIn(BaseModel):
     intrusive: str | None = Field(default=None, max_length=2000)      # "Was anything intrusive or tedious?"
 
 
+class DayFeedbackIn(BaseModel):
+    """D127: at the end of a day. Both optional, one tap each."""
+    worth: Literal["less", "about_right", "more"] | None = None   # "Was today worth what you spent?"
+    again: bool | None = None                                      # "Would you do this day again?"
+
+
 class RatingIn(BaseModel):
     moment_id: str
     rating: int = Field(ge=1, le=5)

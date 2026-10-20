@@ -14,6 +14,10 @@ Two rules for the seed moments (D72):
   holds at most one of them;
 - "area vibe" entries (a Soho wander, outdoor dining streets) are capped at `max_areas` per day
   (default 1) and are never reported as the day's peak, because they fill a day rather than make it.
+
+One rule for the day's shape (D127, from the algorithm review, 20 Oct): at most `max_theme` (2) history-and-culture
+stops a day, and never two of them in a row, so a day isn't three museums back to back (35% of simulated personal
+plans had two in a row). Lunch doesn't count, and a lunch between two of them breaks the run.
 """
 
 from __future__ import annotations
@@ -23,7 +27,7 @@ from dataclasses import dataclass, field, replace
 
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
-from .features import leg_features
+from .features import leg_features, moment_features
 from .moments import Moment, Point
 from .travel import TravelTimes
 
@@ -42,12 +46,14 @@ class Candidate:
     group: str | None = None                # variants of one moment: at most one per plan
     kind: str = "moment"                    # "moment" or "area" (area vibe)
     lunch: bool = False                     # D102: a meal stop; a plan holds at most one, and `lunch_bonus` pulls one in
+    theme: str | None = None                # D127: "history" for a history-and-culture stop (at most 2, never in a row)
 
 
 def candidate_for(m: Moment, utility: float) -> Candidate:
     """The planner's view of a plannable moment."""
     return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows()),
-                     float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind)
+                     float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind,
+                     theme="history" if moment_features(m).get("history_culture", 0) >= 1 else None)
 
 
 @dataclass(frozen=True)
@@ -112,7 +118,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            min_stops: int | None = None, budget_gbp: float | None = None,
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
            max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
-           lunch_bonus: float = 0.0, lunch_not_first: bool = False) -> DayPlan | None:
+           lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -202,6 +208,15 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     areas = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.kind == "area"]
     if len(areas) > max_areas:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in areas]) <= max_areas)
+    # D127: history and culture at most `max_theme` times a day, and never straight after another (an inactive
+    # stop's next is itself, so the rule only binds stops in the plan)
+    themed = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.theme == "history" and not c.lunch]
+    if len(themed) > max_theme:
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in themed]) <= max_theme)
+    for a in themed:
+        for b in themed:
+            if a != b:
+                solver.Add(routing.NextVar(a) != b)
 
     params = pywrapcp.DefaultRoutingSearchParameters()
     params.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PARALLEL_CHEAPEST_INSERTION
@@ -239,7 +254,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
-             lunch_not_first: bool = False) -> DayPlan:
+             lunch_not_first: bool = False, max_theme: int = 2) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -269,7 +284,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
                 min_stops=min_stops, max_areas=max_areas,
                 buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
-                lunch_not_first=lunch_not_first)
+                lunch_not_first=lunch_not_first, max_theme=max_theme)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:

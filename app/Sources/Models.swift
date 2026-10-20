@@ -316,7 +316,8 @@ struct Stop: Codable, Hashable, Identifiable {
     let pin: Point?
     let chosenFor: [String]
     let card: Card?
-    let worthGbp: Double?          // "Worth about £V to you" (D88, D112); nil for lunch slots and the example day
+    let worthGbp: Double?          // the model's £V (D88): kept for the day's curve, no longer shown (D127)
+    let match: String?             // D127: "A strong match for you" / "A good match for you" / "Worth a try"
     let approachSteps: [ApproachStep]?   // from where, the way in, where you arrive: the card's own text (D112)
     let bestLight: String?         // the card's light line
     let bestWindow: String?        // "16:12–17:12" on the plan's date
@@ -330,11 +331,10 @@ struct Stop: Codable, Hashable, Identifiable {
 
     var id: String { momentId + "@" + arrive }
 
-    /// D118: the worth and the price side by side ("Worth about £32 to you · Free entry").
-    /// 19 Oct review: the price first, then the worth, plainly a guess, so neither reads as the other (D88's figure).
-    var worthLine: String? {
-        worthGbp.map { (costGbp == 0 ? "Free entry." : "Costs \(Money.text(costGbp)).")
-            + " We guess it's worth about \(Money.text($0)) to you." }
+    /// D127 (algorithm reviews): the price, then how well it matches, in words. The £ figure overclaimed: after the short
+    /// onboarding its 95% range spans about 20 times, so it stays inside the model.
+    var matchLine: String? {
+        match.map { (costGbp == 0 ? "Free entry." : "Costs \(Money.text(costGbp)).") + " \($0)." }
     }
 
     /// The word for this stop on "How the day moves" and its line.
@@ -482,6 +482,22 @@ struct EventRequest: Encodable {
 }
 
 // ---- Build 2: the survey and the blind Test B pair ------------------------------------------------------------
+
+extension String {
+    /// 20 Oct (round 2): "A curious, peaceful day: some history, …" as a headline and a line under it, not one long
+    /// title: ("A curious, peaceful day", "Some history, …"). Without ": " the whole text is the headline.
+    var headlineParts: (String, String?) {
+        guard let r = range(of: ": ") else { return (self, nil) }
+        let rest = String(self[r.upperBound...])
+        return (String(self[..<r.lowerBound]), rest.prefix(1).uppercased() + rest.dropFirst())
+    }
+}
+
+/// D127: the two end-of-day questions (POST /v1/me/plans/{id}/day). Both optional.
+struct DayFeedback: Codable, Equatable {
+    var worth: String?             // less | about_right | more (than what they spent)
+    var again: Bool?
+}
 
 struct SurveyBody: Encodable {
     let understood: Int?

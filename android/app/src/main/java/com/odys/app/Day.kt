@@ -30,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -62,6 +63,7 @@ fun NowView(model: AppModel) {
     // journey round 2: "Start the day" on a plan for a later day is a look ahead: nothing is rated before the day
     val lookAhead = if (date != null && date > Dates.todayIso()) Dates.shortDay(date) else null
     val loc = model.location
+    val context = LocalContext.current
     fun close() { model.showNow = false }
 
     fun advance() = model.advanceNow()
@@ -144,6 +146,10 @@ fun NowView(model: AppModel) {
                         Text("After this: ${leave.title}", style = Theme.subheadline.copy(color = Theme.inkSoft))
                     }
                 }
+                if (pin != null && !(m != null && (m < 120 || (stop.id in arrived && m < 250)))) {
+                    // 20 Oct (round 2): the way there without opening the card; by Tube or bus when the leg is
+                    SecondaryButton("Directions") { openUrl(context, directionsUrl(pin, stop.travelMode == "transit")) }
+                }
                 PrimaryButton("I'm done here") { done(stop) }
                 if (lookAhead == null) {   // journey round 2: a closed place or a long queue needn't be rated to move on
                     QuietButton("Didn't go? Skip this stop", Modifier.fillMaxWidth()) { skip(stop) }
@@ -162,6 +168,7 @@ fun NowView(model: AppModel) {
                 Eyebrow("That's the day")
                 Text("Thanks for today.", style = Theme.hero)
                 Text("Every stop you rated makes the next day fit you better.", style = Theme.body.copy(color = Theme.inkSoft))
+                model.plan?.id?.let { id -> if (lookAhead == null) DayEndQuestions(model, id, Modifier.padding(top = 8.dp)) }
                 Spacer(Modifier.height(12.dp))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { BreathingArch() }
                 Spacer(Modifier.height(12.dp))
@@ -224,5 +231,35 @@ fun NextUp(stop: Stop) {
         Text("Next, around ${stop.arrive}", style = Theme.subheadline.copy(color = Theme.muted))
         Text(stop.title, style = Theme.body)
         if (stop.travelText.isNotEmpty()) Text(stop.travelText, style = Theme.subheadline.copy(color = Theme.inkTertiary))
+    }
+}
+
+
+/**
+ * D127 (algorithm reviews): the product's second outcome, how worthwhile the money felt (CLAUDE.md), which nothing else
+ * measured. Two taps, both optional, once the day is done.
+ */
+@Composable
+fun DayEndQuestions(model: AppModel, planId: Int, modifier: Modifier = Modifier) {
+    var answer by remember(planId) { mutableStateOf(model.dayFeedback(planId)) }
+    fun set(new: DayFeedback) {
+        answer = new
+        model.answerDay(planId, new)
+    }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(22.dp)) {
+        SurveyQuestion("Was today worth what you spent on it?") {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for ((key, label) in listOf("less" to "Not quite", "about_right" to "Yes", "more" to "More than that")) {
+                    Chip(label, answer.worth == key, Modifier.weight(1f)) { set(answer.copy(worth = if (answer.worth == key) null else key)) }
+                }
+            }
+        }
+        SurveyQuestion("Would you do this day again?") {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for ((key, label) in listOf(true to "Yes", false to "No")) {
+                    Chip(label, answer.again == key, Modifier.weight(1f)) { set(answer.copy(again = if (answer.again == key) null else key)) }
+                }
+            }
+        }
     }
 }

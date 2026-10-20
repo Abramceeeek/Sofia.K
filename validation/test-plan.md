@@ -10,13 +10,13 @@
 
 ## Pass thresholds (D2, D18)
 
-Every Test A metric is reported **overall, and separately for voice and text** (D4, D18). In the chat, voice notes are visible, so the split is observed directly. (In the app later, voice is keyboard dictation plus "Did you type or speak?", D62.)
+Every Test A metric is reported **overall, and separately for voice and text** (D4, D18). In the chat, voice notes are visible, so the split is observed directly. (In the app, the open "great moment" question records whether it was spoken or typed, so the survey no longer asks "Did you type or speak?", D127. It is now the last question before "So far", and "I felt understood" is asked after it.)
 
 | Test | Metric | Pass |
 |---|---|---|
 | A | Onboarding completion (finished the read-back) | ≥ 70% |
 | A | "I felt understood" (1–5) | median ≥ 4 |
-| B | Prefer the personalised plan (blind) | ≥ 7 of 10 |
+| B | Prefer the personalised plan (blind) | ≥ 7 of 10 (a keep-going signal, not proof: D127) |
 | C | Used the plan on a real day (all or part) | ≥ 40% |
 | C | Asked for a second plan within 2 weeks, unprompted | ≥ 30% |
 | D | Landing visit → sign-up | ≥ 10% |
@@ -63,6 +63,10 @@ Every Test A metric is reported **overall, and separately for voice and text** (
   - **Generic:** a top-attractions plan written once and reused (`validation/raw/testb/generic.yaml`). It uses the same fields as the personalised plan, including how to arrive, so the format gives nothing away.
 - **Labels come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed). The sheet says A or B; the plans are sent as **Plan 1 and Plan 2** (A → 1, B → 2; D97, D99).
 - **Measures:** which they prefer and why; "This plan fits me" (1–5) for each.
+  - **Two co-primary results (D127):** the gut choice, and the paired difference "Plan fits me" (personal minus generic) for each person. By chance alone, 7 or more of 10 happens 17% of the time; at a true 70% preference, 10 testers pass only 65% of the time (`brain/scripts/algorithm_checks.py`). **Aim for ~20 UK testers** if recruiting allows.
+  - **Overlap:** how many of each personal plan's places the no-answers plan also has. A high overlap means a win comes from the curation, not the answers.
+  - **Known bias:** no photos in the blind pair, so names people recognise may favour the generic plan. The blind texts are made alike (the title up to its colon, one sentence each for the way in and what happens) so the personal plan's longer stories don't give it away (D127).
+  - **Read-out:** `brain/scripts/testb_report.py` on the admin export (choice with an exact binomial p, the paired fit difference with a bootstrap interval and a sign test, the overlap, the end-of-day answers, and "felt understood" by typed or spoken).
   - **Ask for a gut reaction** ("which would you rather do?"), not an analysis (D100).
   - **Both plans include lunch around midday** (D102): the generic plan marks its lunch stop, and the personal plan gets a food card the person likes or a flexible "lunch near" slot.
   - **Some "why" answers may be AI-assisted.** Mark long, polished answers with "(possibly AI-assisted)" in the "Why (open)" cell; the choice still counts, but those answers aren't quoted as evidence of feeling.
@@ -123,6 +127,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
 - **Voice vs text:** side by side, descriptive (samples too small for tests).
 - **Residents and visitors (D116):** every Test B and Test A result is for residents (London and the rest of the UK); visitors are reported beside them, descriptively.
 - **Conjoint:** a pooled binary logit on 120 choices, as a sign and magnitude check.
+- **Worth the money (D127, descriptive):** "Was today worth what you spent on it?" (not quite / yes / more than that) and "Would you do this day again?" (yes / no), asked once a day is done, by kind of plan. This is the product's second outcome, which nothing measured before.
 - **Checkpoint 3** (`results.md`):
   - results vs thresholds;
   - top 5 quotes and top 5 objections;

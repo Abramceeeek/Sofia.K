@@ -26,10 +26,10 @@ enum class Route { Welcome, Example, Consent, Onboarding, Home }
 /** Onboarding up to the first plan (screens 3–6), as on the iPhone. */
 enum class Step(val title: String) {
     Based("Where you're based"),
-    BestHour("A great moment"),
     Why("How you want to feel"),
     Places("Places you've been"),
     ThisOrThat("This or that"),
+    BestHour("A great moment"),   // D127: the open question last, once the taps have warmed them up
     Learned("So far");
 
     companion object {
@@ -708,6 +708,17 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         }
         loadSafety()
         return reply
+    }
+
+    /** D127: "Was today worth what you spent?" and "Would you do this day again?", kept on the phone per plan and
+     *  sent as each is tapped (the Brain keeps the latest). */
+    fun dayFeedback(planId: Int): DayFeedback =
+        prefs.string("dayFeedback.$planId")?.let { runCatching { BrainJson.decodeFromString(DayFeedback.serializer(), it) }.getOrNull() }
+            ?: DayFeedback()
+
+    fun answerDay(planId: Int, answer: DayFeedback) = launch {
+        prefs.set("dayFeedback.$planId", BrainJson.encodeToString(DayFeedback.serializer(), answer))
+        runCatching { client.dayFeedback(planId, answer) }
     }
 
     fun planAnotherDay() = launch { client.event("plan_another_day") }

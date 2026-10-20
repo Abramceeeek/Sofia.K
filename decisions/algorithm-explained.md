@@ -1,6 +1,6 @@
 # How ODYS picks a day: the algorithm, for review
 
-*19 October 2026. Written for other AI models and people to critique. It describes the code as it runs today (`brain/src/brain/`), not plans. Every number marked GUESS is a starting value, not an estimate from data. The model has not yet been fitted to any real tester's data.*
+*19 October 2026; changes from the reviews marked D127 (20 Oct). Written for other AI models and people to critique. It describes the code as it runs today (`brain/src/brain/`), not plans. Every number marked GUESS is a starting value, not an estimate from data. The model has not yet been fitted to any real tester's data.*
 
 ## In one paragraph
 
@@ -42,7 +42,7 @@ For person *i* and moment *m* under conditions *c* (weather, travel time to get 
 
 ### Ratings and swipes are ordered outcomes
 
-- **Ratings:** Flat, Fine, Good, Great, Unforgettable (1–5), modelled as an ordered logit on S with cutpoints (−2, −0.75, 0.75, 2). These are a GUESS and symmetric.
+- **Ratings:** Disappointing (was Flat, D127), Fine, Good, Great, Unforgettable (1–5), modelled as an ordered logit on S with cutpoints (−2, −0.75, 0.75, 2). These are a GUESS and symmetric.
 - **Swipes:** "Didn't enjoy", "It was fine", "Loved it", an ordered logit with cutpoints (−5.15, −0.67). These were fitted on an anonymous swipe page: 12 people and 235 answers, 27–28 Sep. People answered 4% "didn't enjoy", 41% "fine" and 55% "loved".
 
 ## 3. What each answer does
@@ -104,10 +104,11 @@ For person *i* and moment *m* under conditions *c* (weather, travel time to get 
 
 ## 6. What the person sees, and how it's computed
 
-- **"Worth about £V to you":** V = (the non-cost part of S) ÷ (−β_cost / 10). Ranking by V − price is the same as ranking by S. It's hidden in the blind comparison and when there are no answers yet.
+- **"Worth about £V to you":** V = (the non-cost part of S) ÷ (−β_cost / 10). Ranking by V − price is the same as ranking by S. *D127: no longer shown (its 95% range spans about 20 times after onboarding). The app shows the price and words: "A strong match for you" when P(rating ≥ Good) = logistic(S − c₂) ≥ 0.75, "A good match for you" at ≥ 0.5, else "Worth a try". None in the blind comparison or the example day.*
 - **"Why we picked this for you":** up to two reasons from the person's own answers; since 20 Oct (m187), later stops try a different place, feeling or line before repeating one. Examples: a loved place with the same feature ("You loved Hyde Park, and this has green space too"), a feeling they picked, or an interest. With no answers: "We don't know much about you yet: this one suits most people."
 - **The headline** ("A restoring, peaceful day: …") uses their feeling words only when the stops really carry those features.
 - **"How the day moves":** a curve whose height is each stop's worth, with a word per stop.
+- *D127 planner rule: at most two history-and-culture stops a day, never back to back (a lunch stop breaks a run). End of the day: "Was today worth what you spent on it?" and "Would you do this day again?", stored per plan, not yet used by the model.*
 
 ## 7. Trips (several days)
 
@@ -182,7 +183,7 @@ What it shows: about a dozen answers move a plan a long way, mostly through the 
 2. With about 12 answers before the first plan, which questions buy the most information? Would you change the 6 swipes plus 5 this-or-that days (for example, adaptive question selection by expected information gain)?
 3. How would you model **fatigue, sequencing and satiation** within a day without many more parameters?
 4. Should **exploration** be deliberate (Thompson sampling from the posterior) so the app learns faster, and how much "worse" a plan is acceptable for that?
-5. How should the four unused answers (company, morning or night, activity, photos) enter: as priors, as hard rules, or not at all?
+5. How should the four unused answers (company, morning or night, activity, photos) enter: as priors, as hard rules, or not at all? *(D127: company and activity now enter as stated leanings, like the feelings; morning or night sets the default hours; photos still don't.)*
 6. What's the right way to plan for **two or more people** (average utility, least misery, or a fairness rule)?
 7. Is the 1–5 rating enough as the outcome? How would you measure "the money felt worth it" without annoying people?
 8. Are the hand-made tags a bottleneck? How would you check or learn them (for example, from ratings across people)?

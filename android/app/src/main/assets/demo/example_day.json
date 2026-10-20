@@ -24,6 +24,7 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": null,
+   "match": null,
    "feel_word": "Curious",
    "reveal": false,
    "approach_steps": [
@@ -120,6 +121,7 @@
    "familiar": false,
    "rateable": false,
    "worth_gbp": null,
+   "match": null,
    "feel_word": "Lunch",
    "reveal": false,
    "approach_steps": [],
@@ -160,6 +162,7 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": null,
+   "match": null,
    "feel_word": "Awe",
    "reveal": false,
    "approach_steps": [

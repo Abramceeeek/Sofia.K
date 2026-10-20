@@ -20,7 +20,7 @@ from . import db
 
 ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"   # no 0/O or 1/I/L, so a code read aloud survives
 CODE_PATTERN = r"^[A-HJ-NP-Z2-9]{8}$"
-SHARE_TEXT = "I think you'd love this day — try it"   # prosocial wording (D114); the app adds the link
+SHARE_TEXT = "A moment from my day out, planned with ODYS"   # D127: neutral, not words put in their mouth; the app adds the link
 
 
 def new_code(s: Session) -> str:
@@ -71,7 +71,7 @@ h1 {{ font:400 2rem/1.15 Georgia,serif; margin:0 0 14px; }}
 a {{ color:var(--accent); }}
 </style></head><body><main>
 <p class="mark">ODYS</p>
-<h1>A friend thinks you'd love this day</h1>
+<h1>A friend shared a moment from their day</h1>
 {title}
 <p>ODYS plans a London day around what you enjoy, not a list of famous sights. It's a small research test run
 by one person in London. Nothing is sold.</p>

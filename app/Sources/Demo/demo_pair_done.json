@@ -11,182 +11,6 @@
    "blind": true,
    "summary": [
     "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
-    "Costs: about £15 for food and entry, plus about £6 transport"
-   ],
-   "totals": {
-    "cost_gbp": 21.0,
-    "spend_gbp": 15.0,
-    "transport_gbp": 6.0,
-    "walk_min": 18,
-    "walk_km": 1.4,
-    "finish": "16:43"
-   },
-   "feel_line": null,
-   "basis": null,
-   "fit_rating": 4,
-   "stops": [
-    {
-     "title": "Lunch near Waterloo station",
-     "arrive": "12:12",
-     "depart": "12:57",
-     "travel_min": 12,
-     "travel_mode": "walk",
-     "travel_text": "Getting there: about 12 min on foot from Charing Cross station.",
-     "approach": "",
-     "what": "Pick a café, pub or food stall nearby.",
-     "queue_min": 0,
-     "best_text": "",
-     "cost_gbp": 15.0,
-     "cost_kind": "food",
-     "cost_text": "Food: about £15",
-     "rain_swap": "",
-     "lunch": true,
-     "lines": [
-      "Getting there: about 12 min on foot from Charing Cross station.",
-      "Pick a café, pub or food stall nearby.",
-      "Food: about £15"
-     ],
-     "moment_id": "plan1-0",
-     "key": "plan1-0",
-     "familiar": false,
-     "rateable": false,
-     "pin": null,
-     "chosen_for": [],
-     "why": [],
-     "reasons": [],
-     "card": null,
-     "worth_gbp": null,
-     "feel_word": null,
-     "reveal": false,
-     "approach_steps": [],
-     "best_light": "",
-     "best_window": ""
-    },
-    {
-     "title": "The Garden at 120: a rooftop garden among the City towers",
-     "arrive": "13:33",
-     "depart": "14:23",
-     "travel_min": 26,
-     "travel_mode": "transit",
-     "travel_text": "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
-     "approach": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
-     "what": "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
-     "queue_min": 0,
-     "best_text": "",
-     "cost_gbp": 0.0,
-     "cost_kind": "entry",
-     "cost_text": "Cost: free",
-     "rain_swap": "",
-     "lunch": false,
-     "lines": [
-      "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
-      "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
-      "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
-      "Cost: free"
-     ],
-     "moment_id": "plan1-1",
-     "key": "plan1-1",
-     "familiar": false,
-     "rateable": false,
-     "pin": null,
-     "chosen_for": [],
-     "why": [],
-     "reasons": [],
-     "card": null,
-     "worth_gbp": null,
-     "feel_word": null,
-     "reveal": false,
-     "approach_steps": [],
-     "best_light": "",
-     "best_window": ""
-    },
-    {
-     "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
-     "arrive": "14:34",
-     "depart": "15:24",
-     "travel_min": 6,
-     "travel_mode": "walk",
-     "travel_text": "Getting there: about 6 min on foot from The Garden at 120.",
-     "approach": "Walk down St Dunstan's Hill towards the river.",
-     "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-     "queue_min": 0,
-     "best_text": "",
-     "cost_gbp": 0.0,
-     "cost_kind": "entry",
-     "cost_text": "Cost: free",
-     "rain_swap": "",
-     "lunch": false,
-     "lines": [
-      "Getting there: about 6 min on foot from The Garden at 120.",
-      "Walk down St Dunstan's Hill towards the river.",
-      "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-      "Cost: free"
-     ],
-     "moment_id": "plan1-2",
-     "key": "plan1-2",
-     "familiar": false,
-     "rateable": false,
-     "pin": null,
-     "chosen_for": [],
-     "why": [],
-     "reasons": [],
-     "card": null,
-     "worth_gbp": null,
-     "feel_word": null,
-     "reveal": false,
-     "approach_steps": [],
-     "best_light": "",
-     "best_window": ""
-    },
-    {
-     "title": "Through Somerset House to the river terrace",
-     "arrive": "16:10",
-     "depart": "16:43",
-     "travel_min": 26,
-     "travel_mode": "transit",
-     "travel_text": "Getting there: about 26 min. Walk to Monument or Tower Hill station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
-     "approach": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
-     "what": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
-     "queue_min": 0,
-     "best_text": "",
-     "cost_gbp": 0.0,
-     "cost_kind": "entry",
-     "cost_text": "Cost: free",
-     "rain_swap": "A rest in the Royal Festival Hall's free foyers by the river, about 15 min away on foot.",
-     "lunch": false,
-     "lines": [
-      "Getting there: about 26 min. Walk to Monument or Tower Hill station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
-      "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
-      "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
-      "Cost: free",
-      "If it rains: A rest in the Royal Festival Hall's free foyers by the river, about 15 min away on foot."
-     ],
-     "moment_id": "plan1-3",
-     "key": "plan1-3",
-     "familiar": false,
-     "rateable": false,
-     "pin": null,
-     "chosen_for": [],
-     "why": [],
-     "reasons": [],
-     "card": null,
-     "worth_gbp": null,
-     "feel_word": null,
-     "reveal": false,
-     "approach_steps": [],
-     "best_light": "",
-     "best_window": ""
-    }
-   ]
-  },
-  {
-   "id": 3,
-   "label": "2",
-   "title": "Plan 2",
-   "date": null,
-   "blind": true,
-   "summary": [
-    "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
     "Costs: about £15 for food and entry, plus about £3 transport"
    ],
    "totals": {
@@ -223,8 +47,8 @@
       "Wander the free collection of paintings at your own pace.",
       "Cost: free"
      ],
-     "moment_id": "plan2-0",
-     "key": "plan2-0",
+     "moment_id": "plan1-0",
+     "key": "plan1-0",
      "familiar": false,
      "rateable": false,
      "pin": null,
@@ -233,6 +57,7 @@
      "reasons": [],
      "card": null,
      "worth_gbp": null,
+     "match": null,
      "feel_word": null,
      "reveal": false,
      "approach_steps": [],
@@ -262,8 +87,8 @@
       "Allow about 10 min to queue.",
       "Food: about £15"
      ],
-     "moment_id": "plan2-1",
-     "key": "plan2-1",
+     "moment_id": "plan1-1",
+     "key": "plan1-1",
      "familiar": false,
      "rateable": false,
      "pin": null,
@@ -272,6 +97,7 @@
      "reasons": [],
      "card": null,
      "worth_gbp": null,
+     "match": null,
      "feel_word": null,
      "reveal": false,
      "approach_steps": [],
@@ -279,7 +105,7 @@
      "best_window": ""
     },
     {
-     "title": "Tate Modern: the Turbine Hall and the view from Level 10",
+     "title": "Tate Modern",
      "arrive": "14:30",
      "depart": "15:30",
      "travel_min": 15,
@@ -300,8 +126,8 @@
       "Walk into the vast Turbine Hall, look round the free collection, then take the lift from Level 1 up to Level 10 for a view over the Thames to St Paul's.",
       "Cost: free"
      ],
-     "moment_id": "plan2-2",
-     "key": "plan2-2",
+     "moment_id": "plan1-2",
+     "key": "plan1-2",
      "familiar": false,
      "rateable": false,
      "pin": null,
@@ -310,6 +136,7 @@
      "reasons": [],
      "card": null,
      "worth_gbp": null,
+     "match": null,
      "feel_word": null,
      "reveal": false,
      "approach_steps": [],
@@ -324,7 +151,7 @@
      "travel_mode": "walk",
      "travel_text": "Getting there: about 3 min on foot from Tate Modern.",
      "approach": "Start on the river path outside Tate Modern.",
-     "what": "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre to the London Eye, with the river beside you. You walk past the London Eye; a ride isn't part of this plan.",
+     "what": "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre to the London Eye, with the river beside you.",
      "queue_min": 0,
      "best_text": "",
      "cost_gbp": 0.0,
@@ -335,9 +162,189 @@
      "lines": [
       "Getting there: about 3 min on foot from Tate Modern.",
       "Start on the river path outside Tate Modern.",
-      "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre to the London Eye, with the river beside you. You walk past the London Eye; a ride isn't part of this plan.",
+      "Walk west past the Oxo Tower, the National Theatre and the Southbank Centre to the London Eye, with the river beside you.",
       "Cost: free",
       "If it rains: The Royal Festival Hall's free foyers, on the way (closed on Mondays)."
+     ],
+     "moment_id": "plan1-3",
+     "key": "plan1-3",
+     "familiar": false,
+     "rateable": false,
+     "pin": null,
+     "chosen_for": [],
+     "why": [],
+     "reasons": [],
+     "card": null,
+     "worth_gbp": null,
+     "match": null,
+     "feel_word": null,
+     "reveal": false,
+     "approach_steps": [],
+     "best_light": "",
+     "best_window": ""
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "label": "2",
+   "title": "Plan 2",
+   "date": null,
+   "blind": true,
+   "summary": [
+    "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
+    "Costs: about £15 for food and entry, plus about £6 transport"
+   ],
+   "totals": {
+    "cost_gbp": 21.0,
+    "spend_gbp": 15.0,
+    "transport_gbp": 6.0,
+    "walk_min": 18,
+    "walk_km": 1.4,
+    "finish": "16:43"
+   },
+   "feel_line": null,
+   "basis": null,
+   "fit_rating": 4,
+   "stops": [
+    {
+     "title": "Lunch near Waterloo station",
+     "arrive": "12:12",
+     "depart": "12:57",
+     "travel_min": 12,
+     "travel_mode": "walk",
+     "travel_text": "Getting there: about 12 min on foot from Charing Cross station.",
+     "approach": "",
+     "what": "Pick a café, pub or food stall nearby.",
+     "queue_min": 0,
+     "best_text": "",
+     "cost_gbp": 15.0,
+     "cost_kind": "food",
+     "cost_text": "Food: about £15",
+     "rain_swap": "",
+     "lunch": true,
+     "lines": [
+      "Getting there: about 12 min on foot from Charing Cross station.",
+      "Pick a café, pub or food stall nearby.",
+      "Food: about £15"
+     ],
+     "moment_id": "plan2-0",
+     "key": "plan2-0",
+     "familiar": false,
+     "rateable": false,
+     "pin": null,
+     "chosen_for": [],
+     "why": [],
+     "reasons": [],
+     "card": null,
+     "worth_gbp": null,
+     "match": null,
+     "feel_word": null,
+     "reveal": false,
+     "approach_steps": [],
+     "best_light": "",
+     "best_window": ""
+    },
+    {
+     "title": "St Dunstan-in-the-East",
+     "arrive": "13:33",
+     "depart": "14:23",
+     "travel_min": 26,
+     "travel_mode": "transit",
+     "travel_text": "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Monument or Tower Hill station.",
+     "approach": "Walk down St Dunstan's Hill towards the river.",
+     "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+     "queue_min": 0,
+     "best_text": "",
+     "cost_gbp": 0.0,
+     "cost_kind": "entry",
+     "cost_text": "Cost: free",
+     "rain_swap": "",
+     "lunch": false,
+     "lines": [
+      "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Monument or Tower Hill station.",
+      "Walk down St Dunstan's Hill towards the river.",
+      "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+      "Cost: free"
+     ],
+     "moment_id": "plan2-1",
+     "key": "plan2-1",
+     "familiar": false,
+     "rateable": false,
+     "pin": null,
+     "chosen_for": [],
+     "why": [],
+     "reasons": [],
+     "card": null,
+     "worth_gbp": null,
+     "match": null,
+     "feel_word": null,
+     "reveal": false,
+     "approach_steps": [],
+     "best_light": "",
+     "best_window": ""
+    },
+    {
+     "title": "The Garden at 120",
+     "arrive": "14:34",
+     "depart": "15:24",
+     "travel_min": 6,
+     "travel_mode": "walk",
+     "travel_text": "Getting there: about 6 min on foot from St Dunstan-in-the-East.",
+     "approach": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
+     "what": "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
+     "queue_min": 0,
+     "best_text": "",
+     "cost_gbp": 0.0,
+     "cost_kind": "entry",
+     "cost_text": "Cost: free",
+     "rain_swap": "",
+     "lunch": false,
+     "lines": [
+      "Getting there: about 6 min on foot from St Dunstan-in-the-East.",
+      "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
+      "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
+      "Cost: free"
+     ],
+     "moment_id": "plan2-2",
+     "key": "plan2-2",
+     "familiar": false,
+     "rateable": false,
+     "pin": null,
+     "chosen_for": [],
+     "why": [],
+     "reasons": [],
+     "card": null,
+     "worth_gbp": null,
+     "match": null,
+     "feel_word": null,
+     "reveal": false,
+     "approach_steps": [],
+     "best_light": "",
+     "best_window": ""
+    },
+    {
+     "title": "Through Somerset House to the river terrace",
+     "arrive": "16:10",
+     "depart": "16:43",
+     "travel_min": 26,
+     "travel_mode": "transit",
+     "travel_text": "Getting there: about 26 min. Walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
+     "approach": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
+     "what": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
+     "queue_min": 0,
+     "best_text": "",
+     "cost_gbp": 0.0,
+     "cost_kind": "entry",
+     "cost_text": "Cost: free",
+     "rain_swap": "A rest in the Royal Festival Hall's free foyers by the river, about 15 min away on foot.",
+     "lunch": false,
+     "lines": [
+      "Getting there: about 26 min. Walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
+      "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
+      "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
+      "Cost: free",
+      "If it rains: A rest in the Royal Festival Hall's free foyers by the river, about 15 min away on foot."
      ],
      "moment_id": "plan2-3",
      "key": "plan2-3",
@@ -349,6 +356,7 @@
      "reasons": [],
      "card": null,
      "worth_gbp": null,
+     "match": null,
      "feel_word": null,
      "reveal": false,
      "approach_steps": [],
@@ -358,12 +366,12 @@
    ]
   }
  ],
- "personal_label": "1",
- "chosen_label": "1",
+ "personal_label": "2",
+ "chosen_label": "2",
  "chosen": {
-  "id": 2,
+  "id": 3,
   "kind": "personal",
-  "label": "1",
+  "label": "2",
   "date": "2026-10-24",
   "intent": {
    "testb_pair": true,
@@ -395,6 +403,7 @@
     "familiar": false,
     "rateable": false,
     "worth_gbp": null,
+    "match": null,
     "feel_word": "Lunch",
     "reveal": false,
     "approach_steps": [],
@@ -416,14 +425,140 @@
     ]
    },
    {
-    "moment_id": "m_garden_at_120",
-    "key": "m_garden_at_120",
-    "title": "The Garden at 120: a rooftop garden among the City towers",
+    "moment_id": "m_st_dunstan_garden",
+    "key": "m_st_dunstan_garden",
+    "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
     "arrive": "13:33",
     "depart": "14:23",
     "travel_min": 26,
     "travel_mode": "transit",
-    "travel_text": "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
+    "travel_text": "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Monument or Tower Hill station.",
+    "approach": "Walk down St Dunstan's Hill towards the river.",
+    "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 0.0,
+    "cost_kind": "entry",
+    "cost_text": "Cost: free",
+    "rain_swap": "",
+    "lunch": false,
+    "familiar": false,
+    "rateable": true,
+    "worth_gbp": 28,
+    "match": "A strong match for you",
+    "feel_word": "Calm",
+    "reveal": true,
+    "approach_steps": [
+     {
+      "label": "From",
+      "text": "Monument or Tower Hill station"
+     },
+     {
+      "label": "The way in",
+      "text": "Walk down St Dunstan's Hill towards the river"
+     },
+     {
+      "label": "You arrive",
+      "text": "St Dunstan-in-the-East"
+     }
+    ],
+    "book_ahead": "",
+    "checked": "2026-09-27",
+    "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
+    "best_light": "Daylight",
+    "best_window": "",
+    "pin": {
+     "lat": 51.50967,
+     "lon": -0.08272
+    },
+    "chosen_for": [
+     "one of your interests",
+     "reveals and contrast"
+    ],
+    "why": [
+     {
+      "feature": "local_novel",
+      "label": "local, new-to-you places",
+      "contribution": -0.263
+     },
+     {
+      "feature": "aspiration_match",
+      "label": "places tied to a field that inspires them",
+      "contribution": 0.25
+     },
+     {
+      "feature": "contrast_reveal",
+      "label": "reveals and contrast",
+      "contribution": 0.199
+     }
+    ],
+    "lines": [
+     "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Monument or Tower Hill station.",
+     "Walk down St Dunstan's Hill towards the river.",
+     "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+     "Cost: free"
+    ],
+    "card": {
+     "id": "m_st_dunstan_garden",
+     "title": "A ruined church garden hidden in the City",
+     "status": "ready",
+     "place": {
+      "name": "St Dunstan-in-the-East",
+      "overture_id": null,
+      "lat": 51.50967,
+      "lon": -0.08272
+     },
+     "approach": {
+      "from": "Monument or Tower Hill station",
+      "path": "Walk down St Dunstan's Hill towards the river",
+      "step_free": null,
+      "start_point": {
+       "lat": 51.50967,
+       "lon": -0.08272
+      }
+     },
+     "what_happens": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+     "best_time": {
+      "time_of_day": [
+       "08:00-16:15"
+      ],
+      "light": "Daylight",
+      "weather": [
+       "any"
+      ],
+      "company": null,
+      "crowd_window": "Weekday lunchtimes bring office workers (GUESS)",
+      "opening_hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27",
+      "book_ahead": null,
+      "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
+      "days": [],
+      "best_window": [],
+      "best_around_sunset": null
+     },
+     "cost_gbp": 0.0,
+     "shot_card": null,
+     "plannable": true
+    },
+    "reasons": [
+     {
+      "you": "You loved Uber Boat on the Thames, and this has a big reveal too.",
+      "me": "I loved Uber Boat on the Thames, and this has a big reveal too."
+     },
+     {
+      "you": "You loved the view from the top of Greenwich Park, and this has green space too.",
+      "me": "I loved the view from the top of Greenwich Park, and this has green space too."
+     }
+    ]
+   },
+   {
+    "moment_id": "m_garden_at_120",
+    "key": "m_garden_at_120",
+    "title": "The Garden at 120: a rooftop garden among the City towers",
+    "arrive": "14:34",
+    "depart": "15:24",
+    "travel_min": 6,
+    "travel_mode": "walk",
+    "travel_text": "Getting there: about 6 min on foot from St Dunstan-in-the-East.",
     "approach": "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
     "what": "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
     "queue_min": 0,
@@ -436,11 +571,12 @@
     "familiar": false,
     "rateable": true,
     "worth_gbp": 32,
+    "match": "A strong match for you",
     "feel_word": "Big views",
     "reveal": true,
     "approach_steps": [
      {
-      "label": "From",
+      "label": "Nearest station",
       "text": "Bank, Monument or Fenchurch Street station"
      },
      {
@@ -483,7 +619,7 @@
      }
     ],
     "lines": [
-     "Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.",
+     "Getting there: about 6 min on foot from St Dunstan-in-the-East.",
      "Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.",
      "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.",
      "Cost: free"
@@ -536,137 +672,12 @@
     },
     "reasons": [
      {
-      "you": "You loved Uber Boat on the Thames, and this has views too.",
-      "me": "I loved Uber Boat on the Thames, and this has views too."
+      "you": "You go out to feel peaceful, and this has views.",
+      "me": "I go out to feel peaceful, and this has views."
      },
      {
-      "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
-      "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
-     }
-    ]
-   },
-   {
-    "moment_id": "m_st_dunstan_garden",
-    "key": "m_st_dunstan_garden",
-    "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
-    "arrive": "14:34",
-    "depart": "15:24",
-    "travel_min": 6,
-    "travel_mode": "walk",
-    "travel_text": "Getting there: about 6 min on foot from The Garden at 120.",
-    "approach": "Walk down St Dunstan's Hill towards the river.",
-    "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-    "queue_min": 0,
-    "best_text": "",
-    "cost_gbp": 0.0,
-    "cost_kind": "entry",
-    "cost_text": "Cost: free",
-    "rain_swap": "",
-    "lunch": false,
-    "familiar": false,
-    "rateable": true,
-    "worth_gbp": 28,
-    "feel_word": "Calm",
-    "reveal": true,
-    "approach_steps": [
-     {
-      "label": "Nearest station",
-      "text": "Monument or Tower Hill station"
-     },
-     {
-      "label": "The way in",
-      "text": "Walk down St Dunstan's Hill towards the river"
-     },
-     {
-      "label": "You arrive",
-      "text": "St Dunstan-in-the-East"
-     }
-    ],
-    "book_ahead": "",
-    "checked": "2026-09-27",
-    "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
-    "best_light": "Daylight",
-    "best_window": "",
-    "pin": {
-     "lat": 51.50967,
-     "lon": -0.08272
-    },
-    "chosen_for": [
-     "one of your interests",
-     "reveals and contrast"
-    ],
-    "why": [
-     {
-      "feature": "local_novel",
-      "label": "local, new-to-you places",
-      "contribution": -0.263
-     },
-     {
-      "feature": "aspiration_match",
-      "label": "places tied to a field that inspires them",
-      "contribution": 0.25
-     },
-     {
-      "feature": "contrast_reveal",
-      "label": "reveals and contrast",
-      "contribution": 0.199
-     }
-    ],
-    "lines": [
-     "Getting there: about 6 min on foot from The Garden at 120.",
-     "Walk down St Dunstan's Hill towards the river.",
-     "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-     "Cost: free"
-    ],
-    "card": {
-     "id": "m_st_dunstan_garden",
-     "title": "A ruined church garden hidden in the City",
-     "status": "ready",
-     "place": {
-      "name": "St Dunstan-in-the-East",
-      "overture_id": null,
-      "lat": 51.50967,
-      "lon": -0.08272
-     },
-     "approach": {
-      "from": "Monument or Tower Hill station",
-      "path": "Walk down St Dunstan's Hill towards the river",
-      "step_free": null,
-      "start_point": {
-       "lat": 51.50967,
-       "lon": -0.08272
-      }
-     },
-     "what_happens": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
-     "best_time": {
-      "time_of_day": [
-       "08:00-16:15"
-      ],
-      "light": "Daylight",
-      "weather": [
-       "any"
-      ],
-      "company": null,
-      "crowd_window": "Weekday lunchtimes bring office workers (GUESS)",
-      "opening_hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27",
-      "book_ahead": null,
-      "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
-      "days": [],
-      "best_window": [],
-      "best_around_sunset": null
-     },
-     "cost_gbp": 0.0,
-     "shot_card": null,
-     "plannable": true
-    },
-    "reasons": [
-     {
-      "you": "You go out to feel curious, and this has history.",
-      "me": "I go out to feel curious, and this has history."
-     },
-     {
-      "you": "It fits your interest in history & culture.",
-      "me": "It fits my interest in history & culture."
+      "you": "You picked quieter days, and this is a quiet one.",
+      "me": "I like quieter places, and this is a quiet one."
      }
     ]
    },
@@ -678,7 +689,7 @@
     "depart": "16:43",
     "travel_min": 26,
     "travel_mode": "transit",
-    "travel_text": "Getting there: about 26 min. Walk to Monument or Tower Hill station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
+    "travel_text": "Getting there: about 26 min. Walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
     "approach": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
     "what": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
     "queue_min": 0,
@@ -691,6 +702,7 @@
     "familiar": false,
     "rateable": true,
     "worth_gbp": 33,
+    "match": "A strong match for you",
     "feel_word": "Wonder",
     "reveal": true,
     "approach_steps": [
@@ -738,7 +750,7 @@
      }
     ],
     "lines": [
-     "Getting there: about 26 min. Walk to Monument or Tower Hill station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
+     "Getting there: about 26 min. Walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to the Strand entrance (Temple or Covent Garden station).",
      "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
      "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
      "Cost: free",
@@ -792,12 +804,12 @@
     },
     "reasons": [
      {
-      "you": "You go out to feel peaceful, and this has views.",
-      "me": "I go out to feel peaceful, and this has views."
+      "you": "You go out to feel curious, and this has history.",
+      "me": "I go out to feel curious, and this has history."
      },
      {
-      "you": "You picked quieter days, and this is a quiet one.",
-      "me": "I like quieter places, and this is a quiet one."
+      "you": "It fits your interest in history & culture.",
+      "me": "It fits my interest in history & culture."
      }
     ]
    }
@@ -805,7 +817,7 @@
   "value": 3.689,
   "status": "chosen",
   "fit_rating": 4,
-  "created_at": "2026-10-20T01:05:36.299462",
+  "created_at": "2026-10-20T12:22:01.082367",
   "title": "A Saturday out in London",
   "summary": [
    "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
@@ -822,7 +834,7 @@
   "pace": "relaxed",
   "solver_status": "ok",
   "blind": false,
-  "feel_line": "A curious, peaceful day: lunch to start, a reveal, some history, then the river",
+  "feel_line": "A curious, peaceful day: lunch to start, a reveal, a big view, then the river",
   "basis": {
    "places": 3,
    "choices": 5,
@@ -832,7 +844,7 @@
   }
  },
  "reveal": [
-  "Plan 1 was made from your answers. Plan 2 is a strong general day out in London, the kind a friend or a search would suggest.",
-  "Your plan is Plan 1, the one you picked. Rate each stop after you've been."
+  "Plan 2 was made from your answers. Plan 1 is a strong general day out in London, the kind a friend or a search would suggest. There's no right answer: either pick tells us something.",
+  "Your plan is Plan 2, the one you picked. Rate each stop after you've been."
  ]
 }

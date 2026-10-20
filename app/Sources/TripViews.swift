@@ -216,20 +216,26 @@ struct TripHome: View {
                 } else if let next = model.tomorrowInTrip {   // Abram's comment (8 Oct): then tomorrow, to look ahead
                     TomorrowInTripCard(trip: next.trip, index: next.index, day: next.day).settle(1)
                 }
-                PlanTripCard { model.showCreate = true }.settle(1)
-                if !model.pairDone, !model.isVisitor, !model.client.demo {
-                    PairInviteRow { model.showPair = true }.settle(2)
-                }
-                if let plan = model.plan {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Your day").font(.subheadline).foregroundStyle(Theme.muted)
-                        NavigationLink(value: TripDest.day) { DayRow(plan: plan) }
-                            .buttonStyle(PressStyle())
+                if model.isVisitor {
+                    PlanTripCard { model.showCreate = true }.settle(1)
+                    if let plan = model.plan {
+                        yourDay(plan).settle(2)
+                    } else if !model.client.demo {   // journey round 2: with no day yet, "Plan a day" was out of reach
+                        SecondaryButton(title: "Plan a day out instead", icon: "sun.max") { planningDay = true }
+                            .settle(2)
                     }
-                    .settle(2)
-                } else if !model.client.demo {   // journey round 2: with no day yet, "Plan a day" was out of reach
-                    SecondaryButton(title: "Plan a day out instead", icon: "sun.max") { planningDay = true }
-                        .settle(2)
+                } else {
+                    // 20 Oct (round 2): people who live here mostly want a day out, so that leads; a trip is one tap below
+                    if let plan = model.plan { yourDay(plan).settle(1) }
+                    PlanTripCard(title: "Plan a day out",
+                                 text: "A day in London around what you enjoy: your hours, where you start, and the places that fit you.") {
+                        planningDay = true
+                    }
+                    .settle(1)
+                    SecondaryButton(title: "Plan a trip instead", icon: "airplane") { model.showCreate = true }.settle(2)
+                    if !model.pairDone, !model.client.demo {
+                        PairInviteRow { model.showPair = true }.settle(2)
+                    }
                 }
                 if !model.trips.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
@@ -255,6 +261,16 @@ struct TripHome: View {
                     }
             }
             .brainFeedback()
+        }
+    }
+}
+
+extension TripHome {
+    func yourDay(_ plan: Plan) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Your day").font(.subheadline).foregroundStyle(Theme.muted)
+            NavigationLink(value: TripDest.day) { DayRow(plan: plan) }
+                .buttonStyle(PressStyle())
         }
     }
 }
@@ -426,6 +442,8 @@ extension View {
 }
 
 struct PlanTripCard: View {
+    var title = "Plan a trip"
+    var text = "One day or two weeks. I'll find the flight, the stay and the moments, and you book with whichever site you trust."
     let action: () -> Void
 
     var body: some View {
@@ -435,10 +453,10 @@ struct PlanTripCard: View {
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 ArchMark()
-                Text("Plan a trip")
+                Text(title)
                     .font(Theme.serif(26, relativeTo: .title2))
                     .foregroundStyle(Theme.ink)
-                Text("One day or two weeks. I'll find the flight, the stay and the moments, and you book with whichever site you trust.")
+                Text(text)
                     .font(.body)
                     .foregroundStyle(Theme.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
@@ -1574,11 +1592,18 @@ struct TripDayView: View {
                         let day = trip.days.first { $0.index == index }
                         let date = Calendar.london.date(byAdding: .day, value: index, to: trip.startDate) ?? trip.startDate
                         Eyebrow("Day \(index + 1) · \(Dates.dayShort.string(from: date))")
-                        Text(day?.title ?? "Planned as you go")
+                        let parts = (day?.title ?? "Planned as you go").headlineParts
+                        Text(parts.0)
                             .font(Theme.serif(30, relativeTo: .title))
                             .foregroundStyle(Theme.ink)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
+                        if let sub = parts.1 {   // 20 Oct (round 2): as on the plan
+                            Text(sub)
+                                .font(Theme.serif(19, relativeTo: .title3))
+                                .foregroundStyle(Theme.inkSoft)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         if let day {   // D122: from the airport or station, and one place on the way
                             ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
                             if let before = day.before {
@@ -1881,7 +1906,7 @@ struct YouView: View {
                             if model.unreadSafety { Circle().fill(Theme.danger).frame(width: 9, height: 9) }
                             Image(systemName: "chevron.right").foregroundStyle(Theme.muted)   // 19 Oct: it opens
                         }
-                        Text("Something wrong with a stop, a booking or how you feel? A real person replies here, within a few hours.")
+                        Text("Something wrong with a stop, a booking or how you feel? A real person replies here, usually within a few hours.")
                             .font(.subheadline)
                             .foregroundStyle(Theme.inkTertiary)
                             .fixedSize(horizontal: false, vertical: true)

@@ -46,6 +46,8 @@ BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --relo
 | `src/brain/backup.py` | **Stage 1: the nightly backup**, sealed to Abram's public key on the server; commands to make the keys, open a backup and restore it |
 | `src/brain/dayplan.py` | **The day planner** shared by Test B and the app (D107): lunch, buffers, pace, the familiar favourite, disliked places, rain swaps, sunset-aware "Best" lines and the participant-facing wording |
 | `src/brain/sun.py` | Sunset for a date (NOAA equations), so the app's plans get sunset lines offline; checked against sunrise-sunset.org |
+| `scripts/testb_report.py` | **Test B read-out (D127):** run on a saved admin export (`validation/raw/`, never committed): the gut choice with an exact binomial p, the paired "fits me" difference, the overlap with the no-answers plan, the end-of-day answers, and "felt understood" by typed or spoken |
+| `scripts/algorithm_checks.py` | The algorithm reviews' claims, measured on simulated people (m187, D127) |
 | `src/brain/testb.py` | **Test B:** reads the results sheet, fits each person's weights from their swipes and choices, plans their day with `dayplan`, and writes both blind plans (WhatsApp text and PDF) plus a review sheet for you |
 | `src/brain/api.py` | 22 endpoints (below) |
 | `src/brain/calibration.py`, `data/calibration/` | **The anonymous swipe page** (D70): a separate small app with its ~30 candidate places, the page, the results page and the ranking. Deployed by `../render.yaml` |

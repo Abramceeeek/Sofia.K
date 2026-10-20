@@ -15,9 +15,10 @@ log = logging.getLogger("brain.safety")
 
 # What the user sees straight away. It never promises a faster reply than "a few hours".
 # D118: says who replies and where the reply arrives (before, nothing carried a reply back).
-USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. "
-                "We've told a person: Abram, or whoever is covering for him. They'll reply within a few hours, "
-                "here in Help & safety, and by phone or email if you left one.")
+# D127 (screen reviews): it says plainly that nobody watches overnight, and names no one who hasn't signed Part A.
+USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. A person reads every message and will reply "
+                "here in Help & safety, and by phone or email if you left one, usually within a few hours. It isn't "
+                "watched through the night: a message sent late is answered the next morning.")
 
 
 def send_alert(webhook_url: str | None, alert_id: int, user_id: str, message: str, contact: str | None = None) -> bool:

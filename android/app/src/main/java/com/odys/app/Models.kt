@@ -245,7 +245,8 @@ data class Stop(
     val pin: Point? = null,
     val chosenFor: List<String> = emptyList(),
     val card: Card? = null,
-    val worthGbp: Double? = null,
+    val worthGbp: Double? = null,     // the model's £V (D88): kept for the day's curve, no longer shown (D127)
+    val match: String? = null,        // D127: "A strong match for you" / "A good match for you" / "Worth a try"
     val approachSteps: List<ApproachStep>? = null,
     val bestLight: String? = null,
     val bestWindow: String? = null,
@@ -259,12 +260,9 @@ data class Stop(
 ) {
     val id: String get() = "$momentId@$arrive"
 
-    /** 19 Oct review: the price first, then the worth, plainly a guess, so neither reads as the other (D88's figure). */
-    val worthLine: String?
-        get() = worthGbp?.let {
-            (if (costGbp == 0.0) "Free entry." else "Costs ${Money.text(costGbp)}.") +
-                " We guess it's worth about ${Money.text(it)} to you."
-        }
+    /** D127 (algorithm reviews): the price, then how well it matches, in words. The £ figure overclaimed. */
+    val matchLine: String?
+        get() = match?.let { (if (costGbp == 0.0) "Free entry." else "Costs ${Money.text(costGbp)}.") + " $it." }
 
     /** The word for this stop on "How the day moves". */
     val word: String get() = feelWord ?: if (rateable) "Easy" else "Lunch"
@@ -382,6 +380,17 @@ data class SafetyResponse(val alertId: Int, val message: String)
 data class EventRequest(val name: String, val props: Map<String, String>)
 
 // ---- Build 2: the survey and the blind Test B pair ------------------------------------------------------------
+
+/**
+ * 20 Oct (round 2): "A curious, peaceful day: some history, …" as a headline and a line under it, not one long title:
+ * ("A curious, peaceful day", "Some history, …"). Without ": " the whole text is the headline.
+ */
+fun headlineParts(text: String): Pair<String, String?> =
+    text.substringBefore(": ") to text.substringAfter(": ", "").replaceFirstChar { it.uppercase() }.ifEmpty { null }
+
+/** D127: the two end-of-day questions (POST /v1/me/plans/{id}/day). Both optional. */
+@Serializable
+data class DayFeedback(val worth: String? = null, val again: Boolean? = null)
 
 @Serializable
 data class SurveyBody(val understood: Int?, val likePerson: Int?, val typedOrSpoke: String?, val intrusive: String?)

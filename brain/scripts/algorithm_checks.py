@@ -15,7 +15,8 @@ ratings can (Test B and after).
    implied chance of preferring the personal plan over the no-answers plan.
 5. The "at least Good" floor: how many candidate cards it removes.
 6. Sensitivity: refit with every prior sd ×0.5 and ×1.5; how many of the 3–4 stops change.
-7. Repetition: plans with two history-and-culture stops in a row, or three or more in all.
+7. Repetition: plans with two history-and-culture stops back to back (a lunch slot between them breaks the run), or
+   three or more in all. D127 added the rule: at most two, never back to back.
 """
 
 from __future__ import annotations
@@ -60,11 +61,11 @@ def _scaled(pop, k: float):
     return replace(pop, features=tuple(replace(f, delta_sd=f.delta_sd * k) for f in pop.features))
 
 
-def _plan(pop, post: DeltaPosterior, loved, disliked):
+def _plan(pop, post: DeltaPosterior, loved, disliked, with_lunch: bool = False):
     c = _C
     plan, _, _, _ = dayplan.personal_plan(pop, post, c["moments"], c["brief"], c["travel"], end_window=c["end_window"],
                                           loved=loved, disliked=disliked, familiar=False)
-    return [st for st in plan.stops if not st.moment_id.startswith("lunch@")]
+    return plan.stops if with_lunch else [st for st in plan.stops if not st.moment_id.startswith("lunch@")]
 
 
 def _true_value(stops, b) -> float:
@@ -80,7 +81,8 @@ def _one(seed: int) -> dict:
     delta, post, loved, disliked = simulate_person(pop, c["ob"], seed)
     b = pop.b_person(delta)
     oracle = DeltaPosterior(delta, np.diag(np.full(len(delta), 1e6)), 0, 0)
-    personal = _plan(pop, post, loved, disliked)
+    whole = _plan(pop, post, loved, disliked, with_lunch=True)
+    personal = [st for st in whole if not st.moment_id.startswith("lunch@")]
     nothing = _plan(pop, prior_only(pop.delta_prior_sd), [], [])
     best = _plan(pop, oracle, loved, disliked)
     ids = lambda st: {dayplan._base(s.moment_id) for s in st}
@@ -94,8 +96,9 @@ def _one(seed: int) -> dict:
     for k in (0.5, 1.5):
         pk = _scaled(pop, k)
         changed[k] = len(ids(personal) - ids(_plan(pk, update_person(pk, obs), loved, disliked)))
-    # 7: history and culture in a row
-    hist = [moment_features(c["by_id"][dayplan._base(s.moment_id)]).get("history_culture", 0) >= 1 for s in personal]
+    # 7: history and culture in a row (D127: a lunch slot between two breaks the run, as in the planner's rule)
+    hist = [not s.moment_id.startswith("lunch@")
+            and moment_features(c["by_id"][dayplan._base(s.moment_id)]).get("history_culture", 0) >= 1 for s in whole]
     return {"delta": delta, "mean": post.mean, "sd": post.sd(), "personal": _true_value(personal, b),
             "nothing": _true_value(nothing, b), "best": _true_value(best, b),
             "shared_with_nothing": len(ids(personal) & ids(nothing)), "n_stops": len(personal),
@@ -194,7 +197,7 @@ def main() -> None:
         ch = np.array([r["changed"][k] for r in rows])
         print(f"   x{k}: mean {ch.mean():.2f}; plans with any change {np.mean(ch > 0):.0%}; 2+ changes {np.mean(ch >= 2):.0%}")
 
-    print(f"\n7. Personal plans with two history-and-culture stops in a row: {np.mean([r['hist_in_a_row'] for r in rows]):.0%}; "
+    print(f"\n7. Personal plans with two history-and-culture stops back to back: {np.mean([r['hist_in_a_row'] for r in rows]):.0%}; "
           f"three or more in all: {np.mean([r['hist_3plus'] for r in rows]):.0%}")
 
 

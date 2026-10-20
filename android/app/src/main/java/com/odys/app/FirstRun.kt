@@ -211,7 +211,7 @@ fun ExampleDayView(model: AppModel) {
         bottom = {
             PrimaryButton("Make one that fits me") { model.route = Route.Consent }
             // D119: honest about the length (14 or so questions)
-            Text("About 3 minutes. No account or name needed.", style = Theme.subheadline.copy(color = Theme.muted),
+            Text("About 5 minutes. No account or name needed.", style = Theme.subheadline.copy(color = Theme.muted),
                 modifier = Modifier.fillMaxWidth().padding(top = 6.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         },
     ) {

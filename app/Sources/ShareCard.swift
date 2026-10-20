@@ -2,12 +2,14 @@ import SwiftUI
 import UIKit
 
 /// D114, D119: the card a person can share after rating a stop, in the ODYS cream: the moment's photo with the word they
-/// rated it, "I think you'd love this", the title, their own reason in their own voice (D115), and "Planned with ODYS".
+/// rated it, "A moment from my day", the title, the reason from their answers (D115; they can leave it out, D127), and
+/// "Planned with ODYS".
 /// Never the model's "worth £X". No rewards. The photo is openly licensed, so its credit goes on the card. Fixed sizes,
 /// so the picture is the same wherever it's sent (1080 × 1350).
 struct ShareCardView: View {
     let stop: Stop
     let rating: Int
+    var reason = true                // D127: "Include the reason" on the preview; off leaves the line out
 
     var body: some View {
         let found = CardPhotos.photo(for: stop.momentId)
@@ -34,7 +36,7 @@ struct ShareCardView: View {
                     .padding(16)
             }
             VStack(alignment: .leading, spacing: 8) {
-                Text("I think you'd love this")
+                Text("A moment from my day")   // D127: their words to add, not ours to put in their mouth
                     .font(.system(size: 14))
                     .foregroundStyle(Theme.creamSoft)
                 Text(stop.title)
@@ -42,7 +44,7 @@ struct ShareCardView: View {
                     .foregroundStyle(Theme.creamInk)
                     .lineLimit(3)
                     .minimumScaleFactor(0.7)
-                if let why = stop.reasons?.compactMap(\.me).first {
+                if reason, let why = stop.reasons?.compactMap(\.me).first {
                     // D115: the plain-language reason, from the sharer's answers (journey round 2: not a quote)
                     Text(why)
                         .font(.custom(Theme.italicName, fixedSize: 17))
@@ -75,8 +77,8 @@ struct ShareCardView: View {
     }
 
     /// The card as a picture (1080 × 1350).
-    @MainActor static func render(stop: Stop, rating: Int) -> UIImage? {
-        let renderer = ImageRenderer(content: ShareCardView(stop: stop, rating: rating))
+    @MainActor static func render(stop: Stop, rating: Int, reason: Bool = true) -> UIImage? {
+        let renderer = ImageRenderer(content: ShareCardView(stop: stop, rating: rating, reason: reason))
         renderer.scale = 3
         return renderer.uiImage
     }

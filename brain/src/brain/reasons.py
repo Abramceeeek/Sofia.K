@@ -30,6 +30,17 @@ FEELINGS: dict[str, dict[str, float]] = {
 }
 FEELING_SCALE = 0.5   # GUESS: a general reason for going out is weaker evidence than a concrete this-or-that choice
 
+# D127 (algorithm reviews: "use the answers you collect, or stop collecting them"): the "about you" answers from
+# "Improve future plans", as stated leanings in the same way as the feelings and at the same weight. GUESS directions
+# and sizes; the person's own ratings soon outweigh them. Going alone, a medium day and "neither" say nothing.
+ABOUT_YOU: dict[tuple[str, str], dict[str, float]] = {
+    ("company", "friends"): {"social_pull": 1.0},
+    ("company", "partner"): {"social_pull": 1.0},
+    ("company", "family"): {"social_pull": 1.0},
+    ("activity", "gentle"): {"walking_effort": -1.0, "active": -0.5},
+    ("activity", "full_on"): {"walking_effort": 0.5, "active": 1.0},
+}
+
 PHRASE = {   # a feature in plain words, as "this has …"
     "movement_views": "views", "food": "good food", "green_nature": "green space", "history_culture": "history",
     "iconic": "a famous sight", "local_novel": "somewhere local and new", "walking_effort": "a good walk",
@@ -44,6 +55,14 @@ MAX_REASONS = 2
 def feeling_observation(pop: PopulationModel, feeling: str) -> Observation | None:
     """"I go out to feel peaceful" as one stated choice: a day with those features over one without."""
     x = FEELINGS.get(feeling)
+    if not x:
+        return None
+    return Observation(x=pop.vector(x), y=1, scale=pop.scales["conjoint"] * FEELING_SCALE)
+
+
+def about_you_observation(pop: PopulationModel, key: str, value: str | None) -> Observation | None:
+    """D127: "Who do you usually go with?" or "How active do you like a day to be?" as one stated choice."""
+    x = ABOUT_YOU.get((key, value or ""))
     if not x:
         return None
     return Observation(x=pop.vector(x), y=1, scale=pop.scales["conjoint"] * FEELING_SCALE)

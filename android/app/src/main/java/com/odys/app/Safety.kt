@@ -90,11 +90,15 @@ fun SafetyView(model: AppModel, prefill: String = "", onClose: () -> Unit) {
                     Text("Urgent medical help that isn't an emergency: call NHS 111. You can ask for an interpreter.",
                         style = Theme.subheadline.copy(color = Theme.emergencyText), modifier = Modifier.padding(top = 4.dp))
                     Pill("Call 111", PillKind.Secondary, height = 48.dp, icon = Icons.Filled.LocalHospital) { dial(context, "111") }
+                    // D127: the team isn't watched overnight, so a free line that is (samaritans.org, checked 20 Oct 2026)
+                    Text("Need to talk to someone, day or night? Samaritans answer free on 116 123.",
+                        style = Theme.subheadline.copy(color = Theme.emergencyText),
+                        modifier = Modifier.padding(top = 4.dp).clickable { dial(context, "116123") })
                 }
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Theme.surface).padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("I feel unsafe or something's wrong", style = Theme.headline)
-                    Text("This reaches a real person, not a bot: Abram, or whoever is covering for him. They'll reply within a few hours, here in Help & safety.",
+                    Text("This reaches a real person, not a bot. They'll reply here in Help & safety, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning.",
                         style = Theme.subheadline.copy(color = Theme.inkTertiary))
                     val sent = reply
                     if (sent != null) {
@@ -130,7 +134,7 @@ fun SafetyView(model: AppModel, prefill: String = "", onClose: () -> Unit) {
                             Column(Modifier.surfaceCard(padding = 18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 Text(t.message.ifEmpty { "(No message, just a call for help)" }, style = Theme.body)
                                 if (t.replies.isEmpty()) {
-                                    Text("No reply yet. A person replies within a few hours. In an emergency, call 999.", style = Theme.footnote)
+                                    Text("No reply yet. A person replies, usually within a few hours (the next morning if it was sent late). In an emergency, call 999.", style = Theme.footnote)
                                 }
                                 for (r in t.replies) {
                                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.selected).padding(14.dp),
@@ -168,18 +172,24 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
         Column(Modifier.fillMaxSize()) {
             SheetBar("Your data", onClose = onClose)
             ScrollPage(spacing = 18, top = 4, bottom = 32) {
-                // 19 Oct review: in short parts, not one paragraph
-                SettingsSection("What we keep") {
+                // 19 Oct review: in short parts, not one paragraph. 20 Oct (round 2): three boxes, so what leaves us has
+                // its own place
+                SettingsSection("What we keep, until 31 March 2027") {
                     DataLine("Your answers, typed or spoken (as text: the sound stays on your phone and isn't kept).")
                     DataLine("Your reactions to places, your choices between example days, the short survey and your choice between two plans.")
-                    DataLine("Your plans and your ratings, and anything you add under \"Improve future plans\".")
+                    DataLine("Your plans, your ratings and how each day felt, and anything you add under \"Improve future plans\".")
                     DataLine("Anything you send in Help & safety.")
+                    DataLine("All of it on our server in Frankfurt, in the EU (run by Render), then deleted.")
                 }
-                SettingsSection("What we don't keep") {
+                SettingsSection("What goes to other companies") {
+                    DataLine("A flight or stay search goes to Duffel or LiteAPI, only when you search: the route or city, dates and number of travellers. We keep only which filters you used.")
+                    DataLine("Transport for London and the Met Office give us journey times and the weather. They get places on the plan, nothing about you.")
+                    DataLine("Maps come from OpenStreetMap, whose servers see your phone's internet address and which part of London the map shows. Directions open Google Maps with the place you're going to, and nothing else from us.")
+                }
+                SettingsSection("What we never keep") {
                     DataLine("Your name, email or phone number. The app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
                     DataLine("Your location. A start point you choose for a plan is sent rounded to about 100 m, and not kept.")
                     DataLine("Your trips: they stay on this phone. The days planned for them are kept like any plan, starting from your stay's location (never its name).")
-                    DataLine("Your flight and stay searches: they go to our search providers, and we keep only which filters you used.")
                 }
                 SettingsSection("Reminders", "Set on your phone for the day of your plan. Nothing is sent.") {
                     // D118: rating reminders can be turned off (or on) here, any time
@@ -201,9 +211,6 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
                     if (model.location.wanted && model.location.deniedBySettings) {
                         Text("Location is off for ODYS in your phone's Settings, so the app can't use it.", style = Theme.footnote)
                     }
-                }
-                SettingsSection("Where, and for how long") {
-                    Text("On our server in Frankfurt, in the EU, until 31 March 2027.", style = Theme.body)
                 }
                 SettingsSection("About this test") {
                     Text("A person, Abram, runs this test in London. No AI service reads your answers in this version. Contact: ${AppConfig.CONTACT_EMAIL}",
@@ -268,7 +275,7 @@ fun DeleteConfirmView(model: AppModel, onCancel: () -> Unit, onDeleted: () -> Un
                         style = Theme.body)
                 }
                 SettingsSection("To confirm, type DELETE") {
-                    LineField("DELETE", typed, onChange = { typed = it },
+                    LineField("Type DELETE here", typed, onChange = { typed = it },   // 20 Oct (round 2): "DELETE" alone looked already typed
                         keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false))
                 }
                 Pill(if (model.busy) "Deleting…" else "Delete my data", PillKind.Danger, enabled = confirmed && !model.busy) {

@@ -28,7 +28,6 @@ struct SurveyView: View {
     @Environment(AppModel.self) private var model
     @State private var understood: Int?
     @State private var likePerson: Int?
-    @State private var typedOrSpoke: String?
     @State private var intrusive = ""
 
     var body: some View {
@@ -51,14 +50,7 @@ struct SurveyView: View {
                     ScaleRow(low: "not at all", high: "completely", value: $likePerson)
                 }
                 .settle(2)
-                SurveyQuestion(text: text?.typedOrSpoke ?? "Did you type or speak your answers?") {
-                    HStack(spacing: 8) {
-                        ForEach([("typed", "Typed"), ("spoke", "Spoke"), ("both", "Both")], id: \.0) { key, label in
-                            Chip(title: label, on: typedOrSpoke == key) { typedOrSpoke = typedOrSpoke == key ? nil : key }
-                        }
-                    }
-                }
-                .settle(3)
+                // D127: no "Did you type or speak?": the app already records which one was used for the open question
                 SurveyQuestion(text: text?.intrusive ?? "Was anything intrusive or tedious? (optional)") {
                     AnswerBox(text: $intrusive, minHeight: 90, label: "Anything intrusive or tedious")
                 }
@@ -75,7 +67,7 @@ struct SurveyView: View {
                     let note = intrusive.trimmingCharacters(in: .whitespacesAndNewlines)
                     Task {
                         await model.sendSurvey(SurveyBody(understood: understood, likePerson: likePerson,
-                                                          typedOrSpoke: typedOrSpoke, intrusive: note.isEmpty ? nil : note))
+                                                          typedOrSpoke: nil, intrusive: note.isEmpty ? nil : note))
                     }
                 }
                 QuietButton("Skip these") { Task { await model.sendSurvey(nil) } }
@@ -87,7 +79,7 @@ struct SurveyView: View {
     }
 
     private var nothingAnswered: Bool {
-        understood == nil && likePerson == nil && typedOrSpoke == nil
+        understood == nil && likePerson == nil
             && intrusive.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
@@ -148,7 +140,7 @@ struct PairIntentView: View {
             VStack(alignment: .leading, spacing: 24) {
                 Eyebrow("Two plans for a Saturday")
                 PageTitle(text: text?.intentTitle ?? "Before your plans").settle(0)
-                Text("Next you'll see two plans for the same Saturday afternoon, made in different ways. First, three quick things.")
+                Text("Next you'll see two plans for the same Saturday afternoon, made in different ways. First, three quick things. They help us read your choice, and don't change either plan.")
                     .foregroundStyle(Theme.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
                     .settle(1)

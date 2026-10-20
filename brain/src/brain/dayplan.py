@@ -375,7 +375,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         else:
             m = by_id[_base(st.moment_id)]
             worth = value_gbp(pop, b, m, cond, aspiration_match=asp[m.id])   # "worth about £V to you" (D88, D112)
-            stop = {"worth_gbp": round(worth) if worth >= 1 else None,
+            stop = {"worth_gbp": round(worth) if worth >= 1 else None,   # D127: kept for the curve's heights only
+                    "match": match_label(pop, u_hat[m.id]),             # D127: what the app shows instead of £V
                     "feel_word": feel_word(m), "reveal": is_reveal(m),   # D119: "How the day moves", "The reveal"
                     # the moment card's approach line (D112): from where, the path, where you arrive; card text only
                     # 19 Oct review: walking in from somewhere else, the card's station is the nearest one, not where
@@ -682,6 +683,18 @@ FEEL_RULES = (
 )
 
 
+# D127 (algorithm review, 20 Oct): the words the app shows for how well a stop fits, instead of "worth about £V".
+# Onboarding barely informs the cost weight (sd 0.80 -> 0.76 in simulation), so £V's 95% range spans ~20x; the words
+# rest on the rating model's own chance of "Good" or better, P(y >= 3) = F(scale * u - c_2|3), and claim less.
+MATCH_STRONG, MATCH_GOOD = 0.75, 0.5
+
+
+def match_label(pop: PopulationModel, u: float) -> str:
+    c = pop.cutpoints["rating"][1]
+    p = 1.0 / (1.0 + math.exp(-(pop.scales["rating"] * u - c)))
+    return "A strong match for you" if p >= MATCH_STRONG else ("A good match for you" if p >= MATCH_GOOD else "Worth a try")
+
+
 def feel_word(m: Moment | None) -> str:
     """"Lunch" for a lunch slot; "Wandering" for an area vibe (D72); else the first rule the card's tags meet."""
     if m is None:
@@ -720,6 +733,7 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "lunch": s["lunch"],
             "familiar": s.get("familiar", False), "rateable": not s["moment_id"].startswith("lunch@"),
             "worth_gbp": s.get("worth_gbp"),
+            "match": s.get("match"),
             "feel_word": s.get("feel_word") or "Lunch", "reveal": s.get("reveal", False),   # D119
             "approach_steps": s.get("approach_steps") or [],
             "book_ahead": s.get("book_ahead") or "",
@@ -747,9 +761,26 @@ BLIND_FIELDS = ("title", "arrive", "depart", "travel_min", "travel_mode", "trave
                 "queue_min", "best_text", "cost_gbp", "cost_kind", "cost_text", "rain_swap", "lunch", "lines")
 
 
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
+
+
+def _first_sentence(text: str | None) -> str:
+    return _SENTENCE_END.split(text.strip(), maxsplit=1)[0] if text else ""
+
+
 def blind_stop(s: dict, label: str, i: int) -> dict:
+    """D127 (screen review round 2, 20 Oct): the cards' stories are longer and their titles subtitled, while the
+    generic plan's lines are short, so a tester could pick the plan that reads richer, or spot which is which. In the
+    blind view both plans get the same shape: the title up to its colon, one sentence for the way in and one for what
+    happens."""
     out = {k: s.get(k) for k in BLIND_FIELDS}
+    title = (s.get("title") or "").split(": ", 1)[0]
+    approach, what = _first_sentence(s.get("approach")), _first_sentence(s.get("what"))
+    queue = s.get("queue_min")
+    lines = [s.get("travel_text"), approach, what, queue and f"Allow about {int(queue)} min to queue.",
+             s.get("best_text"), s.get("cost_text"), s.get("rain_swap") and f"If it rains: {s['rain_swap']}"]
+    out.update(title=title, approach=approach, what=what, lines=[x for x in lines if x])
     out.update(moment_id=f"plan{label}-{i}", key=f"plan{label}-{i}", familiar=False, rateable=False, pin=None,
-               chosen_for=[], why=[], reasons=[], card=None, worth_gbp=None, feel_word=None, reveal=False,
+               chosen_for=[], why=[], reasons=[], card=None, worth_gbp=None, match=None, feel_word=None, reveal=False,
                approach_steps=[], best_light="", best_window="")
     return out

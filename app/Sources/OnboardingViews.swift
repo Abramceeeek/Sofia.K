@@ -710,10 +710,21 @@ enum Labels {
     static let reactions = [("loved", "Loved it"), ("fine", "It was fine"), ("didnt_enjoy", "Didn't enjoy it"),
                             ("havent_been", "Haven't been")]
     /// The rating's words (D115: one dimension), 1–5.
-    static let feel = ["Flat", "Fine", "Good", "Great", "Unforgettable"]
+    static let feel = ["Disappointing", "Fine", "Good", "Great", "Unforgettable"]
     /// The "this or that" attributes, always in the same order with the same icons (D95).
     static let attributeIcons = ["arrow.triangle.swap", "cloud.sun", "gauge.with.dots.needle.33percent",
                                  "person.3", "sterlingsign.circle", "figure.walk"]
+
+    /// 20 Oct (round 2): the weather line's icon follows its words (rain, cold, mild), so the picture never contradicts
+    /// the text.
+    static func attributeIcon(_ i: Int, _ text: String) -> String {
+        if i == 1 {
+            if text.contains("rain") { return "cloud.rain" }
+            if text.contains("cold") { return "thermometer.snowflake" }
+            if text.contains("mild") { return "sun.max" }
+        }
+        return i < attributeIcons.count ? attributeIcons[i] : "circle"
+    }
 }
 
 struct WhyStep: View {
@@ -979,7 +990,7 @@ struct DayOption: View {
                 }
                 ForEach(parts.indices, id: \.self) { i in
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Image(systemName: i < Labels.attributeIcons.count ? Labels.attributeIcons[i] : "circle")
+                        Image(systemName: Labels.attributeIcon(i, parts[i]))
                             .font(.subheadline)
                             .foregroundStyle(Theme.accent)
                             .frame(width: 22)
@@ -989,9 +1000,14 @@ struct DayOption: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                Text(on ? "Chosen" : "Choose this day")
+                // 20 Oct (round 2): a pill, so it reads as the thing to tap
+                Label(on ? "Chosen" : "Choose this day", systemImage: on ? "checkmark" : "hand.tap")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(on ? Theme.background : Theme.accent)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 40)
+                    .background(on ? Theme.accent : Color.clear, in: Capsule())
+                    .overlay(Capsule().stroke(Theme.accent, lineWidth: 1))
                     .padding(.top, 4)
             }
             .padding(20)
@@ -1010,7 +1026,7 @@ struct DayOption: View {
 // ---- 12. Improve future plans (D115): one question at a time ---------------------------------------------
 
 /// An invitation, then one quick question per screen: tap an answer and the next one comes. Skip any, stop any time;
-/// what's answered is saved. Nine taps is about 30 seconds. The 4 more places and 5 more example days come after,
+/// what's answered is saved. Seven taps, about a minute (D127: 30 seconds was optimistic). The 4 more places and 5 more example days come after,
 /// as their own optional step (about a minute).
 struct ImproveView: View {
     @Environment(AppModel.self) private var model
@@ -1099,7 +1115,7 @@ struct ImproveView: View {
         VStack(alignment: .leading, spacing: 16) {
             ArchGlyph(width: 22).padding(.top, 12)
             PageTitle(text: "Make your next day even better?")   // D118: was "Want us to learn you better?"
-            Text("About 30 seconds. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.")
+            Text("About a minute. One quick question at a time: your budget, who you go with, your pace, what interests you. Skip any, stop any time.")
                 .foregroundStyle(Theme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
             Text("Your budget and interests shape your next plans; the other answers help us test the idea.")   // D123: honest
@@ -1121,7 +1137,7 @@ struct ImproveView: View {
             let later = model.isVisitor ? [] : (model.onboarding?.swipePlacesLater ?? [])   // D116: not London places
             let laterTasks = model.onboarding?.conjointTasksLater ?? []
             if !later.isEmpty || !laterTasks.isEmpty {
-                Text("Want to go further? About a minute more.")
+                Text("Want to go further? About 2 minutes more.")
                     .font(.headline)
                     .foregroundStyle(Theme.ink)
                     .padding(.top, 8)

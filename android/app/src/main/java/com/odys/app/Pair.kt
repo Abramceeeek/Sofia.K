@@ -58,14 +58,13 @@ fun SurveyView(model: AppModel) {
     val text = model.onboarding?.survey
     var understood by remember { mutableStateOf<Int?>(null) }
     var likePerson by remember { mutableStateOf<Int?>(null) }
-    var typedOrSpoke by remember { mutableStateOf<String?>(null) }
     var intrusive by remember { mutableStateOf("") }
-    val nothing = understood == null && likePerson == null && typedOrSpoke == null && intrusive.isBlank()
+    val nothing = understood == null && likePerson == null && intrusive.isBlank()
     PageWithBottom(
         spacing = 26,
         bottom = {
             PrimaryButton(if (model.busy) "Sending…" else "Send", enabled = !model.busy && !nothing) {
-                model.sendSurvey(SurveyBody(understood, likePerson, typedOrSpoke, intrusive.trim().ifEmpty { null }))
+                model.sendSurvey(SurveyBody(understood, likePerson, null, intrusive.trim().ifEmpty { null }))
             }
             QuietButton("Skip these", Modifier.fillMaxWidth()) { model.sendSurvey(null) }
         },
@@ -81,13 +80,7 @@ fun SurveyView(model: AppModel) {
         SurveyQuestion(text?.likePerson ?: "It felt like talking to a person, not filling in a form.", Modifier.settle(2)) {
             ScaleRow("not at all", "completely", likePerson) { likePerson = it }
         }
-        SurveyQuestion(text?.typedOrSpoke ?: "Did you type or speak your answers?", Modifier.settle(3)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((key, label) in listOf("typed" to "Typed", "spoke" to "Spoke", "both" to "Both")) {
-                    Chip(label, typedOrSpoke == key, Modifier.weight(1f)) { typedOrSpoke = if (typedOrSpoke == key) null else key }
-                }
-            }
-        }
+        // D127: no "Did you type or speak?": the app already records which one was used for the open question
         SurveyQuestion(text?.intrusive ?: "Was anything intrusive or tedious? (optional)") {
             AnswerBox(intrusive, { intrusive = it }, "Anything intrusive or tedious", minHeight = 90)
         }
@@ -138,7 +131,8 @@ fun PairIntentView(model: AppModel) {
     ) {
         Eyebrow("Two plans for a Saturday")
         PageTitle(text?.intentTitle ?: "Before your plans", Modifier.settle(0))
-        Text("Next you'll see two plans for the same Saturday afternoon, made in different ways. First, three quick things.",
+        Text("Next you'll see two plans for the same Saturday afternoon, made in different ways. First, three quick things. " +
+            "They help us read your choice, and don't change either plan.",
             style = Theme.body.copy(color = Theme.inkSoft), modifier = Modifier.settle(1))
         SurveyQuestion(text?.moodPrompt ?: "Recharge or explore?", Modifier.settle(2)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

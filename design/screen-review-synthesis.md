@@ -6,7 +6,8 @@ The five reviews are kept as pasted in `design/reviews/2026-10-19-ai-screens.md`
 
 - **Fixed (both apps unless marked):** 31 points, listed below. The Brain tests pass (194), and Android compiles and draws every screen. The iPhone code can't be built until GitHub Actions billing is fixed, so it was checked by reading every changed line.
 - **Not changed, with reasons:** 14 points. Some were misreadings of the pictures (for example "Grazze", and "5 = complete"). Some were already in the app. Some we disagree with (for example typing DELETE to delete your data).
-- **Yours to decide:** 7 points, below. The largest is the one all five reviewers raised first: **14 questions, then the Test B pair, before the first plan.** My recommendation: keep the pair before the plan (it stays blind only there), and make the open "great moment" question optional and later.
+- **Decided 20 Oct:** Abram handed the 7 points below to Claude ("decide for me"); what was decided, and round 2 of the reviews, is at the end (**Decided, and round 2**).
+- **Were yours to decide:** 7 points, below. The largest is the one all five reviewers raised first: **14 questions, then the Test B pair, before the first plan.** My recommendation: keep the pair before the plan (it stays blind only there), and make the open "great moment" question optional and later.
 - **Hours:** Claude's time on the fixes was GUESS ~7 h. **Abram's time to read this page and decide: about 20 minutes.**
 
 ## Where all or most agree
@@ -112,6 +113,27 @@ The five reviews are kept as pasted in `design/reviews/2026-10-19-ai-screens.md`
 7. **Let people write their own line on the share card** (R1, R3, R5).
     - Today the line is our reason, built from their answers ("I loved Uber Boat on the Thames, and this has views too"), written in their voice.
     - **Recommendation:** an editable line, pre-filled. Claude: ~2 h, both apps.
+
+## Decided, and round 2 (20 Oct)
+
+Abram handed the seven decisions above to Claude ("continue with everything and decide for me if any question"). Five AI reviewers then reviewed the revised pack: `design/reviews/2026-10-20-ai-screens-round2.md` (the iPhone pictures were still the 18 Oct build, so they could check the fixes only on Android). Decision log D127. Both apps and the Brain; Android compiles and draws all 46 screens; the iPhone code was read line by line, since it can't be built yet.
+
+**The seven decisions:**
+
+1. **The path to the first plan.** The open "great moment" question moves from question 2 to the last one before "So far" (still optional), not after the plan: Test A compares "I felt understood" for typed and spoken answers, so it must come before the survey. No "Skip to my plan": Test B's personal plan needs the answers. Still 14, counted honestly; the welcome now says "About 5 minutes" (it said 3).
+2. **The Test B pair** stays before the first plan, as it is. The screen before it now says the three questions "help us read your choice, and don't change either plan", and the reveal says "There's no right answer". The blind texts are made alike (D127), so the personal plan's longer card stories don't give it away.
+3. **"Flat" is now "Disappointing"**, in both apps and the Brain, before any tester rates.
+4. **"Worth about £V"** is no longer shown (the algorithm reviews measured how wide it is). Each stop shows its price and "A strong match for you", "A good match for you" or "Worth a try".
+5. **The safety promise:** no clock hours, because only Abram can commit to them. Every safety text now says a person replies "usually within a few hours", that it "isn't watched through the night: a message sent late is answered the next morning", and names no one. Help & safety adds Samaritans' free line, open 24 hours, 116 123 (samaritans.org, checked 20 Oct 2026). **Abram: change this if you can promise more.**
+6. **Trips stays for friends**; whether strangers see it is decided after the friends' round.
+7. **The share card:** "A moment from my day" (was "I think you'd love this"), the message "A moment from my day out, planned with ODYS", and a switch to leave out the line about why. A line people type themselves is on after-9-Nov #79.
+
+**Round 2: what the reviewers found, and what was done.**
+
+- **Fixed:** the data page in three boxes (what we keep until 31 March 2027, what goes to other companies, what we never keep); "Directions" on "Now"; the best-light line says whether the light falls before, during or after the visit; the plan headline split into a headline and a line under it (on trip days too); "How the day moves" after the stops, with its labels numbered like the stops, so the two staggered rows read in order (they were placed right by time, but read like a wrong order); smaller number chips; the this-or-that weather icon follows its words (rain, cold, mild); "Choose this day" is a pill; "Up to 30 min between stops"; for people in the UK, home leads with "Plan a day out", and visitors still see "Plan a trip" first; the survey drops "Did you type or speak?" (the app records it), so "Three quick questions" is true; "About a minute" for Improve future plans (it said 30 seconds); "Type DELETE here".
+- **Android parity:** the trip's last question showed "Plan the trip again" because the screenshot opened a saved trip (now a new one, "Make my trip"); the trip-day photo stretched to the card's full height (now fills the text's height); a firmer scrim behind the back arrow.
+- **The PDF:** every iPhone page now says it is the older 18 Oct build, and the captions describe the app as it is now.
+- **Not changed:** the Android "Watch his short hello" link: no hello video is recorded yet, and the iPhone shows the link only when one is bundled (and in the demo). Map tiles, and black behind the 28a/28b sheets, are artefacts of drawing screens without a network or a window behind them. Logging the last screen and the build version: the events already carry the app's version on Android (`ODYS for Android, version …`); a per-screen log is not needed for Test B (D75).
 
 ## Noted for later (after-9-Nov #77)
 

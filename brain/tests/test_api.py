@@ -90,7 +90,7 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
                       ).status_code == 204
 
     w = client.get("/v1/me/weights", headers=h).json()
-    assert w["n_observations"] == 7           # 2 informative swipes + the 5 upfront choices (D112)
+    assert w["n_observations"] == 8           # 2 informative swipes + the 5 upfront choices (D112) + company (D127)
     rain = next(x for x in w["weights"] if x["name"] == "rain_outdoor")
     assert rain["weight"] < -1.0 and rain["direction"] == "dislikes"
 
@@ -120,9 +120,16 @@ def test_full_flow_answers_weights_plan_rating_and_deletion(client):
     r = client.post("/v1/me/ratings", headers=h, json={
         "moment_id": first["moment_id"], "rating": 5, "plan_id": plan["id"], "would_bring": True,
         "conditions": {"temp_c": 20}, "travel_min": first["travel_min"]})
-    assert r.status_code == 201 and r.json()["n_observations"] == 8
+    assert r.status_code == 201 and r.json()["n_observations"] == 9
     assert client.post("/v1/me/events", headers=h, json={"name": "onboarding_done", "props": {"seconds": 900}}
                        ).status_code == 204
+    day = f"/v1/me/plans/{plan['id']}/day"   # D127: the two end-of-day questions
+    assert client.post(day, headers=h, json={"worth": "less", "again": False}).status_code == 204
+    assert client.post(day, headers=h, json={"worth": "about_right", "again": True}).status_code == 204
+    rows = [r for r in client.get("/v1/admin/export", headers=ADMIN).json()["day_feedback"] if r["user_id"] == uid]
+    assert [(r["worth"], r["again"]) for r in rows] == [("about_right", True)]   # answering again replaces it
+    assert client.post(day, headers=h, json={"worth": "lots"}).status_code == 422
+    assert client.post("/v1/me/plans/999999/day", headers=h, json={"again": True}).status_code == 404
 
     assert client.delete("/v1/me", headers=h).status_code == 204
     assert client.get("/v1/me/plans", headers=h).status_code == 401
@@ -329,6 +336,10 @@ def test_test_b_pair_is_blind_random_once_and_reveals_after_the_choice(client):
             assert st["moment_id"] == f"plan{pl['label']}-{i}" and st["lines"]
             assert st["card"] is None and st["pin"] is None and st["feel_word"] is None
             assert not st["reasons"] and not st["chosen_for"] and st["worth_gbp"] is None and not st["rateable"]
+            # D127: the same shape for both, so neither reads richer: a short title, one sentence per field
+            assert ": " not in st["title"]
+            for field in ("approach", "what"):
+                assert len([x for x in (st[field] or "").split(". ") if x]) <= 1, st[field]
     assert {tuple(sorted(st)) for pl in (p1, p2) for st in pl["stops"]} == {tuple(sorted(p1["stops"][0]))}
     titles = {pl["label"]: [st["title"] for st in pl["stops"]] for pl in (p1, p2)}
     generic = next(k for k, v in titles.items() if v[0] == "The National Gallery")

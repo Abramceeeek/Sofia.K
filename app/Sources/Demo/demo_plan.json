@@ -2,15 +2,8 @@
  "id": 1,
  "kind": "personal",
  "label": null,
- "date": "2026-10-24",
- "intent": {
-  "weather": {
-   "temp_c": 14.0,
-   "rain_prob": 0.21,
-   "source": "daily",
-   "line": "Outlook: up to 14°C, 20% chance of rain (Met Office; it may change)"
-  }
- },
+ "date": "2026-10-31",
+ "intent": {},
  "stops": [
   {
    "moment_id": "lunch@m_waterloo_bridge_sunset",
@@ -33,6 +26,7 @@
    "familiar": false,
    "rateable": false,
    "worth_gbp": null,
+   "match": null,
    "feel_word": "Lunch",
    "reveal": false,
    "approach_steps": [],
@@ -73,7 +67,8 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 25,
+   "worth_gbp": 32,
+   "match": "A strong match for you",
    "feel_word": "Big views",
    "reveal": true,
    "approach_steps": [
@@ -94,7 +89,7 @@
    "checked": "2026-09-27",
    "hours": "Until 31 Mar: daily 10:00–18:30, weekends to 17:00; closed bank holidays. Free, no booking",
    "best_light": "At dusk, when the towers light up",
-   "best_window": "17:26–18:26",
+   "best_window": "16:12–17:12",
    "pin": {
     "lat": 51.5121,
     "lon": -0.0815
@@ -203,7 +198,8 @@
    "lunch": false,
    "familiar": false,
    "rateable": true,
-   "worth_gbp": 21,
+   "worth_gbp": 28,
+   "match": "A strong match for you",
    "feel_word": "Calm",
    "reveal": true,
    "approach_steps": [
@@ -328,7 +324,8 @@
    "lunch": false,
    "familiar": true,
    "rateable": true,
-   "worth_gbp": 20,
+   "worth_gbp": 27,
+   "match": "A strong match for you",
    "feel_word": "Awe",
    "reveal": true,
    "approach_steps": [
@@ -349,7 +346,7 @@
    "checked": "2026-09-27",
    "hours": "Park gates from 06:00; they close from about 18:00 in winter. Free",
    "best_light": "Late afternoon on a clear day",
-   "best_window": "15:51–18:06",
+   "best_window": "14:37–16:52",
    "pin": {
     "lat": 51.481675,
     "lon": -0.010802
@@ -440,11 +437,11 @@
    ]
   }
  ],
- "value": 2.588,
+ "value": 3.126,
  "status": "offered",
  "fit_rating": null,
- "created_at": "2026-10-20T01:05:33.655888+00:00",
- "title": "Saturday 24 October",
+ "created_at": "2026-10-20T12:21:58.458606+00:00",
+ "title": "Saturday 31 October",
  "summary": [
   "Start: Charing Cross station at 12:00 · 4 stops, including lunch",
   "Costs: about £15 for food and entry, plus about £6 transport"
@@ -467,11 +464,5 @@
   "ratings": 0,
   "feelings": 2,
   "kinds": 0
- },
- "weather": {
-  "temp_c": 14.0,
-  "rain_prob": 0.21,
-  "source": "daily",
-  "line": "Outlook: up to 14°C, 20% chance of rain (Met Office; it may change)"
  }
 }

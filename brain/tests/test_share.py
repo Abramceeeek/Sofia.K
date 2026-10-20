@@ -11,7 +11,7 @@ def test_one_code_per_person(client):
     a = client.get("/v1/me/referral", headers=h).json()
     b = client.get("/v1/me/referral", headers=h).json()
     assert a["code"] == b["code"] and re.fullmatch(share.CODE_PATTERN, a["code"])
-    assert a["text"] == "I think you'd love this day — try it"
+    assert a["text"] == "A moment from my day out, planned with ODYS"
     h2, _ = install(client)
     assert client.get("/v1/me/referral", headers=h2).json()["code"] != a["code"]
 

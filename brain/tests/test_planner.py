@@ -168,3 +168,16 @@ def test_extend_dwell_lengthens_stays_where_the_day_has_room():
     assert a.depart_min - a.arrive_min == 50                     # 20 more minutes at a
     assert b.arrive_min == 660 and b.depart_min <= 720           # b moved back by 20, then lengthened to the end
     assert b.depart_min - b.arrive_min == 60
+
+
+def test_no_more_than_two_history_stops_and_never_two_in_a_row():
+    """D127 (algorithm review, 20 Oct): at most two history-and-culture stops, never back to back; lunch breaks a run."""
+    p = Point(lat=51.5081, lon=-0.1281)
+    h = lambda k, u: Candidate(k, p, p, 30, ((600, 1080),), u, theme="history")
+    o = lambda k, u: Candidate(k, p, p, 30, ((600, 1080),), u)
+    cands = [h("h1", 2.0), h("h2", 2.0), h("h3", 2.0), o("o1", 0.2), o("o2", 0.2)]
+    plan = plan_day(cands, p, 600, 900, WalkingEstimate(), LegWeights(0, 0), max_stops=4, min_stops=4,
+                    time_limit_s=0.5)
+    ids = [s.moment_id for s in plan.stops]
+    assert len(ids) == 4 and sum(i.startswith("h") for i in ids) == 2
+    assert not any(a.startswith("h") and b.startswith("h") for a, b in zip(ids, ids[1:]))

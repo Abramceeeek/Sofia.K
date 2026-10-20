@@ -28,7 +28,7 @@ struct SafetyView: View {
                         Text("I feel unsafe or something's wrong")
                             .font(.headline)
                             .foregroundStyle(Theme.ink)
-                        Text("This reaches a real person, not a bot: Abram, or whoever is covering for him. They'll reply within a few hours, here in Help & safety.")
+                        Text("This reaches a real person, not a bot. They'll reply here in Help & safety, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning.")
                             .font(.subheadline)
                             .foregroundStyle(Theme.inkTertiary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -120,6 +120,18 @@ struct SafetyView: View {
                 Label("Call 111", systemImage: "cross.case")
             }
             .buttonStyle(PillStyle(kind: .secondary, height: 48))
+            // D127: the team isn't watched overnight, so a free line that is (samaritans.org, checked 20 Oct 2026)
+            Button {
+                if let url = URL(string: "tel:116123") { openURL(url) }
+            } label: {
+                Text("Need to talk to someone, day or night? Samaritans answer free on **116 123**.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.emergencyText)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
         }
         .padding(18)
         .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
@@ -137,7 +149,7 @@ struct SafetyView: View {
                             .foregroundStyle(Theme.ink)
                             .fixedSize(horizontal: false, vertical: true)
                         if t.replies.isEmpty {
-                            Text("No reply yet. A person replies within a few hours. In an emergency, call 999.")
+                            Text("No reply yet. A person replies, usually within a few hours (the next morning if it was sent late). In an emergency, call 999.")
                                 .font(.footnote)
                                 .foregroundStyle(Theme.muted)
                         }
@@ -167,19 +179,26 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // 19 Oct review: in short parts, not one paragraph
-                Section("What we keep") {
+                // 19 Oct review: in short parts, not one paragraph. 20 Oct (round 2): three boxes, so what leaves us has
+                // its own place
+                Section("What we keep, until 31 March 2027") {
                     Text("Your answers, typed or spoken (as text: the sound stays on your phone and isn't kept).")
                     Text("Your reactions to places, your choices between example days, the short survey and your choice between two plans.")
-                    Text("Your plans and your ratings, and anything you add under \"Improve future plans\".")
+                    Text("Your plans, your ratings and how each day felt, and anything you add under \"Improve future plans\".")
                     Text("Anything you send in Help & safety.")
+                    Text("All of it on our server in Frankfurt, in the EU (run by Render), then deleted.")
                 }
                 .listRowBackground(Theme.surface)
-                Section("What we don't keep") {
+                Section("What goes to other companies") {
+                    Text("A flight or stay search goes to Duffel or LiteAPI, only when you search: the route or city, dates and number of travellers. We keep only which filters you used.")
+                    Text("Transport for London and the Met Office give us journey times and the weather. They get places on the plan, nothing about you.")
+                    Text("Maps come from Apple. Directions open Apple Maps with the place you're going to, and nothing else from us.")
+                }
+                .listRowBackground(Theme.surface)
+                Section("What we never keep") {
                     Text("Your name, email or phone number. The app knows this phone only by a random code. If you leave a phone or email in Help & safety, it's used only to reply, then deleted.")
                     Text("Your location. A start point you choose for a plan is sent rounded to about 100 m, and not kept.")
                     Text("Your trips: they stay on this phone. The days planned for them are kept like any plan, starting from your stay's location (never its name).")
-                    Text("Your flight and stay searches: they go to our search providers, and we keep only which filters you used.")
                 }
                 .listRowBackground(Theme.surface)
                 Section {
@@ -211,10 +230,6 @@ struct SettingsView: View {
                     Text("Location")
                 } footer: {
                     Text("Only while \"Now\" or \"Plan a day\" is open: how far your next stop is, and asking how it felt once you've left. It stays on your phone, except a start point you choose for a plan, sent rounded to about 100 m and not kept.")
-                }
-                .listRowBackground(Theme.surface)
-                Section("Where, and for how long") {
-                    Text("On our server in Frankfurt, in the EU, until 31 March 2027.")
                 }
                 .listRowBackground(Theme.surface)
                 Section("About this test") {
@@ -276,7 +291,7 @@ struct DeleteConfirmView: View {
                 }
                 .listRowBackground(Theme.surface)
                 Section {
-                    TextField("DELETE", text: $typed)
+                    TextField("Type DELETE here", text: $typed)   // 20 Oct (round 2): "DELETE" alone looked already typed
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                 } header: {
@@ -380,7 +395,7 @@ struct DemoScreen: View {
     }
 
     /// The Brain's answer to a Help & safety message (brain/notify.py USER_MESSAGE).
-    static let sentReply = "If you or someone else is in danger or hurt, call 999 now. We've told a person: Abram, or whoever is covering for him. They'll reply within a few hours, here in Help & safety, and by phone or email if you left one."
+    static let sentReply = "If you or someone else is in danger or hurt, call 999 now. A person reads every message and will reply here in Help & safety, and by phone or email if you left one, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning."
 }
 
 /// Screen 8 on its own, as the home screen shows it before there's a plan.

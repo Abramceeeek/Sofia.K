@@ -30,9 +30,9 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, EventIn, FlightSearchIn, InstallIn,
-                      InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest, ProfileIn, RatingIn, SafetyIn,
-                      SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn)
+from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
+                      EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
+                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
 from .travel import LondonEstimate
@@ -84,9 +84,9 @@ def _next_saturday(today: date) -> date:
 
 
 def _plain(description: str) -> str:
-    """19 Oct review: in London "transfer" means changing lines, so the card says what it means. The design file keeps
-    "longest transfer N min", which features.py reads."""
-    return description.replace("longest transfer", "longest journey between stops")
+    """19 Oct review: in London "transfer" means changing lines, so the card says what it means; 20 Oct (round 2):
+    "Up to 30 min between stops" reads faster. The design file keeps "longest transfer N min", which features.py reads."""
+    return re.sub(r"longest transfer (\d+) min", r"up to \1 min between stops", description)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -221,6 +221,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 obs.append(o)
         for f in (user.profile or {}).get("why_travel", []):   # D115: feelings on screen 5, as stated choices
             if (o := reasons.feeling_observation(p, f)):
+                obs.append(o)
+        for key in ("company", "activity"):   # D127: "Improve future plans", used rather than only kept
+            if (o := reasons.about_you_observation(p, key, (user.profile or {}).get(key))):
                 obs.append(o)
         for r in user.ratings:
             if r.moment_id in ms:
@@ -528,7 +531,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices,
                     taken=taken)
             if blind:
-                st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None
+                st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
                 "solver_status": plan.status, "blind": blind,
@@ -596,7 +599,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                    for pst, st in zip(plan.stops, stops)]
             for st in out:
-                st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None   # nothing personal to explain
+                st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None   # nothing personal
                 if st["rateable"] and st["moment_id"] in by_id:
                     st["card"] = card(by_id[st["moment_id"]])
             app.state.example_day = {"id": 0, "title": brief.day_label, "date": None, "stops": out,
@@ -767,6 +770,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         post = refit(s, user, p)
         s.commit()
         return {"n_observations": post.n_obs}
+
+    @app.post("/v1/me/plans/{plan_id}/day", status_code=204)
+    def day_feedback(plan_id: int, body: DayFeedbackIn, user: db.User = Depends(current_user),
+                     s: Session = Depends(session)):
+        """D127: "Was today worth what you spent?" and "Would you do this day again?", once the day is done. Answering
+        again (after a restart) replaces the earlier answer."""
+        pl = s.get(db.Plan, plan_id)
+        if pl is None or pl.user_id != user.id or hidden(pl):
+            raise HTTPException(404, "no such plan")
+        for old in [f for f in user.day_feedback if f.plan_id == plan_id]:
+            s.delete(old)
+        if body.worth is not None or body.again is not None:
+            s.add(db.DayFeedback(user_id=user.id, plan_id=plan_id, worth=body.worth, again=body.again))
+        s.commit()
+        return Response(status_code=204)
 
     @app.post("/v1/me/events", status_code=204)
     def event(body: EventIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
@@ -1133,7 +1151,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ("answers", db.Answer), ("plans", db.Plan), ("ratings", db.Rating), ("events", db.Event),
             ("safety_alerts", db.SafetyAlert), ("referrals", db.Referral), ("link_opens", db.LinkOpen),
             ("category_answers", db.CategoryAnswer), ("corrections", db.Correction),
-            ("safety_replies", db.SafetyReply)]} | {   # D118: never the contacts people left
+            ("safety_replies", db.SafetyReply), ("day_feedback", db.DayFeedback)]} | {   # D118: never the contacts people left
             # D116: visitors from abroad are their own group, left out of the Test B analysis
             "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
 

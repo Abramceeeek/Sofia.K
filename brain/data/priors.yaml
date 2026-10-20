@@ -21,9 +21,9 @@ cutpoints:
   # m134: fitted by `python -m brain.swipecal` on the swipe page (12 people, 235 answers, 27-28 Sep; se 0.72 and 0.60).
   # The GUESS [-1, 1] implied 33% "didn't enjoy"; people answered 4% didn't / 41% fine / 55% loved.
   swipe: [-5.15, -0.67]              # didn't enjoy | it was fine | loved it
-  # D115: one dimension, worded Flat (1) | Fine (2) | Good (3) | Great (4) | Unforgettable (5). GUESS cutpoints, symmetric.
+  # D115: one dimension, worded Disappointing (1) | Fine (2) | Good (3) | Great (4) | Unforgettable (5). GUESS cutpoints, symmetric.
   # The planner's floor is the 2|3 cut (-0.75): a stop goes into a plan only if it's predicted "Good" or better.
-  rating: [-2.0, -0.75, 0.75, 2.0]   # Flat | Fine | Good | Great | Unforgettable
+  rating: [-2.0, -0.75, 0.75, 2.0]   # Disappointing | Fine | Good | Great | Unforgettable
 
 features:
   # Place tags (Area 2)

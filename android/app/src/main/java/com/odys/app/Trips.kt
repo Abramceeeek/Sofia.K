@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -222,16 +223,27 @@ fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
         } else if (tomorrow != null) {   // Abram's comment (8 Oct): then tomorrow, to look ahead
             Box(Modifier.settle(1)) { TomorrowInTripCard(model, tomorrow.first, tomorrow.second, tomorrow.third) }
         }
-        Box(Modifier.settle(1)) { PlanTripCard { model.showCreate = true } }
-        if (!model.pairDone && !model.isVisitor) Box(Modifier.settle(2)) { PairInviteRow { model.showPair = true } }
         val plan = model.plan
-        if (plan != null) {
-            Column(Modifier.settle(2), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Your day", style = Theme.subheadline.copy(color = Theme.muted))
-                DayRow(plan) { model.tripPath += Dest.Day }
+        @Composable
+        fun yourDay(p: Plan, m: Modifier) = Column(m, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Your day", style = Theme.subheadline.copy(color = Theme.muted))
+            DayRow(p) { model.tripPath += Dest.Day }
+        }
+        if (model.isVisitor) {
+            Box(Modifier.settle(1)) { PlanTripCard { model.showCreate = true } }
+            if (plan != null) yourDay(plan, Modifier.settle(2))
+            else {   // journey round 2: with no day yet, "Plan a day" was out of reach
+                SecondaryButton("Plan a day out instead", Modifier.settle(2), icon = Icons.Filled.WbSunny) { planningDay = true }
             }
-        } else {   // journey round 2: with no day yet, "Plan a day" was out of reach
-            SecondaryButton("Plan a day out instead", Modifier.settle(2), icon = Icons.Filled.WbSunny) { planningDay = true }
+        } else {
+            // 20 Oct (round 2): people who live here mostly want a day out, so that leads; a trip is one tap below
+            if (plan != null) yourDay(plan, Modifier.settle(1))
+            Box(Modifier.settle(1)) {
+                PlanTripCard("Plan a day out",
+                    "A day in London around what you enjoy: your hours, where you start, and the places that fit you.") { planningDay = true }
+            }
+            SecondaryButton("Plan a trip instead", Modifier.settle(2), icon = Icons.Filled.Flight) { model.showCreate = true }
+            if (!model.pairDone) Box(Modifier.settle(2)) { PairInviteRow { model.showPair = true } }
         }
         if (model.trips.isNotEmpty()) {
             Column(Modifier.settle(3), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -308,7 +320,11 @@ fun ArchMark() {
 }
 
 @Composable
-fun PlanTripCard(onClick: () -> Unit) {
+fun PlanTripCard(
+    title: String = "Plan a trip",
+    text: String = "One day or two weeks. I'll find the flight, the stay and the moments, and you book with whichever site you trust.",
+    onClick: () -> Unit,
+) {
     Column(
         Modifier.fillMaxWidth().pressable(haptic = true, onClick = onClick).clip(RoundedCornerShape(24.dp))
             .background(Brush.radialGradient(listOf(Color(0xFF3B2E1E), Theme.surface), center = Offset(900f, 0f), radius = 900f))
@@ -316,9 +332,8 @@ fun PlanTripCard(onClick: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         ArchMark()
-        Text("Plan a trip", style = Theme.serif(26.sp))
-        Text("One day or two weeks. I'll find the flight, the stay and the moments, and you book with whichever site you trust.",
-            style = Theme.body.copy(color = Theme.inkSoft))
+        Text(title, style = Theme.serif(26.sp))
+        Text(text, style = Theme.body.copy(color = Theme.inkSoft))
         Box(Modifier.heightIn(min = 48.dp).clip(CircleShape).background(Theme.accent).padding(horizontal = 22.dp),
             contentAlignment = Alignment.Center) {
             Text("Start", style = Theme.headline.copy(color = Theme.onAccent))
@@ -432,7 +447,8 @@ fun onlySearchChanged(old: Trip, new: Trip): Boolean {
 
 @Composable
 fun TripCreateFlow(model: AppModel) {
-    val editing = model.editingTrip != null
+    // a trip already saved is being changed; a draft handed in (a new trip part-way, as in the screenshots) is not
+    val editing = model.editingTrip?.let { model.findTrip(it.id) } != null
     var trip by remember { mutableStateOf(model.editingTrip ?: model.newTrip()) }
     var step by remember { mutableIntStateOf(model.editStep ?: if (editing) 1 else 0) }
     var showAirports by remember { mutableStateOf(false) }
@@ -1125,7 +1141,9 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
         val day = trip.days.firstOrNull { it.index == index }
         val date = trip.startDate.plusDays(index.toLong())
         Eyebrow("Day ${index + 1} · ${Dates.dayShort(date)}")
-        Text(day?.title ?: "Planned as you go", style = Theme.serif(30.sp), modifier = Modifier.semantics { heading() })
+        val (title, sub) = headlineParts(day?.title ?: "Planned as you go")
+        Text(title, style = Theme.serif(30.sp), modifier = Modifier.semantics { heading() })
+        if (sub != null) Text(sub, style = Theme.serif(19.sp).copy(color = Theme.inkSoft))   // 20 Oct (round 2): as on the plan
         if (day != null) {   // D122: from the airport or station, and one place on the way
             day.journeys("arrive").forEach { JourneyCard(it) }
             day.before?.let { before ->
@@ -1255,8 +1273,9 @@ fun JourneyCard(leg: TripLeg) {
 fun TripDayStop(stop: Stop) {
     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Theme.surface).height(IntrinsicSize.Min).padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        // 20 Oct (round 2): the photo fills the text's height and never sets it (it stretched the card), as on the iPhone
         Box(Modifier.width(70.dp).heightIn(min = 84.dp).fillMaxHeight().clip(RoundedCornerShape(14.dp))) {
-            MomentImage(stop.momentId, stop.feelWord, Modifier.fillMaxSize())
+            MomentImage(stop.momentId, stop.feelWord, Modifier.matchParentSize())
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("${stop.arrive} · ${stop.word}", style = Theme.footnote)
@@ -1296,7 +1315,7 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
                 if (model.unreadSafety) Box(Modifier.size(9.dp).background(Theme.danger, CircleShape))
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Theme.muted)   // 19 Oct: it opens
             }
-            Text("Something wrong with a stop, a booking or how you feel? A real person replies here, within a few hours.",
+            Text("Something wrong with a stop, a booking or how you feel? A real person replies here, usually within a few hours.",
                 style = Theme.subheadline.copy(color = Theme.inkTertiary))
         }
         Column {

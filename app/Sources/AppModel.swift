@@ -26,7 +26,8 @@ enum Route: Hashable {
 
 /// Onboarding up to the first plan (screens 3–6). D110: "about you" and photos moved after the first plan.
 enum Step: Int, CaseIterable {
-    case based, bestHour, why, places, thisOrThat   // D116: "Where are you based?" first
+    case based, why, places, thisOrThat             // D116: "Where are you based?" first
+    case bestHour                                   // D127: the open question last, once the taps have warmed them up
     case learned                                    // D117: "So far, I've learned…", before the first plan
 
     /// The question steps, counted as "Step n of 5"; "So far" isn't a question.
@@ -772,7 +773,7 @@ final class AppModel {
     /// D114: after a rated stop, the person can share a card with their own rating and their link. The button
     /// shows whatever the rating, so rating high never unlocks anything; and it only exists after the visit, so the
     /// plan comparison (Test B) is already over.
-    func share(_ stop: Stop) async {
+    func share(_ stop: Stop, reason: Bool = true) async {
         guard let rating = myRatings[stop.momentId] else { return }
         var referral: ReferralResponse?
         await run { referral = try await self.client.referral() }
@@ -780,11 +781,23 @@ final class AppModel {
                                                      resolvingAgainstBaseURL: false) else { return }
         link.queryItems = [URLQueryItem(name: "m", value: CardPhotos.cardId(stop.momentId) ?? stop.momentId)]
         var items: [Any] = ["\(referral.text): \(link.url?.absoluteString ?? "")"]
-        if let card = ShareCardView.render(stop: stop, rating: rating) { items.insert(card, at: 0) }
-        await client.event("share_sheet", ["moment": stop.momentId, "rating": "\(rating)"])
+        if let card = ShareCardView.render(stop: stop, rating: rating, reason: reason) { items.insert(card, at: 0) }
+        await client.event("share_sheet", ["moment": stop.momentId, "rating": "\(rating)", "reason": reason ? "1" : "0"])
         ShareSheet.present(items) { to, sent in
             Task { await self.client.event(sent ? "share_sent" : "share_cancelled", ["moment": stop.momentId, "to": to ?? ""]) }
         }
+    }
+
+    /// D127: "Was today worth what you spent?" and "Would you do this day again?", kept on the phone per plan and sent
+    /// as each is tapped (the Brain keeps the latest).
+    func dayFeedback(for planId: Int) -> DayFeedback {
+        guard let data = UserDefaults.standard.data(forKey: "dayFeedback.\(planId)") else { return DayFeedback() }
+        return (try? JSONDecoder().decode(DayFeedback.self, from: data)) ?? DayFeedback()
+    }
+
+    func answerDay(_ planId: Int, _ answer: DayFeedback) async {
+        UserDefaults.standard.set(try? JSONEncoder().encode(answer), forKey: "dayFeedback.\(planId)")
+        try? await client.dayFeedback(planId, answer)
     }
 
     func planAnotherDay() {

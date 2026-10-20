@@ -210,7 +210,7 @@ struct ExampleDayView: View {
             VStack(spacing: 6) {
                 PrimaryButton(title: "Make one that fits me") { model.afterExample() }
                 // D119: honest about the length (14 or so questions), where the design said "about a minute"
-                Text("About 3 minutes. No account or name needed.")
+                Text("About 5 minutes. No account or name needed.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.muted)
             }

@@ -108,6 +108,17 @@ struct PlanFormView: View {
     @State private var mustDo: MomentSummary?     // m176: a place they want in the day
     @State private var pickMust = false
     @State private var confirm = false
+    @State private var hoursSet = false
+
+    /// D127 (algorithm reviews: use the answers you collect): "Morning or night person?" sets the hours a new plan starts
+    /// with. 10:00–16:00 for a morning person, 14:00–20:00 for a night person, else 12:00–17:00. They can still change them.
+    private var hours: (Int, Int) {
+        switch model.profile.chronotype {
+        case "morning": return (10, 16)
+        case "night": return (14, 20)
+        default: return (12, 17)
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -116,6 +127,12 @@ struct PlanFormView: View {
                     TopBar(eyebrow: "Your day out", onHelp: onHelp, onData: onData)
                 }
                 PageTitle(text: "Plan a day").settle(0)
+                    .onAppear {
+                        guard !hoursSet else { return }
+                        hoursSet = true
+                        start = Dates.time(hours.0)
+                        end = Dates.time(hours.1)
+                    }
                 VStack(alignment: .leading, spacing: 10) {
                     Text("When").font(.subheadline).foregroundStyle(Theme.muted)
                     HStack(spacing: 8) {
@@ -235,19 +252,19 @@ struct PlanFormView: View {
 
     private func pick(_ day: Date) {
         date = day
-        start = Dates.time(12)
-        end = Dates.time(17)
+        start = Dates.time(hours.0)
+        end = Dates.time(hours.1)
     }
 
-    /// Today: from the next half hour (at the earliest 12:00), for at least three hours, ending by 22:00.
+    /// Today: from the next half hour (at the earliest the usual start), for at least three hours, ending by 22:00.
     private func pickToday() {
         date = .now
         let soon = Date.now.addingTimeInterval(15 * 60)
         let half = Calendar.current.date(bySetting: .second, value: 0, of: soon) ?? soon
         let minute = Calendar.current.component(.minute, from: half)
         let rounded = Calendar.current.date(byAdding: .minute, value: (30 - minute % 30) % 30, to: half) ?? half
-        start = max(Dates.time(12), rounded)
-        end = min(max(Dates.time(17), start.addingTimeInterval(3 * 3600)), Dates.time(22))
+        start = max(Dates.time(hours.0), rounded)
+        end = min(max(Dates.time(hours.1), start.addingTimeInterval(3 * 3600)), Dates.time(22))
     }
 }
 
@@ -376,10 +393,6 @@ struct PlanView: View {
                 header
                 // 19 Oct review: List or Map straight under the headline, so the map is there the moment it's chosen
                 ViewToggle(selection: layout)
-                if asList {
-                    DayMoves(plan: plan, progress: phase(0.2, 0.6))
-                        .opacity(phase(0.18, 0.3))
-                }
                 if !asList {
                     VStack(alignment: .leading, spacing: 8) {
                         PlanMap(stops: plan.stops, progress: phase(Self.route.lowerBound, Self.route.upperBound))
@@ -392,6 +405,10 @@ struct PlanView: View {
                 }
                 stopList(fractions)
                     .id("stops")
+                if asList {   // 20 Oct (round 2): the stops first; the day's shape is a summary of them, after
+                    DayMoves(plan: plan, progress: phase(0.3, 0.9))
+                        .opacity(phase(0.28, 0.4))
+                }
                 if let free = model.freeTime(plan), shown >= 1 {   // journey round 2: free time, said plainly
                     FreeTimeRow(from: free.from, to: free.to,
                                 canAdd: (model.lastRequest?.stops ?? 6) < 6) { Task { await model.addPlace() } }
@@ -447,14 +464,23 @@ struct PlanView: View {
     /// Bloom: the headline settles first, then the numbers.
     private var header: some View {
         let settle = CGFloat(phase(0, 0.15))
+        let (title, sub) = headline.headlineParts
         return VStack(alignment: .leading, spacing: 12) {
-            Text(headline)
-                .font(Theme.serif(31, relativeTo: .title))
-                .foregroundStyle(Theme.ink)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityAddTraits(.isHeader)
-                .opacity(Double(settle))
-                .offset(y: reduceMotion ? 0 : (1 - settle) * 14)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(Theme.serif(31, relativeTo: .title))
+                    .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+                if let sub {
+                    Text(sub)
+                        .font(Theme.serif(19, relativeTo: .title3))
+                        .foregroundStyle(Theme.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .opacity(Double(settle))
+            .offset(y: reduceMotion ? 0 : (1 - settle) * 14)
             PlanStats(plan: plan)
                 .opacity(phase(plan.isBlind ? 0 : 0.12, 0.25))
         }
@@ -498,6 +524,7 @@ struct PlanView: View {
         return plan.title ?? "Your day"
     }
 
+
     @ViewBuilder private var actions: some View {
         VStack(spacing: 10) {
             if model.improved {
@@ -515,7 +542,7 @@ struct PlanView: View {
                                 .font(Theme.title3)
                                 .foregroundStyle(Theme.ink)
                             Text(model.improved ? "Your budget, pace and interests, a few more places and example days."
-                                                : "Make the next day even better? About 30 seconds, then more if you like.")
+                                                : "Make the next day even better? About a minute, then more if you like.")
                                 .font(.subheadline)
                                 .foregroundStyle(Theme.muted)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -720,10 +747,10 @@ struct StatChip: View {
 
     var body: some View {
         Text(text)
-            .font(.subheadline)
-            .foregroundStyle(Theme.ink)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .font(.footnote)               // 20 Oct (round 2): quieter than the headline and the stops
+            .foregroundStyle(Theme.inkSoft)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
             .background(Theme.surface, in: Capsule())
     }
 }
@@ -829,7 +856,8 @@ struct DayCurve: View {
                         .position(x: px, y: y(points[i].level))
                         .opacity(reached ? 1 : 0)
                     VStack(spacing: 1) {
-                        Text(points[i].word)
+                        // 20 Oct (round 2): numbered like the stops, so the two staggered rows still read in order
+                        Text("\(i + 1) · \(points[i].word)")
                             .font(Theme.italic(16, relativeTo: .callout))
                             .foregroundStyle(Theme.ink)
                         Text(points[i].time)
@@ -936,7 +964,7 @@ struct TravelLine: View {
 }
 
 /// One stop on the day (D119): its photo or field, "13:30 · Awe", the title, the reason in plain words (D115), and
-/// the worth to you in amber (D88, D118).
+/// the price and the match words (D127; was the worth to you, D88, D118).
 struct StopCard: View {
     let number: Int
     let stop: Stop
@@ -973,7 +1001,7 @@ struct StopCard: View {
                         .foregroundStyle(Theme.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                if showWhy, let worth = stop.worthLine {
+                if showWhy, let worth = stop.matchLine {
                     Text(worth).font(.subheadline).foregroundStyle(Theme.muted)   // 19 Oct: amber is for actions
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -1110,7 +1138,7 @@ struct MomentCardBody: View {
                     .foregroundStyle(Theme.accent)
             }
             let reasons = showWhy ? (stop.reasons ?? []) : []
-            if !reasons.isEmpty || (showWhy && stop.worthLine != nil) {
+            if !reasons.isEmpty || (showWhy && stop.matchLine != nil) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Why we picked this for you").font(.subheadline).foregroundStyle(Theme.muted)
                     ForEach(reasons, id: \.you) { r in
@@ -1123,11 +1151,11 @@ struct MomentCardBody: View {
                         Text(basis.soFar).font(.footnote).foregroundStyle(Theme.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    if let worth = stop.worthLine {
+                    if let worth = stop.matchLine {
                         Text(worth).foregroundStyle(Theme.inkSoft).padding(.top, 4)
                             .fixedSize(horizontal: false, vertical: true)
-                        // D118: plainly a first estimate; 19 Oct: and not a price or a promise
-                        Text("A first estimate from your answers so far: not a price, and not a promise of how you'll feel.")
+                        // D118: plainly a first estimate; D127: in words, from the chance you'd rate it Good or better
+                        Text("A first guess from your answers so far, not a promise of how you'll feel. It gets sharper as you rate stops.")
                             .font(.footnote)
                             .foregroundStyle(Theme.muted)
                             .fixedSize(horizontal: false, vertical: true)
@@ -1201,10 +1229,16 @@ struct MomentCardBody: View {
         if window.isEmpty { return sentence }
         // 19 Oct review: say plainly whether this plan has them there at that time, never leave it to look like a mistake
         let ends = window.components(separatedBy: "–")
-        let here = ends.count == 2 && AppModel.minutes(stop.arrive) < AppModel.minutes(ends[1])
-            && AppModel.minutes(ends[0]) < AppModel.minutes(stop.depart)
-        return here ? "\(sentence) On your day that's \(window), while you're here."
-                    : "\(sentence) On your day that's \(window); this plan has you here at \(stop.arrive)."
+        guard ends.count == 2 else { return "\(sentence) On your day that's \(window)." }
+        let visit = "\(stop.arrive)–\(stop.depart)"
+        // 20 Oct (round 2): which side of the visit the light falls, and what that means for what you'll see
+        if AppModel.minutes(ends[0]) >= AppModel.minutes(stop.depart) {
+            return "\(sentence) On your day that's \(window), after this plan has you here (\(visit)), so you'll see it in earlier light."
+        }
+        if AppModel.minutes(ends[1]) <= AppModel.minutes(stop.arrive) {
+            return "\(sentence) On your day that's \(window), before this plan has you here (\(visit)), so you'll see it in later light."
+        }
+        return "\(sentence) On your day that's \(window), while you're here."
     }
 }
 

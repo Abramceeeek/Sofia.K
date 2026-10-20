@@ -119,7 +119,8 @@ class ScreensTest {
     @Test fun tripWhen() = show("21-tripwhen") { editingTrip = trips.first(); editStep = 1; showCreate = true }
     @Test fun tripFrom() = show("22-tripfrom") { editingTrip = trips.first(); editStep = 2; showCreate = true }
     @Test fun tripDays() = show("22a-tripdays") { editingTrip = trips.first(); editStep = 3; showCreate = true }
-    @Test fun tripFeel() = show("23-tripfeel") { editingTrip = trips.first(); editStep = 4; showCreate = true }
+    // 20 Oct (round 2): a new trip on its last question, as on the iPhone ("Make my trip", not "Plan the trip again")
+    @Test fun tripFeel() = show("23-tripfeel") { editingTrip = trips.first().copy(id = "draft"); editStep = 4; showCreate = true }
     @Test fun flights() = show("26-flights") { tab = MainTab.Book; book.segment = "flights" }
     @Test fun flightFilters() = show("27-flightfilters") { tab = MainTab.Book; book.segment = "flights"; book.showFilters = true }
     @Test fun flight() = show("28-flight") { tab = MainTab.Book; bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }
@@ -196,5 +197,6 @@ class ScreensTest {
         shoot("14b-delete")
     }
 
-    @Test fun nowEnd() = show("10c-nowend") { nowIndex = plan!!.stops.size; showNow = true }
+    // dated today, so the day is over rather than a look ahead, and the two end-of-day questions show (D127)
+    @Test fun nowEnd() = show("10c-nowend") { plan = plan!!.copy(date = Dates.todayIso()); nowIndex = plan!!.stops.size; showNow = true }
 }

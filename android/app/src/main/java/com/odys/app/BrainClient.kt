@@ -92,6 +92,8 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun moments(): List<MomentSummary> = call("GET", "v1/moments?plannable_only=true")
     suspend fun referral(): ReferralResponse = call("GET", "v1/me/referral")
     suspend fun rate(request: RatingRequest) = send("POST", "v1/me/ratings", request)
+    /** D127: answering again replaces the earlier answer. */
+    suspend fun dayFeedback(planId: Int, body: DayFeedback) = send("POST", "v1/me/plans/$planId/day", body)
 
     suspend fun safety(message: String, contact: String?): String {
         val out: SafetyResponse = call("POST", "v1/me/safety", SafetyRequest(message, contact))

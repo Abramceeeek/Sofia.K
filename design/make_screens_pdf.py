@@ -40,7 +40,7 @@ SCREENS = [
     ("based", "3b", "Onboarding, up to the first plan", "Where you're based",
      "London, elsewhere in the UK, or visiting from abroad, and a town or city if they like. Never nationality."),
     ("besthour", "4", "Onboarding, up to the first plan", "A great moment",
-     "Abram asks it in a small video tile (placeholder until recorded). \"Speak instead\", or type, or skip."),
+     "Now asked last, after This or that (20 Oct). Abram asks it in a small video tile (placeholder until recorded). \"Speak instead\", or type, or skip."),
     ("why", "5", "Onboarding, up to the first plan", "How you want to feel",
      "Restored, excited, connected, curious or peaceful: pick one or two, or \"None of these\" (a button under Continue)."),
     ("places", "6", "Onboarding, up to the first plan", "Places you've been",
@@ -54,17 +54,17 @@ SCREENS = [
     ("learnedchange", "7c", "Onboarding, up to the first plan", "So far: changing something",
      "\"Don't use this\" on any line (Undo to take it back). It's stored, and that answer stops counting."),
     ("planform", "8", "The plan and the day out", "Plan a day",
-     "Next Saturday, 12:00–17:00, already filled in, or Today / Tomorrow. One tap makes the plan."),
+     "Next Saturday, 12:00–17:00 (10:00–16:00 for a morning person, 14:00–20:00 for a night person), or Today / Tomorrow. One tap makes the plan."),
     ("plan", "9a", "The plan and the day out", "Your day",
-     "How the day should feel, its numbers as chips, List or Map, and \"How the day moves\": a word for each stop, higher where we guess you'll enjoy it more."),
+     "How the day should feel as a headline and a line under it, its numbers as small chips, then List or Map. \"How the day moves\" now comes after the stops."),
     ("plan2", "9b", "The plan and the day out", "Your day: the stops",
-     "Further down: each stop with its photo, time, reason, price and our guess at its worth to you; then the reminder question and \"Start the day\"."),
+     "Further down: each stop with its photo, time, reason, price and how well it matches (\"A strong match for you\"); then \"How the day moves\", the reminder question and \"Start the day\"."),
     ("reveal", "9c", "The plan and the day out", "Your day: the reveal, part-way",
      "Instead of a spinner: the headline settles, the curve draws and each stop appears (2.6 s, once)."),
     ("planmap", "9d", "The plan and the day out", "Your day, on the map",
      "Map chosen: the map comes straight under List / Map, with numbered pins."),
     ("stop", "10", "The plan and the day out", "A stop",
-     "The photo full-bleed, with the time, the kind of moment and the title; why we picked it, the price, and our guess at its worth to you (not a price)."),
+     "The photo full-bleed, with the time, the kind of moment and the title; why we picked it, the price, and how well it matches, in words."),
     ("stop2", "10a", "The plan and the day out", "A stop: the way in",
      "Further down: the way in as a path you can tap along, \"The reveal\" where the arrival is the moment, then the details."),
     ("now", "10b", "The plan and the day out", "Now (new)",
@@ -72,11 +72,11 @@ SCREENS = [
     ("nowend", "10c", "The plan and the day out", "Now: the day done (new)",
      "On a trip, after the last stop: \"Preview tomorrow: Day 3\", which opens tomorrow's page to look at tonight and change if plans have changed."),
     ("rating", "11", "The plan and the day out", "Rating",
-     "After the visit: Flat, Fine, Good, Great or Unforgettable. The arch fills with light to the word."),
+     "After the visit: Disappointing, Fine, Good, Great or Unforgettable. The arch fills with light to the word."),
     ("ratingdone", "11a", "The plan and the day out", "Rating: thank you",
      "After saving: a thank-you, \"On to the next stop\" first, and \"Share this moment\"."),
     ("sharecard", "11b", "The plan and the day out", "Share card",
-     "Your own rating and your own words, the photo, \"Planned with ODYS\". Never what we estimated it's worth. No rewards."),
+     "\"A moment from my day\", your own rating, the photo, \"Planned with ODYS\", and the line about why unless you leave it out. No rewards."),
     ("improve", "12a", "Improve future plans (optional, after the first plan)", "Improve future plans",
      "\"Make your next day even better?\" Offered once a stop is rated; before that, a quiet link."),
     ("improveq", "12b", "Improve future plans (optional, after the first plan)", "One question at a time",
@@ -90,7 +90,7 @@ SCREENS = [
     ("settings", "14a", "Help, safety and your data", "Your data", "What we keep and what we don't, in short lines; where and for how long; reminders and location on or off."),
     ("delete", "14b", "Help, safety and your data", "Delete my data", "Type DELETE to confirm. It can't be undone."),
     ("survey", "15", "Build 2: Tests A and B inside the app", "Three quick questions",
-     "After \"So far\": I felt understood, it felt like talking to a person, typed or spoke, anything intrusive. All optional."),
+     "After \"So far\": I felt understood, it felt like talking to a person, anything intrusive. All optional (typed or spoken is recorded by the app)."),
     ("pairintent", "16", "Build 2: Tests A and B inside the app", "Before your plans",
      "Recharge or explore, who might come, anything for sure. Stored with both plans; it changes neither."),
     ("pair", "17a", "Build 2: Tests A and B inside the app", "Plan 1 or Plan 2?",
@@ -170,12 +170,12 @@ RULE = colors.HexColor("#d9dce3")
 
 COVER_LINES = [
     ("title", "ODYS: every screen, iPhone and Android"),
-    ("sub", "A design, UI and UX review pack for AI models and people (19 October 2026)"),
+    ("sub", "A design, UI and UX review pack for AI models and people (20 October 2026)"),
     ("gap", ""),
     ("head", "What ODYS is"),
     ("body", "A test app that plans a day out in London around how a person wants to feel (restored, excited, connected, curious, peaceful), not around famous sights. The unit is a 'moment': a specific experience at a place and time, often including how you arrive. People answer a few questions and react to places they know; the app plans a day with real Tube times and the forecast, and they rate each stop 1-5 after they've been. Trips add flights and places to stay, found in the app and booked on the provider's own site."),
     ("body", "Who it's for now: friends, then strangers in London, testing whether a personal plan beats a generic one. One founder, about 7.5 hours a week. Design language: dark always, amber light, the Newsreader serif, an arch motif, quiet motion."),
-    ("body", "These are screenshots from test builds with sample data. The iPhone pages come first (58 pictures, 18 Oct: the iPhone build is paused until GitHub Actions billing is fixed, so they come before the 19 Oct fixes), then Android (46, drawn 19 Oct with the fixes). The same number means the same screen on both."),
+    ("body", "These are screenshots from test builds with sample data. The iPhone pages come first, but they are older: 58 pictures from the 18 Oct build, before the 19 and 20 Oct changes, because the iPhone build is paused until GitHub Actions billing is fixed. Every iPhone page says so. The Android pages (46, drawn 20 Oct) show the app as it is now. The same number means the same screen on both, and the captions describe the app as it is now."),
     ("gap", ""),
     ("head", "What we'd like from you"),
     ("body", "1. Flow: where would a first-time user hesitate or give up? There are 14 questions before the first plan."),
@@ -275,7 +275,7 @@ def divider(c: canvas.Canvas, w: float, h: float, title: str, sub: str) -> None:
 
 
 def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path, screens: list[tuple] | None = None,
-                  platform: str = "iPhone") -> None:
+                  platform: str = "iPhone", stamp: str | None = None) -> None:
     per_page, margin, gap = 3, 16 * mm, 14 * mm
     caption_h = 22 * mm
     img_h = h - 2 * margin - caption_h
@@ -310,6 +310,10 @@ def screens_pages(c: canvas.Canvas, w: float, h: float, shots: Path, screens: li
             for line in wrap(c, what, "Helvetica", 9, img_w):
                 c.drawString(x, ty, line)
                 ty -= 4.2 * mm
+        if stamp:   # 20 Oct: so nobody reviews an old picture as the current app
+            c.setFont("Helvetica-Bold", 9)
+            c.setFillColor(ACCENT)
+            c.drawString(margin, h - 9 * mm, stamp)
         c.setFont("Helvetica", 8)
         c.setFillColor(MUTED)
         first, last = group[0][0], group[-1][0]
@@ -326,9 +330,9 @@ def main(args: list[str]) -> None:
     c.setAuthor("Abram")
     cover(c, w, h)
     flows_page(c, w, h, SCREENS)
-    divider(c, w, h, "iPhone", f"{len(SCREENS)} pictures of {N_SCREENS} screens, in the order a person sees them. "
-                               "Sample data from a test build.")
-    screens_pages(c, w, h, ios, SCREENS, "iPhone")
+    divider(c, w, h, "iPhone", f"{len(SCREENS)} pictures of {N_SCREENS} screens, from the 18 Oct build: they don't show the "
+                               "19 and 20 Oct changes (the Android pages do). Sample data.")
+    screens_pages(c, w, h, ios, SCREENS, "iPhone", stamp="iPhone, 18 Oct build: older than these captions and the Android pages")
     if android:
         shots = android_screens(android)
         divider(c, w, h, "Android", f"{len(shots)} pictures. {ANDROID_NOTE}")

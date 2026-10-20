@@ -135,3 +135,26 @@ def test_days_keep_weekday_only_places_out_of_weekend_plans(test_moments):
     assert m.plannable()
     m.best_time.days = ["weekdays"]
     assert "best_time.days (format)" in m.missing_for_planning()
+
+
+def test_match_words_follow_the_rating_models_chance_of_good(pop):
+    """D127: words instead of "worth about £V", from P(rating >= Good) = F(u - c_2|3) with c = -0.75."""
+    from brain.dayplan import match_label
+    assert match_label(pop, 1.0) == "A strong match for you"     # F(1.75) = 0.85
+    assert match_label(pop, -0.5) == "A good match for you"      # F(0.25) = 0.56
+    assert match_label(pop, -1.5) == "Worth a try"               # F(-0.75) = 0.32
+
+
+def test_about_you_answers_lean_the_weights_and_neutral_ones_say_nothing(pop):
+    """D127: "Who do you usually go with?" and "How active?" now count, as stated leanings like the feelings."""
+    from brain.reasons import about_you_observation
+    assert about_you_observation(pop, "company", "solo") is None
+    assert about_you_observation(pop, "activity", "medium") is None
+    assert about_you_observation(pop, "activity", None) is None
+    i_walk = pop.personal_names.index("walking_effort")
+    i_social = pop.personal_names.index("social_pull")
+    gentle = update_person(pop, [about_you_observation(pop, "activity", "gentle")])
+    full = update_person(pop, [about_you_observation(pop, "activity", "full_on")])
+    friends = update_person(pop, [about_you_observation(pop, "company", "friends")])
+    assert gentle.mean[i_walk] < 0 < full.mean[i_walk]
+    assert friends.mean[i_social] > 0

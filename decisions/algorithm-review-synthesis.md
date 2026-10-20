@@ -15,7 +15,7 @@ The reviews are kept as pasted in `decisions/reviews/2026-10-20-ai-algorithm.md`
     - **The "at least Good" floor could leave a day nearly empty.** About 1 simulated person in 8 got a day with 0–2 places. This is a real bug for Test B, whose two plans must have the same number of stops.
     - **Reasons repeated across a day.**
 - **Checked, and not a bug:** transfer time counted twice; the lunch bonus.
-- **Six decisions are yours** (below). The biggest: stop showing a £ figure, and treat Test B as a "keep going" signal rather than proof.
+- **Six decisions were Abram's** (below). He handed them to Claude on 20 Oct ("decide for me if any question"); what was decided and built is under **Decided (20 Oct)**. The biggest: no £ figure on screen, and Test B as a "keep going" signal rather than proof.
 - **Hours:** Claude GUESS ~5 h on the checks and fixes. **Abram: about 20 minutes to read and decide.**
 
 ## What the checks found
@@ -67,6 +67,17 @@ These numbers come from inside the model's own world. The simulated people's tru
 6. **Where an AI could sit** (your question). All five say option (b), and none says (c).
     - **Recommendation:** nothing before Test B. After Checkpoint 3, pilot (b) for the wording of reasons only, with a check that every claim is in the card data.
     - It needs a privacy change first: the data page says no AI service reads your answers.
+
+## Decided (20 Oct, by Claude, under Abram's "decide for me")
+
+Each follows the recommendation above, and each is small to undo. Decision log D127.
+
+1. **No £ figure on screen.** Each stop shows its price, then words from the rating model: "A strong match for you" when the chance of rating it Good or better is at least 75%, "A good match for you" at 50%, else "Worth a try" (`dayplan.match_label`, with a test). £V stays inside the model, for ranking and the day's curve. The blind pair and the example day show no match words. *Undo: ~0.5 h.*
+2. **Test B is formative.** "7 of 10" stays the keep-going signal; the paired "fits me" difference is co-primary; aim for ~20 UK testers; report the overlap with the no-answers plan. `brain/scripts/testb_report.py` reads the admin export and prints all of it (with a test). The blind texts are now made alike (title up to its colon, one sentence each for the way in and what happens), so the personal plan's longer card stories don't give it away. `validation/test-plan.md` says so. *No build to undo.*
+3. **At most two history-and-culture stops a day, never back to back** (a lunch stop breaks a run), before the first tester so the sample isn't split (`planner.py`, with a test). Measured after the change (120 simulated people): no plan puts two history stops back to back, and none has three (they were 35% and 5%); 22% have history, then lunch, then history, which the rule allows. In the model's own terms it costs a little: the personal plan's median share of the possible gain fell from 29% to 25%, and the implied chance of passing 7 of 10 against a no-answers plan from 0.54 to 0.51. The model has no fatigue or repetition term, which is why all five reviewers asked for the rule; real ratings will say whether it helps. *Undo: ~0.3 h.*
+4. **The "about you" answers are used.** Going with friends, a partner or family is a stated leaning toward places to bring people; a gentle day leans away from walking and active stops, a full-on day toward them. Same weight as the feelings, GUESS sizes; real ratings outweigh them quickly (`reasons.ABOUT_YOU`, with a test). Morning or night sets the plan form's default hours (10:00–16:00, 14:00–20:00, else 12:00–17:00), in both apps. *Undo: ~1 h.*
+5. **The two end-of-day questions are built**, before the friends' round: "Was today worth what you spent on it?" (Not quite / Yes / More than that) and "Would you do this day again?" (Yes / No), on "Thanks for today" in both apps, one tap each, both optional. Stored per plan (`day_feedback` table, `POST /v1/me/plans/{id}/day`, in the export and the deletion), and named in the privacy notice. *Undo: ~1 h.*
+6. **No AI before Test B.** After Checkpoint 3, a pilot of AI wording for reasons only, with every claim checked against the card data, and only after the privacy notice changes. *Nothing built.*
 
 ## Not now, and why
 

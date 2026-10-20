@@ -52,7 +52,8 @@ def test_a_blank_contact_is_not_kept_and_old_contacts_are_purged(client):
 
 
 def test_the_alert_text_never_promises_faster_than_a_few_hours():
-    assert "within a few hours" in notify.USER_MESSAGE and "minutes" not in notify.USER_MESSAGE
+    assert "usually within a few hours" in notify.USER_MESSAGE and "minutes" not in notify.USER_MESSAGE
+    assert "through the night" in notify.USER_MESSAGE and "covering" not in notify.USER_MESSAGE
     assert notify.USER_MESSAGE.startswith("If you or someone else is in danger or hurt, call 999 now.")
 
 

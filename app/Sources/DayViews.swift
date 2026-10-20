@@ -8,6 +8,7 @@ import SwiftUI
 struct NowView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @State private var rating: Stop?
     @State private var showSafety = false
     @State private var card: Stop?
@@ -69,6 +70,13 @@ struct NowView: View {
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    if let pin = stop.pin, distanceLine(stop) != "You're here" {
+                        // 20 Oct (round 2): the way there without opening the card; by Tube or bus when the leg is
+                        let mode = stop.travelMode == "transit" ? "r" : "w"
+                        SecondaryButton(title: "Directions") {
+                            if let url = URL(string: "http://maps.apple.com/?daddr=\(pin.lat),\(pin.lon)&dirflg=\(mode)") { openURL(url) }
+                        }
+                    }
                     PrimaryButton(title: "I'm done here") { done(stop) }
                     if lookAhead == nil {   // journey round 2: a closed place or a long queue needn't be rated to move on
                         QuietButton("Didn't go? Skip this stop") { skip(stop) }
@@ -90,6 +98,9 @@ struct NowView: View {
                         .foregroundStyle(Theme.ink)
                     Text("Every stop you rated makes the next day fit you better.")
                         .foregroundStyle(Theme.inkSoft)
+                    if let id = model.plan?.id, lookAhead == nil {
+                        DayEndQuestions(planId: id).padding(.top, 8)
+                    }
                     Spacer(minLength: 12)
                     BreathingArch().frame(maxWidth: .infinity)
                     Spacer(minLength: 12)
@@ -237,7 +248,7 @@ struct NextUp: View {
 }
 
 /// Screen 11 (D110, D112, D119): after the visit, one word on a 1–5 scale. The arch fills with light to the word
-/// (Flat … Unforgettable), and the light spills as it rises. Save sends it (so a mis-tap isn't sent); then a mote of
+/// (Disappointing … Unforgettable), and the light spills as it rises. Save sends it (so a mis-tap isn't sent); then a mote of
 /// light rises into the arch, a thank-you, and "Share this moment" (for any rating, D114) or on to the next stop.
 struct RatingView: View {
     @Environment(AppModel.self) private var model
@@ -267,7 +278,7 @@ struct RatingView: View {
                     if saved {
                         thanks
                     } else {
-                        ScaleRow(low: "Flat", high: "Unforgettable", labels: Labels.feel, value: $rating)
+                        ScaleRow(low: "Disappointing", high: "Unforgettable", labels: Labels.feel, value: $rating)
                         if rating != nil {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Would you bring someone here? (optional)")
@@ -383,6 +394,45 @@ struct RatingArch: View {
     }
 }
 
+/// D127 (algorithm reviews): the product's second outcome, how worthwhile the money felt (CLAUDE.md), which nothing
+/// else measured. Two taps, both optional, once the day is done.
+struct DayEndQuestions: View {
+    @Environment(AppModel.self) private var model
+    let planId: Int
+    @State private var answer = DayFeedback()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            SurveyQuestion(text: "Was today worth what you spent on it?") {
+                HStack(spacing: 8) {
+                    ForEach([("less", "Not quite"), ("about_right", "Yes"), ("more", "More than that")], id: \.0) { key, label in
+                        Chip(title: label, on: answer.worth == key) {
+                            answer.worth = answer.worth == key ? nil : key
+                            send()
+                        }
+                    }
+                }
+            }
+            SurveyQuestion(text: "Would you do this day again?") {
+                HStack(spacing: 8) {
+                    ForEach([(true, "Yes"), (false, "No")], id: \.0) { key, label in
+                        Chip(title: label, on: answer.again == key) {
+                            answer.again = answer.again == key ? nil : key
+                            send()
+                        }
+                    }
+                }
+            }
+        }
+        .onAppear { answer = model.dayFeedback(for: planId) }
+    }
+
+    private func send() {
+        let now = answer
+        Task { await model.answerDay(planId, now) }
+    }
+}
+
 /// D114, D119: the share card before it's sent, lifted into place. It carries the person's own rating and their own
 /// reason (D115), never the model's "worth £X"; no rewards.
 struct SharePreview: View {
@@ -390,22 +440,31 @@ struct SharePreview: View {
     @Environment(\.dismiss) private var dismiss
     let stop: Stop
     let rating: Int
+    @State private var reason = true
 
     var body: some View {
+        let hasReason = stop.reasons?.contains { $0.me != nil } ?? false
         ScrollView {
             VStack(spacing: 18) {
-                ShareCardView(stop: stop, rating: rating)
+                ShareCardView(stop: stop, rating: rating, reason: reason)
                     .clipShape(RoundedRectangle(cornerRadius: 26))
                     .shadow(color: .black.opacity(0.45), radius: 30, y: 24)
                     .modifier(Lift())
                     .padding(.top, 8)
-                Text("Your rating and a reason from your answers go with it, never what we estimated it's worth to you.")
+                if hasReason {   // D127: the reason is worded by ODYS from their answers, so it's theirs to leave out
+                    Toggle(isOn: $reason) {
+                        Text("Include the line about why").foregroundStyle(Theme.ink)
+                    }
+                    .tint(Theme.accent)
+                }
+                Text(reason && hasReason ? "Your rating and the line about why go with it, and nothing else about you."
+                                         : "Your rating goes with it, and nothing else about you.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 PrimaryButton(title: model.busy ? "One moment…" : "Send to a friend", disabled: model.busy) {
-                    Task { await model.share(stop) }
+                    Task { await model.share(stop, reason: reason) }
                 }
                 SecondaryButton(title: "Not now") { dismiss() }
             }

@@ -1,8 +1,8 @@
 # Onboarding content served to the app. Wording follows validation/interview-script.md (Test A).
 # The swipe places are the app's 10 of the 16 locked items in swipe_items.yaml (D107, D110), served as `swipe_places`;
 # the "this or that" tasks come from conjoint_design.csv (a copy of validation/conjoint/design.csv).
-# D110 (Build 1 feedback): the first plan comes after best hour, why, places and this-or-that; `about_you` and
-# `photos` move to an optional "Improve my plans" step after it.
+# D110 (Build 1 feedback): the first plan comes after best hour, why, places and this-or-that (D127: best hour now
+# last, after this-or-that); `about_you` and `photos` move to an optional "Improve my plans" step after it.
 version: "0.1"
 open_questions:
   - key: best_hour
@@ -51,15 +51,15 @@ testb:
   fit_prompt: "This plan fits me"
   fit_scale: "1 (not at all) - 5 (completely)"
   why_prompt: "Why? (optional)"
-  reveal_personal: "Plan {personal} was made from your answers. Plan {other} is a strong general day out in London, the kind a friend or a search would suggest."
+  reveal_personal: "Plan {personal} was made from your answers. Plan {other} is a strong general day out in London, the kind a friend or a search would suggest. There's no right answer: either pick tells us something."
   reveal_kept: "Your plan is Plan {chosen}, the one you picked. Rate each stop after you've been."
-# Build 2, screen 16: the Test A survey (validation/interview-script.md §8), after the pair
+# Build 2, screen 16: the Test A survey (validation/interview-script.md §8), after the pair. D127: "Did you type or
+# speak?" dropped, because the app sends how the open question was answered (input_mode on best_hour)
 survey:
   title: "Three quick questions"
   understood: "I felt understood."
   like_person: "It felt like talking to a person, not filling in a form."
   scale: "1 (not at all) - 5 (completely)"
-  typed_or_spoke: "Did you type or speak your answers?"
   intrusive: "Was anything intrusive or tedious? (optional)"
 about_you:
   - {key: budget_band, text: "Roughly what do you like to spend on a day out, per person?"}
