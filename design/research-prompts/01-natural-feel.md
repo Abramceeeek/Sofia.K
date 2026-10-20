@@ -54,3 +54,7 @@ Then:
 6. How would you test whether the app now "feels natural" with 5–10 people in a week? Name the questions or measures.
 
 Answer in plain English, in short sections, with sources linked. Please don't invent studies or statistics.
+
+---
+
+**Answers (20 Oct):** four models answered; kept in `design/reviews/2026-10-20-ai-natural-feel.md`. Checked and picked in `design/natural-feel-synthesis.md` (D130).
