@@ -516,6 +516,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                   if a.reaction == "never_tried" and a.want == "yes" and a.key in cats]
         n_choices = sum(ch.choice in ("A", "B") for ch in user.choices)
         amap, fields = app.state.amap, person_fields(user)
+        taken: set[str] = set()   # m187: what earlier stops said, so the day's reasons don't repeat
         for st in out:
             base = st["moment_id"].split("#")[0]
             if st["rateable"] and base in by_id:
@@ -524,7 +525,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 st["reasons"] = [] if blind else reasons.stop_reasons(
                     p, post.mean, m, loved=loved_places, feelings=feelings, rated=rated,
                     loved_kinds=loved_kinds, wanted=wanted,
-                    interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices)
+                    interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices,
+                    taken=taken)
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"] = [], [], None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),

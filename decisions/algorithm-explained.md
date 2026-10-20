@@ -80,7 +80,7 @@ For person *i* and moment *m* under conditions *c* (weather, travel time to get 
     - cards at places the person disliked;
     - dry-only cards, if the chance of rain is 50% or more.
 3. **The utility of each candidate**, u = x · β_i, under the forecast.
-4. **A floor:** a stop is planned only if it's predicted at least "Good" (u > −0.75, the 2|3 cutpoint).
+4. **A floor:** a stop is planned only if it's predicted at least "Good" (u > −0.75, the 2|3 cutpoint). *Changed 20 Oct (m187): if too few cards clear it to fill the day, the person's own best cards are used instead, so the floor never leaves a day short.*
 5. **Orienteering with time windows** (OR-Tools routing, guided local search, about 1 s):
     - The prize for each stop is u − floor.
     - Each leg costs the person's own transfer penalty, −(β_15–30 · h1 + β_30+ · h2), plus 1/1000 per minute as a tie-breaker.
@@ -105,7 +105,7 @@ For person *i* and moment *m* under conditions *c* (weather, travel time to get 
 ## 6. What the person sees, and how it's computed
 
 - **"Worth about £V to you":** V = (the non-cost part of S) ÷ (−β_cost / 10). Ranking by V − price is the same as ranking by S. It's hidden in the blind comparison and when there are no answers yet.
-- **"Why we picked this for you":** up to two reasons from the person's own answers. Examples: a loved place with the same feature ("You loved Hyde Park, and this has green space too"), a feeling they picked, or an interest. With no answers: "We don't know much about you yet: this one suits most people."
+- **"Why we picked this for you":** up to two reasons from the person's own answers; since 20 Oct (m187), later stops try a different place, feeling or line before repeating one. Examples: a loved place with the same feature ("You loved Hyde Park, and this has green space too"), a feeling they picked, or an interest. With no answers: "We don't know much about you yet: this one suits most people."
 - **The headline** ("A restoring, peaceful day: …") uses their feeling words only when the stops really carry those features.
 - **"How the day moves":** a curve whose height is each stop's worth, with a word per stop.
 
@@ -173,7 +173,7 @@ What it shows: about a dozen answers move a plan a long way, mostly through the 
 6. **No memory across days** (outside trips): the app doesn't avoid what a person did last week unless they swap it out.
 7. **One person's weights only.** A group of friends gets the plan of whoever made it.
 8. **A small catalogue** (49 cards, central London) caps how different two people's days can be.
-9. **Reasons are template-based** and repetitive (see the example).
+9. **Reasons are template-based** and were repetitive (see the example). *20 Oct: a plan now avoids repeating them (m187).*
 10. **Ratings are the only outcome.** There's no "would you go again?" and no measure of how worth it the money felt, though that's one of the app's two goals.
 
 ## 12. Questions for the reviewer
@@ -196,3 +196,5 @@ What it shows: about a dozen answers move a plan a long way, mostly through the 
     - What do you recommend, and what are the risks of each?
 
 *Source files: `brain/src/brain/features.py`, `personal.py`, `scoring.py`, `planner.py`, `dayplan.py`, `reasons.py`, `categories.py`, `tripdays.py`, `popularity.py`; `brain/data/priors.yaml`, `aspiration.yaml`, `popularity.yaml`. The example run's output is reproducible with the Brain's test client.*
+
+*Reviewed by five AI models on 20 Oct 2026: what they said, what was checked on the real model, and the decisions that follow are in `decisions/algorithm-review-synthesis.md`.*

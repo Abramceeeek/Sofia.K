@@ -47,6 +47,21 @@ def test_moments_below_the_floor_are_never_planned(pop, test_moments):
     assert "t_pricey" in plan.dropped
 
 
+def test_the_floor_never_leaves_a_day_short_of_its_places(pop, test_moments):
+    """m187: when too few cards clear the floor, the person's own best ones fill the day; when enough do, a card
+    below the floor still stays out."""
+    low = {m.id: -1.5 - 0.1 * i for i, m in enumerate(test_moments)}       # every card below "Good"
+    plan = plan_day(candidates(pop, test_moments, util=low), START, 600, 1080, WalkingEstimate(), LEGS,
+                    max_stops=2, min_stops=2, time_limit_s=0.5)
+    assert len(plan.stops) == 2 and plan.status == "ok"
+    assert {s.moment_id for s in plan.stops} <= {m.id for m in test_moments[:4]}   # among the best of them
+    fine = {m.id: 0.5 for m in test_moments}
+    fine["t_pricey"] = -2.0
+    plan = plan_day(candidates(pop, test_moments, util=fine), START, 600, 1080, WalkingEstimate(), LEGS,
+                    max_stops=2, min_stops=2, time_limit_s=0.5)
+    assert "t_pricey" not in [s.moment_id for s in plan.stops]
+
+
 def test_best_moment_is_kept_when_only_one_fits(pop, test_moments):
     util = {m.id: 0.0 for m in test_moments}
     util["t_museum"] = 2.0

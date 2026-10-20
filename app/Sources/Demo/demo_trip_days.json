@@ -275,12 +275,12 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has views too.",
-        "me": "I loved Uber Boat on the Thames, and this has views too."
+        "you": "You go out to feel peaceful, and this has views.",
+        "me": "I go out to feel peaceful, and this has views."
        },
        {
-        "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
+        "you": "You go out to feel curious, and this has history.",
+        "me": "I go out to feel curious, and this has history."
        }
       ]
      }
@@ -288,7 +288,7 @@
     "value": 2.214,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:09.522210+00:00",
+    "created_at": "2026-10-20T01:05:37.929274+00:00",
     "title": "Monday 2 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 15:05 · 2 stops",
@@ -458,7 +458,7 @@
     "value": 0.175,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:07.985711+00:00",
+    "created_at": "2026-10-20T01:05:36.397308+00:00",
     "title": "Monday 2 November",
     "summary": [
      "Start: Paddington at 12:25 · 1 stops",
@@ -845,12 +845,12 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has a big reveal too.",
-        "me": "I loved Uber Boat on the Thames, and this has a big reveal too."
+        "you": "You go out to feel curious, and this has history.",
+        "me": "I go out to feel curious, and this has history."
        },
        {
-        "you": "You loved the view from the top of Greenwich Park, and this has green space too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has green space too."
+        "you": "It fits your interest in history & culture.",
+        "me": "It fits my interest in history & culture."
        }
       ]
      },
@@ -976,12 +976,12 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has views too.",
-        "me": "I loved Uber Boat on the Thames, and this has views too."
+        "you": "You go out to feel peaceful, and this has views.",
+        "me": "I go out to feel peaceful, and this has views."
        },
        {
-        "you": "You loved the view from the top of Greenwich Park, and this has a sense of awe too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a sense of awe too."
+        "you": "You picked quieter days, and this is a quiet one.",
+        "me": "I like quieter places, and this is a quiet one."
        }
       ]
      }
@@ -989,7 +989,7 @@
     "value": 3.171,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:11.107274+00:00",
+    "created_at": "2026-10-20T01:05:39.513048+00:00",
     "title": "Tuesday 3 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 09:30 · 4 stops, including lunch",
@@ -1339,12 +1339,12 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has views too.",
-        "me": "I loved Uber Boat on the Thames, and this has views too."
+        "you": "You go out to feel peaceful, and this has views.",
+        "me": "I go out to feel peaceful, and this has views."
        },
        {
-        "you": "You loved the view from the top of Greenwich Park, and this has a sense of awe too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a sense of awe too."
+        "you": "You picked quieter days, and this is a quiet one.",
+        "me": "I like quieter places, and this is a quiet one."
        }
       ]
      },
@@ -1475,8 +1475,8 @@
         "me": "I loved the view from the top of Greenwich Park."
        },
        {
-        "you": "You loved Uber Boat on the Thames, and this has views too.",
-        "me": "I loved Uber Boat on the Thames, and this has views too."
+        "you": "You go out to feel curious, and this has history.",
+        "me": "I go out to feel curious, and this has history."
        }
       ]
      }
@@ -1484,7 +1484,7 @@
     "value": 2.457,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:12.685214+00:00",
+    "created_at": "2026-10-20T01:05:41.089436+00:00",
     "title": "Wednesday 4 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 09:30 · 4 stops, including lunch",
@@ -1833,8 +1833,8 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has views too.",
-        "me": "I loved Uber Boat on the Thames, and this has views too."
+        "you": "You go out to feel peaceful, and this has views.",
+        "me": "I go out to feel peaceful, and this has views."
        },
        {
         "you": "You go out to feel curious, and this has history.",
@@ -1988,7 +1988,7 @@
     "value": 1.648,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:14.253993+00:00",
+    "created_at": "2026-10-20T01:05:42.657865+00:00",
     "title": "Thursday 5 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 09:30 · 4 stops, including lunch",
@@ -2289,12 +2289,12 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
+        "you": "You loved the view from the top of Greenwich Park, and this has a sense of awe too.",
+        "me": "I loved the view from the top of Greenwich Park, and this has a sense of awe too."
        },
        {
-        "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
+        "you": "It fits your interest in history & culture.",
+        "me": "It fits my interest in history & culture."
        }
       ]
      },
@@ -2467,7 +2467,7 @@
     "value": 1.09,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:15.810953+00:00",
+    "created_at": "2026-10-20T01:05:44.214292+00:00",
     "title": "Friday 6 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 09:30 · 4 stops, including lunch",
@@ -2805,10 +2805,6 @@
        {
         "you": "You loved the view from the top of Greenwich Park, and this has green space too.",
         "me": "I loved the view from the top of Greenwich Park, and this has green space too."
-       },
-       {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
        }
       ]
      },
@@ -2940,12 +2936,8 @@
       },
       "reasons": [
        {
-        "you": "You loved Uber Boat on the Thames, and this has a sense of awe too.",
-        "me": "I loved Uber Boat on the Thames, and this has a sense of awe too."
-       },
-       {
-        "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
-        "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
+        "you": "It fits your interest in history & culture.",
+        "me": "It fits my interest in history & culture."
        }
       ]
      }
@@ -2953,7 +2945,7 @@
     "value": 0.311,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:17.360552+00:00",
+    "created_at": "2026-10-20T01:05:45.773972+00:00",
     "title": "Saturday 7 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 09:30 · 4 stops, including lunch",
@@ -3135,7 +3127,7 @@
     "value": -0.204,
     "status": "offered",
     "fit_rating": null,
-    "created_at": "2026-10-19T23:21:17.872643+00:00",
+    "created_at": "2026-10-20T01:05:46.290201+00:00",
     "title": "Sunday 8 November",
     "summary": [
      "Start: Sample apartment W, Covent Garden at 09:30 · 1 stops",

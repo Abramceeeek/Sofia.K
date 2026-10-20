@@ -65,12 +65,28 @@ def _mid(name: str) -> str:
 
 def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: list[tuple[str, list[str], Moment]],
                  feelings: list[str], rated: list[tuple[Moment, int]], interests: list[str], n_choices: int,
-                 loved_kinds: list[tuple[str, Moment]] = (), wanted: list[tuple[str, Moment]] = ()) -> list[dict]:
-    """Up to two reasons for one stop, each as "you" (the app) and "me" (the share card) wording."""
+                 loved_kinds: list[tuple[str, Moment]] = (), wanted: list[tuple[str, Moment]] = (),
+                 taken: set[str] | None = None) -> list[dict]:
+    """Up to two reasons for one stop, each as "you" (the app) and "me" (the share card) wording.
+
+    `taken` (m187, the algorithm review): what the plan's earlier stops already said (their places, feelings and
+    lines). They're avoided first, so a day doesn't repeat "You loved the British Museum…" at every stop; if nothing
+    else fits, the stop may say it again rather than "We don't know much about you". Updated in place."""
+    args = (pop, delta, m, loved, feelings, rated, interests, n_choices, loved_kinds, wanted)
+    out, said = _reasons(*args, used=set(taken or ()))
+    if taken and out and out[0]["me"] is None:
+        out, said = _reasons(*args, used=set())
+    if taken is not None:
+        taken |= said
+    return out
+
+
+def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_kinds, wanted,
+             used: set[str]) -> tuple[list[dict], set[str]]:
     d = dict(zip(pop.personal_names, (float(v) for v in delta)))   # δ is over the personal features only
     tags = _tags(m)
     out: list[dict] = []
-    used: set[str] = set()
+    before = set(used)
 
     for name, cards, _ in loved:                                   # the familiar favourite
         if m.id in cards:
@@ -118,16 +134,21 @@ def stop_reasons(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: l
                           f"I rated {good.title} highly, and this has {phrase} too."))
             used.add(good.title)
 
-    if len(out) < MAX_REASONS and interests:
-        out.append(_r(f"It fits your interest in {interests[0].lower()}.", f"It fits my interest in {interests[0].lower()}."))
-    if len(out) < MAX_REASONS and n_choices and tags.get("crowds", 0) == 0 and d.get("crowds", 0) < -MIN_WEIGHT:
-        out.append(_r("You picked quieter days, and this is a quiet one.", "I like quieter places, and this is a quiet one."))
-    if len(out) < MAX_REASONS and n_choices and not (m.cost_gbp or 0) and d.get("cost_per_10gbp", 0) > MIN_WEIGHT:
+    general = []
+    if interests:
+        general.append(_r(f"It fits your interest in {interests[0].lower()}.", f"It fits my interest in {interests[0].lower()}."))
+    if n_choices and tags.get("crowds", 0) == 0 and d.get("crowds", 0) < -MIN_WEIGHT:
+        general.append(_r("You picked quieter days, and this is a quiet one.", "I like quieter places, and this is a quiet one."))
+    if n_choices and not (m.cost_gbp or 0) and d.get("cost_per_10gbp", 0) > MIN_WEIGHT:
         # log scale (D88): δ > 0 means more sensitive to cost than most people
-        out.append(_r("You picked cheaper days, and this one is free.", "I like days that don't cost much, and this one is free."))
+        general.append(_r("You picked cheaper days, and this one is free.", "I like days that don't cost much, and this one is free."))
+    for g in general:
+        if len(out) < MAX_REASONS and g["you"] not in used:
+            out.append(g)
     if not out:
         out.append(_r("We don't know much about you yet: this one suits most people and fits your route.", None))
-    return out[:MAX_REASONS]
+    out = out[:MAX_REASONS]
+    return out, (used - before) | {r["you"] for r in out}
 
 
 def basis(n_places: int, n_choices: int, n_ratings: int, n_feelings: int, n_kinds: int = 0) -> dict:

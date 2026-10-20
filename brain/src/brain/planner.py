@@ -248,6 +248,15 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
     solves again without it and says so in `status`.
     """
     must = frozenset(must_include)
+    if min_stops:
+        # m187 (algorithm review, 20 Oct): the floor keeps out stops predicted to fall short of "Good", but it must
+        # never leave a day short of its places. In simulation about 1 person in 8 had only 0-2 cards above it, so
+        # their day had 0-2 places (and Test B's pair would differ in length). Then the person's own best cards come
+        # in instead. A place they said they didn't enjoy never does: dayplan leaves those out before this.
+        places = sorted((c.utility for c in cands if not c.lunch and _start_ranges(c, day_start, day_end)),
+                        reverse=True)
+        if places and sum(u > floor for u in places) < min_stops:
+            floor = min(floor, places[min(min_stops, len(places)) - 1] - 1e-6)
     usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch)
               and _start_ranges(c, day_start, day_end)]
     skipped = [c.moment_id for c in cands if c not in usable]
