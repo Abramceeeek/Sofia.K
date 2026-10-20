@@ -1,5 +1,7 @@
 # iOS app (the Face): build on a macOS runner, then sign and upload to TestFlight (D64, D70).
-# Runs only when files under app/ (or this workflow) change, or when started by hand.
+# Runs only on pushes to main that change files under app/ (or this workflow), or when started by hand.
+# 20 Oct (Abram): not on other branches or pull requests. Each change used to build twice, once on Claude's branch
+# and again on main, so this halves the macOS minutes. Any branch can still be built by hand ("Run workflow").
 # - Until the signing secrets exist, it builds for the simulator only, so the pipeline can be checked now.
 # - With the secrets, a push to main (or a manual run with "upload" ticked) archives, signs and
 #   uploads a build numbered with the run number.
@@ -10,14 +12,10 @@ name: ios
 
 on:
   push:
+    branches: [main]
     paths:
       - "app/**"
       - "!app/**/*.md"             # README edits don't need a paid macOS build
-      - ".github/workflows/ios.yml"
-  pull_request:
-    paths:
-      - "app/**"
-      - "!app/**/*.md"
       - ".github/workflows/ios.yml"
   workflow_dispatch:
     inputs:
