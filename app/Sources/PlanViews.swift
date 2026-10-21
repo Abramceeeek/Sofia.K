@@ -215,7 +215,7 @@ struct PlanFormView: View {
             .padding(.bottom, 32)
         }
         .background(Theme.background)
-        .sheet(isPresented: $pickMust) { MustIncludePicker(selected: $mustDo) }
+        .sheet(isPresented: $pickMust) { MustIncludePicker(selected: $mustDo).followsSky() }
         .onDisappear { if !model.showNow { model.location.stop() } }
     }
 
@@ -1226,6 +1226,7 @@ struct MomentCardBody: View {
                             ToolbarItem(placement: .topBarTrailing) { Button("Close") { showShot = false } }
                         }
                 }
+                .followsSky()
             }
         }
     }

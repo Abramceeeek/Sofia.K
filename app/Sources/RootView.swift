@@ -30,6 +30,7 @@ struct BrainFeedback: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .followsSky()   // D130: a sheet or cover keeps the look it opened with unless it asks for the sky itself
             .overlay(alignment: .top) {
                 if model.waking { WakingBanner() }
             }
@@ -54,6 +55,18 @@ struct BrainFeedback: ViewModifier {
 
 extension View {
     func brainFeedback() -> some View { modifier(BrainFeedback()) }
+    func followsSky() -> some View { modifier(FollowsSky()) }
+}
+
+/// D130 (Daylight): day or night for this presentation. Set at the root, on every sheet and full-screen cover (here and
+/// through `brainFeedback()`), and on the window, so a screen opened over another follows the sky as it changes; the
+/// CI screenshots showed "Now" by day with night text when only the root asked (21 Oct).
+struct FollowsSky: ViewModifier {
+    @Environment(AppModel.self) private var model
+
+    func body(content: Content) -> some View {
+        content.preferredColorScheme(model.sky.isDay ? .light : .dark)
+    }
 }
 
 /// The free server sleeps when nobody has used it for 15 minutes (D109).

@@ -42,11 +42,13 @@ struct BookView: View {
             }
             .presentationDetents([.large])
             .presentationCornerRadius(28)
+            .followsSky()
         }
         .sheet(item: $book.handoff, onDismiss: { AppModel.cache(nil as SavedHandoff?, "handoff.json") }) { _ in
             HandoffSheet()
                 .presentationDetents([.medium])
                 .presentationCornerRadius(28)
+                .followsSky()
         }
         .sheet(isPresented: $book.showAirports) {
             AirportPicker { place in
@@ -56,6 +58,7 @@ struct BookView: View {
                 trip.needFlight = true
                 model.save(trip)
             }
+            .followsSky()
         }
     }
 }

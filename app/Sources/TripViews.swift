@@ -711,6 +711,7 @@ struct TripCreateFlow: View {
                 trip.originGuessed = false
                 trip.needFlight = true
             }
+            .followsSky()
         }
         .task {
             if !editing, trip.origin == nil { trip = await model.guessOrigin(for: trip) }
@@ -2150,7 +2151,7 @@ struct TripDemoScreen: View {
             if let f = model.book.flights?.results.first {
                 NavigationStack { FlightDetailView(flight: f) }
                     .sheet(isPresented: .constant(name != "flight")) {
-                        HandoffSheet().presentationDetents([.medium])
+                        HandoffSheet().presentationDetents([.medium]).followsSky()
                     }
                     .onAppear { if name != "flight" { model.book.handoff = Self.handoff(f, back: name == "handoffback") } }
             }

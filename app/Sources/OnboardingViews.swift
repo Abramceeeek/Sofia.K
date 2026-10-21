@@ -1086,6 +1086,7 @@ struct ImproveView: View {
                     .serifTitle("More places")
                     .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { morePlaces = false } } }
                 }
+                .followsSky()
             }
             .sheet(isPresented: $moreTasks) {
                 NavigationStack {
@@ -1097,6 +1098,7 @@ struct ImproveView: View {
                     .serifTitle("More example days")
                     .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { moreTasks = false } } }
                 }
+                .followsSky()
             }
         }
     }
