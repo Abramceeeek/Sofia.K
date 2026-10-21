@@ -360,7 +360,12 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
-        case "now": DayScreen().onAppear { model.nowIndex = 1; model.showNow = true }  // 10b (D119): during the day
+        case "now":                                                             // 10b (D119, D130): today, on the way
+            DayScreen().onAppear {                                              // to the second stop (not a look ahead)
+                if let plan = model.plan { model.plan = plan.dated(Dates.isoDay.string(from: .now)) }
+                model.nowIndex = 1
+                model.showNow = true
+            }
         case "nowend":                                                          // 10c: a trip's day done, tomorrow next
             DayScreen().onAppear {
                 guard let trip = model.trips.first, let day = trip.days.first(where: { $0.index == 1 }) else { return }

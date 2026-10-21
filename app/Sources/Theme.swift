@@ -92,6 +92,16 @@ enum Theme {
     static let option = serif(22, relativeTo: .title3)        // an answer on a tile
     static let reaction = italic(20, relativeTo: .title3)     // "Got it: …", in amber
 
+    /// D130: day or night for the whole window, so every sheet and full-screen cover follows the sky too.
+    /// (`preferredColorScheme` at the root reaches only the root screen: covers opened over it kept the system's look,
+    /// so "Now" by day had night text on a day sky; seen on the CI screenshots, 21 Oct.)
+    static func applyStyle(_ sky: Sky) {
+        let style: UIUserInterfaceStyle = sky.isDay ? .light : .dark
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            for window in scene.windows { window.overrideUserInterfaceStyle = style }
+        }
+    }
+
     /// Navigation bars on the page colour, for the few screens that keep one (sheets, the moment card).
     static func applyAppearance() {
         let bar = UINavigationBarAppearance()
