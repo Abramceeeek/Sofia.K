@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-10-25 — The design in Figma
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m189 | **The design in Figma, for a friend to comment on and change** (Abram, 25 Oct: "upload or rebuild everything in Figma … all of the possible positions and all of the appearances … a notification", and "send the app"). Claude's time: GUESS ~3 h. Abram's: ~0.5 h. Built (`design/figma/README.md`):<br>- **`design/figma/odys-figma.html`:** 51 editable frames rebuilt from the app's own words, colours (`Theme.swift`) and example day (`app/Sources/Demo`). It covers every main screen at night and by day, the five skies, and the reveal, arrival, rating, share, trip, You, Help & safety, reminder (lock screen, banner, Android), permission, error and waiting states. It also has the foundations: colours with contrast ratios, skies, type, parts, motion notes. Made by `build.py`; checked by rendering it.<br>- **`odys-screenshots.zip`:** the 133 real screens (76 iPhone, 57 Android) by journey, made by `build_shots.py`. It is kept out of the repo (13 MB of build output).<br>- **Two routes, either free today.** (A) Abram finishes the Figma connector's sign-in (installed but unfinished on 25 Oct) and starts a new session; Claude writes into his drafts (Figma: free in beta, later paid by use; a Full seat is needed only outside drafts). (B) The html.to.design plugin's .html/.zip upload; its free import limit is UNVERIFIED.<br>- **Claude's calls (D69):** card photos are drawn as the app's fields of colour (the screenshot board has the photos). The system font is Inter in Figma, SF Pro and Roboto on the phones. iPhone 16 Pro frames (402 × 874). No new copy except the board's own labels. | — | He asked for Figma over screenshots, so his friend can edit. Rebuilding from the app's own data keeps the frames true to the build. Legal: if the friend's changes are built into the app, **they sign Part A first** (D55, D73). The iPhone app for the friend needs either an App Store Connect user (internal testing) or the Apple check (external, D60). The Android APK is public. |
+
 ## 2026-10-20 — Decisions handed to Claude
 
 | # | Decision | Replaces | Why |
