@@ -9,19 +9,26 @@
 
 Rebuild after app changes: `python3 design/figma/build.py`; and `python3 design/figma/build_shots.py <iphone-shots> android/app/build/screens odys-screenshots.zip`. The iPhone shots come from the iOS workflow's screenshot run (`workflow_dispatch`, upload off).
 
-## Route A: the Figma connector (recommended; free while Figma's beta lasts)
+## Done (25 Oct): "ODYS · design for review" in Abram's Figma drafts
 
-1. At <https://claude.ai/customize/connectors>, open **Figma** and finish signing in. It's installed on the account, but the sign-in wasn't finished (25 Oct).
+Built through the Figma connector on Abram's free (Starter) account, in two pages:
+- **Editable screens · night & day:** the 51 frames, the 8 foundation panels, the section headings and notes, laid out as on the board. Text is real text (Newsreader and Inter): each paragraph is one wrapping box with its weight, size, line height and letter spacing. Shapes are vectors with their fills.
+- **Real screens · iPhone & Android:** the 133 screenshots at phone size, by journey, with headings.
+
+**Sharing it (Figma help, help.figma.com/hc/en-us/articles/13838684089751, read 25 Oct 2026):** "On the Starter plan, you can only invite collaborators to drafts with `can view` access." Viewers can comment. For your friend to **edit**, either move the file out of Drafts into your team's project and share it from there, or upgrade. A Figma help mirror says a Starter team project holds up to three design files that can be shared with edit access (UNVERIFIED; forum reports from 2021 and 2024 disagree).
+
+How it was built (the connector here has no `html_to_figma`, and its scripts can't fetch): `to_svg.js` turns each frame of `odys-figma.html` into an SVG. Figma's SVG import keeps text as text. `upload.py` posts the SVGs and screenshots to the connector's `upload_assets` URLs. `figma_fix.js`, run with `use_figma`, joins each paragraph's lines into one text box and restores what SVG can't carry: the weights, letter spacing, shadows and clean layer names. Known gaps: bold words inside a sentence come through regular, and a "/" in an uploaded file's name cuts the layer name short. Layer names with "·" arrived garbled and were repaired in Figma. Calls used: 7 uploads and 12 scripts, all write tools. Figma counts only read tools against the Starter limit.
+
+## Route A: the Figma connector (what was used)
+
+1. At <https://claude.ai/customize/connectors>, open **Figma** and finish signing in.
 2. Start a **new** Claude Code session. Connectors are read when a session starts.
-3. Ask: "Put `design/figma/odys-figma.html` and the screenshots into Figma." Claude creates a file in your drafts and converts the HTML into layers.
-4. In Figma: **Share** → invite your friend by email, as **can edit** or **can view** (viewers can still comment).
+3. Ask Claude to put the files into Figma (see "Done" above for how).
 
 What Figma says (developers.figma.com, read 25 Oct 2026):
 - Writing to the canvas "is free during the beta period and will eventually become a usage-based paid feature".
 - It needs "a Full seat to write outside your drafts". A free (Starter) account has no Full seat, so Claude writes into your drafts.
-- `html_to_figma` "converts an HTML document into design layers"; the HTML "must be self-contained, with CSS and images included". This file is.
 - Read tools are limited to "up to 20 per month" for View and Collab seats on every plan, including Starter. "Some tools are exempt, including tools that write to Figma files."
-- **UNVERIFIED:** whether a Starter account can run every write tool in its drafts. If one is refused, use route B.
 
 ## Route B: no connector (the html.to.design plugin)
 
