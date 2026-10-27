@@ -528,7 +528,7 @@ fun TripCreateFlow(model: AppModel) {
             val title = when {
                 step < TRIP_QUESTIONS - 1 -> "Continue"
                 model.busy -> "Planning your days…"
-                editing -> "Plan the trip again"
+                editing -> "Replan my trip"   // m190: the same words on both phones
                 else -> "Make my trip"
             }
             PrimaryButton(title, enabled = !model.busy) {

@@ -1208,7 +1208,11 @@ struct HandoffSheet: View {
         let ago = h.searchedAt.map { max(0, Int(Date.now.timeIntervalSince($0) / 60)) }
         let checked = ago.map { $0 < 1 ? "Price found just now" : "Price found \($0) minute\($0 == 1 ? "" : "s") ago" }
             ?? "The price is on their site"
-        return "\(checked), so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link while we test."
+        // m190 (design review): said for what's being booked; Skyscanner and Google Flights pass you on to sell it
+        let how = h.choice.kind == "flight"
+            ? "\(h.provider) shows the fare, then sends you to the airline or a travel agent to book and pay."
+            : "You book and pay on their site, not in ODYS."
+        return "\(checked), so it can change there. \(how) ODYS earns nothing from this link while we test."
     }
 
     private func answer(_ h: Handoff, booked: Bool) {
@@ -1354,7 +1358,7 @@ struct FlightFilterSheet: View {
         if let prices = book.flights?.facets.price, prices.count == 2, prices[0] < prices[1] {
             let hi = prices[1].rounded(.up)
             VStack(alignment: .leading, spacing: 8) {
-                FilterTitle(text: "Most I'll pay", value: book.flightFilters.maxPrice.map { Money.whole($0) } ?? "No limit")
+                FilterTitle(text: "Maximum price", value: book.flightFilters.maxPrice.map { Money.whole($0) } ?? "No limit")
                 Slider(value: Binding(get: { book.flightFilters.maxPrice ?? hi },
                                       set: { v in book.flightFilters.maxPrice = v >= hi ? nil : v }),
                        in: prices[0].rounded(.down)...hi, step: 10)
@@ -1454,7 +1458,7 @@ struct StayFilterSheet: View {
             if let prices = r?.facets.priceNight, prices.count == 2, prices[0] < prices[1] {
                 let lo = prices[0].rounded(.down), hi = prices[1].rounded(.up)
                 VStack(alignment: .leading, spacing: 8) {
-                    FilterTitle(text: "Most per night", value: f.maxNight.map { Money.whole($0) } ?? "No limit")
+                    FilterTitle(text: "Maximum per night", value: f.maxNight.map { Money.whole($0) } ?? "No limit")
                     Slider(value: Binding(get: { f.maxNight ?? hi },
                                           set: { v in book.stayFilters.maxNight = v >= hi ? nil : v }),
                            in: lo...hi, step: 5)

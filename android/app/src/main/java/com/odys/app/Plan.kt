@@ -77,6 +77,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -386,14 +390,15 @@ fun RoundIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, label: Stri
 
 // ---- screen 9: the day ------------------------------------------------------------------------------------------
 
-private const val REVEAL_SECONDS = 2.6f
+private const val REVEAL_SECONDS = 1.4f   // m190 (design review): was 2.6 s; a tap shows it all
 private const val ROUTE_FROM = 0.28f
 private const val ROUTE_TO = 0.88f
 
 /**
  * D119: the day's date, how it should feel (the headline), the numbers, how the day moves, then the stops as a list
- * (or on a map), and "Start the day". Plan again, improve and plan another day at the end. D117: the plan reveal
- * (about 2.6 s, once per new plan) instead of a spinner; with animations off everything is simply there.
+ * (or on a map), and "Start the day", pinned at the bottom (m190). Plan again, improve and plan another day at the end.
+ * D117: the plan reveal (about 1.4 s, once per new plan; a tap shows it all) instead of a spinner; with animations off
+ * everything is simply there.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -403,6 +408,7 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
     val scope = rememberCoroutineScope()
     var layout by remember { mutableStateOf(model.prefs.string("planLayout") ?: "list") }
     var reveal by remember { mutableFloatStateOf(1f) }
+    var revealSkipped by remember { mutableStateOf(false) }   // m190: tapped during the reveal
     var showNewPlan by remember { mutableStateOf(false) }
     var showImprove by remember { mutableStateOf(false) }
     var confirmRegenerate by remember { mutableStateOf(false) }
@@ -425,14 +431,29 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
             return@LaunchedEffect
         }
         reveal = 0f
+        revealSkipped = false
         val start = withFrameNanos { it }
-        while (reveal < 1f) {
+        while (reveal < 1f && !revealSkipped) {
             val t = withFrameNanos { it }
             reveal = min(1f, (t - start) / 1e9f / REVEAL_SECONDS)
         }
+        reveal = 1f
     }
 
-    ScrollPage(spacing = 22, bottom = 40) {
+    // m190 (design review, 27 Oct): "Start the day" stays in reach, wherever the plan is scrolled to; a touch during
+    // the reveal shows the whole plan (it watches touches without taking them from the stops)
+    PageWithBottom(
+        Modifier.pointerInput(plan.id) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                if (reveal < 1f) revealSkipped = true
+            }
+        },
+        spacing = 22,
+        bottom = {
+            PrimaryButton("Start the day", Modifier.graphicsLayer { alpha = phase(0.12f, 0.25f) }) { model.startDay() }
+        },
+    ) {
         if (onBack != null) BackLink(onClick = onBack)
         TopBar(Dates.longDay(plan.date) ?: plan.title ?: "Your day", model.unreadSafety, onHelp, onData)
         // Bloom: the headline settles first, then the numbers
@@ -502,8 +523,7 @@ fun PlanView(model: AppModel, plan: Plan, onHelp: () -> Unit, onData: () -> Unit
         AnimatedVisibility(!model.reminderAsked && !plan.isBlind && shown >= 1f, enter = fadeIn(), exit = fadeOut()) {
             ReminderAsk(model)   // D118: asked once per plan; 19 Oct review: after the plan, just before the day starts
         }
-        PrimaryButton("Start the day") { model.startDay() }   // D119: "Now", while you're out
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 24.dp)) {
             if (model.improved) {
                 SecondaryButton("Plan this day again with your new answers", enabled = !model.busy) {
                     scope.launch { model.replan() }

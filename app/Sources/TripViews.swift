@@ -763,7 +763,7 @@ struct TripCreateFlow: View {
     private var buttonTitle: String {
         if step < Self.questions - 1 { return "Continue" }
         if model.busy { return "Planning your days…" }
-        return editing ? "Plan the trip again" : "Make my trip"
+        return editing ? "Replan my trip" : "Make my trip"   // m190: the same words on both phones
     }
 
     private func next() {

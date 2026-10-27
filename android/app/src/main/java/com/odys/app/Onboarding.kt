@@ -464,14 +464,14 @@ fun LearnedRow(item: LearnedItem, changing: Boolean, wrong: Boolean, modifier: M
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.padding(top = if (changing) 6.dp else 9.dp)) { ArchGlyph(if (wrong) Theme.line else Theme.accent) }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(item.text, style = (if (changing) Theme.serif(20.sp) else Theme.title2).copy(
+            Text(item.text, style = Theme.serif(20.sp).copy(   // m190 (design review): a list, not six headlines (was 24)
                 color = if (wrong) Theme.muted else Theme.ink,
                 textDecoration = if (wrong) TextDecoration.LineThrough else null))
             if (changing) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Box(
                         Modifier.heightIn(min = 44.dp).pressable(onClick = toggle)
-                            .semantics { contentDescription = if (wrong) "Undo: keep using this" else "Not right: stop using this" },
+                            .semantics { contentDescription = if (wrong) "Undo: keep using this answer" else "Don't use this answer" },
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(if (wrong) "Undo" else "Don't use this",

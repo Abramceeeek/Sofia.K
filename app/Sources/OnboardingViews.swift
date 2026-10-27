@@ -523,8 +523,8 @@ struct LearnedRow: View {
             ArchGlyph(color: wrong ? Theme.line : Theme.accent)
                 .padding(.top, changing ? 6 : 9)
             VStack(alignment: .leading, spacing: 8) {
-                Text(item.text)
-                    .font(changing ? Theme.serif(20, relativeTo: .title3) : Theme.title2)
+                Text(item.text)   // m190 (design review): a list, not six headlines (was 24 pt)
+                    .font(Theme.serif(20, relativeTo: .title3))
                     .strikethrough(wrong)
                     .foregroundStyle(wrong ? Theme.muted : Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
@@ -541,7 +541,7 @@ struct LearnedRow: View {
                                 .contentShape(Capsule())
                         }
                         .buttonStyle(PressStyle())
-                        .accessibilityLabel(wrong ? "Undo: keep using this" : "Not right: stop using this")
+                        .accessibilityLabel(wrong ? "Undo: keep using this answer" : "Don't use this answer")
                         if wrong {
                             Text("We'll stop using this answer.")
                                 .font(.footnote)

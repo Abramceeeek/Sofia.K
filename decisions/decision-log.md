@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-10-27 — The outside design review
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m190 | **The outside design review of 27 Oct, checked and acted on** (Abram pasted it: "what do you think?"; then "Yes, do all four" and "keep it for Test B, test later"). The review used the 18–19 Oct screen pack, so a third was already done: "Flat" is "Disappointing", consent uses tick-boxes, "worth £V" is gone (D127), the tabs are gone (D131), "Preview tomorrow" shows only on trip days, the hello video is left out until it exists, the curve became the path. Built, in both apps:<br>- **"Start the day" pinned to the bottom of the plan**, in reach wherever the plan is scrolled (it was below every stop).<br>- **The plan reveal: 1.4 s, was 2.6 s; a tap shows it all.**<br>- **Words:** "Maximum price" and "Maximum per night" (were "Most I'll pay", "Most per night"); "Replan my trip" when editing (was "Plan the trip again"); the booking hand-off says what happens for a flight ("Skyscanner shows the fare, then sends you to the airline or a travel agent") or a stay ("You book and pay on their site, not in ODYS"), not "the airline's or hotel's" for both; the "Don't use this" button reads the same to VoiceOver.<br>- **"So far, I've learned" in 20 pt serif lines, was 24**, so it reads as a list.<br>Kept, with reasons given to Abram: the onboarding before Test B (after-9-Nov #81), day out and trip as equal cards (D131), "Coming next" cities (D120), "None of these" under Continue, the reminder question above "Start the day". Claude ~3 h, GUESS. | — | Abram asked for the review's four quick fixes; the larger ideas wait for Checkpoint 3 (D75). |
+
 ## 2026-10-25 — The design in Figma
 
 | # | Decision | Replaces | Why |

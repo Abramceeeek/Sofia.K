@@ -377,6 +377,7 @@ struct PlanView: View {
     var onBack: (() -> Void)?                  // D120, D131: opened from the home
     @AppStorage("planLayout") private var savedLayout = "list"
     @State private var reveal: Double = 1      // D117: 0…1 through the reveal; 1 = everything shown
+    @State private var revealSkipped = false   // m190: tapped during the reveal
     @State private var showNewPlan = false
     @State private var showImprove = false
     @State private var confirmRegenerate = false
@@ -429,7 +430,6 @@ struct PlanView: View {
                     // D118: asked once per plan; 19 Oct review: after the plan, just before the day starts
                     ReminderAsk().transition(.opacity)
                 }
-                PrimaryButton(title: "Start the day") { model.startDay() }   // D119: "Now", while you're out
                 actions
             }
             .padding(.horizontal, 24)
@@ -439,6 +439,21 @@ struct PlanView: View {
         .onAppear {
             if let demoScroll { proxy.scrollTo(demoScroll, anchor: .top) }
         }
+        // m190 (design review, 27 Oct): "Start the day" stays in reach, wherever the plan is scrolled to
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            PrimaryButton(title: "Start the day") { model.startDay() }   // D119: "Now", while you're out
+                .padding(.horizontal, 24)
+                .padding(.top, 14)
+                .padding(.bottom, 8)
+                .background(alignment: .top) {
+                    LinearGradient(colors: [Theme.background.opacity(0), Theme.background], startPoint: .top,
+                                   endPoint: UnitPoint(x: 0.5, y: 0.3))
+                        .ignoresSafeArea(edges: .bottom)
+                }
+                .opacity(phase(0.12, 0.25))
+        }
+        // m190: a tap during the reveal shows the whole plan at once
+        .simultaneousGesture(TapGesture().onEnded { if reveal < 1 { revealSkipped = true } })
         }
         .skyBackground()   // D130
         .animation(reduceMotion ? nil : Motion.fade, value: model.reminderAsked)
@@ -582,10 +597,10 @@ struct PlanView: View {
 
     // ---- D117: the plan reveal, instead of a spinner (D119: the ODYS "Bloom") ------------------------------------
     // The headline settles first, then the numbers, then the day's curve draws and the stops appear as the route
-    // reaches them. About 2.6 s, once per new plan (not on a swap, not when reopening the app). Quiet: no bounce.
-    // With Reduce Motion everything is simply there.
+    // reaches them. About 1.4 s (m190: was 2.6 s), once per new plan (not on a swap, not when reopening the app); a tap
+    // shows it all at once. Quiet: no bounce. With Reduce Motion everything is simply there.
 
-    private static let revealSeconds = 2.6
+    private static let revealSeconds = 1.4
     private static let route = 0.28...0.88       // the share of the reveal the route takes
 
     /// How far the reveal is. A plan that has just arrived is hidden from its first frame, so nothing flashes.
@@ -612,13 +627,14 @@ struct PlanView: View {
             return
         }
         reveal = 0
+        revealSkipped = false
         model.revealPlanId = nil
         let start = Date.now
-        while !Task.isCancelled, reveal < 1 {
+        while !Task.isCancelled, reveal < 1, !revealSkipped {
             try? await Task.sleep(for: .milliseconds(30))
             reveal = min(1, Date.now.timeIntervalSince(start) / Self.revealSeconds)
         }
-        reveal = 1
+        withAnimation(Motion.fade) { reveal = 1 }
     }
 }
 

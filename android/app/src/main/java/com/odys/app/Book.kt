@@ -800,7 +800,10 @@ fun HandoffSheet(model: AppModel, h: Handoff) {
                 val ago = minutesAgo(h.searchedAt)
                 val checked = ago?.let { if (it < 1) "Price found just now" else "Price found $it minute${if (it == 1L) "" else "s"} ago" }
                     ?: "The price is on their site"
-                Text("$checked, so it can change there. You book and pay on their site, or the airline's or hotel's. ODYS earns nothing from this link while we test.",
+                // m190 (design review): said for what's being booked; Skyscanner and Google Flights pass you on to sell it
+                val how = if (h.choice.kind == "flight") "${h.provider} shows the fare, then sends you to the airline or a travel agent to book and pay."
+                          else "You book and pay on their site, not in ODYS."
+                Text("$checked, so it can change there. $how ODYS earns nothing from this link while we test.",
                     style = Theme.subheadline.copy(color = Theme.muted))
                 PrimaryButton("Continue to ${h.provider} ↗") {
                     openUrl(context, h.url)
@@ -922,7 +925,7 @@ fun FlightFilterSheet(model: AppModel) {
             val lo = kotlin.math.floor(prices[0])
             val hi = kotlin.math.ceil(prices[1])
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Most I'll pay", f.maxPrice?.let { Money.whole(it) } ?: "No limit")
+                FilterTitle("Maximum price", f.maxPrice?.let { Money.whole(it) } ?: "No limit")
                 FilterSlider(f.maxPrice ?: hi, lo, hi, 10.0) { v -> book.flightFilters = f.copy(maxPrice = if (v >= hi) null else v) }
             }
         }
@@ -971,7 +974,7 @@ fun StayFilterSheet(model: AppModel) {
             val lo = kotlin.math.floor(prices[0])
             val hi = kotlin.math.ceil(prices[1])
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Most per night", f.maxNight?.let { Money.whole(it) } ?: "No limit")
+                FilterTitle("Maximum per night", f.maxNight?.let { Money.whole(it) } ?: "No limit")
                 FilterSlider(f.maxNight ?: hi, lo, hi, 5.0) { v -> book.stayFilters = f.copy(maxNight = if (v >= hi) null else v) }
             }
         }
