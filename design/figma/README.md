@@ -9,6 +9,8 @@
 
 Rebuild after app changes: `python3 design/figma/build.py`; and `python3 design/figma/build_shots.py <iphone-shots> android/app/build/screens odys-screenshots.zip`. The iPhone shots come from the iOS workflow's screenshot run (`workflow_dispatch`, upload off).
 
+**As PDFs** (27 Oct, for sharing with ChatGPT or people): `to_pdf.js` prints either board as pages. Each section starts a page with its title, phones are never split, and text stays text. Run `NODE_PATH=$(npm root -g) node design/figma/to_pdf.js design/figma/odys-figma.html "ODYS design board.pdf" 4` for the board (16 pages). For the real screens, run it on the unzipped screenshot board's `index.html` with `4 2` (23 pages: four phones a row, two rows a page).
+
 ## Done (25 Oct): "ODYS · design for review" in Abram's Figma drafts
 
 Built through the Figma connector on Abram's free (Starter) account, in two pages:

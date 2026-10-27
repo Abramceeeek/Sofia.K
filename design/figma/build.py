@@ -438,14 +438,23 @@ def plan(t, sky):
     stops = "".join(stop_card(t, i) for i in range(len(STOPS)))
     return f"""<div class="pad gap12" style="padding-top:22px;padding-bottom:12px">{plan_top(t)}
 <div class="deepcard card" style="padding:12px 16px">{path_svg(t, None, 322, 180)}</div>{stops}
-<div style="margin-top:8px">{reminder_ask(t)}</div><div class="btn-p" style="margin-top:8px">Start the day</div>
-<div class="hrow gap10"><div class="btn-s">Plan again</div><div class="btn-s">Another day</div></div></div>"""
+<div style="margin-top:8px">{reminder_ask(t)}</div>
+<div class="hrow gap10" style="margin-bottom:96px"><div class="btn-s">Plan again</div><div class="btn-s">Another day</div></div></div>{pinned_start(t)}"""
 
 
 def plan_reveal(t, sky):
     return f"""<div class="pad gap12" style="padding-top:22px">{plan_top(t)}
 <div class="deepcard card" style="padding:12px 16px">{path_svg(t, None, 322, 180, dim=0.35)}</div>{stop_card(t, 0)}
-<div style="opacity:0.35">{stop_card(t, 1, False)}</div></div>"""
+<div style="opacity:0.35">{stop_card(t, 1, False)}</div></div>{pinned_start(t)}"""
+
+
+def pinned_start(t):
+    """m190: "Start the day" pinned to the bottom of the screen, over a fade into the page, above the home bar."""
+    h = t["background"].lstrip("#")
+    rgb = ",".join(str(int(h[i:i + 2], 16)) for i in (0, 2, 4))
+    return (f'<div style="position:absolute;left:0;right:0;bottom:0;padding:22px 24px 42px;'
+            f'background:linear-gradient(180deg,rgba({rgb},0) 0px,rgba({rgb},1) 28px)">'
+            f'<div class="btn-p">Start the day</div></div>')
 
 
 def way_in(t, s):
@@ -668,8 +677,8 @@ def this_or_that(t, sky):
 
 
 def learned(t, sky):
-    items = "".join(f'<div class="hrow top gap16"><div style="padding-top:10px">{glyph(t["accent"], 14)}</div>'
-                    f'<div class="serif ink" style="font-size:25px;line-height:1.15">{esc(x)}</div></div>' for x in LEARNED)
+    items = "".join(f'<div class="hrow top gap16"><div style="padding-top:5px">{glyph(t["accent"], 14)}</div>'
+                    f'<div class="serif ink" style="font-size:20px;line-height:1.25">{esc(x)}</div></div>' for x in LEARNED)
     return f"""<div class="pad gap16" style="padding-top:14px"><div class="hrow gap4 acc sub" style="min-height:44px">‹ A great moment</div>
 <div class="hrow top gap16"><div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div class="card" style="width:58px;height:104px;align-items:center;padding:12px 0">{icon("play", t["accent"], 34)}</div>
 <div class="foot muted" style="text-align:center">A note<br>from Abram</div></div>
@@ -891,7 +900,7 @@ def build():
                          phone(NIGHT, this_or_that(NIGHT, "night"), label="This or that · night") + phone(DAY, this_or_that(DAY, "day"), label="This or that · day")
                          + phone(NIGHT, learned(NIGHT, "night"), label="So far, I've learned · night") + phone(DAY, learned(DAY, "day"), label="So far, I've learned · day")]))
     secs.append(section("The plan", "The day as a path over the list. The reveal draws the path, then the stops settle in one by one. The reminder question is asked once, under the first plan.",
-                        [phone(NIGHT, plan_reveal(NIGHT, "night"), sky="night", base=NIGHT["background"], label="Plan · revealing · night", note="Part-way through the reveal: the path is drawing and the first stop has settled.")
+                        [phone(NIGHT, plan_reveal(NIGHT, "night"), sky="night", base=NIGHT["background"], label="Plan · revealing · night", note="Part-way through the 1.4 s reveal (a tap shows it all): the path is drawing and the first stop has settled. Start the day stays pinned at the bottom while the plan scrolls.")
                          + phone(NIGHT, plan(NIGHT, "night"), sky="night", base=NIGHT["background"], label="Plan · night")
                          + phone(DAY, plan(DAY, "day"), sky="day", base=DAY["background"], label="Plan · day")]))
     secs.append(section("Home: before, on and after the day", "No tabs. One home that follows the time: a day out and a trip as equals before, the day's path while it's on, the ratings after.",
