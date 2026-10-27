@@ -521,7 +521,7 @@ struct LearnedRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             ArchGlyph(color: wrong ? Theme.line : Theme.accent)
-                .padding(.top, changing ? 6 : 9)
+                .padding(.top, 6)   // m190: level with the first line of the 20 pt text
             VStack(alignment: .leading, spacing: 8) {
                 Text(item.text)   // m190 (design review): a list, not six headlines (was 24 pt)
                     .font(Theme.serif(20, relativeTo: .title3))

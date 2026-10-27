@@ -462,7 +462,7 @@ fun LearnedStep(model: AppModel) {
 @Composable
 fun LearnedRow(item: LearnedItem, changing: Boolean, wrong: Boolean, modifier: Modifier = Modifier, toggle: () -> Unit) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        Box(Modifier.padding(top = if (changing) 6.dp else 9.dp)) { ArchGlyph(if (wrong) Theme.line else Theme.accent) }
+        Box(Modifier.padding(top = 6.dp)) { ArchGlyph(if (wrong) Theme.line else Theme.accent) }   // m190: level with the 20 sp first line
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(item.text, style = Theme.serif(20.sp).copy(   // m190 (design review): a list, not six headlines (was 24)
                 color = if (wrong) Theme.muted else Theme.ink,
