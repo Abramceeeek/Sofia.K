@@ -572,6 +572,7 @@ extension AppModel {
 
     /// "Good morning", in London time.
     static var greeting: String {
+        if AppConfig.demo { return "Good morning" }   // m191: the CI screenshots, the same on both phones
         let h = Calendar.london.component(.hour, from: .now)
         return h < 12 ? "Good morning" : (h < 18 ? "Good afternoon" : "Good evening")
     }

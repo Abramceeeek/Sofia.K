@@ -87,7 +87,7 @@ THEMED = """
 & .chip{border:1.5px solid $outline;color:$ink}
 & .chip.on{background:$accent;border-color:$accent;color:$onAccent}
 & .tile{background:$surface;border:1px solid $outline}
-& .tile.sel{background:$selected;border:1px solid $amberDeep}
+& .tile.sel{background:$selected;border:1px solid $outline}
 & .opt{background:$surface;color:$ink}
 & .opt.sel{background:$selected;border:1.5px solid $accent}
 & .hair{background:$hairline}
@@ -252,6 +252,11 @@ def topbar(t, eb, right="menu", help_=True, back=False):
 
 def thumb(feel, w, h, num=None, radius=14):
     b = f'<div class="badge">{num}</div>' if num else ""
+    if feel == "Lunch":   # m191: lunch has no photo, so it shows a mark, not what looks like a gap
+        s = max(16, min(64, round(min(w, h) * 0.3)))
+        b += (f'<svg width="{s}" height="{s}" viewBox="0 0 24 24" style="position:absolute;left:{(w - s) / 2:.0f}px;'
+              f'top:{(h - s) / 2:.0f}px"><path d="M6 3v7a2 2 0 0 0 4 0V3M8 3v18M17 3c-2 1.5-3 4-3 7h3v11" fill="none" '
+              f'stroke="#F4EBDD" stroke-opacity="0.85" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>')
     return f'<div class="thumb" style="width:{w}px;height:{h}px;border-radius:{radius}px;background:{FIELDS.get(feel, FIELDS[None])}">{b}</div>'
 
 
@@ -548,7 +553,7 @@ def rating_offline(t, sky):
 def day_end(t, sky):
     return f"""<div class="pad gap16" style="padding:40px 28px 0">{eyebrow("That's the day")}
 <div class="serif hero ink">Thanks for today.</div><div class="body soft">Every stop you rated makes the next day fit you better.</div>
-<div class="flex gap22" style="display:flex;flex-direction:column;margin-top:8px">
+<div class="flex gap22" style="display:flex;flex-direction:column;margin-top:8px"><div class="foot muted">Two quick questions, both optional.</div>
 <div class="flex gap10" style="display:flex;flex-direction:column"><div class="body ink">Was today worth what you spent on it?</div>
 <div class="chips"><div class="chip">Not quite</div><div class="chip on">Yes</div><div class="chip">More than that</div></div></div>
 <div class="flex gap10" style="display:flex;flex-direction:column"><div class="body ink">Would you do this day again?</div>
@@ -601,7 +606,7 @@ def you(t, sky):
     items = "".join(f'<div class="serif t19 ink" style="padding:12px 0">{esc(x)}</div><div class="hair"></div>' for x in LEARNED)
     return f"""<div class="pad gap18" style="padding-top:14px;padding-bottom:24px"><div class="hrow gap6 acc body" style="min-height:44px">{icon("back", t["accent"], 22)}<span>Back</span></div>
 <div class="serif ink" style="font-size:36px">You</div>
-<div class="emerg"><div class="t body semi">Emergency in the UK</div><div class="x body">If you or someone else is in danger, call 999 first.</div><div class="btn-d">Call 999</div></div>
+<div class="emerg" style="flex-direction:row;align-items:center;padding:8px 8px 8px 16px;border-radius:18px"><div class="t sub semi grow">Emergency? Call 999 first.</div><div class="btn-d" style="height:44px;padding:0 22px">Call 999</div></div>
 <div class="card gap8 r20" style="padding:18px"><div class="hrow between"><div class="body semi ink">Talk to a person</div>{icon("chev", t["muted"], 18)}</div>
 <div class="sub ter">Something wrong with a stop, a booking or how you feel? A real person replies here, usually within a few hours.</div></div>
 <div><div class="eb muted" style="margin-bottom:6px"><span class="muted">What you've told us</span></div>{items}</div>
@@ -615,10 +620,10 @@ def safety(t, sky):
     return f"""<div class="pad gap18" style="padding-top:4px;padding-bottom:24px"><div class="hrow" style="justify-content:flex-end;padding-top:6px"><div class="close">Close</div></div>
 <div class="serif h1 ink">Help &amp; safety</div>
 <div class="emerg"><div class="t body semi">Emergency</div><div class="x body">If you or someone else is in danger or hurt, call 999 now.</div>
-<div class="btn-d">{icon("phone", "#FFFFFF", 20)}Call 999</div>
-<div class="x sub">Urgent medical help that isn't an emergency: call NHS 111. You can ask for an interpreter.</div>
-<div class="btn-e">{icon("kit", t["emergencyTitle"], 20)}Call 111</div>
-<div class="x sub">Need to talk to someone, day or night? Samaritans answer free on <b>116 123</b>.</div></div>
+<div class="btn-d">{icon("phone", "#FFFFFF", 20)}Call 999</div></div>
+<div class="card gap12 r20" style="padding:18px"><div class="sub soft">Urgent medical help that isn't an emergency: call NHS 111. You can ask for an interpreter.</div>
+<div class="btn-s" style="flex:none">{icon("kit", t["ink"], 20)}Call 111</div>
+<div class="sub soft">Need to talk to someone, day or night? Samaritans answer free on <b>116 123</b>.</div></div>
 <div class="card gap12 r20" style="padding:18px"><div class="body semi ink">I feel unsafe or something's wrong</div>
 <div class="sub muted">This reaches a real person, not a bot. They'll reply here in Help &amp; safety, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning.</div>
 <div class="field" style="height:120px">What's happening? (optional)</div><div class="field">Phone or email (optional)</div>

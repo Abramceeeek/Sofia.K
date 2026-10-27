@@ -616,14 +616,15 @@ fun WhyStep(model: AppModel) {
                 }
             }
         }
-        ReactionSpace(if (model.why.isEmpty()) null else "Got it: you want to feel " + model.why.joinToString(" and ") + ".")
-        PrimaryButton("Continue", enabled = model.why.isNotEmpty()) {
+        // D118: opting out is never the loudest button; 19 Oct review: but a real one, easy to see and tap;
+        // m191 (both design reviews): a valid answer, so it sits with the choices, before Continue
+        SecondaryButton("None of these", Modifier.fillMaxWidth()) {
+            model.why = emptyList()
             model.keepFeelings()
             model.next()
         }
-        // D118: opting out is never the loudest button; 19 Oct review: but a real one, easy to see and tap
-        SecondaryButton("None of these", Modifier.fillMaxWidth()) {
-            model.why = emptyList()
+        ReactionSpace(if (model.why.isEmpty()) null else "Got it: you want to feel " + model.why.joinToString(" and ") + ".")
+        PrimaryButton("Continue", enabled = model.why.isNotEmpty()) {
             model.keepFeelings()
             model.next()
         }

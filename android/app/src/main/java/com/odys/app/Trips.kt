@@ -223,7 +223,8 @@ fun ChoiceCard(title: String, text: String, icon: ImageVector, lead: Boolean, mo
     Column(
         modifier.pressable(haptic = true, onClick = onClick).clip(RoundedCornerShape(22.dp))
             .background(if (lead) Theme.selected else Theme.surface)
-            .border(1.dp, if (lead) Theme.accent.copy(alpha = 0.35f) else Theme.outline, RoundedCornerShape(22.dp))
+            // m191 (design review): the same edge on both, so the warmer one reads as suggested, not as selected
+            .border(1.dp, Theme.outline, RoundedCornerShape(22.dp))
             .padding(18.dp).semantics(mergeDescendants = true) { role = Role.Button },
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -289,7 +290,7 @@ fun MemoriesCard(model: AppModel, plan: Plan) {
             Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Theme.surface).padding(10.dp)
                 .semantics(mergeDescendants = true) {},
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(fieldBrush(stop.feelWord)))
+                FieldBox(stop.feelWord, Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(stop.title, style = Theme.subheadline)
                     Text(stop.arrive, style = Theme.footnote)
@@ -1335,12 +1336,14 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (()
     ScrollPage(spacing = 18, top = if (onBack == null) 30 else 8, bottom = 40) {
         if (onBack != null) BackLink(onClick = onBack)
         PageTitle("You", style = Theme.serif(36.sp))
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Theme.emergencyBg)
-            .border(1.dp, Theme.emergencyBorder, RoundedCornerShape(20.dp)).padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Emergency in the UK", style = Theme.headline.copy(color = Theme.emergencyTitle))
-            Text("If you or someone else is in danger, call 999 first.", style = Theme.body.copy(color = Theme.emergencyText))
-            Pill("Call 999", PillKind.Danger, height = 52.dp) {
+        // m191 (Abram, 27 Oct): still first on You, but one line, so the page doesn't open on an alarm.
+        // Help & safety keeps the full card.
+        Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Theme.emergencyBg)
+            .border(1.dp, Theme.emergencyBorder, RoundedCornerShape(18.dp)).padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Emergency? Call 999 first.", style = Theme.subheadline.copy(color = Theme.emergencyTitle, fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.weight(1f))
+            Pill("Call 999", PillKind.Danger, height = 48.dp, modifier = Modifier.width(132.dp)) {
                 runCatching {
                     context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:999")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }

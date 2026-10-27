@@ -331,14 +331,14 @@ struct ConsentView: View {
                 .foregroundStyle(Theme.ink)
                 .padding(18)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
-                PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: !(adult && agree) || model.busy) {
-                    Task { await model.agree() }
-                }
-                if !(adult && agree) {
+                if !(adult && agree) {   // m191 (design review): the hint comes before the button it explains
                     Text("Tick both to continue.")
                         .font(.footnote)
                         .foregroundStyle(Theme.muted)
                         .frame(maxWidth: .infinity)
+                }
+                PrimaryButton(title: model.busy ? "One moment…" : "Continue", disabled: !(adult && agree) || model.busy) {
+                    Task { await model.agree() }
                 }
                 QuietButton(code.isEmpty ? "Got a tester code?" : "Tester code: \(code)") { askCode = true }
             }

@@ -264,11 +264,18 @@ struct FlightSortTabs: View {
 
     var body: some View {
         let tabs = model.book.flights?.tabs ?? [:]
-        HStack(spacing: 6) {
-            ForEach([("best", "Best"), ("cheapest", "Cheapest"), ("fastest", "Fastest")], id: \.0) { key, label in
-                let top = tabs[key] ?? nil
-                SortTab(label: label, sub: top.map { "\(Money.whole($0.price)) · \(Dates.duration($0.durationMin))" } ?? "–",
-                        on: model.book.flightFilters.sort == key) { model.book.flightFilters.sort = key }
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                ForEach([("best", "Best"), ("cheapest", "Cheapest"), ("fastest", "Fastest")], id: \.0) { key, label in
+                    let top = tabs[key] ?? nil
+                    SortTab(label: label, sub: top.map { "\(Money.whole($0.price)) · \(Dates.duration($0.durationMin))" } ?? "–",
+                            on: model.book.flightFilters.sort == key) { model.book.flightFilters.sort = key }
+                }
+            }
+            if model.book.flightFilters.sort == "best" {   // m191 (design review): "Best" is a judgement, so say whose
+                Text("Best balances price and journey time.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
             }
         }
     }

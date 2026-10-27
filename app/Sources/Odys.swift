@@ -779,6 +779,21 @@ struct Field: View {
     let feel: String?
 
     var body: some View {
+        colour
+            .overlay {   // m191 (design review): lunch has no photo, so it shows a mark, not what looks like a gap
+                if feel == "Lunch" {
+                    GeometryReader { g in
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: max(16, min(64, min(g.size.width, g.size.height) * 0.3)), weight: .light))
+                            .foregroundStyle(Color(hex: 0xF4EBDD).opacity(0.85))
+                            .frame(width: g.size.width, height: g.size.height)
+                    }
+                    .accessibilityHidden(true)
+                }
+            }
+    }
+
+    @ViewBuilder private var colour: some View {
         switch feel {
         case "Drifting", "Big views":
             LinearGradient(stops: [.init(color: Color(hex: 0x22304A), location: 0), .init(color: Color(hex: 0x4A5C78), location: 0.4),

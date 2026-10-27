@@ -380,7 +380,7 @@ fun FormRow(label: String, last: Boolean = false, stacked: Boolean = false, cont
 /** A small round icon button (− and + for the number of stops). */
 @Composable
 fun RoundIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, disabled: Boolean, onClick: () -> Unit) {
-    Box(Modifier.size(44.dp).pressable(enabled = !disabled, haptic = true, onClick = onClick)
+    Box(Modifier.size(48.dp).pressable(enabled = !disabled, haptic = true, onClick = onClick)   // m191: Android's 48 dp
         .semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
         Box(Modifier.size(34.dp).border(1.dp, Theme.outlineStrong, CircleShape), contentAlignment = Alignment.Center) {
             Icon(icon, null, tint = if (disabled) Theme.muted else Theme.ink, modifier = Modifier.size(18.dp))
@@ -820,7 +820,7 @@ fun MomentHero(stop: Stop, height: Dp = 380.dp, rounded: Boolean = false, drift:
             when {
                 info != null -> MomentImage(stop.momentId, stop.feelWord, Modifier.fillMaxSize(), drift = drift)
                 pin != null -> OsmMap(listOf(MapPin(pin, stop.title)), Modifier.fillMaxSize(), zoom = 16)
-                else -> Box(Modifier.fillMaxSize().background(fieldBrush(stop.feelWord)))
+                else -> FieldBox(stop.feelWord, Modifier.fillMaxSize())
             }
             if (!rounded) {   // so the back button reads on a bright photo
                 Box(Modifier.fillMaxWidth().height(130.dp).background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.5f),

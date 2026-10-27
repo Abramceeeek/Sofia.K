@@ -459,6 +459,9 @@ struct DayEndQuestions: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
+            Text("Two quick questions, both optional.")   // m191 (design review)
+                .font(.footnote)
+                .foregroundStyle(Theme.muted)
             SurveyQuestion(text: "Was today worth what you spent on it?") {
                 HStack(spacing: 8) {
                     ForEach([("less", "Not quite"), ("about_right", "Yes"), ("more", "More than that")], id: \.0) { key, label in

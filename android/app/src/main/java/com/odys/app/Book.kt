@@ -206,6 +206,8 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
                         book.flightFilters.sort == key, Modifier.weight(1f)) { book.flightFilters = book.flightFilters.copy(sort = key) }
                 }
             }
+            // m191 (design review): "Best" is a judgement, so say whose
+            if (book.flightFilters.sort == "best") Text("Best balances price and journey time.", style = Theme.footnote)
         }
         if (segment == "stays") {
             val tabs = book.stays?.tabs ?: emptyMap()

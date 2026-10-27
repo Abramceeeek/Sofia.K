@@ -91,6 +91,7 @@ import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.min
+import androidx.compose.material.icons.outlined.Restaurant
 
 // D119: the ODYS parts every screen is built from: the arch, buttons, tiles, the eyebrow, and the motion vocabulary
 // (app/Sources/Odys.swift). Rules: a response to a tap finishes within 300 ms; ease, never bounce; nothing makes you
@@ -836,7 +837,19 @@ fun MomentImage(momentId: String, feel: String?, modifier: Modifier = Modifier, 
             },
         )
     } else {
-        Box(modifier.background(fieldBrush(feel)))
+        FieldBox(feel, modifier)
+    }
+}
+
+/** The field of colour; lunch has no photo, so it shows a mark, not what looks like a gap (m191, design review). */
+@Composable
+fun FieldBox(feel: String?, modifier: Modifier = Modifier) {
+    // a plain Box: the stop cards measure their height from their content, which a size-aware box can't take part in
+    Box(modifier.background(fieldBrush(feel)), contentAlignment = Alignment.Center) {
+        if (feel == "Lunch") {
+            Icon(Icons.Outlined.Restaurant, null, tint = Color(0xFFF4EBDD).copy(alpha = 0.85f),
+                modifier = Modifier.fillMaxSize(0.34f))
+        }
     }
 }
 

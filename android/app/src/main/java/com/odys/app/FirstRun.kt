@@ -323,10 +323,10 @@ fun ConsentView(model: AppModel) {
             Box(Modifier.fillMaxWidth().height(1.dp).background(Theme.hairline))
             CheckRow("I agree to take part", agree) { agree = it }
         }
-        PrimaryButton(if (model.busy) "One moment…" else "Continue", enabled = adult && agree && !model.busy) { model.agree() }
-        if (!(adult && agree)) {
+        if (!(adult && agree)) {   // m191 (design review): the hint comes before the button it explains
             Text("Tick both to continue.", style = Theme.footnote, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         }
+        PrimaryButton(if (model.busy) "One moment…" else "Continue", enabled = adult && agree && !model.busy) { model.agree() }
         QuietButton(if (code.isEmpty()) "Got a tester code?" else "Tester code: $code") { askCode = true }
     }
     if (askCode) {

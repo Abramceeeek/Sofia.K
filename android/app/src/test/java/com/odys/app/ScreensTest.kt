@@ -41,6 +41,7 @@ class ScreensTest {
         val app = ApplicationProvider.getApplicationContext<android.app.Application>()
         WorkManagerTestInitHelper.initializeTestWorkManager(app)
         model = AppModel(app)
+        Dates.greetingForScreens = "Good morning"   // m191: the same greeting as the iPhone's screenshots
         model.onboarding = demo("demo_onboarding", Onboarding.serializer())
         model.learned = demo("demo_summary", Learned.serializer())
         val plan = demo("demo_plan", Plan.serializer())

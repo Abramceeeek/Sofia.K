@@ -302,6 +302,7 @@ fun DayEndQuestions(model: AppModel, planId: Int, modifier: Modifier = Modifier)
         model.answerDay(planId, new)
     }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(22.dp)) {
+        Text("Two quick questions, both optional.", style = Theme.footnote)   // m191 (design review)
         SurveyQuestion("Was today worth what you spent on it?") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for ((key, label) in listOf("less" to "Not quite", "about_right" to "Yes", "more" to "More than that")) {

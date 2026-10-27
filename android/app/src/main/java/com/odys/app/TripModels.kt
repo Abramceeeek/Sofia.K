@@ -465,9 +465,13 @@ object Dates {
 
     fun hhmm(minutes: Int): String = String.format(uk, "%02d:%02d", minutes / 60, minutes % 60)
 
+    /** m191: set by the screenshot test, so both phones' screenshots greet the same. */
+    var greetingForScreens: String? = null
+
     /** "Good morning", in London time. */
     val greeting: String
         get() {
+            greetingForScreens?.let { return it }
             val h = now().hour
             return if (h < 12) "Good morning" else if (h < 18) "Good afternoon" else "Good evening"
         }

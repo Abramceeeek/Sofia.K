@@ -86,13 +86,18 @@ fun SafetyView(model: AppModel, prefill: String = "", onClose: () -> Unit) {
                     Text("Emergency", style = Theme.headline.copy(color = Theme.emergencyTitle))
                     Text("If you or someone else is in danger or hurt, call 999 now.", style = Theme.body.copy(color = Theme.emergencyText))
                     Pill("Call 999", PillKind.Danger, height = 54.dp, icon = Icons.Filled.Phone) { dial(context, "999") }
+                }
+                // m191 (design review, 27 Oct): the red card says one thing, call 999; NHS 111 and Samaritans, for other
+                // needs, sit in a quieter card under it. The same help, each with one clear purpose.
+                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Theme.surface).padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     // D123: urgent medical help that isn't an emergency (nhs.uk: "call 111 and ask for an interpreter")
                     Text("Urgent medical help that isn't an emergency: call NHS 111. You can ask for an interpreter.",
-                        style = Theme.subheadline.copy(color = Theme.emergencyText), modifier = Modifier.padding(top = 4.dp))
+                        style = Theme.subheadline.copy(color = Theme.inkSoft))
                     Pill("Call 111", PillKind.Secondary, height = 48.dp, icon = Icons.Filled.LocalHospital) { dial(context, "111") }
                     // D127: the team isn't watched overnight, so a free line that is (samaritans.org, checked 20 Oct 2026)
                     Text("Need to talk to someone, day or night? Samaritans answer free on 116 123.",
-                        style = Theme.subheadline.copy(color = Theme.emergencyText),
+                        style = Theme.subheadline.copy(color = Theme.inkSoft),
                         modifier = Modifier.padding(top = 4.dp).clickable { dial(context, "116123") })
                 }
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Theme.surface).padding(18.dp),

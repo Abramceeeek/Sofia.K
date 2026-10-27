@@ -94,7 +94,16 @@ struct SafetyView: View {
         }
     }
 
+    /// m191 (design review, 27 Oct): the red card says one thing, call 999; NHS 111 and Samaritans, for other needs,
+    /// sit in a quieter card under it. The same help, each with one clear purpose.
     private var emergency: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            emergencyCard
+            otherHelp
+        }
+    }
+
+    private var emergencyCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Emergency")
                 .font(.headline)
@@ -108,12 +117,19 @@ struct SafetyView: View {
                 Label("Call 999", systemImage: "phone.fill")
             }
             .buttonStyle(PillStyle(kind: .danger, height: 54))
+        }
+        .padding(18)
+        .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.emergencyBorder, lineWidth: 1))
+    }
+
+    private var otherHelp: some View {
+        VStack(alignment: .leading, spacing: 12) {
             // D123: urgent medical help that isn't an emergency (nhs.uk: "call 111 and ask for an interpreter")
             Text("Urgent medical help that isn't an emergency: call NHS 111. You can ask for an interpreter.")
                 .font(.subheadline)
-                .foregroundStyle(Theme.emergencyText)
+                .foregroundStyle(Theme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 4)
             Button {
                 if let url = URL(string: "tel:111") { openURL(url) }
             } label: {
@@ -126,16 +142,14 @@ struct SafetyView: View {
             } label: {
                 Text("Need to talk to someone, day or night? Samaritans answer free on **116 123**.")
                     .font(.subheadline)
-                    .foregroundStyle(Theme.emergencyText)
+                    .foregroundStyle(Theme.inkSoft)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(.plain)
             .padding(.top, 4)
         }
-        .padding(18)
-        .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.emergencyBorder, lineWidth: 1))
+        .surfaceCard(padding: 18, radius: 20)
     }
 
     /// D118: what the person sent, and each reply, newest first.

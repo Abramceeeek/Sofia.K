@@ -765,6 +765,14 @@ struct WhyStep: View {
                     }
                     .settle(i + 1)
                 }
+                // D118: opting out is never the loudest button; 19 Oct review: but a real one, easy to see and tap;
+                // m191 (both design reviews): a valid answer, so it sits with the choices, before Continue
+                SecondaryButton(title: "None of these") {
+                    model.why = []
+                    model.keepFeelings()
+                    model.next()
+                }
+                .frame(maxWidth: .infinity)
                 // D117: what we take from it, in their own words
                 ReactionSpace(text: model.why.isEmpty ? nil
                               : "Got it: you want to feel " + model.why.joined(separator: " and ") + ".")
@@ -772,13 +780,6 @@ struct WhyStep: View {
                     model.keepFeelings()             // journey audit: kept even if the app is closed before the end
                     model.next()
                 }
-                // D118: opting out is never the loudest button; 19 Oct review: but a real one, easy to see and tap
-                SecondaryButton(title: "None of these") {
-                    model.why = []
-                    model.keepFeelings()
-                    model.next()
-                }
-                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
@@ -807,6 +808,8 @@ struct PlacesStep: View {
     @State private var index = 0
     @State private var answered: String?
     @State private var advance: Task<Void, Never>?
+    // m191: the CI screenshot's reaction ("big museums full of history") goes with this answer, shown as tapped
+    @State private var demoAnswer: String? = AppConfig.demo ? "loved" : nil
 
     var body: some View {
         ScrollView {
@@ -826,7 +829,7 @@ struct PlacesStep: View {
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
                                   spacing: 10) {
                             ForEach(Labels.reactions, id: \.0) { pair in
-                                AnswerTile(title: pair.1, on: (answered ?? model.reactions[place.item]) == pair.0) {
+                                AnswerTile(title: pair.1, on: (answered ?? model.reactions[place.item] ?? (model.reaction != nil ? demoAnswer : nil)) == pair.0) {
                                     react(place, pair.0)
                                 }
                             }

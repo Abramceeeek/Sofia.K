@@ -260,7 +260,8 @@ struct ChoiceCard: View {
             .padding(18)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(lead ? Theme.selected : Theme.surface, in: RoundedRectangle(cornerRadius: 22))
-            .overlay(RoundedRectangle(cornerRadius: 22).stroke(lead ? Theme.accent.opacity(0.35) : Theme.outline, lineWidth: 1))
+            // m191 (design review): the same edge on both, so the warmer one reads as suggested, not as selected
+            .overlay(RoundedRectangle(cornerRadius: 22).stroke(Theme.outline, lineWidth: 1))
         }
         .buttonStyle(PressStyle())
         .accessibilityElement(children: .combine)
@@ -1995,17 +1996,24 @@ struct YouView: View {
                 if let onBack { BackLink(action: onBack) }
                 PageTitle(text: "You", font: Theme.serif(36, relativeTo: .largeTitle))
                     .padding(.top, onBack == nil ? 30 : 0)
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Emergency in the UK").font(.headline).foregroundStyle(Theme.emergencyTitle)
-                    Text("If you or someone else is in danger, call 999 first.")
-                        .foregroundStyle(Theme.emergencyText)
+                // m191 (Abram, 27 Oct): still first on You, but one line, so the page doesn't open on an alarm.
+                // Help & safety keeps the full card.
+                HStack(spacing: 12) {
+                    Text("Emergency? Call 999 first.")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.emergencyTitle)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
                     Button("Call 999") { if let url = URL(string: "tel://999") { openURL(url) } }
-                        .buttonStyle(PillStyle(kind: .danger, height: 52))
+                        .buttonStyle(PillStyle(kind: .danger, height: 44))
+                        .fixedSize()
                 }
-                .padding(18)
+                .padding(.leading, 16)
+                .padding(.trailing, 8)
+                .padding(.vertical, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
-                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.emergencyBorder, lineWidth: 1))
+                .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 18))
+                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.emergencyBorder, lineWidth: 1))
                 Button { showSafety = true } label: {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
