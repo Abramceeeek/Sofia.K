@@ -1091,10 +1091,12 @@ private val ratingLevels = listOf(0.12f, 0.32f, 0.55f, 0.8f, 1f)
  * rating, D114) or on to the next stop.
  */
 @Composable
-fun RatingView(model: AppModel, stop: Stop, planId: Int? = null, onNext: (() -> Unit)? = null, onClose: () -> Unit) {
-    var rating by remember { mutableStateOf<Int?>(null) }
+fun RatingView(model: AppModel, stop: Stop, planId: Int? = null, onNext: (() -> Unit)? = null,
+               savedRating: Int? = null,   // screenshots only: the thank-you, after saving (as on the iPhone)
+               onClose: () -> Unit) {
+    var rating by remember { mutableStateOf(savedRating) }
     var bring by remember { mutableStateOf("") }
-    var saved by remember { mutableStateOf(false) }
+    var saved by remember { mutableStateOf(savedRating != null) }
     var mote by remember { mutableIntStateOf(0) }
     var sharing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()

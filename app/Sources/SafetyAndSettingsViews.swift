@@ -362,6 +362,8 @@ struct DemoScreen: View {
         case "learnedchange":                                                   // 7b, changing something (D117)
             LearnedStep(startChanging: true).background(Theme.background)
         case "planform": HomeViewForm()                                         // 8
+        case "error", "waking", "mustinclude", "planend", "swap", "nowahead", "ratingpicked":
+            StateDemoScreen(name: name)                                         // 30 Oct: the states in between
         case "plan2": DayScreen(scroll: "stops")                                // 9b: further down, the stops
         case "planmap": DayScreen(layout: "map")                                // 9d
         case "reveal": DayScreen(reveal: 0.45)                                  // 9c: the plan reveal, part-way (D117)
@@ -374,8 +376,9 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
-        case "now":                                                             // 10b (D119, D130): today, on the way
-            DayScreen().onAppear {                                              // to the second stop (not a look ahead)
+        case "now", "nowlocation", "replan":                                    // 10b (D119, D130): today, on the way
+            // to the second stop (not a look ahead); 10g the location ask under it, 10h "Re-plan the rest of today?"
+            DayScreen().onAppear {
                 if let plan = model.plan { model.plan = plan.dated(Dates.isoDay.string(from: .now)) }
                 model.nowIndex = 1
                 model.showNow = true
@@ -408,13 +411,45 @@ struct DemoScreen: View {
         }
     }
 
-    private var demoStop: Stop? {
-        model.plan?.stops.first(where: { !($0.bestWindow ?? "").isEmpty && $0.rateable })
-            ?? model.plan?.stops.first(where: { $0.rateable })
+    private var demoStop: Stop? { Self.stop(model.plan) }
+
+    static func stop(_ plan: Plan?) -> Stop? {
+        plan?.stops.first(where: { !($0.bestWindow ?? "").isEmpty && $0.rateable }) ?? plan?.stops.first(where: { $0.rateable })
     }
 
     /// The Brain's answer to a Help & safety message (brain/notify.py USER_MESSAGE).
     static let sentReply = "If you or someone else is in danger or hurt, call 999 now. A person reads every message and will reply here in Help & safety, and by phone or email if you left one, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning."
+}
+
+/// CI screenshots only (30 Oct): the states a person meets between the main screens, kept apart from DemoScreen so
+/// its switch stays small enough to type-check quickly.
+struct StateDemoScreen: View {
+    @Environment(AppModel.self) private var model
+    let name: String
+
+    var body: some View {
+        switch name {
+        case "error":                                                           // 8c: a call that failed
+            HomeViewForm().onAppear {
+                model.errorMessage = "The planner took too long to answer. It may still be waking up, so try again in a minute."
+            }
+        case "waking": HomeViewForm().onAppear { model.busy = true; model.waking = true }   // 8d: the free server asleep
+        case "mustinclude":                                                     // 8b: "Must include"
+            HomeViewForm().sheet(isPresented: .constant(true)) { MustIncludePicker(selected: .constant(nil)).followsSky() }
+        case "planend": DayScreen(scroll: "end")                                // 9f: the end, the reminder ask
+        case "swap":                                                            // 10i: "Swap this stop?"
+            if let stop = DemoScreen.stop(model.plan) {
+                NavigationStack { StopView(stop: stop, demoSwap: true) }
+            }
+        case "nowahead":                                                        // 10k: started on a later day, a look ahead
+            DayScreen().onAppear {
+                model.nowIndex = 1
+                model.showNow = true
+            }
+        default:                                                                // 11a ("ratingpicked"): "Great", before Save
+            if let stop = DemoScreen.stop(model.plan) { RatingView(stop: stop, pickedRating: 4) }
+        }
+    }
 }
 
 /// Screen 8 on its own, as the home screen shows it before there's a plan.

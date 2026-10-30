@@ -118,7 +118,7 @@ struct NowView: View {
                         }
                     }
                     // 19 Oct review: asked under the day's own buttons, so the stop and "I'm done here" come first
-                    if !model.location.asked && !model.client.demo {
+                    if !model.location.asked && (!model.client.demo || model.screen == "nowlocation") {
                         LocationAsk()
                     }
                 } else {
@@ -167,6 +167,7 @@ struct NowView: View {
             .padding(.top, 40)
             .padding(.bottom, 12)
             }
+            .defaultScrollAnchor(model.screen == "nowlocation" ? UnitPoint.bottom : nil)   // CI screenshots: the ask
             .skyBackground(base: Theme.calm)   // D130
             .overlay {   // D130: the light opening out as you arrive; it never takes a tap
                 RadialGradient(colors: [Theme.amberLight.opacity(glow), .clear], center: UnitPoint(x: 0.5, y: 0.2),
@@ -187,7 +188,12 @@ struct NowView: View {
             RatingView(stop: stop, planId: model.currentTripDay?.day.before?.id).brainFeedback()
         }
         .replanRest(isPresented: $replanning)
-        .onAppear { model.location.start() }
+        .onAppear {
+            model.location.start()
+            if model.screen == "replan" {   // CI screenshots only: the question, open
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { replanning = true }
+            }
+        }
         .onDisappear { model.location.stop() }
         .onChange(of: model.location.here?.latitude) { _, _ in noticeArrival(stops, i) }
     }
@@ -313,6 +319,7 @@ struct RatingView: View {
     var planId: Int?                 // journey round 2: the stop's own plan (the place on the way), if not "your day"
     var onNext: (() -> Void)?
     var savedRating: Int?            // CI screenshots only: the thank-you, after saving
+    var pickedRating: Int?           // CI screenshots only: a word chosen, before Save
     @State private var rating: Int?
     @State private var bring = ""
     @State private var saved = false
@@ -366,6 +373,8 @@ struct RatingView: View {
                 if let savedRating, rating == nil {
                     rating = savedRating
                     saved = true
+                } else if let pickedRating, rating == nil {
+                    rating = pickedRating
                 }
             }
         }

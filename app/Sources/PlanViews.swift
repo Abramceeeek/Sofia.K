@@ -431,13 +431,14 @@ struct PlanView: View {
                     ReminderAsk().transition(.opacity)
                 }
                 actions
+                    .id("end")
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)
             .padding(.bottom, 40)
         }
         .onAppear {
-            if let demoScroll { proxy.scrollTo(demoScroll, anchor: .top) }
+            if let demoScroll { proxy.scrollTo(demoScroll, anchor: demoScroll == "end" ? .bottom : .top) }
         }
         // m190 (design review, 27 Oct): "Start the day" stays in reach, wherever the plan is scrolled to
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -1359,6 +1360,7 @@ struct StopView: View {
     @Environment(\.openURL) private var openURL
     let stop: Stop
     var demoScroll: String?            // CI screenshots only: scrolled to this part ("body")
+    var demoSwap = false               // CI screenshots only: "Swap this stop?" open
     @State private var showRating = false
     @State private var confirmSwap = false
     @State private var confirmRegenerate = false
@@ -1413,6 +1415,7 @@ struct StopView: View {
         .ignoresSafeArea(edges: .top)
         .onAppear {
             if let demoScroll { proxy.scrollTo(demoScroll, anchor: .top) }
+            if demoSwap { DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { confirmSwap = true } }
         }
         }
         .background(Theme.background)

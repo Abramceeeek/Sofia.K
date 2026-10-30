@@ -3,7 +3,14 @@ package com.odys.app
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.View
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.testing.WorkManagerTestInitHelper
 import kotlinx.serialization.KSerializer
@@ -71,18 +78,61 @@ class ScreensTest {
         Theme.sky = Sky.Night   // D130: the night look unless a test asks for the day
     }
 
-    /** Draws the app and saves the top window (a sheet, when one is open), drawn straight into a picture. */
-    private fun shoot(name: String) {
+    private fun settle() {
         compose.waitForIdle()
         compose.mainClock.advanceTimeBy(3000)
         compose.waitForIdle()
+    }
+
+    private fun windows(): List<View> {
         val global = Class.forName("android.view.WindowManagerGlobal").getMethod("getInstance").invoke(null)
         @Suppress("UNCHECKED_CAST")
         val views = global.javaClass.getDeclaredField("mViews").apply { isAccessible = true }.get(global) as List<View>
-        val top = views.last { it.width > 0 && it.height > 0 }
+        return views.filter { it.width > 0 && it.height > 0 }
+    }
+
+    /** Draws the app and saves the top window (a sheet, when one is open), drawn straight into a picture. */
+    private fun shoot(name: String, wait: Boolean = true) {
+        if (wait) settle()
+        val top = windows().last()
         val image = Bitmap.createBitmap(top.width, top.height, Bitmap.Config.ARGB_8888)
         compose.runOnUiThread { top.draw(Canvas(image)) }
         File(out, "$name.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** As `shoot`, but every window in order: a dialog sits centred on the screen under it, with the dim behind it. */
+    private fun shootLayers(name: String) {
+        settle()
+        val all = windows()
+        val base = all.first()
+        val image = Bitmap.createBitmap(base.width, base.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(image)
+        compose.runOnUiThread {
+            for (v in all) {
+                if (v === base) { v.draw(canvas); continue }
+                canvas.drawColor(0x99000000.toInt())   // Android's dim behind a dialog or sheet (0.6)
+                if (v.width >= base.width && v.height >= base.height) { v.draw(canvas); continue }
+                canvas.save()
+                canvas.translate((base.width - v.width) / 2f, (base.height - v.height) / 2f)
+                v.draw(canvas)
+                canvas.restore()
+            }
+        }
+        File(out, "$name.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** Scrolls to the first line holding this text, as a person would; with `tap`, taps it too. */
+    private fun reach(text: String, tap: Boolean = false, scroll: Boolean = true) {
+        settle()
+        val node = compose.onAllNodesWithText(text, substring = true).onFirst()
+        if (scroll) node.performScrollTo()
+        if (tap) node.performClick()
+    }
+
+    /** Scrolls the page to its end. */
+    private fun scrollToEnd() {
+        settle()
+        compose.onAllNodes(hasScrollAction()).onFirst().performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 100_000f) }
     }
 
     private fun show(name: String, setup: AppModel.() -> Unit = {}) {
@@ -114,7 +164,8 @@ class ScreensTest {
     @Test fun planDay() = show("09-plan") { tripPath += Dest.Day }
     @Test fun planMap() = show("09d-planmap") { prefs.set("planLayout", "map"); tripPath += Dest.Day }
     @Test fun stop() = show("10-stop") { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }
-    @Test fun now() = show("10b-now") { nowIndex = 1; showNow = true }
+    @Test fun now() = show("10b-now") { today(1); showNow = true }   // today, on the way (as the iPhone's)
+    @Test fun nowAhead() = show("10k-nowahead") { nowIndex = 1; showNow = true }   // a later day: a look ahead
     @Test fun trip() = show("24-trip") { tripPath += Dest.TripOverview(trips.first().id) }
     @Test fun tripDay() = show("25-tripday") { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.TripDay(trips.first().id, 0) }
     @Test fun tripCreate() = show("20-tripcreate") { showCreate = true }
@@ -126,7 +177,8 @@ class ScreensTest {
     // D131: flights and stays open inside the trip, and You from the home's menu
     private fun AppModel.openBook() { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.Book }
     @Test fun flights() = show("26-flights") { openBook(); book.segment = "flights" }
-    @Test fun flightFilters() = show("27-flightfilters") { openBook(); book.segment = "flights"; book.showFilters = true }
+    @Test fun flightFilters() = showThen("27-flightfilters", { openBook(); book.segment = "flights"; book.showFilters = true },
+        {}, layers = true)
     @Test fun flight() = show("28-flight") { openBook(); bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }
     @Test fun stays() = show("29-stays") { openBook(); book.segment = "stays" }
     @Test fun stay() = show("32-stay") { openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
@@ -243,4 +295,109 @@ class ScreensTest {
 
     // dated today, so the day is over rather than a look ahead, and the two end-of-day questions show (D127)
     @Test fun nowEnd() = show("10c-nowend") { plan = plan!!.copy(date = Dates.todayIso()); nowIndex = plan!!.stops.size; showNow = true }
+
+    // 30 Oct: every other state a person can see, matching the iPhone's screenshot list (names after the iPhone's)
+    private fun showThen(name: String, setup: AppModel.() -> Unit = {}, then: () -> Unit, layers: Boolean = false) {
+        model.setup()
+        compose.setContent { RootView(model) }
+        then()
+        if (layers) shootLayers(name) else shoot(name)
+    }
+    @Test fun intro() {   // the arch lighting up, part-way (as the iPhone's)
+        model.route = Route.Welcome
+        compose.mainClock.autoAdvance = false
+        compose.setContent { RootView(model) }
+        compose.mainClock.advanceTimeBy(450)
+        shoot("01c-intro", wait = false)
+    }
+    @Test fun exampleCard() = showThen("02b-examplecard", { route = Route.Example }, { reach("This is what a plan looks like") })
+    @Test fun learnedChange() = showThen("07c-learnedchange", { route = Route.Onboarding; step = Step.Learned },
+        { reach("Change something", tap = true) })
+    @Test fun error() = showThen("08c-error", { plan = null; tripPath += Dest.Day }, {
+        settle()
+        model.errorMessage = "The planner took too long to answer. It may still be waking up, so try again in a minute."
+    }, layers = true)
+    @Test fun waking() = show("08d-waking") { plan = null; tripPath += Dest.Day; waking = true; busy = true }
+    @Test fun planStops() = showThen("09b-plan2", { tripPath += Dest.Day }, { reach(model.plan!!.stops[2].title) })
+    @Test fun planReveal() {
+        model.tripPath += Dest.Day
+        model.revealPlanId = model.plan!!.id
+        compose.mainClock.autoAdvance = false
+        compose.setContent { RootView(model) }
+        compose.mainClock.advanceTimeBy(630)   // 0.45 of the 1.4 s reveal, as on the iPhone
+        shoot("09c-reveal", wait = false)
+    }
+    @Test fun planEnd() = showThen("09f-planend", { tripPath += Dest.Day }, { reach("Another day") })
+    @Test fun stopMore() = showThen("10a-stop2",
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }, { reach("Best time and light") })
+    @Test fun nowLocation() = showThen("10g-nowlocation", { today(1); showNow = true },
+        { reach("No thanks") })
+    @Test fun replan() = showThen("10h-replan", { today(1); showNow = true },
+        { reach("Re-plan the rest of today", tap = true) }, layers = true)
+    @Test fun swap() = showThen("10i-swap",
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) },
+        { reach("Swap this stop", tap = true) }, layers = true)
+    @Test fun ratingPicked() {
+        val stop = model.plan!!.stops.first { it.rateable }
+        compose.setContent { RootView(model); RatingView(model, stop) {} }
+        reach("Great", tap = true, scroll = false)
+        shoot("11a-ratingpicked")
+    }
+    @Test fun ratingDone() {
+        val stop = model.plan!!.stops.first { it.rateable }
+        compose.setContent { RootView(model); RatingView(model, stop, onNext = {}, savedRating = 4) {} }
+        shoot("11d-ratingdone")
+    }
+    @Test fun ratingDay() {
+        Theme.sky = Sky.Day
+        val stop = model.plan!!.stops.first { it.rateable }
+        compose.setContent { RootView(model); RatingView(model, stop) {} }
+        shoot("11e-rating-day")
+    }
+    @Test fun improveQuestion() {
+        compose.setContent { RootView(model); ImproveView(model) {} }
+        reach("Start", tap = true, scroll = false)
+        shoot("12b-improveq")
+    }
+    @Test fun safetySent() {
+        compose.setContent {
+            RootView(model)
+            SafetyView(model, sent = "If you or someone else is in danger or hurt, call 999 now. A person reads every message and will reply here in Help & safety, and by phone or email if you left one, usually within a few hours. It isn't watched through the night: a message sent late is answered the next morning.") {}
+        }
+        shoot("13c-safetysend")
+    }
+    @Test fun safetyReply() {
+        // the iPhone's sample reply (BrainClient.mySafety in demo mode)
+        model.safetyThreads = listOf(SafetyThread(1, "I've lost the group near the market and my phone is on 10%.",
+            "2026-10-31T14:05:00+00:00", true,
+            listOf(SafetyReplyItem("Hi, it's Abram. Are you somewhere safe? I'll call the number you left in a minute.",
+                "2026-10-31T14:31:00+00:00"))))
+        compose.setContent { RootView(model); SafetyView(model) {} }
+        reach("Hi, it's Abram")
+        shoot("13d-safetyreply")
+    }
+    @Test fun settingsDay() {
+        Theme.sky = Sky.Day
+        compose.setContent { RootView(model); SettingsView(model) {} }
+        shoot("14c-settings-day")
+    }
+    @Test fun pairQuestions() = showThen("17b-pair2",
+        { pairDone = false; plan = null; pair = demo("demo_pair", PairResponse.serializer()) },
+        { reach("Now read Plan 2", tap = true); reach("Why? (optional)") })
+    @Test fun welcomeDay() = day("01b-welcome-day") { route = Route.Welcome }
+    @Test fun homeTodayDayLight() = day("19g-hometoday-day") { today(1) }
+    @Test fun nowArrivedNight() = show("10j-nowarrived") { today(1); arrivedStops = setOf(plan!!.stops[1].id); showNow = true }
+    @Test fun homeAfterDay() = day("19f-homeafter-day") {
+        today(plan!!.stops.size)
+        val r = plan!!.stops.filter { it.rateable }.mapIndexed { i, st -> st.momentId to listOf(5, 4, 3, 4, 5)[i % 5] }.toMap()
+        myRatings = r; rated = r.keys
+    }
+    @Test fun tripDayLast() = showThen("25a-tripdaylast", {
+        tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.TripDay(trips.first().id, trips.first().dayCount - 1)
+    }, { scrollToEnd() })
+    @Test fun flightsDay() = day("26b-flights-day") { openBook(); book.segment = "flights" }
+    @Test fun staysMap() = show("30-staysmap") { openBook(); book.segment = "stays"; book.stayMap = true }
+    @Test fun stayFilters() = showThen("31-stayfilters", { openBook(); book.segment = "stays"; book.showFilters = true },
+        {}, layers = true)
+    @Test fun stayDay() = day("32b-stay-day") { openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
 }

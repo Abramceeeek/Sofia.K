@@ -2136,6 +2136,11 @@ struct TripDemoScreen: View {
                 if name == "tripday" { p.append(TripDest.tripDay(trip.id, 0)) }            // D122: the arrival day
                 model.path = p
             }
+        case "airports":                                                                  // 22b: "Where from?" search
+            if let trip = model.trips.first {
+                TripCreateFlow(trip: trip, editing: false, startAt: 2)
+                    .sheet(isPresented: .constant(true)) { AirportPicker(onPick: { _ in }).followsSky() }
+            }
         case "tripdaylast":                                                               // 25a: the way home
             if let trip = model.trips.first {
                 NavigationStack { TripDayView(tripId: trip.id, index: trip.dayCount - 1, scrollToEnd: true) }

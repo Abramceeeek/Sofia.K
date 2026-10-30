@@ -113,7 +113,12 @@ final class BrainClient {
 
     /// m176: the moments a plan can include, for "Must include".
     func moments() async throws -> [MomentSummary] {
-        if demo { return [] }
+        if demo {   // the sample plan's places, for the screenshots (as on Android)
+            let plan: Plan = try BrainClient.bundled("demo_plan")
+            return plan.stops.filter(\.rateable).map {
+                MomentSummary(id: $0.momentId.components(separatedBy: "#")[0], title: $0.title, status: "ready", plannable: true)
+            }
+        }
         return try await call("GET", "v1/moments?plannable_only=true")
     }
 

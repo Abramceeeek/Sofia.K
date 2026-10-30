@@ -64,12 +64,12 @@ fun dial(context: android.content.Context, number: String) {
  * card's "Something wrong with this place?").
  */
 @Composable
-fun SafetyView(model: AppModel, prefill: String = "", onClose: () -> Unit) {
+fun SafetyView(model: AppModel, prefill: String = "", sent: String? = null, onClose: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf(prefill) }
     var contact by remember { mutableStateOf("") }
-    var reply by remember { mutableStateOf<String?>(null) }
+    var reply by remember { mutableStateOf(sent) }   // `sent`: screenshots only, just sent (as on the iPhone)
     var showSettings by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         model.loadSafety()

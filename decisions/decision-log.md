@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-10-30 — Every screen, on both phones
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m192 | **The screenshots cover every state a person can see, on both phones, side by side** (Abram: "screenshot every single page and every single thing that will be seen by a customer"). Added to the CI lists, in both apps: "Something went wrong", "Waking up the planner", "Must include", the end of the plan with the reminder ask, "Swap this stop?", "Re-plan the rest of today?", the location ask on "Now", "Now" on a later day (a look ahead), a rating word chosen before Save, and the airport search. Android gained the ones only the iPhone had (the opening arch, the example day further down, "Change something", the plan's stops and reveal, a stop further down, rating saved, an improve question, Help & safety sent and replied, the second pair page, the last trip day, the stays map and filters, and the daylight versions). Android's night "Now" was a look ahead; it is now on the way, as on the iPhone. Demo-only code: `StateDemoScreen` on the iPhone; Android's tests scroll and tap as a person would, and draw a dialog over its screen with the dim behind. `build_shots.py` now pairs each iPhone screen with its Android one. Only the iPhone has Abram's hello video (shown once the clip is recorded); only Android saves the shared picture as its own screen. Claude ~2 h, GUESS. | — | One complete, current set to review or hand to someone, rather than the main screens only. |
+
 ## 2026-10-27 — The outside design review
 
 | # | Decision | Replaces | Why |
