@@ -74,6 +74,8 @@ body{background:#E7E3DA;color:#1E2326;font-family:Inter,system-ui,sans-serif}
 h1{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:56px}
 h2{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:40px}
 .lead{font-size:17px;line-height:1.5;color:#3B4044;max-width:1100px;margin-top:10px}
+.toc{margin:28px 0 0 22px;font-size:19px;line-height:1.9;color:#3B4044}
+.toc b{font-weight:600;color:#1E2326}
 .sec{display:flex;flex-direction:column;gap:24px}
 .grid{display:grid;grid-template-columns:repeat(3,828px);gap:56px 48px}
 .shot{display:flex;flex-direction:column;gap:10px;width:828px}
@@ -128,7 +130,7 @@ def main(ios_dir, android_dir, out, built=""):
     listed = {n for _, names in GROUPS for n in names}
     extra = sorted((set(ios) | set(android)) - listed)
     groups = GROUPS + ([("More", extra)] if extra else [])
-    secs, files, both = [], {}, 0
+    secs, files, both, contents = [], {}, 0, []
     for title, names in groups:
         cells = []
         for n in names:
@@ -144,6 +146,7 @@ def main(ios_dir, android_dir, out, built=""):
                          f'{phone("Android", a, files, n, missing)}</div></div>')
         if cells:
             secs.append(f'<div class="sec"><h2>{html.escape(title)}</h2><div class="grid">{"".join(cells)}</div></div>')
+            contents.append(f"<li><b>{html.escape(title)}</b> · {len(cells)} screens</li>")
     n_ios = sum(1 for k in files if k.startswith("iphone/"))
     n_and = len(files) - n_ios
     page = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><title>ODYS screenshots</title>
@@ -151,7 +154,8 @@ def main(ios_dir, android_dir, out, built=""):
 <style>{CSS}</style></head><body><div class="board"><div><h1>ODYS · every screen a person sees</h1>
 <p class="lead">{n_ios} iPhone screens and {n_and} Android screens, side by side ({both} on both). {html.escape(built)}
 Drawn from the apps' own code with the same sample data, no server. Night unless marked; the colours follow London's
-real light, so the daylight versions are shown for the main screens.</p></div>
+real light, so the daylight versions are shown for the main screens.</p>
+<ol class="toc">{"".join(contents)}</ol></div>
 {"".join(secs)}</div></body></html>"""
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("index.html", page)
