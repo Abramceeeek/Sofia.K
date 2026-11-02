@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-02 — The Brain is down: its free database expired (open, Abram's decision)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m194 | **Found, not fixed: the Brain hasn't answered since 27 Oct 17:55 UTC.** Every 6-hourly "ops" check since then failed (the alerts went only to GitHub email, since no ops webhook is set). No Brain code changed after 25 Oct. `render.yaml` says the free database was made on 27 Sep and "expires about 27 Oct". Render (render.com/docs/free, read 2 Nov 2026): free databases "expire 30 days after creation"; an expired one "is inaccessible unless you upgrade it to a paid compute plan"; "a grace period of 14 days", then Render "deletes the database (along with all of its data)". So **deleted around 10 Nov**. The last good backup is 27 Oct 08:04 UTC (sealed to Abram's key; the GitHub artifact expires after 30 days, about 26 Nov). Abram's choice: (a) upgrade the database to a paid plan before ~10 Nov (price not found in Render's fetched pages: UNVERIFIED; the docs don't say the data survives the upgrade either); or (b) £0: delete the expired database, make a new free one, and restore the 27 Oct backup (`python -m brain.backup open` then `restore`, which needs his private key), with another 30-day clock to early December. Until then the apps can't onboard or plan. | — | Money and the testers' data are Abram's call (rule 8). |
+
 ## 2026-11-01 — The Figma file, updated
 
 | # | Decision | Replaces | Why |
