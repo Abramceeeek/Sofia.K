@@ -2,11 +2,11 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
-## 2026-11-01 — The Figma file, updated in part
+## 2026-11-01 — The Figma file, updated
 
 | # | Decision | Replaces | Why |
 |---|---|---|---|
-| m193 | **The Figma file's editable board is current (m190, m191); its real-screens page is half done.** Abram: "Can you update the figma?" The free plan allows 3 pages, so the 25 Oct versions stay on their pages, moved right under "Older version · 25 Oct", which keeps any comments attached. 76 of the 172 screenshots are uploaded; then Figma stopped every call at the Starter limit, which counted the editing calls too, unlike its docs suggest. Finishing takes about 3 calls once the limit allows (`design/figma/README.md`, "Update (1 Nov)"), or Abram can import the zip by hand. Upgrading Figma costs money, so it's Abram's call. `upload.py` now posts 8 at a time; `shots_layout.py` lays the pictures out by name. Claude ~1.5 h, GUESS. | — | The board was a week behind the app; the PDF and zip (m192) already cover the screenshots meanwhile. |
+| m193 | **The Figma file is current: the editable board (m190, m191) and the real screens, iPhone and Android side by side.** Abram: "Can you update the figma?" The free plan allows 3 pages, so the 25 Oct versions stay on their pages, moved right under "Older version · 25 Oct", which keeps any comments attached. On 1 Nov Figma refused a read call at the Starter limit; on 2 Nov the uploads and the layout (writes) still went through, so all 172 pictures are laid out, but no screenshot check was possible (reads are capped). Figma publishes no reset date; its forum support says "your plan's monthly cycle". `upload.py` now posts 8 at a time; `shots_layout.py` lays the pictures out by name. Claude ~2 h, GUESS. | — | The board was a week behind the app. |
 
 ## 2026-10-30 — Every screen, on both phones
 
