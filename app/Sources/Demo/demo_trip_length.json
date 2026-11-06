@@ -1,0 +1,90 @@
+{
+ "place": "London",
+ "strong_matches": 8,
+ "good_matches": 20,
+ "checked": 39,
+ "places_per_day": 3,
+ "suggested_days": 3,
+ "your_days": 5,
+ "spare_days": 2,
+ "headline": "Around 3 days",
+ "why": "Based on your current preferences, we've found 8 places in London that are particularly well suited to you. 20 more are likely to be good too.",
+ "note": "Based on the 39 places we've checked in London so far, your preferences, and about 3 places a day. It's an estimate of how much there is for you, not a limit on how long to stay.",
+ "short": null,
+ "options": [
+  {
+   "days": 1,
+   "label": "Highlights",
+   "line": "Your 3 best, at about 3 places a day. You'd leave out 5: Leadenhall Market, A rest in the Royal Festival Hall's free foyers by the river, Lunch in the brick-vaulted crypt of St Martin-in-the-Fields and 2 more.",
+   "covers": 3,
+   "of": 8,
+   "adds": [],
+   "leaves_out": [
+    "m_leadenhall_market",
+    "m_rfh_foyers_rest",
+    "m_st_martin_crypt_lunch",
+    "m_to_river_somerset",
+    "m_bank_of_england_gold"
+   ],
+   "yours": false,
+   "suggested": false
+  },
+  {
+   "days": 3,
+   "label": "Suggested for you",
+   "line": "All 8 of your best, at about 3 places a day.",
+   "covers": 8,
+   "of": 8,
+   "adds": [],
+   "leaves_out": [],
+   "yours": false,
+   "suggested": true
+  },
+  {
+   "days": 5,
+   "label": "More time",
+   "line": "All 8 of your best, plus 7 more you'd likely enjoy, such as A rooftop garden among the City towers, Dim sum lunch on Gerrard Street, Chinatown and 5 more.",
+   "covers": 8,
+   "of": 8,
+   "adds": [
+    "m_garden_at_120",
+    "m_chinatown_dim_sum",
+    "m_liberty_timber_galleries",
+    "m_national_gallery",
+    "a_kings_cross_canal",
+    "m_park_bike_loop_hyde",
+    "a_old_spitalfields_market"
+   ],
+   "leaves_out": [],
+   "yours": true,
+   "suggested": false
+  }
+ ],
+ "extra": [
+  {
+   "kind": "more",
+   "title": "See more you'd likely enjoy",
+   "line": "20 more good matches, such as Liberty's wooden galleries, built from two old warships, From Trafalgar Square into the quiet of the National Gallery and 18 more."
+  },
+  {
+   "kind": "slower",
+   "title": "Take it slower",
+   "line": "Your best places spread out: about 2 places a day, with longer at each."
+  },
+  {
+   "kind": "free",
+   "title": "Keep days free",
+   "line": "No plan: rest, meet someone, or wander."
+  },
+  {
+   "kind": "shopping",
+   "title": "A shopping day",
+   "line": "Such as Browsing Old Spitalfields Market, Portobello Road on a Saturday and 1 more."
+  },
+  {
+   "kind": "try",
+   "title": "Try something new",
+   "line": "Places that are worth a try for you, such as Sir John Soane's house of curiosities, top-lit and full of mirrors, A wander through Covent Garden and Soho and 9 more."
+  }
+ ]
+}

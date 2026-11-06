@@ -516,3 +516,16 @@ def test_days_for_keeps_the_days_shape():
     assert triplength.days_for([card(kind="area") for _ in range(3)], 4) == 3      # at most 1 wander a day
     six = [card() for _ in range(6)]
     assert triplength._covered(six, 1, 4) == 4 and triplength._covered(six, 2, 4) == 6
+
+
+def test_trip_length_names_each_place_once_on_the_page():
+    from types import SimpleNamespace
+
+    from brain import triplength
+    cards = [SimpleNamespace(id=f"m{i}", title=f"Place {i}: a line") for i in range(8)]
+    seen: set[str] = set()
+    first = triplength._names(cards, 2, seen)
+    second = triplength._names(cards, 2, seen)
+    assert first == "Place 0, Place 1 and 6 more"
+    assert second == "Place 2, Place 3 and 6 more"     # the next ones, and the count still covers all eight
+    assert triplength._names(cards[:2], 2, seen) == "Place 0, Place 1"   # nothing new left: the named ones again

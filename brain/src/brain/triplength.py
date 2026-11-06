@@ -73,7 +73,11 @@ def _a_day(n: int) -> str:
     return f"{n} place a day" if n == 1 else f"about {n} places a day"
 
 
-def _names(cards: list[Moment], n: int = 3) -> str:
+def _names(cards: list[Moment], n: int = 3, seen: set[str] | None = None) -> str:
+    """"A, B and 4 more". With `seen`, places the page hasn't named yet come first, so its lines don't repeat."""
+    if seen is not None:
+        cards = [m for m in cards if m.id not in seen] + [m for m in cards if m.id in seen]
+        seen.update(m.id for m in cards[:n])
     titles = [m.title.split(":")[0] for m in cards[:n]]
     more = len(cards) - len(titles)
     return ", ".join(titles) + (f" and {more} more" if more > 0 else "")
@@ -113,18 +117,19 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
 
     lengths = sorted({max(1, need - 2), need, min(MAX_DAYS, need + 2)} | ({min(MAX_DAYS, yours)} if yours else set()))
     options = []
+    seen: set[str] = set()   # the places already named on the page
     for d in lengths:
         k = _covered(core, d, per_day)
         missed = core[k:]
         added = more[:max(0, _covered(core + more, d, per_day) - len(core))] if d > need else []
         if d < need:
             label, line = "Highlights", (f"Your {k} best, at {_a_day(per_day)}. You'd leave out {len(missed)}: "
-                                         f"{_names(missed)}.")
+                                         f"{_names(missed, seen=seen)}.")
         elif d == need:
             label, line = "Suggested for you", f"All {len(core)} of your best, at {_a_day(per_day)}."
         elif added:
             label, line = "More time", (f"All {len(core)} of your best, plus {len(added)} more you'd likely enjoy, "
-                                        f"such as {_names(added, 2)}.")
+                                        f"such as {_names(added, 2, seen)}.")
         else:
             label, line = "More time", (f"All {len(core)} of your best at {_a_day(math.ceil(len(core) / d))}, with "
                                         f"{days(d - need)} to spare for what you choose.")
@@ -137,7 +142,7 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
         spare = yours - need
         if more:
             extra.append({"kind": "more", "title": "See more you'd likely enjoy",
-                          "line": f"{len(more)} more good matches, such as {_names(more, 2)}."})
+                          "line": f"{len(more)} more good matches, such as {_names(more, 2, seen)}."})
         extra.append({"kind": "slower", "title": "Take it slower",
                       "line": f"Your best places spread out: {_a_day(math.ceil(len(core) / yours))}, "
                               f"with longer at each."})
@@ -145,10 +150,10 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
                       "line": "No plan: rest, meet someone, or wander."})
         shops = [m for m, _ in cards if m.id in SHOPPING and m not in core]
         if shops:
-            extra.append({"kind": "shopping", "title": "A shopping day", "line": f"Such as {_names(shops, 2)}."})
+            extra.append({"kind": "shopping", "title": "A shopping day", "line": f"Such as {_names(shops, 2, seen)}."})
         if rest:
             extra.append({"kind": "try", "title": "Try something new",
-                          "line": f"Places that are worth a try for you, such as {_names(rest, 2)}."})
+                          "line": f"Places that are worth a try for you, such as {_names(rest, 2, seen)}."})
 
     short = None
     if yours and yours < need:

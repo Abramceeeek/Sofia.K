@@ -151,6 +151,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var showCreate by mutableStateOf(false)
     var editingTrip by mutableStateOf<Trip?>(null)
     var editStep by mutableStateOf<Int?>(null)
+    /** m196: the last "How long should I stay?" answer, with what was asked (the screenshots hand one in). */
+    var tripLength by mutableStateOf<Pair<TripLengthRequest, TripLength>?>(null)
     val book = BookState()
 
     // Build 2

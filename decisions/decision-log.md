@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-06 — "How long should I stay?" on both phones (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m197 | **The trip length is the last question of a new trip, in both apps** (after "How should the trip feel?", since it uses the hours, places a day and feelings). "Around 3 days" as the headline, why in the person's terms, each length with what it covers or leaves out by name, "your dates" marked, what longer could add, and the basis note (coverage of the checked places, not a limit). Picking a length changes only the nights; the dates stay unless the person picks. If the Brain can't answer, the dates stay and the trip goes on. Each line names places the page hasn't named yet, so the same place isn't listed twice. Built on `claude/vigilant-cannon-my82dj` only: screenshots from the simulator (iOS, `upload=false`) and Robolectric (Android). Minor (D69). | A new trip with five questions | Abram asked to see the recommendation itself on both phones before the next feature. |
+
 ## 2026-11-06 — The product direction: a travel platform, tested first
 
 | # | Decision | Replaces | Why |

@@ -472,9 +472,9 @@ private fun KnowItem(title: String, text: String, links: List<Pair<String, Strin
     }
 }
 
-// ---- Plan a trip: where, when, getting there, your days, how it should feel ------------------------------------
+// ---- Plan a trip: where, when, getting there, your days, how it should feel, how long ---------------------------
 
-private const val TRIP_QUESTIONS = 5
+private const val TRIP_QUESTIONS = 6
 
 /** Journey round 2: who's going and the airport you fly from change the searches, not the days. */
 fun onlySearchChanged(old: Trip, new: Trip): Boolean {
@@ -557,7 +557,8 @@ fun TripCreateFlow(model: AppModel) {
                         1 -> WhenStep(trip) { trip = it }
                         2 -> FromStep(trip, { trip = it }) { showAirports = true }
                         3 -> DaysStep(trip) { trip = it }
-                        else -> FeelStep(trip) { trip = it }
+                        4 -> FeelStep(trip) { trip = it }
+                        else -> LengthStep(model, trip) { trip = it }   // m196: last, as it uses the hours, places a day and feelings
                     }
                 }
             }
@@ -840,6 +841,70 @@ fun FeelStep(trip: Trip, onChange: (Trip) -> Unit) {
         for ((key, label, line) in TripFeelings.all) {
             OptionTile(label, line, key in trip.feelings, serif = true, offFill = Theme.surface, offStroke = Color.Transparent) {
                 onChange(trip.copy(feelings = if (key in trip.feelings) trip.feelings - key else (trip.feelings + key).takeLast(2)))
+            }
+        }
+    }
+}
+
+/** m196: what "How long should I stay?" asks the Brain: the trip as it is when the question opens. */
+fun Trip.lengthRequest() = TripLengthRequest(destination, nights, feelings, dayFrom, dayTo, placesPerDay)
+
+/**
+ * m196: "How long should I stay?" From the person's strong matches at their pace (brain/src/brain/triplength.py), as
+ * on the iPhone. An estimate of how much there is for them, never a limit: their dates stay unless they pick another
+ * length. Asked once, with the dates they chose; picking a length only changes the nights.
+ */
+@Composable
+fun LengthStep(model: AppModel, trip: Trip, onChange: (Trip) -> Unit) {
+    val request = remember { trip.lengthRequest() }
+    var answer by remember { mutableStateOf(model.tripLength?.takeIf { it.first == request }?.second) }
+    var failed by remember { mutableStateOf(false) }
+    LaunchedEffect(request) {
+        if (answer != null) return@LaunchedEffect
+        runCatching { model.client.tripLength(request) }
+            .onSuccess { answer = it; model.tripLength = request to it }
+            .onFailure { failed = true }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Eyebrow("Your time in ${trip.city}")
+        val a = answer
+        when {
+            a != null -> {
+                PageTitle(a.headline)
+                Text(a.why, style = Theme.body.copy(color = Theme.inkSoft))
+                val spare = a.spareDays ?: 0
+                if (a.short != null) Text(a.short, style = Theme.body.copy(color = Theme.accent))
+                else if (spare > 0) Text("Your dates give you $spare more day${if (spare == 1) "" else "s"} than this, to use as you like.",
+                    style = Theme.body.copy(color = Theme.accent))
+                SectionLabel("How long?", Modifier.padding(top = 8.dp))
+                for (o in a.options) {
+                    OptionTile("${o.days} day${if (o.days == 1) "" else "s"} · ${o.label}${if (o.yours) " · your dates" else ""}",
+                        o.line, trip.nights == o.days, offFill = Theme.surface, offStroke = Color.Transparent) {
+                        onChange(trip.copy(nights = o.days))
+                    }
+                }
+                if (a.extra.isNotEmpty()) {
+                    SectionLabel("With longer, you could", Modifier.padding(top = 8.dp))
+                    Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        for (e in a.extra) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(e.title, style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold))
+                                Text(e.line, style = Theme.subheadline.copy(color = Theme.inkSoft))
+                            }
+                        }
+                    }
+                }
+                Text(a.note + " Your arrival and departure days count as one between them.", style = Theme.footnote,
+                    modifier = Modifier.padding(top = 4.dp))
+            }
+            failed -> {
+                PageTitle("How long?")
+                Text("We couldn't work this out just now. Your dates stay as they are.",
+                    style = Theme.body.copy(color = Theme.inkSoft))
+            }
+            else -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.CircularProgressIndicator(Modifier.size(20.dp), color = Theme.accent, strokeWidth = 2.dp)
+                Text("Looking at what there is for you…", style = Theme.body.copy(color = Theme.muted))
             }
         }
     }

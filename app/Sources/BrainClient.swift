@@ -200,6 +200,11 @@ final class BrainClient {
         return try await call("POST", "v1/trips/stays", search)
     }
 
+    func tripLength(_ request: TripLengthRequest) async throws -> TripLength {
+        if demo { return try Self.bundled("demo_trip_length") }
+        return try await call("POST", "v1/me/trips/length", request)
+    }
+
     func tripDays(_ request: TripDaysRequest) async throws -> TripDaysResponse {
         if demo { return try Self.bundled("demo_trip_days") }
         return try await call("POST", "v1/me/trips/days", request)

@@ -277,6 +277,41 @@ data class DayWindow(val start: String, val end: String, val stops: Int)
 @Serializable
 data class TripDaysResponse(val totalDays: Int, val days: List<TripDayOut>, val start: String, val used: List<String>)
 
+/** m196: "How long should I stay?" (POST /v1/me/trips/length). Nothing is planned or stored by asking. */
+@Serializable
+data class TripLengthRequest(
+    val destination: String,
+    val nights: Int?,
+    val feelings: List<String>,
+    val dayStart: String,
+    val dayEnd: String,
+    val stopsPerDay: Int,
+)
+
+/** The Brain's answer: an estimate of how much there is for the person at their pace, never a limit (Abram, 6 Nov). */
+@Serializable
+data class TripLength(
+    val place: String,
+    val strongMatches: Int,
+    val goodMatches: Int,
+    val placesPerDay: Int,
+    val suggestedDays: Int,
+    val yourDays: Int? = null,
+    val spareDays: Int? = null,
+    val headline: String,
+    val why: String,
+    val note: String,
+    val short: String? = null,
+    val options: List<Option>,
+    val extra: List<Extra>,
+) {
+    @Serializable
+    data class Option(val days: Int, val label: String, val line: String, val yours: Boolean, val suggested: Boolean)
+
+    @Serializable
+    data class Extra(val kind: String, val title: String, val line: String)
+}
+
 // ---- the trip, kept on the phone (trips.json) -------------------------------------------------------------------
 
 @Serializable

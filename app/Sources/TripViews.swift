@@ -666,16 +666,19 @@ struct TripCreateFlow: View {
     @State private var showAirports = false
     @State private var confirmReplace = false
     let editing: Bool
+    var demoScrollEnd = false   // screenshots only: the bottom of the page (23c)
 
-    init(trip: Trip, editing: Bool, startAt: Int? = nil) {
+    init(trip: Trip, editing: Bool, startAt: Int? = nil, demoScrollEnd: Bool = false) {
         _trip = State(initialValue: trip)
         _step = State(initialValue: startAt ?? (editing ? 1 : 0))
         self.editing = editing
+        self.demoScrollEnd = demoScrollEnd
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     switch step {
@@ -683,7 +686,8 @@ struct TripCreateFlow: View {
                     case 1: WhenStep(trip: $trip)
                     case 2: FromStep(trip: $trip, showAirports: $showAirports)
                     case 3: DaysStep(trip: $trip)
-                    default: FeelStep(trip: $trip)
+                    case 4: FeelStep(trip: $trip)
+                    default: LengthStep(trip: $trip)   // m196: last, as it uses the hours, places a day and feelings
                     }
                 }
                 .padding(.horizontal, 24)
@@ -693,6 +697,11 @@ struct TripCreateFlow: View {
                 .settle(0)
             }
             .scrollBounceBehavior(.basedOnSize)
+            .onAppear {
+                guard demoScrollEnd else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { proxy.scrollTo("pageEnd", anchor: .bottom) }
+            }
+            }
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
@@ -759,7 +768,7 @@ struct TripCreateFlow: View {
         return a == b && (old.adults != new.adults || old.origin != new.origin)
     }
 
-    static let questions = 5
+    static let questions = 6
 
     private var buttonTitle: String {
         if step < Self.questions - 1 { return "Continue" }
@@ -1268,6 +1277,84 @@ struct MenuRow: View {
         .padding(.vertical, 12)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// m196: "How long should I stay?" From the person's strong matches at their pace (brain/src/brain/triplength.py).
+/// An estimate of how much there is for them, never a limit: their dates stay unless they pick another length.
+/// Asked once, with the dates they chose; picking a length only changes the nights.
+struct LengthStep: View {
+    @Environment(AppModel.self) private var model
+    @Binding var trip: Trip
+    @State private var answer: TripLength?
+    @State private var failed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Eyebrow("Your time in \(trip.city)")
+            if let a = answer {
+                PageTitle(text: a.headline, font: Theme.h1)
+                Text(a.why)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let short = a.short {
+                    Text(short).foregroundStyle(Theme.accent).fixedSize(horizontal: false, vertical: true)
+                } else if let spare = a.spareDays, spare > 0 {
+                    Text("Your dates give you \(spare) more day\(spare == 1 ? "" : "s") than this, to use as you like.")
+                        .foregroundStyle(Theme.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                SectionLabel(text: "How long?")
+                    .padding(.top, 8)
+                ForEach(a.options, id: \.days) { o in
+                    OptionTile(label: "\(o.days) day\(o.days == 1 ? "" : "s") · \(o.label)\(o.yours ? " · your dates" : "")",
+                               sub: o.line, on: trip.nights == o.days, offFill: Theme.surface, offStroke: .clear) {
+                        trip.nights = o.days
+                    }
+                }
+                if !a.extra.isEmpty {
+                    SectionLabel(text: "With longer, you could")
+                        .padding(.top, 8)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(a.extra, id: \.kind) { e in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(e.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                                Text(e.line)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Theme.inkSoft)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .surfaceCard(padding: 16)
+                }
+                Text(a.note + " Your arrival and departure days count as one between them.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+                    .id("pageEnd")
+            } else if failed {
+                PageTitle(text: "How long?", font: Theme.h1)
+                Text("We couldn't work this out just now. Your dates stay as they are.")
+                    .foregroundStyle(Theme.inkSoft)
+            } else {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Looking at what there is for you…").foregroundStyle(Theme.muted)
+                }
+            }
+        }
+        .task {
+            guard answer == nil else { return }
+            do {
+                answer = try await model.client.tripLength(TripLengthRequest(
+                    destination: trip.destination, nights: trip.nights, feelings: trip.feelings,
+                    dayStart: trip.dayFrom, dayEnd: trip.dayTo, stopsPerDay: trip.placesPerDay))
+            } catch {
+                failed = true
+            }
+        }
     }
 }
 
@@ -2123,10 +2210,12 @@ struct TripDemoScreen: View {
             if let pair = Self.pair("demo_pair") { PairCompare(pair: pair, demoQuestions: true).background(Theme.background) }
         case "pairreveal":                                                                // 18
             if let pair = Self.pair("demo_pair_done") { PairReveal(pair: pair) }
-        case "tripwhere", "tripwhen", "tripfrom", "tripdays", "tripfeel":                 // 20-23, 22a
+        case "tripwhere", "tripwhen", "tripfrom", "tripdays", "tripfeel", "triplength", "triplength2":   // 20-23, 22a, 23b-c (m196)
             if let trip = model.trips.first {
                 TripCreateFlow(trip: trip, editing: false,
-                               startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4][name] ?? 0)
+                               startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4,
+                                         "triplength": 5, "triplength2": 5][name] ?? 0,
+                               demoScrollEnd: name == "triplength2")
             }
         case "trip", "tripday":                                                           // 24, 25
             LivingHome().onAppear {

@@ -109,6 +109,8 @@ SCREENS = [
     ("tripdays", "22a", "Trips (Abram's ODYS Trips design)", "Your days",
      "Out from and back by, places a day (plus lunch), and travelling light on day 1."),
     ("tripfeel", "23", "Trips (Abram's ODYS Trips design)", "How should the trip feel?", "One or two feelings; they shape every day of this trip."),
+    ("triplength", "23b", "Trips (branch, m196)", "How long should I stay?",
+     "\"Around 3 days\": how many of your strong matches there are at your pace, each length with what it covers or leaves out, and what longer could add. An estimate, never a limit: your dates stay unless you pick another."),
     ("trip", "24", "Trips (Abram's ODYS Trips design)", "The trip",
      "A checklist in the order you'd do it, each with its status, then your days and a running total of real numbers only."),
     ("tripday", "25", "Trips (Abram's ODYS Trips design)", "The first day",

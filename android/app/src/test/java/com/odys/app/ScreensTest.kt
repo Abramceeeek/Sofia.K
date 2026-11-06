@@ -174,6 +174,14 @@ class ScreensTest {
     @Test fun tripDays() = show("22a-tripdays") { editingTrip = trips.first(); editStep = 3; showCreate = true }
     // 20 Oct (round 2): a new trip on its last question, as on the iPhone ("Make my trip", not "Plan the trip again")
     @Test fun tripFeel() = show("23-tripfeel") { editingTrip = trips.first().copy(id = "draft"); editStep = 4; showCreate = true }
+    // m196 (branch only): "How long should I stay?", the last question, with the Brain's answer for this trip handed in
+    private fun AppModel.lengthStep() {
+        val t = trips.first().copy(id = "draft")
+        tripLength = t.lengthRequest() to demo("demo_trip_length", TripLength.serializer())
+        editingTrip = t; editStep = 5; showCreate = true
+    }
+    @Test fun tripLength() = show("23b-triplength") { lengthStep() }
+    @Test fun tripLengthMore() = showThen("23c-triplength2", { lengthStep() }, { reach("Your arrival and departure days") })
     // D131: flights and stays open inside the trip, and You from the home's menu
     private fun AppModel.openBook() { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.Book }
     @Test fun flights() = show("26-flights") { openBook(); book.segment = "flights" }

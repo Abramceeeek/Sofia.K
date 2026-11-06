@@ -224,6 +224,47 @@ struct TripEnd: Codable, Hashable {
     let time: String                       // "09:40": landing or arriving; on the way home, leaving
 }
 
+/// m196: "How long should I stay?" (POST /v1/me/trips/length). Nothing is planned or stored by asking.
+struct TripLengthRequest: Encodable {
+    let destination: String
+    let nights: Int?
+    let feelings: [String]
+    let dayStart: String
+    let dayEnd: String
+    let stopsPerDay: Int
+}
+
+/// The Brain's answer: an estimate of how much there is for the person at their pace, never a limit (Abram, 6 Nov).
+struct TripLength: Decodable, Hashable {
+    let place: String
+    let strongMatches: Int
+    let goodMatches: Int
+    let placesPerDay: Int
+    let suggestedDays: Int
+    let yourDays: Int?
+    let spareDays: Int?
+    let headline: String
+    let why: String
+    let note: String
+    let short: String?
+    let options: [Option]
+    let extra: [Extra]
+
+    struct Option: Decodable, Hashable {
+        let days: Int
+        let label: String
+        let line: String
+        let yours: Bool
+        let suggested: Bool
+    }
+
+    struct Extra: Decodable, Hashable {
+        let kind: String
+        let title: String
+        let line: String
+    }
+}
+
 struct TripDaysRequest: Encodable {
     let destination: String
     let startDate: String
