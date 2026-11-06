@@ -182,8 +182,9 @@ def main(argv: list[str] | None = None) -> int:
     o = sub.add_parser("open", help="decrypt a backup to JSON on standard output")
     o.add_argument("file")
     o.add_argument("--key", default="odys-backup-private.key")
-    r = sub.add_parser("restore", help="load a decrypted backup into an empty database")
+    r = sub.add_parser("restore", help="load a backup into an empty database: the sealed file with --key, or opened JSON")
     r.add_argument("file")
+    r.add_argument("--key", help="the private key, to restore a sealed backup straight from GitHub")
     r.add_argument("--database-url", required=True)
     a = ap.parse_args(argv)
     if a.cmd == "keygen":
@@ -203,9 +204,15 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "open":
         sys.stdout.write(unseal(Path(a.file).read_bytes(), Path(a.key).read_text(encoding="utf-8")).decode())
         return 0
+    raw = Path(a.file).read_bytes()
+    if raw.startswith(MAGIC):   # 6 Nov: opened in memory, so the answers are never written out in the clear
+        if not a.key:
+            print("This backup is sealed: add --key and the path to your private key.", file=sys.stderr)
+            return 1
+        raw = unseal(raw, Path(a.key).read_text(encoding="utf-8"))
     from .config import driver_url
     engine = db.make_engine(driver_url(a.database_url))
-    counts = restore(engine, json.loads(Path(a.file).read_text(encoding="utf-8")))
+    counts = restore(engine, json.loads(raw.decode("utf-8-sig")))   # -sig: JSON saved by Windows PowerShell
     print("Restored: " + ", ".join(f"{k} {n}" for k, n in counts.items()))
     return 0
 

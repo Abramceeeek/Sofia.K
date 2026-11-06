@@ -133,6 +133,24 @@ def test_a_sealed_backup_opens_only_with_its_key_and_restores(client, tmp_path):
         backup.restore(engine, data)
 
 
+def test_the_restore_command_takes_the_sealed_file_and_key(tmp_path, capsys):
+    public, private = backup.keygen()
+    key = tmp_path / "k.key"
+    key.write_text(private + "\n")
+    data = {"format": 1, "tables": {"users": []}}
+    sealed = tmp_path / "b.odysbk"
+    sealed.write_bytes(backup.seal(json.dumps(data).encode(), public))
+    url = f"sqlite:///{tmp_path / 'r.db'}"
+    assert backup.main(["restore", str(sealed), "--database-url", url]) == 1          # sealed, but no key
+    assert "--key" in capsys.readouterr().err
+    assert backup.main(["restore", str(sealed), "--key", str(key), "--database-url", url]) == 0
+    assert "Restored: " in capsys.readouterr().out
+    bom = tmp_path / "b.json"                       # opened JSON, as Windows PowerShell's `>` saves it
+    bom.write_bytes("﻿".encode() + json.dumps(data).encode())
+    url2 = f"sqlite:///{tmp_path / 'r2.db'}"
+    assert backup.main(["restore", str(bom), "--database-url", url2]) == 0
+
+
 def test_a_wrong_public_key_is_said_plainly():
     with pytest.raises(backup.BackupError, match="keygen"):
         backup.seal(b"x", "not-a-key")
