@@ -102,10 +102,21 @@ def no_answers_places(sunset: str | None, _cache: dict = {}) -> list[str]:
     return _cache[sunset]
 
 
+def unanswered(export: dict) -> int:
+    """UK testers shown the pair who haven't answered it yet (m196: missing answers are always counted)."""
+    visitors = {u for u, c in (export.get("cohorts") or {}).items() if c == "visitor"}
+    return len({pl["user_id"] for pl in export.get("plans", []) if (pl.get("intent") or {}).get("testb_pair")
+                and pl["user_id"] not in visitors and pl["kind"] == "personal" and pl["status"] == "offered"})
+
+
 def report(export: dict, overlap=no_answers_places) -> list[str]:
     ps = pairs(export)
     n = len(ps)
-    lines = [f"Test B read-out: {n} UK testers answered the pair (visitors from abroad left out)"]
+    lines = [f"Test B read-out: {n} UK testers answered the pair (visitors from abroad left out); "
+             f"{unanswered(export)} were shown it and haven't answered (not counted below)",
+             "Every share below is out of the testers who answered that question; how many didn't is shown with it.",
+             "Plan 1 and Plan 2 are the screen order only: each tester's personal and generic plan is told apart by "
+             "kind, never by its number."]
     if not n:
         return lines
     k = sum(p["chose_personal"] for p in ps)
@@ -117,7 +128,8 @@ def report(export: dict, overlap=no_answers_places) -> list[str]:
 
     both = [p for p in ps if p["fit_personal"] and p["fit_generic"]]
     diffs = [p["fit_personal"] - p["fit_generic"] for p in both]
-    lines += ["", "2. 'This plan fits me' (1-5), personal minus generic, paired"]
+    lines += ["", "2. 'This plan fits me' (1-5), personal minus generic, paired",
+              f"   both rated by {len(both)} of {n}; missing for {n - len(both)}"]
     if diffs:
         lo, hi = bootstrap_ci(diffs)
         pos, nz, p = sign_test(diffs)
@@ -160,9 +172,10 @@ def report(export: dict, overlap=no_answers_places) -> list[str]:
     lines += ["", "5. 'Which would be easier to actually do on the day?' (m196, optional)"]
     if told:
         c = Counter(p["easier"] for p in told)
-        lines.append(f"   {len(told)} answered: personal {c['personal']}, generic {c['generic']}, about the same {c['same']}")
+        lines.append(f"   {len(told)} of {n} answered ({n - len(told)} didn't): personal {c['personal']}, "
+                     f"generic {c['generic']}, about the same {c['same']}")
     else:
-        lines.append("   no answers yet")
+        lines.append(f"   no answers yet ({n} didn't answer)")
 
     generic_chosen = [p for p in ps if not p["chose_personal"]]
     lines += ["", f"6. Chose the generic plan: {len(generic_chosen)} of {n} (each one, to read before the averages)"]

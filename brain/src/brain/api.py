@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import os
 import re
 import secrets
 import uuid
@@ -260,7 +261,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "flights": ts.flight_source, "stays": ts.stay_source,
                 # Stage 1: whether the TfL and Met Office keys were found and work (never the keys)
                 "travel": tr.status if isinstance(tr, TflTravel) else "estimate",
-                "weather": app.state.forecast.status}
+                "weather": app.state.forecast.status,
+                # m196: the commit this server runs (Render sets RENDER_GIT_COMMIT), to record the friends' round's
+                # fixed version and check it stays the same; None when run elsewhere
+                "version": (os.environ.get("RENDER_GIT_COMMIT") or "")[:7] or None}
 
     @app.get("/privacy", response_class=HTMLResponse)
     def privacy():

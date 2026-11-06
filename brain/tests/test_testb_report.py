@@ -37,7 +37,8 @@ def test_report_counts_choices_pairs_fits_and_leaves_out_visitors():
     assert "Overlap" in out and "fully the same for 0 of 3" in out
     assert "personal plans, 1 days" in out and "generic plans, 1 days" in out
     assert "voice: 1 people, mean 5.0" in out and "skipped it: 1 people, mean 3.0" in out
-    assert "2 answered: personal 1, generic 1, about the same 0" in out                  # m196
+    assert "2 of 3 answered (1 didn't): personal 1, generic 1, about the same 0" in out   # m196
+    assert "both rated by 3 of 3; missing for 0" in out and "0 were shown it and haven't answered" in out
     assert "Chose the generic plan: 1 of 3" in out
     assert "c: fits me personal 2, generic 4; easier: generic; why: Less walking." in out
 
