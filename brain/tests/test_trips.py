@@ -481,7 +481,8 @@ def test_trip_length_comes_from_the_persons_matches_and_names_what_each_length_l
     d = r.json()
     need, yours = d["suggested_days"], d["your_days"]
     assert 1 <= need <= 14 and yours == 9 and d["places_per_day"] == 3
-    assert d["checked"] > 0 and "London" in d["why"]
+    assert d["checked"] > 0 and "London" in d["why"] and d["headline"] == f"Around {need} day{'s' if need != 1 else ''}"
+    assert "not a limit" in d["note"] and "3 places a day" in d["note"]
     lengths = [o["days"] for o in d["options"]]
     assert lengths == sorted(lengths) and need in lengths and yours in lengths
     by_days = {o["days"]: o for o in d["options"]}

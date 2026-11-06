@@ -10,6 +10,12 @@ D127; at most one wander, D72). Each length says what it covers, adds or leaves 
 as choices (more good matches, a slower pace, a free day, a shopping day, something new), never filled for the sake of
 it. Other places nearby come later (product direction, m196).
 
+What it is and isn't (Abram, 6 Nov): an estimate of how much the checked catalogue holds for this person at their pace,
+not a rule about how long to stay. The 75% line is the model's, awaiting validation against real ratings. It doesn't
+yet check the days are feasible (travel between places, opening days, how long each takes, arriving and leaving): the
+trip's days are planned by the day planner, which does. A later version should test the suggested length against
+those plans.
+
 Exploring days: a trip of n nights has n + 1 days, but the first and last are shortened by arriving and leaving, so
 together they count as about one (GUESS), giving about n exploring days.
 """
@@ -95,13 +101,15 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
     yours = max(1, nights) if nights is not None else None
     days = lambda n: f"{n} day{'s' if n != 1 else ''}"
 
+    # Abram, 6 Nov: an estimate of how much there is for this person, never a rule about how long to stay
     if len(strong) >= per_day:
-        why = (f"{len(strong)} of the {len(cards)} places we've checked in {place} are a strong match for you. "
-               f"At up to {per_day} places a day, that's about {days(need)} of exploring"
-               + (f", and {len(more)} more are a good match if you have longer." if more else "."))
+        why = (f"Based on your current preferences, we've found {len(strong)} places in {place} that are "
+               f"particularly well suited to you." + (f" {len(more)} more are likely to be good too." if more else ""))
     else:
-        why = (f"None of the {len(cards)} places we've checked in {place} is a strong match for you yet, so this "
-               f"uses your best {len(core)}. Rating the places you visit makes it sharper.")
+        why = (f"No place in {place} stands out strongly for you yet, so this uses your best {len(core)} for now. "
+               f"Rating the places you visit makes it sharper.")
+    note = (f"Based on the {len(cards)} places we've checked in {place} so far, your preferences, and "
+            f"{_a_day(per_day)}. It's an estimate of how much there is for you, not a limit on how long to stay.")
 
     lengths = sorted({max(1, need - 2), need, min(MAX_DAYS, need + 2)} | ({min(MAX_DAYS, yours)} if yours else set()))
     options = []
@@ -148,5 +156,6 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
         short = f"In {days(yours)} you'd see {k} of your {len(core)} best. {days(need).capitalize()} would cover them all."
     return {"place": place, "strong_matches": len(strong), "good_matches": len(good), "checked": len(cards),
             "places_per_day": per_day, "suggested_days": need, "your_days": yours,
-            "spare_days": max(0, yours - need) if yours else None, "why": why, "short": short,
+            "spare_days": max(0, yours - need) if yours else None, "headline": f"Around {days(need)}",
+            "why": why, "note": note, "short": short,
             "options": options, "extra": extra}

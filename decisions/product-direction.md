@@ -69,6 +69,11 @@ Not doing: price forecasts, a chat that writes itineraries, a social feed, handl
 
 "Works for any place" means the code makes no London-only assumptions (the list in A). It does not mean coverage. A place is offered only when its moments, travel times and opening hours are checked, and the app says plainly when something is unknown. Next places come after the friends' round, chosen with Abram. Each needs a source of place data: free (OpenStreetMap, Wikidata) or paid (a money decision).
 
+## Technical debt and open questions (Abram, 6 Nov)
+
+- **Card attributes:** the five shopping cards are listed by ID in `brain/src/brain/triplength.py`, because the cards have no category. Before the next city, every card gets structured attributes: category, experience type, duration, location, opening hours, price level, and the preference tags. Then no destination-specific lists spread through the Brain.
+- **Trip length:** an estimate of experience coverage, not a recommended holiday length. The 75% "strong match" line is the model's, awaiting validation against real ratings. A later version checks feasibility: travel time, opening hours, durations, arriving and leaving, and pace.
+
 ## F. Testing during the build
 
 - **`main` is the test build** while the friends' round runs: no pushes that change the apps or the Brain. New work stays on `claude/vigilant-cannon-my82dj`. Its iPhone checks run as simulator screenshots only, never TestFlight uploads; Android runs as local tests, not the published APK.
