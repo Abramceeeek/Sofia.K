@@ -2,6 +2,8 @@
 
 The Brain is the FastAPI backend. It holds the moment database, scores each moment for each person, and plans the day with OR-Tools. The SwiftUI app (the Face) calls it. The whole plan is in [`decisions/v0-ios-plan.md`](../decisions/v0-ios-plan.md).
 
+**Database (6 Nov, m195):** the free Render database (`london-places-swipe-db`, shared by both services) was replaced on 6 Nov after the first one expired, and restored from the nightly backup. **It expires on 6 Dec 2026** and is deleted 14 days later. Before then: a paid database (Abram's call), or the same swap again (delete, new free one, `python -m brain.backup restore <sealed file> --key <private key> --database-url <External URL>`, block outside access under the database's Networking, point both services' `…_DATABASE_URL` at the new Internal URL). `render.yaml`'s note about 27 Sep and 27 Oct is out of date; it is left as is, since changing it could set off a Blueprint sync.
+
 **Status (28 Sep):** 92 tests pass on Python 3.12. Only the swipe page is deployed (Render free tier, 27 Sep). It writes the Test B plans (D65). **The app build has started (D107):** the app's `POST /v1/me/plans` now uses the same planning engine as Test B (`src/brain/dayplan.py`), with the familiar favourite on by default (D103), and the app's swipes use the 16 locked places.
 
 ## Run it

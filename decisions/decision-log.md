@@ -2,7 +2,13 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
-## 2026-11-02 — The Brain is down: its free database expired (open, Abram's decision)
+## 2026-11-06 — The Brain is back, on a new free database
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m195 | **Abram chose the free route, and the Brain is back (6 Nov).** He deleted the expired database, made a new free one (`london-places-swipe-db`, Frankfurt, PostgreSQL 18), restored the 27 Oct backup from his Windows laptop with his private key, closed the database to the internet (Networking: "All internet traffic is blocked by PostgreSQL inbound IP rules"), and pointed both services at the new Internal URL. Restored: 15 installs, 13 answers, 24 kinds-of-places answers, 35 this-or-that choices, 97 events, 28 plans, 1 safety alert, 24 swipes, 1 day's feedback, 3 ratings, and 390 swipe-page answers. Nothing after 27 Oct 08:04 was lost (the Brain was down from 17:55 that day). `backup.py restore` now takes the sealed file and key directly, so the answers never sit on disk unencrypted (and it works from Windows PowerShell). **The new database expires on 6 Dec 2026** (Render's banner), deleted 14 days later: before then, a paid database (Abram's call) or the same swap again. The database URL was pasted in chat once; with outside connections blocked it can't be used from outside Render. Claude ~2 h, GUESS. | m194 | The app and the swipe page were down for 10 days; the testers' data was 4 days from deletion. |
+
+## 2026-11-02 — The Brain is down: its free database expired (fixed 6 Nov: m195)
 
 | # | Decision | Replaces | Why |
 |---|---|---|---|
