@@ -61,8 +61,19 @@ Also the stops' ratings, the end-of-day questions, and the Test A survey. `brain
    4. `moments-brain` → **Manual Deploy → Deploy latest commit**, and wait for "Deploy live".
    5. Claude checks `/v1/health` shows `"version": "80a0da3"`, and GitHub's deployment record shows `main` (dashboard labels alone don't count).
 2. **The tag** (Abram, from his copy of the repo, in PowerShell):
-   `git fetch origin` then `git tag -a friends-round-1 80a0da3 -m "The friends' round: main 80a0da3, TestFlight 91, Android 21"` then `git push origin friends-round-1`.
-3. **An internal run on the real builds:** Abram, on TestFlight 91 and Android 21, with the code `REHEARSAL`, goes through to the pair and answers it. Then he exports and runs the read-out with `--code REHEARSAL`: it should count 2 installs, both answered. Then "Delete my data" on both phones, so the round starts clean.
-4. The Apple outside-activities check, which gates external TestFlight (D60, D94). It's Abram's.
-5. TestFlight's external review of build 91. Android testers use the `android-latest` link.
-6. The tester code **FRIENDS** goes in every invite.
+   `git fetch origin` then `git tag -a friends-round-1 80a0da3 -m "The friends' round: main 80a0da3, TestFlight 91, Android 21"` then `git push origin friends-round-1`. Check: `git show friends-round-1 --no-patch` names commit `80a0da3`.
+3. **An internal run on the real builds** (Abram, with the code `REHEARSAL`):
+
+   | Install | Gut choice and both scores | "Easier" | Why |
+   |---|---|---|---|
+   | iPhone, TestFlight 91 | Answer | Answer | Answer |
+   | Android, build 21 | Answer | Skip | Skip |
+
+   Then the export and the read-out with `--code REHEARSAL --no-overlap`. It should count 2 installs, both answered the pair, and "easier" answered by 1 of 2 (1 didn't). **These are two installs by one person, not two participants**; the read-out says a tester is an install.
+4. **Clean up after the run:**
+   - "Delete my data" on both phones.
+   - On the same export, the read-out with `--code FRIENDS` should count 0 installs, so the round starts with no earlier answers. If an earlier test used FRIENDS, `--since <start date>` leaves those out, and the read-out says how many it counted. `REHEARSAL` installs never match `--code FRIENDS`, so they're excluded either way.
+   - Delete the export file: `Remove-Item validation\raw\export-rehearsal.json`. `validation/raw/` is git-ignored. Raw exports are never committed or shared, only the read-out's text. The admin token stays in Abram's PowerShell window, never in a chat.
+5. The Apple outside-activities check, which gates external TestFlight (D60, D94). It's Abram's.
+6. TestFlight's external review of build 91. Android testers use the `android-latest` link.
+7. Recruiting starts only after 5 and 6. The tester code **FRIENDS** goes in every invite, and the start date goes in the manifest.

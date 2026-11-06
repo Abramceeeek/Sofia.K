@@ -116,6 +116,8 @@ def report(export: dict, overlap=no_answers_places) -> list[str]:
     lines = [f"Test B read-out: {n} UK testers answered the pair (visitors from abroad left out); "
              f"{(u := unanswered(export))} {'was' if u == 1 else 'were'} shown it and haven't answered (not counted below)",
              "Every share below is out of the testers who answered that question; how many didn't is shown with it.",
+             "A tester here is one install of the app, not a person: there are no accounts, so one person on two "
+             "phones counts twice (m199).",
              "Plan 1 and Plan 2 are the screen order only: each tester's personal and generic plan is told apart by "
              "kind, never by its number."]
     if not n:
