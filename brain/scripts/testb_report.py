@@ -62,15 +62,21 @@ def pairs(export: dict) -> list[dict]:
     for pl in export.get("plans", []):
         if (pl.get("intent") or {}).get("testb_pair") and pl["user_id"] not in visitors:
             by_user.setdefault(pl["user_id"], []).append(pl)
+    easier = {a["user_id"]: a["text"] for a in export.get("answers", []) if a["question"] == "testb:easier"}
     out = []
     for uid, rows in sorted(by_user.items()):
         personal = next((r for r in rows if r["kind"] == "personal"), None)
         generic = next((r for r in rows if r["kind"] == "generic"), None)
         if not personal or not generic or personal["status"] == "offered":
             continue
+        chosen = personal if personal["status"] == "chosen" else generic
+        e = easier.get(uid)   # m196: a label ("1", "2") or "same", told apart into personal or generic here
         out.append({"user": uid, "chose_personal": personal["status"] == "chosen",
                     "fit_personal": personal.get("fit_rating"), "fit_generic": generic.get("fit_rating"),
-                    "places": _places(personal["stops"]), "sunset": (personal.get("intent") or {}).get("sunset")})
+                    "places": _places(personal["stops"]), "sunset": (personal.get("intent") or {}).get("sunset"),
+                    "easier": "same" if e == "same" else "personal" if e == personal.get("label") else
+                    "generic" if e == generic.get("label") else None,
+                    "why": chosen.get("reason")})
     return out
 
 
@@ -150,10 +156,24 @@ def report(export: dict, overlap=no_answers_places) -> list[str]:
     else:
         lines.append("   no answers yet")
 
+    told = [p for p in ps if p["easier"]]
+    lines += ["", "5. 'Which would be easier to actually do on the day?' (m196, optional)"]
+    if told:
+        c = Counter(p["easier"] for p in told)
+        lines.append(f"   {len(told)} answered: personal {c['personal']}, generic {c['generic']}, about the same {c['same']}")
+    else:
+        lines.append("   no answers yet")
+
+    generic_chosen = [p for p in ps if not p["chose_personal"]]
+    lines += ["", f"6. Chose the generic plan: {len(generic_chosen)} of {n} (each one, to read before the averages)"]
+    for p in generic_chosen:
+        lines.append(f"   {p['user'][:8]}: fits me personal {p['fit_personal']}, generic {p['fit_generic']}; "
+                     f"easier: {p['easier'] or 'not said'}; why: {p['why'] or 'not given'}")
+
     answers = export.get("answers", [])
     mode = {a["user_id"]: a["input_mode"] for a in answers if a["question"] == "best_hour"}
     understood = [(mode.get(a["user_id"]), int(a["text"])) for a in answers if a["question"] == "survey:understood"]
-    lines += ["", "5. Test A: 'I felt understood' (1-5) by how the open question was answered"]
+    lines += ["", "7. Test A: 'I felt understood' (1-5) by how the open question was answered"]
     for m in ("typed", "voice", None):
         xs = [v for md, v in understood if md == m]
         if xs:

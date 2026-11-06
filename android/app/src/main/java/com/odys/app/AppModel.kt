@@ -876,12 +876,12 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun sendPairFeedback(chosen: String, fit1: Int, fit2: Int, why: String, voice: Boolean) = launch {
+    fun sendPairFeedback(chosen: String, fit1: Int, fit2: Int, easier: String?, why: String, voice: Boolean) = launch {
         val text = why.trim()
         run {
             try {
                 pair = client.pairFeedback(PairFeedback(chosen, fit1, fit2, text.ifEmpty { null },
-                    if (voice) "voice" else "typed"))
+                    if (voice) "voice" else "typed", easier))
             } catch (e: BrainError) {
                 if (e.code == 409) pair = client.pair() else throw e
             }

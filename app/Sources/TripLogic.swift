@@ -119,12 +119,13 @@ extension AppModel {
         }
     }
 
-    /// The choice, "fits me" for each, and why. The Brain answers with the reveal and the chosen plan in full.
-    func sendPairFeedback(chosen: String, fit1: Int, fit2: Int, why: String, voice: Bool) async {
+    /// The choice, "fits me" for each, which would be easier to do (m196), and why. The Brain answers with the reveal and the chosen plan in full.
+    func sendPairFeedback(chosen: String, fit1: Int, fit2: Int, easier: String?, why: String, voice: Bool) async {
         let text = why.trimmingCharacters(in: .whitespacesAndNewlines)
         await run {
             do {
                 self.pair = try await self.client.pairFeedback(PairFeedback(chosen: chosen, fit1: fit1, fit2: fit2,
+                                                                            easier: easier,
                                                                             why: text.isEmpty ? nil : text,
                                                                             inputMode: voice ? "voice" : "typed"))
             } catch BrainError.status(409) {

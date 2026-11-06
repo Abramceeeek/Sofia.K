@@ -730,6 +730,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             pl.status = "chosen" if pl.label == body.chosen else "not_chosen"
             pl.fit_rating = body.fit_1 if pl.label == "1" else body.fit_2
             pl.reason = why if pl.label == body.chosen else None
+        if body.easier:   # m196: kept as an answer row, since the database has no migrations for a new column
+            s.add(db.Answer(user_id=user.id, question="testb:easier", text=body.easier, input_mode="typed"))
         s.add(db.Event(user_id=user.id, name="testb_pair_feedback",
                        props={"input_mode": body.input_mode, "why_given": why is not None}))
         s.commit()

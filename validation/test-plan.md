@@ -62,7 +62,7 @@ Every Test A metric is reported **overall, and separately for voice and text** (
     - About 25 complete moments are needed in `brain/data/moments/` before the first plan.
   - **Generic:** a top-attractions plan written once and reused (`validation/raw/testb/generic.yaml`). It uses the same fields as the personalised plan, including how to arrive, so the format gives nothing away.
 - **Labels come from the pre-randomised list** in `results-sheet.xlsx` (balanced 50/50, fixed seed). The sheet says A or B; the plans are sent as **Plan 1 and Plan 2** (A → 1, B → 2; D97, D99).
-- **Measures:** which they prefer and why; "This plan fits me" (1–5) for each.
+- **Measures:** which they prefer and why; "This plan fits me" (1–5) for each; and (m196, optional, descriptive) "Which would be easier to actually do on the day?" (Plan 1 / Plan 2 / Same). The report lists everyone who chose the generic plan, with their reasons.
   - **Two co-primary results (D127):** the gut choice, and the paired difference "Plan fits me" (personal minus generic) for each person. By chance alone, 7 or more of 10 happens 17% of the time; at a true 70% preference, 10 testers pass only 65% of the time (`brain/scripts/algorithm_checks.py`). **Aim for ~20 UK testers** if recruiting allows.
   - **Overlap:** how many of each personal plan's places the no-answers plan also has. A high overlap means a win comes from the curation, not the answers.
   - **Known bias:** no photos in the blind pair, so names people recognise may favour the generic plan. The blind texts are made alike (the title up to its colon, one sentence each for the way in and what happens) so the personal plan's longer stories don't give it away (D127).

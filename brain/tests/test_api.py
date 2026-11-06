@@ -5,6 +5,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
+from brain import db
 from brain.api import EXAMPLE_DAY, create_app
 from brain.config import Settings
 
@@ -354,8 +355,11 @@ def test_test_b_pair_is_blind_random_once_and_reveals_after_the_choice(client):
     assert abs(mins(ends["1"]) - mins(ends["2"])) <= 30
 
     r = client.post("/v1/me/testb/pair/feedback", headers=h,
-                    json={"chosen": generic, "fit_1": 4, "fit_2": 2, "why": "  More of a walk.  "})
+                    json={"chosen": generic, "fit_1": 4, "fit_2": 2, "why": "  More of a walk.  ", "easier": generic})
     assert r.status_code == 200, r.text
+    with client.app.state.Session() as s:   # m196: "easier to actually do?", kept as an answer
+        assert [(a.question, a.text) for a in s.query(db.Answer).filter_by(question="testb:easier")] == \
+            [("testb:easier", generic)]
     done = r.json()
     personal = "1" if generic == "2" else "2"
     assert done["done"] and done["personal_label"] == personal and done["chosen_label"] == generic

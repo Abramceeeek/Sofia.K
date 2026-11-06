@@ -428,4 +428,5 @@ data class PairFeedback(
     @SerialName("fit_2") val fit2: Int,
     val why: String?,
     val inputMode: String,
+    val easier: String? = null,   // m196: "1", "2" or "same"
 )

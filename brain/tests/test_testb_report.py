@@ -25,7 +25,10 @@ def test_report_counts_choices_pairs_fits_and_leaves_out_visitors():
                                {"plan_id": 6, "worth": "less", "again": False}],
               "answers": [{"user_id": "a", "question": "best_hour", "input_mode": "voice"},
                           {"user_id": "a", "question": "survey:understood", "text": "5"},
-                          {"user_id": "c", "question": "survey:understood", "text": "3"}]}
+                          {"user_id": "c", "question": "survey:understood", "text": "3"},
+                          {"user_id": "a", "question": "testb:easier", "text": "1"},      # a's personal plan is "1"
+                          {"user_id": "c", "question": "testb:easier", "text": "2"}]}     # c's generic plan is "2"
+    plans[5]["reason"] = "Less walking."                                         # c chose the generic plan
     out = "\n".join(tr.report(export, overlap=lambda sunset: ["m1", "m2", "m9"]))
     assert "3 UK testers" in out                                   # the visitor is left out
     assert "chose the personal plan: 2 of 3" in out and "3 of 3: not met" in out
@@ -34,6 +37,9 @@ def test_report_counts_choices_pairs_fits_and_leaves_out_visitors():
     assert "Overlap" in out and "fully the same for 0 of 3" in out
     assert "personal plans, 1 days" in out and "generic plans, 1 days" in out
     assert "voice: 1 people, mean 5.0" in out and "skipped it: 1 people, mean 3.0" in out
+    assert "2 answered: personal 1, generic 1, about the same 0" in out                  # m196
+    assert "Chose the generic plan: 1 of 3" in out
+    assert "c: fits me personal 2, generic 4; easier: generic; why: Less walking." in out
 
 
 def test_exact_tests():

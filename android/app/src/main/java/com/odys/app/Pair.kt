@@ -152,7 +152,7 @@ fun PairIntentView(model: AppModel) {
     }
 }
 
-/** Screen 19: the two plans, one at a time, in the same format; then the gut choice, "fits me" for each, and why. */
+/** Screen 19: the two plans, one at a time, in the same format; then the gut choice, "fits me" for each, which is easier to do (m196), and why. */
 @Composable
 fun PairCompare(model: AppModel, pair: PairResponse) {
     val text = model.onboarding?.testb
@@ -161,6 +161,7 @@ fun PairCompare(model: AppModel, pair: PairResponse) {
     var chosen by remember { mutableStateOf<String?>(null) }
     var fit1 by remember { mutableStateOf<Int?>(null) }
     var fit2 by remember { mutableStateOf<Int?>(null) }
+    var easier by remember { mutableStateOf<String?>(null) }   // m196: optional, "1", "2" or "same"
     var why by remember { mutableStateOf("") }
     val scroll = rememberScrollState()
     val scope = rememberCoroutineScope()
@@ -209,6 +210,14 @@ fun PairCompare(model: AppModel, pair: PairResponse) {
                 SurveyQuestion(fitText(text?.fitPrompt, "2")) {
                     ScaleRow("not at all", "completely", fit2) { fit2 = it }
                 }
+                // m196: the practical side, apart from which they'd rather do; optional, and a second tap clears it
+                SurveyQuestion("Which would be easier to actually do on the day? (optional)") {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        for ((value, title) in listOf("1" to "Plan 1", "2" to "Plan 2", "same" to "Same")) {
+                            Chip(title, easier == value, Modifier.weight(1f)) { easier = if (easier == value) null else value }
+                        }
+                    }
+                }
                 SurveyQuestion(text?.whyPrompt ?: "Why? (optional)") {
                     AnswerBox(why, { why = it }, "Why", minHeight = 90)
                 }
@@ -220,7 +229,7 @@ fun PairCompare(model: AppModel, pair: PairResponse) {
             Box(Modifier.fillMaxWidth().background(Theme.background).padding(horizontal = 24.dp, vertical = 8.dp)) {
                 PrimaryButton(if (model.busy) "Sending…" else "Send", enabled = ready && !model.busy) {
                     val c = chosen ?: return@PrimaryButton
-                    model.sendPairFeedback(c, fit1 ?: return@PrimaryButton, fit2 ?: return@PrimaryButton, why, false)
+                    model.sendPairFeedback(c, fit1 ?: return@PrimaryButton, fit2 ?: return@PrimaryButton, easier, why, false)
                 }
             }
         }

@@ -196,6 +196,7 @@ struct PairCompare: View {
     @State private var chosen: String?
     @State private var fit1: Int?
     @State private var fit2: Int?
+    @State private var easier: String?         // m196: optional, "1", "2" or "same"
     @State private var why = ""
 
     var body: some View {
@@ -237,6 +238,7 @@ struct PairCompare: View {
                 chosen = "2"
                 fit1 = 3
                 fit2 = 4
+                easier = "same"
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { proxy.scrollTo("questions", anchor: .top) }
             }
         }
@@ -245,7 +247,10 @@ struct PairCompare: View {
             if seen.count == 2 {
                 PrimaryButton(title: model.busy ? "Sending…" : "Send", disabled: !ready || model.busy) {
                     guard let chosen, let fit1, let fit2 else { return }
-                    Task { await model.sendPairFeedback(chosen: chosen, fit1: fit1, fit2: fit2, why: why, voice: false) }
+                    Task {
+                        await model.sendPairFeedback(chosen: chosen, fit1: fit1, fit2: fit2, easier: easier, why: why,
+                                                     voice: false)
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
@@ -306,6 +311,14 @@ struct PairCompare: View {
             }
             SurveyQuestion(text: Self.fit(text, "2")) {
                 ScaleRow(low: "not at all", high: "completely", value: $fit2)
+            }
+            // m196: the practical side, apart from which they'd rather do; optional, and a second tap clears it
+            SurveyQuestion(text: "Which would be easier to actually do on the day? (optional)") {
+                HStack(spacing: 8) {
+                    ForEach([("1", "Plan 1"), ("2", "Plan 2"), ("same", "Same")], id: \.0) { value, title in
+                        Chip(title: title, on: easier == value) { easier = easier == value ? nil : value }
+                    }
+                }
             }
             SurveyQuestion(text: text?.whyPrompt ?? "Why? (optional)") {
                 AnswerBox(text: $why, minHeight: 90, label: "Why")

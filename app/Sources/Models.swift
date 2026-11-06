@@ -545,11 +545,12 @@ struct PairFeedback: Encodable {
     let chosen: String
     let fit1: Int
     let fit2: Int
+    let easier: String?            // m196: "1", "2" or "same"; left out when not answered
     let why: String?
     let inputMode: String
 
     enum CodingKeys: String, CodingKey {
-        case chosen, why
+        case chosen, why, easier
         case fit1 = "fit_1"
         case fit2 = "fit_2"
         case inputMode = "input_mode"

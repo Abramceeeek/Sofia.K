@@ -156,6 +156,7 @@ class PairFeedbackIn(BaseModel):
     fit_2: int = Field(ge=1, le=5)
     why: str | None = Field(default=None, max_length=2000)
     input_mode: Literal["typed", "voice"] = "typed"
+    easier: Literal["1", "2", "same"] | None = None   # m196: "Which would be easier to actually do on the day?"
 
 
 class SurveyIn(BaseModel):
