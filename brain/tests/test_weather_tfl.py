@@ -118,6 +118,12 @@ def test_a_plan_and_a_rating_carry_the_forecast(client):
 def test_health_says_whether_the_keys_were_found(client):
     r = client.get("/v1/health").json()
     assert r["travel"] == "estimate" and r["weather"] == "off"
+    assert r["version"] is None                       # m196: only set where Render gives the commit
+
+
+def test_health_names_the_commit_it_runs(client, monkeypatch):
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "95581c1632d750942fb72bcfa453a856030e340a")
+    assert client.get("/v1/health").json()["version"] == "95581c1"
 
 
 # ---- TfL ----------------------------------------------------------------------------------------
