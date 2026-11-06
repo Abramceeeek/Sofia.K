@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-06 — The product direction: a travel platform, tested first
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m196 | **ODYS becomes a personal travel and entertainment platform for any trip; Trips are the main product and the day planner is its engine** (`decisions/product-direction.md`). Abram's decisions: (1) run the friends' round now on a **frozen** build; new work stays on the branch and never reaches testers during the round (iPhone checks as simulator screenshots only, Android as local tests); (2) bring back food preferences, halal included, after a lawful basis, an Article 9 condition (explicit consent done properly), a DPIA and a checked data source; used only for the person's own suggestions, never for matching or advertising; (3) build order: trip length, then personal time, then stay prices across dates with watched stays and school holidays; (4) no price forecasting; several places per trip later; global architecture now, coverage city by city. The round also collects "which would be easier to actually do?" (added before the freeze), and the report lists testers who chose the generic plan with their reasons. The market statistics in the outside review are not used until each one is checked against its source (rule 1). | The "push to `main` when it works" habit, for the length of the round | Validate the personal-fit engine before building the platform around it; keep the testers' build fixed so the results mean something. |
+
 ## 2026-11-06 — The Brain is back, on a new free database
 
 | # | Decision | Replaces | Why |

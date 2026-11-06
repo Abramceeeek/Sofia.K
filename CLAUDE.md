@@ -138,6 +138,8 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 
 ## v0 build (D50–D52)
 
+- **Product direction (m196, 6 Nov):** a personal travel and entertainment platform for any trip; Trips are the main product, with the day planner inside every trip day (`decisions/product-direction.md`). **While the friends' round runs, `main` is the frozen test build:** new work stays on the branch, with iPhone simulator screenshots only and no TestFlight uploads. Build order: trip length, then personal time, then stay prices across dates and watched stays. Food preferences (halal included) come after consent, a DPIA and a checked data source. No price forecasts.
+
 - **v0 is a native iOS app (SwiftUI)**, tested through TestFlight, then released on the App Store once it passes (after the D53 gate). It replaces the Telegram bot.
 - **Brain** (`brain/`): FastAPI on Python 3.12. It holds the moment database, scoring as `S = x·(b_population + δ_person)` with δ kept separate and portable, and the OR-Tools planner. Claude Code builds and tests it in this repo.
   - **Live on Render** at `moments-brain.onrender.com` (free tier, 30 Sep).
