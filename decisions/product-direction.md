@@ -24,6 +24,13 @@
 5. **The whole cost and the whole day.** The cheapest flight or the nearest hotel isn't always the best for this trip.
 6. **Say what we don't know.** No invented facts: unverified halal status, prices or opening hours are labelled as such. No price predictions.
 
+**Every major recommendation is checked three ways (Abram, 6 Nov; m199).** Automated tests answer only part of the first.
+1. **Is it logically reasonable?** Run it on realistic simulated people and look at the spread of results, not one output. Read what a person would see.
+2. **Do people prefer it?** Tested with real users against an alternative, as Test B does for day plans.
+3. **Does it lead to a better real experience?** Measured afterwards: the ratings, "worth what you spent", "would you do it again".
+
+Trip length is at step 1. The 75% "strong match" line and the suggested lengths still need steps 2 and 3.
+
 ## A. What works today (code on `main`, 6 Nov)
 
 - **A day out in London:** a short onboarding (where you're based, a great moment, feelings, 6 places, 5 this-or-that choices) builds a personal plan from **49 checked London moment cards**. Each card has the way in, best time, what to notice, cost and why it was picked. Swap a stop, plan again, map view, free time shown in the plan.
