@@ -10,7 +10,7 @@
 | Git tag | `friends-round-1` on `80a0da3` | `git ls-remote --tags origin friends-round-1`. **Abram pushes it** (this session can't push tags): see "Before the first invite" |
 | iPhone (TestFlight build) | `91` (iOS run #91, from `80a0da3`, uploaded 6 Nov) | TestFlight shows build 91 to testers |
 | Android (APK) | `21` (Android run #21, from `80a0da3`, published 6 Nov 22:18 UTC) | The `android-latest` download: "ODYS for Android (build 21)", "from main (80a0da3)" |
-| Brain (server) | `80a0da3` | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"`. **Not yet: on 6 Nov it answers `24556b6` from the branch** (below) |
+| Brain (server) | `80a0da3`, live since 6 Nov 22:54 UTC (Render: branch `main`, Auto-Deploy off, Blueprint Auto Sync off) | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"` (checked 6 Nov 22:54) |
 | Population model | `0.2` | `/v1/health` `population_version` |
 | Consent text | `app-2026-10-02` | The apps' consent version |
 | Test B version | As of `80a0da3`: the blind Plan 1 / Plan 2 pair (personal vs the no-answers generic plan, order random and stored), the gut choice, "This plan fits me" 1–5 for each, "Which would be easier to actually do on the day?" (optional), why (optional), then the reveal | The iPhone screenshots of 95581c1 (run #89; no app change since) and Android build 21's screens |
@@ -24,7 +24,7 @@ Three systems, each tested on 6 Nov:
 
 - **iPhone.** Only `main` reaches TestFlight. A push builds and uploads only on `main`. A run started by hand on the branch now builds for the simulator whatever its upload box says (m197; before, the box was ticked by default and would have uploaded a branch build). Tested: see the decision log, m198.
 - **Android.** Only `main` publishes the `android-latest` download (m196). Tested: the branch push 24556b6 (run #20) built, skipped "Publish", and the download stayed build 21.
-- **Brain.** **Not yet fixed.** On 6 Nov `/v1/health` showed the branch's commits (774fa24, then 24556b6), and GitHub's deployment records show Render deploying `claude/vigilant-cannon-my82dj` for both services. They came from the Blueprint (`render.yaml`), which has no `branch` field, so they follow the Blueprint's branch. The only difference from `80a0da3` was one added endpoint the testers' apps never call. The fix is Abram's, in the Render dashboard (below). Render's docs (read 6 Nov 2026):
+- **Brain.** **Fixed on 6 Nov, 22:54 UTC** (Abram: Blueprint Auto Sync off, `moments-brain` on `main`, Auto-Deploy off, then a deploy): `/v1/health` answers `80a0da3`. Before that, `/v1/health` showed the branch's commits (774fa24, then 24556b6), and GitHub's deployment records show Render deploying `claude/vigilant-cannon-my82dj` for both services. They came from the Blueprint (`render.yaml`), which has no `branch` field, so they follow the Blueprint's branch. The only difference from `80a0da3` was one added endpoint the testers' apps never call. The fix is Abram's, in the Render dashboard (below). Render's docs (read 6 Nov 2026):
   - A service with no `branch` follows the Blueprint's branch: "Render uses the Blueprint's branch if the service uses the same repo as the Blueprint file" (render.com/docs/blueprint-spec).
   - A sync overwrites dashboard changes: "the next Blueprint sync overwrites them" (render.com/docs/infrastructure-as-code). It can be turned off: "set Auto Sync to No on your Blueprint's Settings page".
   - Auto-deploy can be turned off per service (On Commit, After CI Checks Pass, Off), and deploying a specific commit from the dashboard "disables automatic deploys for the service" (render.com/docs/deploys).
@@ -54,7 +54,7 @@ Also the stops' ratings, the end-of-day questions, and the Test A survey. `brain
 
 ## Before the first invite
 
-1. **Render follows `main`, and nothing can replace it** (Abram, in the dashboard; about 10 minutes):
+1. **Done (6 Nov):** Render follows `main`, and nothing can replace it (Abram, in the dashboard):
    1. Blueprints → the Blueprint → Settings → **Auto Sync: No**.
    2. `moments-brain` → Settings → the deploy **Branch** → `main`.
    3. On the same page → **Auto-Deploy: Off**.
