@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       upload:
-        description: "Sign and upload to TestFlight (needs the secrets)"
+        description: "Sign and upload to TestFlight (needs the secrets; from main only)"
         type: boolean
         default: true
 
@@ -41,7 +41,9 @@ jobs:
         shell: bash
         working-directory: app
     env:
-      WANT_UPLOAD: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.upload) }}
+      # m197: only `main` ever reaches TestFlight. A run started by hand on any other branch builds for the simulator,
+      # whatever the upload box says (before, a branch run with the box ticked would have uploaded its build)
+      WANT_UPLOAD: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.upload)) }}
     steps:
       - uses: actions/checkout@v4
 

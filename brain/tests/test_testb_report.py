@@ -46,3 +46,23 @@ def test_report_counts_choices_pairs_fits_and_leaves_out_visitors():
 def test_exact_tests():
     assert abs(tr.p_at_least(7, 10) - 0.171875) < 1e-9
     assert tr.sign_test([1, 1, 0, -1]) == (2, 3, tr.p_at_least(2, 3))
+
+
+def test_one_round_only_by_code_and_start_date():
+    """m197: the rehearsal found a pre-round test install counted with the friends; --code and --since leave it out."""
+    plans = _pair("old", True, 5, 1, ["m1"], 1) + _pair("f1", False, 2, 4, ["m2"], 3) + _pair("f2", True, 4, 3, ["m3"], 5)
+    users = [{"id": "old", "src": None, "created_at": "2026-10-20T10:00:00+00:00"},
+             {"id": "f1", "src": "code:FRIENDS", "created_at": "2026-11-12T09:00:00+00:00"},
+             {"id": "f2", "src": "code:FRIENDS", "created_at": "2026-11-13T09:00:00+00:00"}]
+    export = {"users": users, "plans": plans, "cohorts": {u["id"]: "resident" for u in users},
+              "answers": [{"user_id": "old", "question": "testb:easier", "text": "1"}]}
+    _, head = tr.only(export)
+    assert head == ["Every install counted (3), by source: code:FRIENDS 2, no code 1. "
+                    "To read one round only, add --code and/or --since."]
+    for kw in ({"code": "friends"}, {"since": "2026-11-12"}, {"code": "FRIENDS", "since": "2026-11-01"}):
+        kept, head = tr.only(export, **kw)
+        assert {p["user_id"] for p in kept["plans"]} == {"f1", "f2"} and not kept["answers"], kw
+        assert head[0].endswith("2 of the 3 in this export."), head
+        out = "\n".join(tr.report(kept, overlap=None))
+        assert "2 UK testers" in out and "chose the personal plan: 1 of 2" in out and "0 were shown" in out
+    assert tr.only(export, since="2026-11-13")[0]["cohorts"] == {"f2": "resident"}

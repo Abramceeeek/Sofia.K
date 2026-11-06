@@ -1,22 +1,35 @@
-# The friends' round: one fixed version (m196)
+# The friends' round: one fixed version (m196, m197)
 
-**Decision.** The friends' round is a controlled run of Test B: every tester uses the same app and Brain, recorded below, and nothing that changes them reaches `main` until the round ends. Friends are a first usability group; the results are read as direction, not proof (D127).
+**Decision.** The friends' round is a controlled run of Test B: every tester uses the same app and Brain, recorded below, and nothing reaches `main` until the round ends: no code, no notes. This sheet lives on the work branch. Friends are a first usability group; the results are read as direction, not proof (D127).
 
-## The fixed version (filled in when the builds are up)
+## The experiment manifest
 
 | What | Value | How to check it during the round |
 |---|---|---|
-| Code (git commit on `main`) | `PENDING` | `git log -1 origin/main -- app android brain .github` shows no newer commit |
-| iPhone (TestFlight build) | `PENDING` | TestFlight shows this build number to testers |
-| Android (APK) | `PENDING` | The `android-latest` download's title, "ODYS for Android (build N)" |
-| Brain (server) | `PENDING` | `GET /v1/health` answers `"version": "<7 characters of the commit>"` |
+| Code (git commit on `main`) | `80a0da3` | `git ls-remote origin main` still gives `80a0da3…` |
+| Git tag | `friends-round-1` on `80a0da3` | `git ls-remote --tags origin friends-round-1`. **Abram pushes it** (this session can't push tags): see "Before the first invite" |
+| iPhone (TestFlight build) | `91` (iOS run #91, from `80a0da3`, uploaded 6 Nov) | TestFlight shows build 91 to testers |
+| Android (APK) | `21` (Android run #21, from `80a0da3`, published 6 Nov 22:18 UTC) | The `android-latest` download: "ODYS for Android (build 21)", "from main (80a0da3)" |
+| Brain (server) | `80a0da3` | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"`. **Not yet: on 6 Nov it answers `24556b6` from the branch** (below) |
 | Population model | `0.2` | `/v1/health` `population_version` |
-| Start date | Abram fills in: the day the first invite goes out | |
-| Testers | The count, from the admin export at the end | Their install IDs stay in `validation/raw/` (never in git) |
+| Consent text | `app-2026-10-02` | The apps' consent version |
+| Test B version | As of `80a0da3`: the blind Plan 1 / Plan 2 pair (personal vs the no-answers generic plan, order random and stored), the gut choice, "This plan fits me" 1–5 for each, "Which would be easier to actually do on the day?" (optional), why (optional), then the reveal | The iPhone screenshots of 95581c1 (run #89; no app change since) and Android build 21's screens |
+| Read-out | `brain/scripts/testb_report.py` from the work branch, with `--code FRIENDS --since <start date>` (m197) | It prints how many installs it counted, of how many |
+| Experiment date | Abram fills in: the day the first invite goes out | |
+| Testers | The tester code **FRIENDS** (typed on the welcome screen; "friends" and " Friends " count too). The count comes from the export at the end | Their install IDs stay in `validation/raw/` on Abram's computer (never in git) |
 
-**What keeps it fixed:**
-- **No pushes to `main` that change the app, Android, the Brain or the workflows.** Only notes like this one may change, and they deploy nothing.
-- **New work stays on `claude/vigilant-cannon-my82dj`.** Branch builds never reach testers: the iPhone workflow only uploads from `main`, Android publishes its download only from `main` (since m196), and Render deploys only `main`.
+## What keeps it fixed
+
+Three systems, each tested on 6 Nov:
+
+- **iPhone.** Only `main` reaches TestFlight. A push builds and uploads only on `main`. A run started by hand on the branch now builds for the simulator whatever its upload box says (m197; before, the box was ticked by default and would have uploaded a branch build). Tested: see the decision log, m198.
+- **Android.** Only `main` publishes the `android-latest` download (m196). Tested: the branch push 24556b6 (run #20) built, skipped "Publish", and the download stayed build 21.
+- **Brain.** **Not yet fixed.** On 6 Nov `/v1/health` showed the branch's commits (774fa24, then 24556b6), and GitHub's deployment records show Render deploying `claude/vigilant-cannon-my82dj` for both services. They came from the Blueprint (`render.yaml`), which has no `branch` field, so they follow the Blueprint's branch. The only difference from `80a0da3` was one added endpoint the testers' apps never call. The fix is Abram's, in the Render dashboard (below). Render's docs (read 6 Nov 2026):
+  - A service with no `branch` follows the Blueprint's branch: "Render uses the Blueprint's branch if the service uses the same repo as the Blueprint file" (render.com/docs/blueprint-spec).
+  - A sync overwrites dashboard changes: "the next Blueprint sync overwrites them" (render.com/docs/infrastructure-as-code). It can be turned off: "set Auto Sync to No on your Blueprint's Settings page".
+  - Auto-deploy can be turned off per service (On Commit, After CI Checks Pass, Off), and deploying a specific commit from the dashboard "disables automatic deploys for the service" (render.com/docs/deploys).
+  - Pull request previews and preview environments are off unless turned on (render.com/docs/service-previews, /docs/preview-environments). Keep them off. The service's Deploy Hook URL (Settings) can deploy too: never share it.
+- **During the round:** no commits to `main` (code or notes), no change to `render.yaml`, and no Manual Deploy, Blueprint sync or settings change on `moments-brain`. New work stays on the branch, and it only reaches testers after the round, through `main`.
 
 ## What it collects
 
@@ -26,18 +39,30 @@
 4. Why (optional): their reasoning.
 
 Also the stops' ratings, the end-of-day questions, and the Test A survey. `brain/scripts/testb_report.py` reads an export:
+- It counts only this round's testers with `--code FRIENDS --since <start date>`. Without them it counts every install and says so by source: the database also holds the 15 installs restored on 6 Nov (Abram's own runs).
 - It tells personal from generic by each plan's kind, never by its number.
 - Every share is shown with how many answered and how many didn't.
 - It lists everyone who chose the generic plan, with their scores and reasons, before any averages.
 
+**Rehearsed on 6 Nov** (`brain/scripts/rehearse_testb.py`, on the frozen code at `80a0da3`, with a throwaway database): seven made-up installs, the export and the read-out. Every count matched the one worked out by hand. It found the mixing above, now handled by `--code` and `--since`.
+
 ## Keeping the data safe
 
 - **Nightly sealed backup** (the `ops` workflow), kept 30 days on GitHub. Only Abram's private key opens it (m195).
-- **The admin export once a week and at the end**, saved by Abram into `validation/raw/` on his computer (git-ignored). Then `python brain/scripts/testb_report.py <export.json>`.
-- **The free database expires on 6 Dec 2026** (Render's banner; deleted 14 days later). The round ends, and its final export is saved, **by 29 Nov**, or before then the database moves to a paid plan or is swapped and restored as on 6 Nov (`brain/README.md`).
+- **The admin export once a week and at the end**, saved by Abram into `validation/raw/` on his computer (git-ignored). Then `python brain/scripts/testb_report.py <export.json> --code FRIENDS --since <start date>`.
+- **The free database expires on 6 Dec 2026** (Render's banner; deleted 14 days later). The round ends, and its final export is saved, **by 29 Nov**. Otherwise, before then, the database moves to a paid plan or is swapped and restored as on 6 Nov (`brain/README.md`).
 
 ## Before the first invite
 
-- The Apple outside-activities check, which gates external TestFlight (D60, D94). It's Abram's.
-- TestFlight's external review of the fixed build. Android testers use the `android-latest` link.
-- The tester code **FRIENDS** on the welcome screen, so every tester is tagged as a friend.
+1. **Render follows `main`, and nothing can replace it** (Abram, in the dashboard; about 10 minutes):
+   1. Blueprints → the Blueprint → Settings → **Auto Sync: No**.
+   2. `moments-brain` → Settings → the deploy **Branch** → `main`.
+   3. On the same page → **Auto-Deploy: Off**.
+   4. `moments-brain` → **Manual Deploy → Deploy latest commit**, and wait for "Deploy live".
+   5. Claude checks `/v1/health` shows `"version": "80a0da3"`, and GitHub's deployment record shows `main` (dashboard labels alone don't count).
+2. **The tag** (Abram, from his copy of the repo, in PowerShell):
+   `git fetch origin` then `git tag -a friends-round-1 80a0da3 -m "The friends' round: main 80a0da3, TestFlight 91, Android 21"` then `git push origin friends-round-1`.
+3. **An internal run on the real builds:** Abram, on TestFlight 91 and Android 21, with the code `REHEARSAL`, goes through to the pair and answers it. Then he exports and runs the read-out with `--code REHEARSAL`: it should count 2 installs, both answered. Then "Delete my data" on both phones, so the round starts clean.
+4. The Apple outside-activities check, which gates external TestFlight (D60, D94). It's Abram's.
+5. TestFlight's external review of build 91. Android testers use the `android-latest` link.
+6. The tester code **FRIENDS** goes in every invite.

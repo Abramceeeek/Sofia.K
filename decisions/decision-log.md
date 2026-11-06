@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-06 — The friends' round's build identity, and the three systems that keep it fixed
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m198 | **The round runs on one recorded version, and no commit reaches `main` until it ends, notes included** (Abram, 6 Nov). The manifest is in `validation/friends-round.md` on the branch: `main` at `80a0da3`, tag `friends-round-1` (Abram pushes it: this session can't push tags), TestFlight 91, Android 21, Brain `80a0da3`, population 0.2, consent `app-2026-10-02`, the Test B questions, the tester code FRIENDS. **Found and fixed on the branch:** (1) Render deploys the branch, not `main` (GitHub's deployment records, and `/v1/health` showing 774fa24, then 24556b6). The fix is Abram's in the dashboard: Blueprint Auto Sync off, the service's branch `main`, Auto-Deploy off, deploy, then Claude checks `/v1/health`. (2) A TestFlight upload could be started by hand on any branch, with the box ticked by default. Now only `main` can upload. (3) The read-out counted every install, so the 15 restored ones (Abram's own runs) would have mixed with the friends. Now `--code FRIENDS --since <start>`, and it says what it counted. **Tested:** the Android guard (branch run #20 skipped Publish; the download stayed build 21); a rehearsal on the frozen code (`brain/scripts/rehearse_testb.py`: seven made-up installs, every count as worked out by hand). The iPhone guard is tested by a branch run with the box ticked (below). | "Notes may still go to `main`"; "Render deploys only `main`" (it didn't) | Abram: separate the experiment from development deliberately, and verify by the deployed commit, not the dashboard. |
+
 ## 2026-11-06 — "How long should I stay?" on both phones (branch only)
 
 | # | Decision | Replaces | Why |

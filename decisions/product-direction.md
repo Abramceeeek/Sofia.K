@@ -76,7 +76,7 @@ Not doing: price forecasts, a chat that writes itineraries, a social feed, handl
 
 ## F. Testing during the build
 
-- **`main` is the test build** while the friends' round runs: no pushes that change the apps or the Brain. New work stays on `claude/vigilant-cannon-my82dj`. Its iPhone checks run as simulator screenshots only, never TestFlight uploads; Android runs as local tests, not the published APK.
+- **`main` is the test build** while the friends' round runs: no commits to it at all, notes included (m198). The round's manifest is `validation/friends-round.md`. New work stays on `claude/vigilant-cannon-my82dj`. Its iPhone checks run as simulator screenshots only, never TestFlight uploads; Android runs as local tests, not the published APK.
 - **What the round collects:** the gut choice, "this plan fits me" for each plan (how personal it felt), which would be easier to actually do (added in step 0), and why. Testers who chose the generic plan are listed with their reasons.
 - **Formative, not proof:** friends are a first usability group; the 7-of-10 signal and the paired fit difference are read as direction, not as evidence for the wider market (D127).
 - **Before it starts:** the Apple check for external TestFlight (D60, D94). The free database lasts until 6 Dec 2026 (m195): the round, or a move to a paid database, has to fit before then.

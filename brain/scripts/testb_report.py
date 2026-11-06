@@ -1,7 +1,8 @@
 """Test B read-out from the admin export (D127: the algorithm reviews asked for more than one number).
 
 Run from brain/ with the venv, on an export saved outside git:
-    .venv/bin/python scripts/testb_report.py ../validation/raw/export-2026-11-13.json [--no-overlap]
+    .venv/bin/python scripts/testb_report.py ../validation/raw/export-2026-11-13.json --code FRIENDS --since <start>
+        [--no-overlap]
 
 The export is `GET /v1/admin/export` (admin token in an env var, never pasted anywhere). Visitors from abroad are left
 out (D116). It prints:
@@ -113,7 +114,7 @@ def report(export: dict, overlap=no_answers_places) -> list[str]:
     ps = pairs(export)
     n = len(ps)
     lines = [f"Test B read-out: {n} UK testers answered the pair (visitors from abroad left out); "
-             f"{unanswered(export)} were shown it and haven't answered (not counted below)",
+             f"{(u := unanswered(export))} {'was' if u == 1 else 'were'} shown it and haven't answered (not counted below)",
              "Every share below is out of the testers who answered that question; how many didn't is shown with it.",
              "Plan 1 and Plan 2 are the screen order only: each tester's personal and generic plan is told apart by "
              "kind, never by its number."]
@@ -194,13 +195,38 @@ def report(export: dict, overlap=no_answers_places) -> list[str]:
     return lines
 
 
+def only(export: dict, code: str | None = None, since: str | None = None) -> tuple[dict, list[str]]:
+    """m197: one round's testers only: those who typed its tester code, installed on or after its start date, or
+    both. Without either, every install counts, so the read-out says which sources it mixed (the rehearsal of
+    6 Nov found a pre-round test install counted with the friends)."""
+    users = export.get("users", [])
+    src = lambda u: u.get("src") or "no code"
+    keep = {u["id"] for u in users
+            if (code is None or src(u) == "code:" + code.strip().upper().replace(" ", "-"))
+            and (since is None or (u.get("created_at") or "")[:10] >= since)}
+    if code is None and since is None:
+        mix = Counter(src(u) for u in users)
+        return export, [f"Every install counted ({len(users)}), by source: "
+                        + ", ".join(f"{k} {v}" for k, v in sorted(mix.items()))
+                        + ". To read one round only, add --code and/or --since."]
+    out = {k: ([r for r in v if r.get("user_id", r.get("id")) in keep] if isinstance(v, list) else v)
+           for k, v in export.items()}
+    out["cohorts"] = {u: c for u, c in (export.get("cohorts") or {}).items() if u in keep}
+    said = " and ".join(x for x in [f"with the tester code {code.strip().upper()}" if code else "",
+                                    f"made on or after {since}" if since else ""] if x)
+    return out, [f"Counted: installs {said}: {len(keep)} of the {len(users)} in this export."]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("export", type=Path)
     ap.add_argument("--no-overlap", action="store_true", help="skip planning the no-answers plan")
+    ap.add_argument("--code", help="only installs that typed this tester code, e.g. FRIENDS (m197)")
+    ap.add_argument("--since", help="only installs made on or after this date, YYYY-MM-DD (m197)")
     args = ap.parse_args()
     export = json.loads(args.export.read_text(encoding="utf-8"))
-    print("\n".join(report(export, None if args.no_overlap else no_answers_places)))
+    export, head = only(export, args.code, args.since)
+    print("\n".join(head + report(export, None if args.no_overlap else no_answers_places)))
 
 
 if __name__ == "__main__":
