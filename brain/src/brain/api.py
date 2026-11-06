@@ -21,7 +21,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import backup, dayplan, db, notify, ops, reasons, share, summary, testb, trips, tripdays
+from . import backup, dayplan, db, notify, ops, reasons, share, summary, testb, triplength, trips, tripdays
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -32,7 +32,8 @@ from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
-                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn)
+                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn,
+                      TripLengthIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
 from .travel import LondonEstimate
@@ -934,6 +935,38 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found),
                 "tabs": tabs, "links": links, "centre": dest.centre_name,
                 "searched_at": datetime.now(timezone.utc).isoformat()}
+
+    @app.post("/v1/me/trips/length")
+    def trip_length(body: TripLengthIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                    p: PopulationModel = Depends(pop)):
+        """m196: "How long should I stay?" From the person's good matches among the checked cards, at their places a
+        day (as many as their hours fit), keeping the day's shape. Each length says what it covers and leaves out;
+        days beyond the suggestion are offered as choices (triplength.py). Nothing is planned or stored."""
+        dest = _destination(body.destination)
+        if not dest.day_plans:
+            raise HTTPException(422, "day plans aren't ready for that destination yet")
+        span = tripdays.mins(body.day_end) - tripdays.mins(body.day_start)
+        if span < 60:
+            raise HTTPException(422, "a day needs at least an hour between its start and end")
+        feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]
+        mine = set((user.profile or {}).get("why_travel", []))
+        post = update_person(p, observations(s, user, p) + [o for f in feelings if f not in mine
+                                                             if (o := reasons.feeling_observation(p, f))])
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        fixed = corrected(user)
+        cards_at = app.state.swipe_cards
+        disliked = {cid for sw in user.swipes if f"place:{sw.item}" not in fixed and sw.reaction == "didnt_enjoy"
+                    and sw.item in cards_at for cid in cards_at[sw.item][1]}
+        fields = person_fields(user)
+        asp = {m.id: (app.state.amap.match(m, fields) if app.state.amap else 0.0) for m in ready}
+        per_day = max(1, min(body.stops_per_day, span // tripdays.MIN_PER_STOP))
+        out = triplength.suggest(p, post, ready, asp=asp, skip=disliked, per_day=per_day, nights=body.nights,
+                                 place=dest.name)
+        s.add(db.Event(user_id=user.id, name="trip_length",
+                       props={"nights": body.nights, "suggested": out["suggested_days"], "good": out["good_matches"],
+                              "per_day": per_day}))
+        s.commit()
+        return out
 
     @app.post("/v1/me/trips/days", status_code=201)
     def trip_days(body: TripDaysIn, user: db.User = Depends(current_user), s: Session = Depends(session),

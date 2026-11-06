@@ -471,3 +471,47 @@ def test_journeys_past_midnight_say_so():
     assert tripdays.NIGHT_NOTE in dawn.leave_leg.note
     day = _frame(2, 3, leave=tripdays.End("flight", "LHR", "18:00"))
     assert "next day" not in day.leave_leg.title and tripdays.NIGHT_NOTE not in (day.leave_leg.note or "")
+
+
+def test_trip_length_comes_from_the_persons_matches_and_names_what_each_length_leaves_out(client):
+    """m196: "How long should I stay?" from the person's own good matches, at their places a day."""
+    h, _ = install(client)
+    r = client.post("/v1/me/trips/length", headers=h, json={"nights": 9, "stops_per_day": 3})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    need, yours = d["suggested_days"], d["your_days"]
+    assert 1 <= need <= 14 and yours == 9 and d["places_per_day"] == 3
+    assert d["checked"] > 0 and "London" in d["why"]
+    lengths = [o["days"] for o in d["options"]]
+    assert lengths == sorted(lengths) and need in lengths and yours in lengths
+    by_days = {o["days"]: o for o in d["options"]}
+    assert by_days[need]["suggested"] and by_days[need]["covers"] == by_days[need]["of"]
+    assert by_days[yours]["yours"]
+    for o in d["options"]:
+        assert o["line"] and o["covers"] + len(o["leaves_out"]) == o["of"]
+        assert not o["adds"] or o["days"] > need                 # extra good matches only come with more days
+        if o["days"] < need:   # a shorter trip says what it leaves out, by name
+            assert o["label"] == "Highlights" and "leave out" in o["line"] and o["leaves_out"]
+    if yours > need:
+        assert d["spare_days"] == yours - need and {"slower", "free"} <= {e["kind"] for e in d["extra"]}
+    else:
+        assert d["short"]
+    # a short day holds fewer places: the person's hours cap their places a day
+    short_day = client.post("/v1/me/trips/length", headers=h,
+                            json={"nights": 2, "stops_per_day": 6, "day_start": "10:00", "day_end": "12:30"}).json()
+    assert short_day["places_per_day"] == 2
+    assert client.post("/v1/me/trips/length", headers=h,
+                       json={"day_start": "10:00", "day_end": "10:30"}).status_code == 422
+
+
+def test_days_for_keeps_the_days_shape():
+    from types import SimpleNamespace
+
+    from brain import triplength
+    card = lambda hist=0, kind="moment": SimpleNamespace(tag=lambda n: hist if n == "history_culture" else 0, kind=kind)
+    assert triplength.days_for([], 3) == 0
+    assert triplength.days_for([card() for _ in range(7)], 3) == 3                 # 7 places at 3 a day
+    assert triplength.days_for([card(2) for _ in range(6)], 4) == 3                # at most 2 history a day
+    assert triplength.days_for([card(kind="area") for _ in range(3)], 4) == 3      # at most 1 wander a day
+    six = [card() for _ in range(6)]
+    assert triplength._covered(six, 1, 4) == 4 and triplength._covered(six, 2, 4) == 6

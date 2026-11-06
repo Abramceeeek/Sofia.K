@@ -259,6 +259,16 @@ class TripEndIn(BaseModel):
     time: str = Field(pattern=r"^\d{2}:\d{2}$")
 
 
+class TripLengthIn(BaseModel):
+    """m196: "How long should I stay?" The person's own day (hours, places a day) and, if chosen, their nights."""
+    destination: str = "london"
+    nights: int | None = Field(default=None, ge=0, le=30)
+    feelings: list[str] = Field(default_factory=list, max_length=2)
+    day_start: str = Field(default="10:00", pattern=r"^\d{2}:\d{2}$")
+    day_end: str = Field(default="18:00", pattern=r"^\d{2}:\d{2}$")
+    stops_per_day: int = Field(default=4, ge=1, le=6)
+
+
 class TripDaysIn(BaseModel):
     """D120: the days of a multi-day trip (ODYS Trips design: "How long for?", "How should the trip feel?")."""
     destination: str = "london"
