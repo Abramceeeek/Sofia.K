@@ -565,8 +565,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
             time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
-            mine=tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end)) for b in body.mine
-                       if tripdays.mins(b.start) < tripdays.mins(b.end)),   # m200
+            mine=(own := tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end), b.location,
+                                              b.kind == "plans" and b.meal) for b in body.mine
+                               if tripdays.mins(b.start) < tripdays.mins(b.end))),   # m200, m201
+            lunch=not any(b.meal and dayplan.overlaps_lunch(b) for b in own),
             relaxed=body.relaxed)
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
@@ -1021,7 +1023,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         def blocks_for(i: int) -> tuple[dayplan.Block, ...]:
             d = own_days.get(i)
-            return tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end))
+            return tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end), b.location,
+                                       b.kind == "plans" and b.meal)
                          for b in (d.mine if d else []) if tripdays.mins(b.start) < tripdays.mins(b.end))
 
         def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str,
@@ -1035,7 +1038,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
-                                      sunset=sunset(day), lunch=part.lunch, mine=mine, relaxed=relaxed,
+                                      sunset=sunset(day), mine=mine, relaxed=relaxed,
+                                      # m201: plans they'll eat during take lunch's place, when they fall in this stretch
+                                      lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
                                       temp_c=outlook.temp_c if outlook else None,
                                       rain_prob=outlook.rain_prob if outlook else None)
                 view = est.for_day(day, part.start_time) if isinstance(est, TflTravel) else est

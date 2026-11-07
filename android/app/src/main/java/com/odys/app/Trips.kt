@@ -1402,6 +1402,17 @@ fun MyTimeEditor(time: MyTime, dayFrom: String, dayTo: String, onChange: (MyTime
             Hairline()
             TimeMenu("Until", time.end, HalfHours.from(6, 23)) { onChange(time.copy(end = it)) }
         }
+        if (time.kind == "plans") {   // m201 (Abram, 7 Nov): optional; not said means we leave time either side
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.background)) {
+                PickMenu("Where are your plans?", MyTime.places.first { it.first == (time.location ?: "unknown") }.second,
+                    MyTime.places) { onChange(time.copy(location = it)) }
+            }
+            if (time.overlapsLunch) {
+                SwitchRow("Will you eat during this time?", "Then there's no separate lunch stop.", time.meal ?: false) {
+                    onChange(time.copy(meal = it))
+                }
+            }
+        }
         if (Dates.minutes(time.end) <= Dates.minutes(time.start)) {
             Text("It needs to end after it starts.", style = Theme.subheadline.copy(color = Theme.accent))
         } else if (Dates.minutes(time.start) < Dates.minutes(dayFrom) || Dates.minutes(time.end) > Dates.minutes(dayTo)) {

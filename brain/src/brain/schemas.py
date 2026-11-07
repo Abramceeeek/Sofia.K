@@ -104,6 +104,9 @@ class MyTimeIn(BaseModel):
     kind: Literal["plans", "free"]
     start: str = Field(pattern=r"^\d{2}:\d{2}$")
     end: str = Field(pattern=r"^\d{2}:\d{2}$")
+    # m201 (Abram, 7 Nov): where the plans are, if they say; unknown leaves time to get there and back
+    location: Literal["near", "elsewhere", "unknown"] = "unknown"
+    meal: bool = False                 # m201: they'll eat during these plans, so no separate lunch stop
 
 
 class PlanRequest(BaseModel):

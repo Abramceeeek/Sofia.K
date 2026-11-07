@@ -67,8 +67,12 @@ Not doing: price forecasts, a chat that writes itineraries, a social feed, handl
 | 0 | Test B: add "which plan would be easier to actually do?"; list who chose the generic plan, with their reasons, in the report; then freeze `main` | ~2 h | 0.25 h | Before the round starts |
 | 1 | Trip length | ~8 h | 0.5 h | Nothing new |
 | 2 | Personal time in a day | ~5 h | 0.5 h | Nothing new |
-| 3 | Stay prices across dates; watched stays; school holidays | ~10 h | 0.5 h + adding the live LiteAPI key in Render | Live prices (sandbox ones aren't real) |
+| 3 | Stay prices across dates; watched stays; school holidays | ~10 h | 0.5 h + the live LiteAPI key in a **separate staging Brain**, never the frozen one | Live prices (sandbox ones aren't real) |
 | 4 | Food preferences | research ~2 h, consent and DPIA draft ~2 h, then build | decides the lawful basis and signs off the DPIA | See below |
+
+**Revised order (Abram, 7 Nov; m201):** 1 finish free time and its visual review (done 7 Nov: where the plans are, the meal question, the same grouping on both phones); 2 hotel prices across nearby dates and watched stays; 3 the food preference architecture and halal-data research; 4 a review of the trip-length screen; 5 the foundation for several places in one trip; 6 coverage of destinations and experiences worldwide, place by place where the data is checked; 7 budget across the whole trip. The friends' round runs on the frozen builds meanwhile.
+
+**Stay prices (Abram, 7 Nov):** compare the same stay across nearby dates (Friday £200, Saturday £180, Monday £60: illustrative), and watch a saved stay: the last price seen, the price now, the change, when it was checked, and alternatives. A price is only ever compared like for like: the same length of stay, guests, room, board, cancellation terms and taxes included, wherever the provider says so; anything that differs is said. Observed prices only, never a forecast. The live key goes into a separate staging Brain on the branch; the frozen production Brain keeps its sandbox key until the round ends.
 
 **Before food preferences:** an Article 6 lawful basis and an Article 9 condition (explicit consent, done properly: specific, separate, easy to withdraw); a DPIA; a privacy-notice update. It is used only for the person's own restaurant suggestions: never for matching people, advertising or anything else. Halal is offered as a food choice, never as a question about religion. A source of checked halal data must exist before any venue is labelled: certified (with the certifier), halal menu, halal options, unknown, or not suitable, each with its source and the date it was checked. The ICO pages are to be read and cited in the research step (UNVERIFIED here).
 

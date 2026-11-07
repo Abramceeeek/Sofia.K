@@ -97,10 +97,27 @@ class Block:
     kind: str                      # plans | free
     start_min: int
     end_min: int
+    location: str = "near"         # m201: near (one of the day's places) | elsewhere | unknown (plans only)
+    meal: bool = False             # m201: the person eats during these plans, so the day has no lunch stop
 
     @property
     def title(self) -> str:
         return "Your plans" if self.kind == "plans" else "Free time"
+
+    @property
+    def away(self) -> bool:
+        """m201 (Abram, 7 Nov): plans somewhere else, or not decided yet, aren't assumed to be near the places."""
+        return self.kind == "plans" and self.location != "near"
+
+
+AWAY_MIN = 30   # m201 (GUESS): time left to get to plans that aren't near the day's places, and back from them
+
+
+def overlaps_lunch(b: Block) -> bool:
+    """m201: whether a block covers part of lunchtime (a lunch stop can start 11:30-13:30 and lasts 45 min). The apps
+    ask "Will you eat during this time?" only then."""
+    lo, hi = LUNCH_START
+    return b.start_min < hi + LUNCH_MIN and b.end_min > lo
 
 
 MINE_HOSTS = 12   # m200 (GUESS): a block's slot sits beside one of the 12 best places (or the start), to keep the solver quick
@@ -115,8 +132,11 @@ def mine_candidates(real: list, brief: Brief) -> list:
     for k, b in enumerate(brief.mine):
         if not (day_start <= b.start_min < b.end_min <= day_end):
             continue
-        slot = lambda mid, p: Candidate(mid, p, p, b.end_min - b.start_min, ((b.start_min, b.end_min),), 0.0, 0.0,
-                                        None, "moment", mine=f"mine{k}")
+        # m201: plans away from the places get time either side to get there and back, as far as the day allows
+        ahead = min(AWAY_MIN, b.start_min - day_start) if b.away else 0
+        behind = min(AWAY_MIN, day_end - b.end_min) if b.away else 0
+        lo, hi = b.start_min - ahead, b.end_min + behind
+        slot = lambda mid, p: Candidate(mid, p, p, hi - lo, ((lo, hi),), 0.0, 0.0, None, "moment", mine=f"mine{k}")
         out += [slot(f"mine{k}@{c.moment_id}", c.end) for c in hosts] + [slot(f"mine{k}@start", brief.start)]
     return out
 
@@ -389,6 +409,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         plan = solve(cands, base_must)
 
     stops, prev_point, prev_name, prev_exit = [], brief.start, brief.start_name, brief.start_name
+    after_away = None   # m201: minutes allowed after plans away from the places, for the next stop's travel line
     for st in plan.stops:
         c = by_cand[st.moment_id]
         mode = travel.mode(prev_point, c.start)
@@ -397,14 +418,23 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             host = by_id.get(st.moment_id[st.moment_id.index("@") + 1:])
             place = (host.leave_name() if host else brief.start_name) if (host or stops) else brief.start_name
             near = f"near {place}" if stops else f"from {brief.start_name}"
-            stop = {"title": blk.title, "approach": "",
-                    "what": (f"Your own time, {near}. We've assumed it's there: if it's somewhere else, allow time to "
-                             f"get there and back." if blk.kind == "plans" else
-                             f"Yours to rest, shop or wander, {near}. Nothing is planned."),
+            ahead, behind = blk.start_min - st.arrive_min, st.depart_min - blk.end_min   # never `post`: the weights
+            gap = (f"we've left {ahead} min before and {behind} min after to get there and back" if ahead and behind else
+                   f"we've left {ahead or behind} min {'before' if ahead else 'after'} to get {'there' if ahead else 'back'}"
+                   if ahead or behind else "allow time to get there and back")
+            what = (f"Somewhere else: {gap}." if blk.location == "elsewhere" else
+                    f"Where isn't decided yet, so {gap}." if blk.away else
+                    f"Your own time, {near}." if blk.kind == "plans" else
+                    f"Yours to rest, shop or wander, {near}. Nothing is planned.")
+            if blk.meal:
+                what += " You're eating during these plans, so the day has no lunch stop."
+            stop = {"title": blk.title, "approach": "", "what": what,
                     "best": "", "best_windows": [], "queue": 0, "moment_id": st.moment_id, "predicted": None,
-                    "why": [], "mine": blk.kind,
-                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, None, not stops, route)}
-            nxt = (c.end, place, prev_exit if host is None else host.exit_station())
+                    "why": [], "mine": blk.kind, "mine_away": (ahead, behind) if blk.away else None,
+                    "travel_text": "" if blk.away else leg_text(st.travel_min, mode, prev_name, prev_exit, None,
+                                                                not stops, route)}
+            nxt = (c.end, "your plans" if blk.away else place,
+                   None if blk.away else prev_exit if host is None else host.exit_station())
         elif st.moment_id == "lunch@start":
             place = brief.start_name
             stop = {"title": f"Lunch near {place}", "approach": "",
@@ -448,11 +478,19 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops, route)}
             nxt = (m.end(), m.leave_name(), m.exit_station())
+        away = stop.pop("mine_away", None)
         stop.update({"key": st.moment_id,   # the planner's id ("<card>#lunch" when a food card is the lunch), for `keep`
-                     "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min), "travel_min": st.travel_min,
+                     # m201: plans away from the places show at their own times; the time either side is for travel
+                     "arrive": hhmm(st.arrive_min + (away[0] if away else 0)),
+                     "depart": hhmm(st.depart_min - (away[1] if away else 0)), "travel_min": st.travel_min,
                      "travel_mode": mode, "from": prev_name, "cost_gbp": c.cost_gbp,
                      "cost_kind": "food" if c.lunch else "free" if c.mine else by_id[_base(st.moment_id)].price_kind(),
                      "rain_swap": "", "lunch": c.lunch, "familiar": _base(st.moment_id) == notes.favourite})
+        if after_away is not None and not stop.get("mine"):   # m201: from plans we can't place, the allowance
+            stop["travel_text"] = (f"Getting there: from your plans. We've allowed about {after_away} min."
+                                   if after_away else "Getting there: from your plans. Allow time to get here.")
+            stop["from"] = "your plans"
+        after_away = away[1] if away else None
         stops.append(stop)
         prev_point, prev_name, prev_exit = nxt
     lunch_stop = next((s for s in stops if s["lunch"]), None)
@@ -768,6 +806,8 @@ def is_reveal(m: Moment | None) -> bool:
 
 def stop_point(stop_id: str, by_id: dict[str, Moment], brief: Brief) -> Point | None:
     """Where a stop's map pin goes: the card's start, or for a flexible lunch slot, where it sits."""
+    if stop_id.startswith("mine") and (b := mine_block(stop_id, brief)) and b.away:
+        return None   # m201: we don't know where they are, so no pin
     if stop_id == "lunch@start" or (stop_id.startswith("mine") and stop_id.endswith("@start")):
         return brief.start
     if stop_id.startswith("lunch@") or stop_id.startswith("mine"):

@@ -548,9 +548,11 @@ def test_the_persons_own_time_is_planned_around(client):
     mine = [st for st in one["plan"]["stops"] if st["mine"]]
     assert len(mine) == 1 and (mine[0]["arrive"], mine[0]["depart"]) == ("13:00", "14:00")
     assert mine[0]["title"] == "Your plans" and not mine[0]["rateable"] and mine[0]["feel_word"] == "Your time"
-    assert mine[0]["cost_text"] == "" and "allow time" in mine[0]["what"]
+    assert mine[0]["cost_text"] == "" and mine[0]["what"].startswith("Where isn't decided yet")   # m201: the default
+    assert mine[0]["pin"] is None
     places = [st for st in one["plan"]["stops"] if st["rateable"]]
-    assert 1 <= len(places) <= 3 and all(st["depart"] <= "13:00" or st["arrive"] >= "14:00" for st in places)
+    # m201: plans we can't place keep time either side: 30 min (GUESS) to get there and back
+    assert 1 <= len(places) <= 3 and all(st["depart"] <= "12:30" or st["arrive"] >= "14:30" for st in places)
     assert "your own plans" in one["title"].lower()
     assert not any(m.startswith("mine") for m in r.json()["used"])         # never kept as a place of the trip
     assert days[2]["relaxed"] and sum(st["rateable"] for st in days[2]["plan"]["stops"]) <= 2
@@ -602,3 +604,25 @@ def test_swap_and_regenerate_keep_the_persons_own_time(client):
     new = again.json()["stops"]
     assert [(st["arrive"], st["depart"]) for st in new if st["mine"]] == [("15:00", "16:00")]
     assert out["moment_id"] not in {st["moment_id"] for st in new}
+
+
+def test_where_the_plans_are_and_whether_they_include_a_meal(client):
+    """m201 (Abram, 7 Nov): plans near the day's places sit beside one, with no time added; plans somewhere else get
+    time to get there and back and no pin; plans the person eats during take the place of the lunch stop."""
+    h, _ = install(client)
+    base = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "your stay", "start_time": "10:00",
+            "end_time": "18:00", "stops": 4, "familiar": False}
+    plan = lambda **b: client.post("/v1/me/plans", headers=h, json={**base, "mine": [
+        {"kind": "plans", "start": "12:30", "end": "14:00", **b}]}).json()["stops"]
+    near = plan(location="near")
+    block = next(st for st in near if st["mine"])
+    assert block["what"].startswith("Your own time, ") and block["pin"] is not None
+    away = plan(location="elsewhere")
+    i = next(k for k, st in enumerate(away) if st["mine"])
+    assert (away[i]["arrive"], away[i]["depart"]) == ("12:30", "14:00") and away[i]["pin"] is None
+    assert away[i]["what"].startswith("Somewhere else: we've left 30 min before and 30 min after")
+    if i + 1 < len(away):
+        assert away[i + 1]["travel_text"].startswith("Getting there: from your plans") and away[i + 1]["arrive"] >= "14:30"
+    assert any(st["lunch"] for st in near)                                   # no meal said: lunch stays
+    eaten = plan(location="near", meal=True)
+    assert not any(st["lunch"] for st in eaten) and "no lunch stop" in next(st for st in eaten if st["mine"])["what"]

@@ -2060,6 +2060,12 @@ struct OwnToggle: View {
 
 /// m200: one block of the person's own time: what it is, from when, until when.
 struct MyTimeEditor: View {
+    /// m201 (Abram, 7 Nov): where the plans are, if they say. Not decided leaves time either side.
+    static let places = ["near", "elsewhere", "unknown"]
+    static func placeName(_ key: String) -> String {
+        ["near": "Near one of the day's places", "elsewhere": "Somewhere else"][key] ?? "Not decided yet"
+    }
+
     @Binding var time: MyTime
     let dayFrom: String
     let dayTo: String
@@ -2077,8 +2083,35 @@ struct MyTimeEditor: View {
                 Chip(title: "Your plans", on: time.kind == "plans", height: 40) { time.kind = "plans" }
                 Chip(title: "Free time", on: time.kind == "free", height: 40) { time.kind = "free" }
             }
-            TimeMenu(label: "From", time: $time.start, options: HalfHours.from(6, to: 23))
-            TimeMenu(label: "Until", time: $time.end, options: HalfHours.from(6, to: 23))
+            // the two times as one group, as on Android and in "Your days" (Abram, 7 Nov: differences on purpose only)
+            VStack(spacing: 0) {
+                TimeMenu(label: "From", time: $time.start, options: HalfHours.from(6, to: 23))
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+                TimeMenu(label: "Until", time: $time.end, options: HalfHours.from(6, to: 23))
+            }
+            .background(Theme.background, in: RoundedRectangle(cornerRadius: 14))
+            if time.kind == "plans" {   // m201 (Abram, 7 Nov): optional; not said means we leave time either side
+                Menu {
+                    Picker("Where are your plans?", selection: Binding(get: { time.location ?? "unknown" },
+                                                                       set: { time.location = $0 })) {
+                        ForEach(MyTimeEditor.places, id: \.self) { key in Text(MyTimeEditor.placeName(key)).tag(key) }
+                    }
+                } label: {
+                    MenuRow(label: "Where are your plans?", value: MyTimeEditor.placeName(time.location ?? "unknown"))
+                }
+                .background(Theme.background, in: RoundedRectangle(cornerRadius: 14))
+                if time.overlapsLunch {
+                    Toggle(isOn: Binding(get: { time.meal ?? false }, set: { time.meal = $0 })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Will you eat during this time?").foregroundStyle(Theme.ink)
+                            Text("Then there's no separate lunch stop.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                        }
+                    }
+                    .tint(Theme.amberDeep)
+                }
+            }
             if ChangeDaySheet.minutes(time.end) <= ChangeDaySheet.minutes(time.start) {
                 Text("It needs to end after it starts.").font(.subheadline).foregroundStyle(Theme.accent)
             } else if ChangeDaySheet.minutes(time.start) < ChangeDaySheet.minutes(dayFrom)

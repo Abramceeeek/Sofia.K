@@ -446,8 +446,15 @@ struct MyTime: Codable, Hashable {
     var kind: String                       // plans | free
     var start: String
     var end: String
+    var location: String? = nil            // m201: near | elsewhere | unknown (nil: not said, the same as unknown)
+    var meal: Bool? = nil                  // m201: they'll eat during these plans, so no separate lunch stop
 
     var title: String { kind == "plans" ? "Your plans" : "Free time" }
+
+    /// m201: plans that cover part of lunchtime (a lunch stop starts 11:30-13:30 and lasts 45 min, as in the Brain).
+    var overlapsLunch: Bool {
+        kind == "plans" && ChangeDaySheet.minutes(start) < 14 * 60 + 15 && ChangeDaySheet.minutes(end) > 11 * 60 + 30
+    }
 }
 
 /// The weather the planner should assume (rain makes the rain swaps win).

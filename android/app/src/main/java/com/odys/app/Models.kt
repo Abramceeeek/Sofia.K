@@ -357,8 +357,24 @@ data class PlanConditions(val rainProb: Double? = null)
 
 /** m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free". */
 @Serializable
-data class MyTime(val kind: String, val start: String, val end: String) {
+data class MyTime(
+    val kind: String,
+    val start: String,
+    val end: String,
+    val location: String? = null,   // m201: near | elsewhere | unknown (null: not said, the same as unknown)
+    val meal: Boolean? = null,      // m201: they'll eat during these plans, so no separate lunch stop
+) {
     val title: String get() = if (kind == "plans") "Your plans" else "Free time"
+
+    /** m201: plans that cover part of lunchtime (a lunch stop starts 11:30-13:30 and lasts 45 min, as in the Brain). */
+    val overlapsLunch: Boolean
+        get() = kind == "plans" && Dates.minutes(start) < 14 * 60 + 15 && Dates.minutes(end) > 11 * 60 + 30
+
+    companion object {
+        /** m201 (Abram, 7 Nov): where the plans are, if they say. Not decided leaves time either side. */
+        val places = listOf("near" to "Near one of the day's places", "elsewhere" to "Somewhere else",
+            "unknown" to "Not decided yet")
+    }
 }
 
 @Serializable
