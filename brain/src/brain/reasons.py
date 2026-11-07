@@ -251,7 +251,9 @@ def feel_line(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] =
     for i, s in enumerate(stops):
         mid = s["moment_id"]
         m = by_id.get(mid.split("#")[0])
-        if s.get("lunch") and m is not None and "food" not in taken:   # a food card as the lunch stop
+        if s.get("mine"):   # m200: the person's own time, in the day's line as it is
+            p, f = ("your own plans" if s["mine"] == "plans" else "free time"), f"mine{i}"
+        elif s.get("lunch") and m is not None and "food" not in taken:   # a food card as the lunch stop
             p, f = "good food", "food"
         else:
             p, f = _stop_feel(m, mid.startswith("lunch@"), i == peak, i == 0, taken)

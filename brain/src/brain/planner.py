@@ -15,6 +15,12 @@ Two rules for the seed moments (D72):
 - "area vibe" entries (a Soho wander, outdoor dining streets) are capped at `max_areas` per day
   (default 1) and are never reported as the day's peak, because they fill a day rather than make it.
 
+The person's own time (m200, product direction step 2): "Your plans 13:00-15:00" or "Free time 16:00-18:00" is a
+block the plan goes around. It comes as one slot beside each place (and the start), pinned to its times; at most one
+of a block's slots is in a plan, and a large bonus (`MINE_BONUS`, as lunch's) brings one in whenever the day allows,
+so the block sits near the place before it. It isn't one of the day's places. (An "exactly one" rule left the
+solver's first, greedy solution with nothing to aim for, and days with a block went unplanned: 6 Nov.)
+
 One rule for the day's shape (D127, from the algorithm review, 20 Oct): at most `max_theme` (2) history-and-culture
 stops a day, and never two of them in a row, so a day isn't three museums back to back (35% of simulated personal
 plans had two in a row). Lunch doesn't count, and a lunch between two of them breaks the run.
@@ -32,6 +38,7 @@ from .moments import Moment, Point
 from .travel import TravelTimes
 
 SCALE = 1000  # utility units → integer solver cost; travel adds 1 per minute as a tie-breaker
+MINE_BONUS = 50.0   # m200: the person's own time outweighs any place (lunch's bonus is 5)
 
 
 @dataclass(frozen=True)
@@ -47,6 +54,7 @@ class Candidate:
     kind: str = "moment"                    # "moment" or "area" (area vibe)
     lunch: bool = False                     # D102: a meal stop; a plan holds at most one, and `lunch_bonus` pulls one in
     theme: str | None = None                # D127: "history" for a history-and-culture stop (at most 2, never in a row)
+    mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
 
 
 def candidate_for(m: Moment, utility: float) -> Candidate:
@@ -163,8 +171,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
 
     routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(cost_cb))
 
-    count_idx = routing.RegisterUnaryTransitCallback(
-        lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n else 0)
+    count_idx = routing.RegisterUnaryTransitCallback(   # m200: the person's own time isn't one of the places
+        lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine else 0)
     routing.AddDimension(count_idx, 0, max_stops, True, "Stops")
     if min_stops:
         routing.GetDimensionOrDie("Stops").CumulVar(routing.End(0)).SetMin(min(min_stops, max_stops))
@@ -188,6 +196,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
             continue  # mandatory: no disjunction
         if cands[j - 1].moment_id in must_include:
             continue  # a must-do stop (trip intent): mandatory
+        if cands[j - 1].mine:   # m200: one slot of the block, pulled in by its bonus (at most one, below)
+            routing.AddDisjunction([idx], int(round(SCALE * MINE_BONUS)))
+            continue
         prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus + (lunch_bonus if cands[j - 1].lunch else 0.0)
         routing.AddDisjunction([idx], int(round(SCALE * max(0.0, prize))))
 
@@ -199,6 +210,12 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     for members in groups.values():
         if len(members) > 1:
             solver.Add(solver.Sum([routing.ActiveVar(i) for i in members]) <= 1)
+    blocks: dict[str, list[int]] = {}
+    for j, c in enumerate(cands, start=1):
+        if c.mine:
+            blocks.setdefault(c.mine, []).append(manager.NodeToIndex(j))
+    for members in blocks.values():   # m200: the person's own time is in the plan once
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in members]) <= 1)
     meals = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.lunch]
     if len(meals) > 1:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in meals]) <= 1)
@@ -239,9 +256,11 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
                                      round(c.utility, 3), round(pen, 3)))
             prev = node
     visited = {s.moment_id for s in stops}
-    value = sum(s.utility - floor + pace_bonus - s.leg_penalty for s in stops)
+    own = {c.moment_id for c in cands if c.mine}
+    value = sum((0.0 if s.moment_id in own else s.utility - floor + pace_bonus) - s.leg_penalty for s in stops)
     kind = {c.moment_id: c.kind for c in cands}
-    peaks = [s for s in stops if kind[s.moment_id] != "area"] or stops
+    peaks = [s for s in stops if kind[s.moment_id] != "area" and s.moment_id not in own] or \
+        [s for s in stops if s.moment_id not in own]
     peak = max(peaks, key=lambda s: s.utility).moment_id if peaks else None
     return DayPlan(stops, round(value, 3), peak, False,
                    dropped=[c.moment_id for c in cands if c.moment_id not in visited])
@@ -268,11 +287,11 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         # never leave a day short of its places. In simulation about 1 person in 8 had only 0-2 cards above it, so
         # their day had 0-2 places (and Test B's pair would differ in length). Then the person's own best cards come
         # in instead. A place they said they didn't enjoy never does: dayplan leaves those out before this.
-        places = sorted((c.utility for c in cands if not c.lunch and _start_ranges(c, day_start, day_end)),
+        places = sorted((c.utility for c in cands if not c.lunch and not c.mine and _start_ranges(c, day_start, day_end)),
                         reverse=True)
         if places and sum(u > floor for u in places) < min_stops:
             floor = min(floor, places[min(min_stops, len(places)) - 1] - 1e-6)
-    usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch)
+    usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch or c.mine)
               and _start_ranges(c, day_start, day_end)]
     skipped = [c.moment_id for c in cands if c not in usable]
     missing_must = sorted(must - {c.moment_id for c in usable})
@@ -310,7 +329,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 return -math.inf
             return p.value + end_bonus * (p.stops[-1].utility - floor)
 
-        top = sorted(range(len(usable)), key=lambda k: usable[k].utility, reverse=True)[:n_end_candidates]
+        top = sorted((k for k in range(len(usable)) if not usable[k].mine), key=lambda k: usable[k].utility,
+                     reverse=True)[:n_end_candidates]
         best_score = with_bonus(best)
         for k in top:
             p = _solve(usable, forced_last=k + 1, **args)

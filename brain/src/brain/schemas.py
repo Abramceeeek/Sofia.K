@@ -269,6 +269,21 @@ class TripLengthIn(BaseModel):
     stops_per_day: int = Field(default=4, ge=1, le=6)
 
 
+class MyTimeIn(BaseModel):
+    """m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free"."""
+    kind: Literal["plans", "free"]
+    start: str = Field(pattern=r"^\d{2}:\d{2}$")
+    end: str = Field(pattern=r"^\d{2}:\d{2}$")
+
+
+class DayTimeIn(BaseModel):
+    """m200: how one day of a trip should leave room for the person (product direction, step 2)."""
+    day: int = Field(ge=0, le=30)
+    free_day: bool = False             # nothing planned: the day is theirs
+    relaxed: bool = False              # one place fewer, longer at each
+    mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
+
+
 class TripDaysIn(BaseModel):
     """D120: the days of a multi-day trip (ODYS Trips design: "How long for?", "How should the trip feel?")."""
     destination: str = "london"
@@ -288,3 +303,4 @@ class TripDaysIn(BaseModel):
     travel_light: bool = False                                           # no big bags on the first day
     arrive: TripEndIn | None = None                                      # replaces arrive_time when sent
     leave: TripEndIn | None = None                                       # replaces leave_time when sent
+    personal: list[DayTimeIn] = Field(default_factory=list, max_length=31)   # m200: the person's own time, by day

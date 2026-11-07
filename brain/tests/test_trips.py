@@ -529,3 +529,55 @@ def test_trip_length_names_each_place_once_on_the_page():
     assert first == "Place 0, Place 1 and 6 more"
     assert second == "Place 2, Place 3 and 6 more"     # the next ones, and the count still covers all eight
     assert triplength._names(cards[:2], 2, seen) == "Place 0, Place 1"   # nothing new left: the named ones again
+
+
+def test_the_persons_own_time_is_planned_around(client):
+    """m200 (product direction, step 2): "I have plans 13:00-14:00" and free time are stops of their own, at their
+    times, never rated and never one of the day's places; a relaxed day has one place fewer; a free day has no plan."""
+    h, _ = install(client)
+    start = date.today() + timedelta(days=4)
+    body = {"start_date": start.isoformat(), "nights": 3, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 3,
+            "personal": [{"day": 1, "mine": [{"kind": "plans", "start": "13:00", "end": "14:00"},
+                                             {"kind": "free", "start": "07:00", "end": "08:00"}]},   # before the day
+                         {"day": 2, "relaxed": True}, {"day": 3, "free_day": True}]}
+    r = client.post("/v1/me/trips/days", headers=h, json=body)
+    assert r.status_code == 201, r.text
+    days = {d["index"]: d for d in r.json()["days"]}
+    one = days[1]
+    assert [(b["kind"], b["planned"]) for b in one["mine"]] == [("plans", True), ("free", False)]
+    mine = [st for st in one["plan"]["stops"] if st["mine"]]
+    assert len(mine) == 1 and (mine[0]["arrive"], mine[0]["depart"]) == ("13:00", "14:00")
+    assert mine[0]["title"] == "Your plans" and not mine[0]["rateable"] and mine[0]["feel_word"] == "Your time"
+    assert mine[0]["cost_text"] == "" and "allow time" in mine[0]["what"]
+    places = [st for st in one["plan"]["stops"] if st["rateable"]]
+    assert 1 <= len(places) <= 3 and all(st["depart"] <= "13:00" or st["arrive"] >= "14:00" for st in places)
+    assert "your own plans" in one["title"].lower()
+    assert not any(m.startswith("mine") for m in r.json()["used"])         # never kept as a place of the trip
+    assert days[2]["relaxed"] and sum(st["rateable"] for st in days[2]["plan"]["stops"]) <= 2
+    assert days[3]["free_day"] and days[3]["plan"] is None and days[3]["title"] == "A day that's yours"
+    home = client.post("/v1/me/trips/days", headers=h, json={**body, "days": [3], "leave": {
+        "mode": "train", "place": "KGX", "time": "17:00"}}).json()["days"][0]
+    assert home["free_day"] and home["plan"] is None and [x["slot"] for x in home["legs"]] == ["leave"]   # still home
+    bad = {**body, "personal": [{"day": 1, "mine": [{"kind": "plans", "start": "1pm", "end": "14:00"}]}]}
+    assert client.post("/v1/me/trips/days", headers=h, json=bad).status_code == 422
+    three = [{"kind": "free", "start": f"1{k}:00", "end": f"1{k}:30"} for k in range(3)]
+    assert client.post("/v1/me/trips/days", headers=h,
+                       json={**body, "personal": [{"day": 1, "mine": three}]}).status_code == 422
+
+
+def test_a_block_is_pinned_to_its_time_and_isnt_a_place():
+    """m200: the planner keeps the person's own time at its times, near a place, without counting it as a stop."""
+    from brain.moments import Point
+    from brain.planner import Candidate, LegWeights, plan_day
+    from brain.travel import LondonEstimate
+    p = lambda lat, lon: Point(lat=lat, lon=lon)
+    places = [Candidate(f"m{k}", p(51.50 + k / 200, -0.12), p(51.50 + k / 200, -0.12), 45, ((600, 1080),), 1.0)
+              for k in range(4)]
+    slot = lambda mid, at: Candidate(mid, at, at, 60, ((780, 840),), 0.0, mine="mine0")
+    cands = places + [slot(f"mine0@{c.moment_id}", c.end) for c in places] + [slot("mine0@start", p(51.5, -0.12))]
+    plan = plan_day(cands, p(51.5, -0.12), 600, 1080, LondonEstimate(), LegWeights(0.0, 0.0), max_stops=2)
+    ids = [s.moment_id for s in plan.stops]
+    mine = [s for s in plan.stops if s.moment_id.startswith("mine0@")]
+    assert len(mine) == 1 and (mine[0].arrive_min, mine[0].depart_min) == (780, 840)
+    assert len([i for i in ids if not i.startswith("mine")]) == 2          # still two places
+    assert plan.peak_moment_id and not plan.peak_moment_id.startswith("mine")

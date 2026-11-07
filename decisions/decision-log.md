@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-07 — Free time in a day (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m200 | **The person's own time is part of a trip day** (product direction, step 2). Per day: **"Your plans"** or **"Free time"** at set times (up to two blocks), **a relaxed day** (one place fewer, and longer at each, as for a person whose pace is relaxed), or **a day that's yours** (no plan; the journeys at the trip's ends still come). A block is a stop of its own, pinned to its times, never rated and never one of the day's places, and it sits **near the place before it**: "We've assumed it's there: if it's somewhere else, allow time to get there and back" (GUESS: we don't ask where). The solver brings it in with a large bonus, as it does lunch: an "exactly one" rule left the greedy first solution with nothing to aim for, and days with a block went unplanned. A block outside the planned hours is returned as not planned. Lunch stays even when plans fall at lunchtime (GUESS: they may or may not be a meal; the ratings will tell). The Brain's event counts days with own time, free days and relaxed days, never what the time is for or when. Minor (D69). | "Change this day" as the only way: a smaller window, nothing shown | Abram's order: trip length, then personal time. |
+
 ## 2026-11-06 — The friends' round's build identity, and the three systems that keep it fixed
 
 | # | Decision | Replaces | Why |

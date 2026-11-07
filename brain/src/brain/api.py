@@ -1014,8 +1014,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         budget = BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
         out = []
 
-        def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str) -> tuple[dict, list[dict]] | None:
-            """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all."""
+        own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
+
+        def blocks_for(i: int) -> tuple[dayplan.Block, ...]:
+            d = own_days.get(i)
+            return tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end))
+                         for b in (d.mine if d else []) if tripdays.mins(b.start) < tripdays.mins(b.end))
+
+        def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str,
+                 mine: tuple[dayplan.Block, ...] = (), relaxed: bool = False) -> tuple[dict, list[dict]] | None:
+            """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all. m200: `mine` is
+            the person's own time, planned around."""
             for n in dict.fromkeys((part.stops, part.stops - 1)):
                 if n < 1:
                     continue
@@ -1023,7 +1032,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
-                                      sunset=sunset(day), lunch=part.lunch,
+                                      sunset=sunset(day), lunch=part.lunch, mine=mine, relaxed=relaxed,
                                       temp_c=outlook.temp_c if outlook else None,
                                       rain_prob=outlook.rain_prob if outlook else None)
                 view = est.for_day(day, part.start_time) if isinstance(est, TflTravel) else est
@@ -1047,32 +1056,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for i in wanted:
             day = body.start_date + timedelta(days=i)
             label = f"{day:%A} {day.day} {day:%B}"
+            own = own_days.get(i)
+            blocks = blocks_for(i)
+            # m200: a relaxed day has one place fewer (never none), so each stays longer
+            places = max(1, body.stops_per_day - (1 if own and own.relaxed else 0))
             fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name, stay_chosen=body.stay is not None,
-                                    day_start=body.day_start, day_end=body.day_end, stops=body.stops_per_day,
+                                    day_start=body.day_start, day_end=body.day_end, stops=places,
                                     arrive=arrive, leave=leave, travel_light=body.travel_light)
             legs = list(fr.legs)
             entry = {"index": i, "date": day.isoformat(), "kind": fr.kind, "plan": None, "before": None,
-                     "window": None, "title": fr.title}
+                     "window": None, "title": fr.title, "free_day": bool(own and own.free_day),
+                     "relaxed": bool(own and own.relaxed),
+                     "mine": [{"kind": b.kind, "start": tripdays.hhmm(b.start_min), "end": tripdays.hhmm(b.end_min),
+                               "planned": False} for b in blocks]}
+            if own and own.free_day:   # m200: nothing planned; the journeys at the ends of the trip still apply
+                fr.before, fr.main = None, None
+                entry["title"] = "A day that's yours"
             if fr.before and (got := fill(fr.before, day, i, label, "before")):
                 entry["before"] = got[0]
                 leg = tripdays.to_stay_leg(est, got[1][-1], start, start_name, cfg.check_in_min if cfg else 20)
                 legs.append(leg)
                 ready_at = tripdays.up5(tripdays.mins(leg.arrive) + (cfg.check_in_min if cfg else 20))
                 end = tripdays.mins(fr.main.end_time) if fr.main else tripdays.mins(body.day_end)
-                n = tripdays.stops_for(ready_at, end, body.stops_per_day - 1)
+                n = tripdays.stops_for(ready_at, end, places - 1)
                 fr.main = tripdays.Part(start, start_name, tripdays.hhmm(ready_at), tripdays.hhmm(end), n) if n else None
             elif fr.before:   # nothing fitted on the way: go to the stay first, as with bags
                 fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name,
                                         stay_chosen=body.stay is not None, day_start=body.day_start,
-                                        day_end=body.day_end, stops=body.stops_per_day, arrive=arrive, leave=leave,
+                                        day_end=body.day_end, stops=places, arrive=arrive, leave=leave,
                                         travel_light=False)
                 legs = list(fr.legs)
                 entry["title"] = fr.title
             if fr.main:
                 entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
-                if got := fill(fr.main, day, i, label, "main"):
+                if got := fill(fr.main, day, i, label, "main", blocks, relaxed=bool(own and own.relaxed)):
                     entry["plan"] = got[0]
                     entry["title"] = got[0]["feel_line"] or label
+                    planned = {int(st["moment_id"][4:st["moment_id"].index("@")])
+                               for st in got[1] if st["moment_id"].startswith("mine")}
+                    for k, b in enumerate(entry["mine"]):
+                        b["planned"] = k in planned
                     if fr.leave_leg and not fr.day_trip:   # the last day: back for the bags, then away
                         legs.append(tripdays.back_leg(est, got[1][-1], start, start_name))
             if not entry["title"]:
@@ -1086,7 +1109,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                               "stay": body.stay is not None, "feelings": ",".join(feelings),
                               # D122: how the person shapes their days (never where or when they travel)
                               "by": arrive.mode if arrive else "none", "light": body.travel_light,
-                              "places": body.stops_per_day, "hours": mins_between(body.day_start, body.day_end)}))
+                              "places": body.stops_per_day, "hours": mins_between(body.day_start, body.day_end),
+                              # m200: how many days keep time for the person (never what for, or when)
+                              "own_time": sum(bool(d.mine) for d in body.personal),
+                              "free_days": sum(d.free_day for d in body.personal),
+                              "relaxed": sum(d.relaxed for d in body.personal)}))
         s.commit()
         return {"total_days": total, "days": out, "start": start_name,
                 "used": sorted(used)}   # sent back as `exclude` when planning the later days

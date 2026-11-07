@@ -87,6 +87,46 @@ class Brief:
     lunch_gbp: float = 15.0        # D102 (GUESS): the flexible lunch slot's cost per person
     sunset: str | None = None      # D105: "hh:mm" on the day the plans are for; sets the sunset-based "Best" lines
     lunch: bool = True             # D122: False for a trip's one place on the way from the airport (never lunch)
+    mine: tuple[Block, ...] = ()   # m200: the person's own time that day, planned around
+    relaxed: bool = False          # m200: "a relaxed day": longer at each place, as for a person whose pace is relaxed
+
+
+@dataclass(frozen=True)
+class Block:
+    """m200: time that's the person's own: "plans" (meeting someone, a booking) or "free" (rest, shop, wander)."""
+    kind: str                      # plans | free
+    start_min: int
+    end_min: int
+
+    @property
+    def title(self) -> str:
+        return "Your plans" if self.kind == "plans" else "Free time"
+
+
+MINE_HOSTS = 12   # m200 (GUESS): a block's slot sits beside one of the 12 best places (or the start), to keep the solver quick
+
+
+def mine_candidates(real: list, brief: Brief) -> list:
+    """m200: each of the person's blocks inside the day, as one slot near the start and beside each of the best
+    places: pinned to its own times, worth nothing to the solver, and exactly one of them is in the plan."""
+    day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
+    hosts = sorted(real, key=lambda c: c.utility, reverse=True)[:MINE_HOSTS]
+    out = []
+    for k, b in enumerate(brief.mine):
+        if not (day_start <= b.start_min < b.end_min <= day_end):
+            continue
+        slot = lambda mid, p: Candidate(mid, p, p, b.end_min - b.start_min, ((b.start_min, b.end_min),), 0.0, 0.0,
+                                        None, "moment", mine=f"mine{k}")
+        out += [slot(f"mine{k}@{c.moment_id}", c.end) for c in hosts] + [slot(f"mine{k}@start", brief.start)]
+    return out
+
+
+def mine_block(stop_id: str, brief: Brief) -> Block | None:
+    """The block a "mine<k>@…" slot stands for."""
+    if not stop_id.startswith("mine"):
+        return None
+    k = int(stop_id[4:stop_id.index("@")])
+    return brief.mine[k] if k < len(brief.mine) else None
 
 
 def load_brief(path: Path) -> Brief:
@@ -297,7 +337,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     off = offset or {}
     # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
     real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0)) for m in usable if m.id not in disliked_ids]
-    cands = lunch_candidates(real, by_id, brief, liked=u_hat)
+    cands = lunch_candidates(real, by_id, brief, liked=u_hat) + mine_candidates(real, brief)
     by_cand = {c.moment_id: c for c in cands}
     idx = {n: i for i, n in enumerate(pop.names)}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
@@ -309,7 +349,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))
-    targets = dwell_targets(by_id, [c.moment_id for c in real]) if notes.pace == "relaxed" else {}
+    targets = dwell_targets(by_id, [c.moment_id for c in real]) if notes.pace == "relaxed" or brief.relaxed else {}
 
     def solve(sub: list, must: set[str]) -> DayPlan:
         latest = min(day_end, end_window[1]) if end_window else day_end
@@ -353,7 +393,19 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         c = by_cand[st.moment_id]
         mode = travel.mode(prev_point, c.start)
         route = getattr(travel, "route", lambda a, b: None)(prev_point, c.start) if mode != "walk" else None
-        if st.moment_id == "lunch@start":
+        if (blk := mine_block(st.moment_id, brief)):
+            host = by_id.get(st.moment_id[st.moment_id.index("@") + 1:])
+            place = (host.leave_name() if host else brief.start_name) if (host or stops) else brief.start_name
+            near = f"near {place}" if stops else f"from {brief.start_name}"
+            stop = {"title": blk.title, "approach": "",
+                    "what": (f"Your own time, {near}. We've assumed it's there: if it's somewhere else, allow time to "
+                             f"get there and back." if blk.kind == "plans" else
+                             f"Yours to rest, shop or wander, {near}. Nothing is planned."),
+                    "best": "", "best_windows": [], "queue": 0, "moment_id": st.moment_id, "predicted": None,
+                    "why": [], "mine": blk.kind,
+                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, None, not stops, route)}
+            nxt = (c.end, place, prev_exit if host is None else host.exit_station())
+        elif st.moment_id == "lunch@start":
             place = brief.start_name
             stop = {"title": f"Lunch near {place}", "approach": "",
                     "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
@@ -399,7 +451,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         stop.update({"key": st.moment_id,   # the planner's id ("<card>#lunch" when a food card is the lunch), for `keep`
                      "arrive": hhmm(st.arrive_min), "depart": hhmm(st.depart_min), "travel_min": st.travel_min,
                      "travel_mode": mode, "from": prev_name, "cost_gbp": c.cost_gbp,
-                     "cost_kind": "food" if c.lunch else by_id[_base(st.moment_id)].price_kind(),
+                     "cost_kind": "food" if c.lunch else "free" if c.mine else by_id[_base(st.moment_id)].price_kind(),
                      "rain_swap": "", "lunch": c.lunch, "familiar": _base(st.moment_id) == notes.favourite})
         stops.append(stop)
         prev_point, prev_name, prev_exit = nxt
@@ -608,6 +660,8 @@ def _cost(c: float) -> str:
 def _cost_line(s: dict) -> str:
     """Never call food "entry" (D100)."""
     c = s.get("cost_gbp") or 0.0
+    if s.get("mine"):   # m200: the person's own time: what it costs is theirs to know
+        return ""
     if not c:
         return "Cost: free"
     return {"food": f"Food: about {_money(c)}", "ticket": f"Ticket: {_money(c)}",
@@ -714,10 +768,10 @@ def is_reveal(m: Moment | None) -> bool:
 
 def stop_point(stop_id: str, by_id: dict[str, Moment], brief: Brief) -> Point | None:
     """Where a stop's map pin goes: the card's start, or for a flexible lunch slot, where it sits."""
-    if stop_id == "lunch@start":
+    if stop_id == "lunch@start" or (stop_id.startswith("mine") and stop_id.endswith("@start")):
         return brief.start
-    if stop_id.startswith("lunch@"):
-        host = by_id.get(stop_id[len("lunch@"):])
+    if stop_id.startswith("lunch@") or stop_id.startswith("mine"):
+        host = by_id.get(stop_id[stop_id.index("@") + 1:])
         return host.end() if host else None
     m = by_id.get(_base(stop_id))
     return m.start() if m else None
@@ -731,10 +785,13 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "approach": s["approach"], "what": s["what"], "queue_min": s.get("queue") or 0,
             "best_text": _best_line(s), "cost_gbp": s["cost_gbp"], "cost_kind": s["cost_kind"],
             "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "lunch": s["lunch"],
-            "familiar": s.get("familiar", False), "rateable": not s["moment_id"].startswith("lunch@"),
+            "familiar": s.get("familiar", False),
+            "rateable": not s["moment_id"].startswith(("lunch@", "mine")),
+            "mine": s.get("mine"),   # m200: "plans" or "free" for the person's own time, else None
             "worth_gbp": s.get("worth_gbp"),
             "match": s.get("match"),
-            "feel_word": s.get("feel_word") or "Lunch", "reveal": s.get("reveal", False),   # D119
+            "feel_word": s.get("feel_word") or ("Your time" if s.get("mine") else "Lunch"),
+            "reveal": s.get("reveal", False),   # D119
             "approach_steps": s.get("approach_steps") or [],
             "book_ahead": s.get("book_ahead") or "",
             "checked": s.get("checked") or "",
