@@ -2,6 +2,17 @@
 
 **Decision.** The friends' round is a controlled run of Test B: every tester uses the same app and Brain, recorded below, and nothing reaches `main` until the round ends: no code, no notes. This sheet lives on the work branch. Friends are a first usability group; the results are read as direction, not proof (D127).
 
+## Open before the first invite (kept here, apart from development; Abram, 7 Nov)
+
+| Item | Who | Status |
+|---|---|---|
+| The live Brain runs `80a0da3`, and branch pushes can't redeploy it | Abram (Render), Claude (checks) | **Done** 6 Nov 22:54 UTC; checked again 7 Nov |
+| Tag `friends-round-1` on `80a0da3` | Abram (this session can't push tags) | **Waiting** |
+| Rehearsal on TestFlight 91 and Android 21 with the code `REHEARSAL`, then the read-out, then clean-up (steps 3-4 below) | Abram, Claude reads the read-out | **Waiting** |
+| Apple outside-activities check (D60, D94) | Abram | **Waiting** |
+| TestFlight's external review of build 91 | Abram | **Waiting** (after the Apple check) |
+| Recruiting, with the code FRIENDS; start date into the manifest | Abram | After all of the above |
+
 ## The experiment manifest
 
 | What | Value | How to check it during the round |

@@ -9,7 +9,7 @@
 - The terms say nothing about look-to-book ratios or linking to other booking sites. The docs' pricing page (docs.liteapi.travel/reference/api-pricing-usage-costs, updated 23 Jul 2026) makes the free rates workflow subject to "a reasonable look-to-book ratio".
 - Contact printed in the terms: **hello@nuitee.com** (also https://nuitee.com/contact).
 
-## The email (Abram sends it, from his own address)
+## The email (Abram reviews the final wording, then sends it from his own address; 7 Nov)
 
 > **Subject:** Questions about permitted use: price comparison and saved-stay price checks (ODYS)
 >
@@ -29,7 +29,7 @@
 > 4. Whether we may display price changes over time to that person.
 > 5. What look-to-book ratio, or commercial agreement, applies to an app that refers people to book elsewhere; and whether we should be booking through LiteAPI instead.
 >
-> We also saw the beta price index (GET /prices/hotels and /prices/city). If we used it for context such as "places to stay in this city usually cost more on these dates", would that be permitted display?
+> We also saw the beta price index (GET /prices/hotels and /prices/city). If we used it for context such as "places to stay in this city usually cost more on these dates", would that be permitted display? And what does it cost per request: the endpoint pages say $0.02, the pricing page $0.05?
 >
 > Thank you,
 > Abram
