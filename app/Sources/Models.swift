@@ -243,13 +243,36 @@ struct Plan: Codable, Hashable, Identifiable {
     let basis: Basis?              // D115: what the reasons rest on so far
     let blind: Bool?               // D115: the blind Test B comparison: no reasons, no feeling line, no worth
     let weather: Weather?          // Stage 1: the Met Office forecast the plan was made with, if any
+    var budget: DayBudget? = nil   // m217: the day's money against the person's budget, line by line
 
     var isBlind: Bool { blind == true }
 
     /// The same plan on another day (CI screenshots: the home on the day, D131).
     func dated(_ day: String) -> Plan {
         Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
-             basis: basis, blind: blind, weather: weather)
+             basis: basis, blind: blind, weather: weather, budget: budget)
+    }
+}
+
+/// m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out.
+struct DayBudget: Codable, Hashable {
+    let budgetGbp: Double
+    let foodInBudget: Bool
+    let lunchChoice: String
+    let lines: [Line]
+    let totalGbp: Double
+    let leftGbp: Double
+    let status: String                 // fits | tight | over
+    let message: String
+    let options: [String]
+    let note: String
+
+    struct Line: Codable, Hashable {
+        let label: String
+        let gbp: Double?               // nil: none planned (said in `note`)
+        let kind: String               // estimate | price | missing
+        let note: String
+        let inBudget: Bool
     }
 }
 

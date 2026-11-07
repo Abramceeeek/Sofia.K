@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+from . import (backup, daybudget, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -512,6 +512,42 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # Stage 1: the chosen Tube and bus legs, asked of TfL for that day; if one is well off, plan once more
         if hasattr(travel, "check") and travel.check():
             plan, stops, notes = solve()
+        # m217: the day's money. Fares count towards the budget too, and lunch stays in it unless the person left food
+        # out. If the finished day goes over: plan once more with the fares set aside first; if it's still over, step
+        # down to a cheaper lunch (usual, cheaper, bring lunch) and plan again. Keep the cheapest day found. Lunch is
+        # never dropped to make a day fit, and never for the blind Test B pair.
+        money = None
+        if not blind and brief.budget_gbp is not None:
+            full = brief.budget_gbp
+            expected = brief.lunch and dayplan.spans_lunch(dayplan.parse_hhmm(brief.start_time),
+                                                           dayplan.parse_hhmm(brief.end_time))
+            lunch = daybudget.lunch_of(brief.lunch_gbp) if brief.food_in_budget else daybudget.LUNCHES[0]
+            block = lambda sts, ln: daybudget.block(full, sts, ln, food_in_budget=brief.food_in_budget,
+                                                    lunch_expected=expected)
+            # a day that kept its lunch always beats one that lost it; then one within budget; then the cheaper
+            rank = lambda b, sts: (not expected or any(st.get("lunch") for st in sts), b["status"] != "over",
+                                   -b["total_gbp"])
+            best = (block(stops, lunch), plan, stops, notes, lunch)
+            fares_tried = False
+            for _ in range(5):   # at most: fares, a cheaper lunch, fares again, bring lunch, fares again
+                if best[0]["status"] != "over":
+                    break
+                fares = dayplan.transport_gbp(best[2])
+                keeps_lunch = not expected or not brief.food_in_budget or full - fares >= lunch.gbp
+                if fares > 0 and not fares_tried and keeps_lunch:
+                    brief, fares_tried = replace(brief, budget_gbp=max(0.0, full - fares)), True
+                elif expected and brief.food_in_budget and (cheaper := daybudget.next_lunch(lunch)) is not None:
+                    lunch, fares_tried = cheaper, False
+                    brief = replace(brief, budget_gbp=full, lunch_gbp=lunch.gbp)
+                else:
+                    break
+                p2, s2, n2 = solve()
+                b2 = block(s2, lunch)
+                if p2.stops and rank(b2, s2) > rank(best[0], best[2]):
+                    best = (b2, p2, s2, n2, lunch)
+            _, plan, stops, notes, lunch = best
+            brief = replace(brief, budget_gbp=full, lunch_gbp=lunch.gbp if brief.food_in_budget else 0.0)
+            money = lambda sts: block(sts, lunch)
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
@@ -543,6 +579,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
+                "budget": money(stops) if money else None,   # m217: the day's money, line by line
                 "solver_status": plan.status, "blind": blind,
                 "feel_line": None if blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
                 "basis": None if blind else reasons.basis(
@@ -573,7 +610,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                               b.kind == "plans" and b.meal) for b in body.mine
                                if tripdays.mins(b.start) < tripdays.mins(b.end))),   # m200, m201
             lunch=not any(b.meal and dayplan.overlaps_lunch(b) for b in own),
-            relaxed=body.relaxed)
+            relaxed=body.relaxed,
+            # m217: lunch is chosen to fit the budget (usual, cheaper or brought), and left out of it only if asked
+            lunch_gbp=(daybudget.choose_lunch(budget, body.food_in_budget).gbp if body.food_in_budget else 0.0)
+            if not body.blind else 15.0,
+            food_in_budget=body.food_in_budget)
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
         feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]
@@ -1110,7 +1151,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
                                       temp_c=outlook.temp_c if outlook else None,
-                                      rain_prob=outlook.rain_prob if outlook else None)
+                                      rain_prob=outlook.rain_prob if outlook else None,
+                                      lunch_gbp=daybudget.choose_lunch(budget).gbp)   # m217: lunch fits the budget
                 view = est.for_day(day, part.start_time) if isinstance(est, TflTravel) else est
                 pool = ready if part.toward is None else [   # D122: the place on the way really is on the way
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]

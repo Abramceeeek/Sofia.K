@@ -1,0 +1,34 @@
+{
+ "budget_gbp": 30.0,
+ "food_in_budget": true,
+ "lunch_choice": "usual",
+ "lines": [
+  {
+   "label": "Lunch",
+   "gbp": 15.0,
+   "kind": "estimate",
+   "note": "Lunch at a café, pub or food stall",
+   "in_budget": true
+  },
+  {
+   "label": "Getting around",
+   "gbp": 6.0,
+   "kind": "estimate",
+   "in_budget": true,
+   "note": "Tube and bus fares, at most the daily cap"
+  },
+  {
+   "label": "Places",
+   "gbp": 0.0,
+   "kind": "price",
+   "in_budget": true,
+   "note": "Free places"
+  }
+ ],
+ "total_gbp": 21.0,
+ "left_gbp": 9.0,
+ "status": "fits",
+ "message": "This day fits your £30, with £9 left.",
+ "options": [],
+ "note": "Lunch and fares are estimates; places are the prices on their cards."
+}

@@ -639,6 +639,41 @@ fun PlanStats(plan: Plan, modifier: Modifier = Modifier) {
         val fare = if (t.transportGbp > 0) "${Money.text(t.transportGbp)} Tube or bus" else "all on foot"
         Text("$spend, $fare." + (plan.summary?.firstOrNull()?.let { " $it." } ?: ""), style = Theme.footnote)
         plan.weather?.line?.takeIf { it.isNotEmpty() }?.let { Text(it, style = Theme.footnote) }
+        plan.budget?.let { BudgetBlock(it, Modifier.padding(top = 6.dp)) }
+    }
+}
+
+/** m217: the day against the person's budget: each line (lunch, getting around, places), what's left, and if it
+ *  doesn't fit, why and what could change. Lunch and fares are estimates, and the block says so. */
+@Composable
+fun BudgetBlock(b: DayBudget, modifier: Modifier = Modifier) {
+    val over = b.status == "over"
+    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Theme.surface).padding(14.dp)
+        .semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text("Your budget", style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.weight(1f))
+            Text(Money.text(b.budgetGbp), style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold))
+        }
+        for (line in b.lines) {
+            Row(verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                    Text(line.label, style = Theme.footnote.copy(color = Theme.inkSoft))
+                    Text(line.note, style = Theme.caption)
+                }
+                Spacer(Modifier.width(8.dp))
+                Text(line.gbp?.let { Money.text(it) } ?: "–", style = Theme.footnote.copy(color = Theme.inkSoft))
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Theme.outline))
+        Row {
+            val c = if (over) Theme.accent else Theme.ink
+            Text(if (b.leftGbp < 0) "Over by" else "Left", style = Theme.footnote.copy(color = c, fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.weight(1f))
+            Text(Money.text(kotlin.math.abs(b.leftGbp)), style = Theme.footnote.copy(color = c, fontWeight = FontWeight.SemiBold))
+        }
+        Text(b.message, style = Theme.footnote.copy(color = if (over) Theme.accent else Theme.inkSoft))
+        for (o in b.options) Text("· $o", style = Theme.caption)
+        Text(b.note, style = Theme.caption)
     }
 }
 

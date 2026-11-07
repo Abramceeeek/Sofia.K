@@ -140,7 +140,8 @@ final class AppModel {
         if demo {
             route = .home
             onboarding = try? BrainClient.bundled("demo_onboarding")
-            let demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
+            var demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
+            if screen == "planbudget" { demoPlan?.budget = try? BrainClient.bundled("demo_budget") }   // m217
             plan = demoPlan
             surveyDone = true
             pairDone = true

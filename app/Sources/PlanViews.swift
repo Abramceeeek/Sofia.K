@@ -756,6 +756,7 @@ struct PlanStats: View {
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            if let b = plan.budget { BudgetBlock(budget: b).padding(.top, 6) }
         }
         .accessibilityElement(children: .combine)
     }
@@ -764,6 +765,49 @@ struct PlanStats: View {
         let spend = t.spendGbp > 0 ? "\(Money.text(t.spendGbp)) food and entry" : "Free entry"
         let fare = t.transportGbp > 0 ? "\(Money.text(t.transportGbp)) Tube or bus" : "all on foot"
         return "\(spend), \(fare)."
+    }
+}
+
+/// m217: the day against the person's budget: each line (lunch, getting around, places), what's left, and if it
+/// doesn't fit, why and what could change. Lunch and fares are estimates, and the block says so.
+struct BudgetBlock: View {
+    let budget: DayBudget
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Your budget").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                Spacer()
+                Text(Money.text(budget.budgetGbp)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+            }
+            ForEach(budget.lines, id: \.label) { line in
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(line.label).font(.footnote).foregroundStyle(Theme.inkSoft)
+                        Text(line.note).font(.caption).foregroundStyle(Theme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 8)
+                    Text(line.gbp.map { Money.text($0) } ?? "–").font(.footnote).foregroundStyle(Theme.inkSoft)
+                        .monospacedDigit()
+                }
+            }
+            Divider().overlay(Theme.outline)
+            HStack {
+                Text(budget.leftGbp < 0 ? "Over by" : "Left").font(.footnote.weight(.semibold))
+                Spacer()
+                Text(Money.text(abs(budget.leftGbp))).font(.footnote.weight(.semibold)).monospacedDigit()
+            }
+            .foregroundStyle(budget.status == "over" ? Theme.accent : Theme.ink)
+            Text(budget.message).font(.footnote).foregroundStyle(budget.status == "over" ? Theme.accent : Theme.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+            ForEach(budget.options, id: \.self) { o in
+                Text("· " + o).font(.caption).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            }
+            Text(budget.note).font(.caption2).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 

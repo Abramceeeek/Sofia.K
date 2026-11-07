@@ -365,6 +365,7 @@ struct DemoScreen: View {
         case "error", "waking", "mustinclude", "planend", "swap", "nowahead", "ratingpicked":
             StateDemoScreen(name: name)                                         // 30 Oct: the states in between
         case "plan2": DayScreen(scroll: "stops")                                // 9b: further down, the stops
+        case "planbudget": DayScreen()                                          // 9g (m217): the day against a budget
         case "planmap": DayScreen(layout: "map")                                // 9d
         case "reveal": DayScreen(reveal: 0.45)                                  // 9c: the plan reveal, part-way (D117)
         case "stop":                                                            // 10

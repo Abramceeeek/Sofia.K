@@ -118,6 +118,7 @@ class PlanRequest(BaseModel):
     date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")   # sets open days and sunset lines
     stops: int = Field(default=4, ge=2, le=6)          # including lunch when the day spans midday (D102)
     budget_gbp: float | None = Field(default=None, ge=0)   # per person; default: the profile's budget band
+    food_in_budget: bool = True       # m217: lunch is part of the budget unless the person leaves food out
     conditions: ConditionsIn | None = None
     familiar: bool = True             # D103: one place they loved plus new places; on by default in the app
     intent: dict = Field(default_factory=dict)   # recharge/explore, who might come, must_do (D27)

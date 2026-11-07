@@ -162,6 +162,10 @@ class ScreensTest {
     @Test fun tripHome() = show("19-triphome")
     @Test fun planForm() = show("08-planform") { plan = null; tripPath += Dest.Day }
     @Test fun planDay() = show("09-plan") { tripPath += Dest.Day }
+    // m217: the day against a budget, from the demo plan's own stops (brain.daybudget.block)
+    @Test fun planBudget() = showThen("09g-planbudget", {
+        plan = plan!!.copy(budget = demo("demo_budget", DayBudget.serializer())); tripPath += Dest.Day
+    }, { reach("Your budget") })
     @Test fun planMap() = show("09d-planmap") { prefs.set("planLayout", "map"); tripPath += Dest.Day }
     @Test fun stop() = show("10-stop") { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }
     @Test fun now() = show("10b-now") { today(1); showNow = true }   // today, on the way (as the iPhone's)

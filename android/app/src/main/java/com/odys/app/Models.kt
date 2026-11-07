@@ -182,8 +182,28 @@ data class Plan(
     val basis: Basis? = null,
     val blind: Boolean? = null,
     val weather: Weather? = null,     // Stage 1: the Met Office forecast the plan was made with, if any
+    val budget: DayBudget? = null,    // m217: the day's money against the person's budget, line by line
 ) {
     val isBlind: Boolean get() = blind == true
+}
+
+/** m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out. */
+@Serializable
+data class DayBudget(
+    val budgetGbp: Double,
+    val foodInBudget: Boolean = true,
+    val lunchChoice: String = "usual",
+    val lines: List<Line> = emptyList(),
+    val totalGbp: Double = 0.0,
+    val leftGbp: Double = 0.0,
+    val status: String = "fits",          // fits | tight | over
+    val message: String = "",
+    val options: List<String> = emptyList(),
+    val note: String = "",
+) {
+    @Serializable
+    data class Line(val label: String, val gbp: Double? = null, val kind: String = "estimate", val note: String = "",
+                    val inBudget: Boolean = true)
 }
 
 /** Stage 1: the forecast for the plan's hours (brain.weather.Outlook). */

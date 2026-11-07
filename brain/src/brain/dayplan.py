@@ -89,6 +89,7 @@ class Brief:
     lunch: bool = True             # D122: False for a trip's one place on the way from the airport (never lunch)
     mine: tuple[Block, ...] = ()   # m200: the person's own time that day, planned around
     relaxed: bool = False          # m200: "a relaxed day": longer at each place, as for a person whose pace is relaxed
+    food_in_budget: bool = True    # m217: lunch counts towards the budget unless the person leaves food out of it
 
 
 @dataclass(frozen=True)
