@@ -1,5 +1,7 @@
 # Stay prices: nearby dates and watched stays (plan, 7 Nov 2026)
 
+**Status (7 Nov, m204):** "For your trip" is built on the branch in the Brain and both apps: the days from the stay, the whole cost, and nearby dates with **sample prices**, labelled, plus the destination's bank holidays on each date. Watching saved stays isn't built: it waits for Nuitée's written answer.
+
 **Decision (Abram, 7 Nov; m201).** Two things, branch only until the friends' round ends:
 1. **Nearby dates:** the same stay at the same length, starting up to 3 days earlier or later, each price like for like, with the person's own dates marked. Observed prices only, never "it will be cheaper". Built now with sample data.
 2. **Watch a stay** (real data only after Nuitée's written confirmation): a saved stay's last price seen, its price now, the change, when it was checked, and up to 3 alternatives on the same terms nearby. It's checked when the app opens (at most once a day per stay); push notifications come later.

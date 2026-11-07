@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-07 — Stays judged against the trip; travel timing begins (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m204 | **"For your trip" on a stay** (Abram: judge a stay against the itinerary, not a search): how far it is from each planned day's first and last place (a typical day, and the furthest), the whole cost (the total plus anything marked as paid at the property, now kept from LiteAPI's search) with cancellation terms and board, and **the same stay on nearby dates**, up to 3 days either side, like for like, with "your dates" and "lowest of these" marked only among the same terms. **Sample prices** for other dates, always labelled; the live path follows LiteAPI's documented rates search and is tested on that shape, but `stay_dates_live` stays off until Nuitée replies. Nothing about the stay or the dates is stored (the event counts nights and days). **Travel timing begins with official bank holidays** (GOV.UK's file, with source and fetch date; England and Wales, Scotland, Northern Ireland; 2019-2028; `scripts/update_bank_holidays.py` refreshes it): a stay's nearby dates say which bank holidays they include, as facts, never "busier" or "dearer". School holidays will be a separate kind of data, area by area. Minor (D69). | — | Abram's order: free time, then the stay comparison, then bank holidays. |
+
 ## 2026-11-07 — Free time in a day (branch only)
 
 | # | Decision | Replaces | Why |
