@@ -203,6 +203,7 @@ class Stay:
     refundable: bool | None
     distance_km: float | None = None
     sample: bool = False
+    pay_there: float = 0.0          # m203: taxes or fees the provider marks as not included (paid at the property)
 
     @property
     def price_night(self) -> float:
@@ -322,6 +323,13 @@ def liteapi_body(q: StayQuery) -> dict:
             "limit": LITEAPI_LIMIT, "timeout": 12, "maxRatesPerHotel": 1, "includeHotelData": True}
 
 
+def rate_pay_there(rate: dict) -> float:
+    """m203: what's paid at the property: the `taxesAndFees` marked `included: false` (LiteAPI's docs: "Indicates
+    whether the tax is included in the total price"; read 7 Nov 2026)."""
+    fees = (rate.get("retailRate") or {}).get("taxesAndFees") or rate.get("taxesAndFees") or []
+    return round(sum(float(f.get("amount") or 0) for f in fees if f.get("included") is False), 2)
+
+
 def parse_liteapi(resp: dict, q: StayQuery) -> list[Stay]:
     hotels = {h.get("id"): h for h in resp.get("hotels") or []}
     out = []
@@ -353,7 +361,8 @@ def parse_liteapi(resp: dict, q: StayQuery) -> list[Stay]:
                         photo=h.get("main_photo") or h.get("thumbnail"), price_total=amount, currency=currency,
                         nights=q.nights, room=rate.get("name") or "", board=board,
                         breakfast=board_type in _BREAKFAST_BOARDS or "breakfast" in board.lower(),
-                        refundable=True if tag == "RFN" else False if tag == "NRFN" else None))
+                        refundable=True if tag == "RFN" else False if tag == "NRFN" else None,
+                        pay_there=rate_pay_there(rate)))
     return out
 
 

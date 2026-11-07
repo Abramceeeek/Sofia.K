@@ -24,6 +24,9 @@ class Settings:
     backup_key: str | None = None       # Stage 1: the public key nightly backups are encrypted to (backup.py)
     backup_token: str | None = None     # Stage 1: unlocks the encrypted backup only (the nightly GitHub job)
     ops_webhook_url: str | None = None  # Stage 1: where error alerts go; unset = the safety webhook, marked (ops.py)
+    # m203: live prices for a stay's nearby dates. Off until Nuitée confirms its terms in writing (Abram, 7 Nov):
+    # decisions/liteapi-clarification.md. Off means labelled sample prices.
+    stay_dates_live: bool = False
 
 
 def driver_url(raw: str) -> str:

@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import backup, dayplan, db, notify, ops, reasons, share, summary, testb, triplength, trips, tripdays
+from . import backup, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, triplength, trips, tripdays
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -33,7 +33,8 @@ from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
-                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn,
+                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StayCompareIn, StaySearchIn, SurveyIn, SwipesIn,
+                      TripDaysIn,
                       TripLengthIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
@@ -899,6 +900,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "results": [{**trips.flight_out(x), "tags": tags.get(x.id, [])} for x in shown[:60]],
                 "facets": trips.flight_facets(found), "tabs": tabs, "links": links,
                 "searched_at": datetime.now(timezone.utc).isoformat()}
+
+    @app.post("/v1/trips/stays/compare")
+    def trip_stay_compare(body: StayCompareIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m203: one stay judged against the person's trip (Abram, 7 Nov): how far it is from each planned day, the
+        whole cost and cancellation terms, and the same stay on nearby dates, like for like. Sample prices for nearby
+        dates until Nuitée confirms its terms (stayprices.py); nothing about the trip is stored."""
+        dest = _destination(body.destination)
+        today = datetime.now(timezone.utc).date()
+        nights = (body.checkout - body.checkin).days
+        if not 1 <= nights <= 30 or body.checkin < today:
+            raise HTTPException(422, "a stay is 1 to 30 nights, from today")
+        st = body.stay
+        terms = stayprices.StayTerms(st.id, st.name, st.lat, st.lon, st.price_total, nights, st.currency, st.room,
+                                     st.board, st.refundable, st.pay_there, st.sample)
+        q = trips.StayQuery(city=dest.name, country_code=dest.country_code, lat=dest.lat, lon=dest.lon,
+                            checkin=body.checkin, checkout=body.checkout, adults=body.adults,
+                            children=tuple(body.children), rooms=min(body.rooms, body.adults))
+        options = stayprices.nearby(body.checkin, nights, today)
+        ts = app.state.trips
+        live = settings.stay_dates_live and ts.liteapi_key and not st.sample
+        if live:   # off until Nuitée replies; every date counts against the person's hourly searches
+            try:
+                dates = ts._cached(f"dates:{st.id}:{q.key()}", user.id, lambda: stayprices.liteapi_dates(
+                    terms, q, options, ts.liteapi_key, ts.fetch))
+            except trips.ProviderError:
+                dates, live = [], False
+        if not live:
+            dates = stayprices.sample_dates(terms, (body.checkin, body.checkout), options)
+        stayprices.mark_lowest(dates)
+        fit = stayprices.trip_fit(Point(lat=st.lat, lon=st.lon), [stayprices.DayEnds(d.index, d.first, d.last)
+                                                                  for d in body.days], app.state.travel) \
+            if st.lat is not None and st.lon is not None else {"days": [], "line": None, "to_first": None, "back": None}
+        s.add(db.Event(user_id=user.id, name="stay_compare",
+                       props={"nights": nights, "days": len(body.days), "live": bool(live)}))   # never the stay or dates
+        s.commit()
+        return {"source": "liteapi" if live else "sample",
+                "note": None if live else "Sample prices: real prices for other dates come later. Your dates' price "
+                                          "is the one the search found.",
+                "fit": fit, "cost": stayprices.cost_lines(terms, sample=st.sample),
+                "dates": [d.out(nights) for d in dates]}
 
     @app.post("/v1/trips/stays")
     def trip_stays(body: StaySearchIn, user: db.User = Depends(current_user), s: Session = Depends(session)):

@@ -264,6 +264,41 @@ class StaySearchIn(BaseModel):
     filters: StayFiltersIn = Field(default_factory=StayFiltersIn)
 
 
+class StayRefIn(BaseModel):
+    """m203: the stay the person is looking at, as the search found it."""
+    id: str = Field(max_length=64)
+    name: str = Field(max_length=200)
+    lat: float | None = None
+    lon: float | None = None
+    price_total: float = Field(ge=0)
+    nights: int = Field(ge=1, le=30)
+    currency: str = Field(default="GBP", max_length=3)
+    room: str = Field(default="", max_length=200)
+    board: str = Field(default="", max_length=80)
+    refundable: bool | None = None
+    pay_there: float = Field(default=0.0, ge=0)
+    sample: bool = False
+
+
+class DayEndsIn(BaseModel):
+    """m203: one planned day's first and last place, so the stay can be judged against the trip."""
+    index: int = Field(ge=0, le=30)
+    first: Point | None = None
+    last: Point | None = None
+
+
+class StayCompareIn(BaseModel):
+    """m203: a stay against the person's trip: their dates and guests, and their planned days."""
+    destination: str = "london"
+    checkin: date
+    checkout: date
+    adults: int = Field(default=2, ge=1, le=9)
+    children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
+    rooms: int = Field(default=1, ge=1, le=5)
+    stay: StayRefIn
+    days: list[DayEndsIn] = Field(default_factory=list, max_length=31)
+
+
 class TripEndIn(BaseModel):
     """D122: how a trip starts or ends: by flight (an airport code), train (a station code, brain/data/arrivals.yaml)
     or car, and the local time (landing, the train's arrival, or for the way home, the departure)."""
