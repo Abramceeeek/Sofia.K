@@ -39,6 +39,7 @@ from .travel import TravelTimes
 
 SCALE = 1000  # utility units → integer solver cost; travel adds 1 per minute as a tie-breaker
 MINE_BONUS = 50.0   # m200: the person's own time outweighs any place (lunch's bonus is 5)
+FLOOR_SPARES = 3    # m206 (GUESS): when the floor is lowered to fill a day, this many more of the best cards come in
 
 
 @dataclass(frozen=True)
@@ -127,7 +128,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
            max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
            lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2,
-           max_places: int | None = None) -> DayPlan | None:
+           max_places: int | None = None, fixed_count: bool = False) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -206,7 +207,11 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         if cands[j - 1].mine:   # m200: one slot of the block, pulled in by its bonus (at most one, below)
             routing.AddDisjunction([idx], int(round(SCALE * MINE_BONUS)))
             continue
-        prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus + (lunch_bonus if cands[j - 1].lunch else 0.0)
+        # m206 (WS7 benchmark): when the day's number of stops is fixed, the pace term is the same for every plan, so
+        # it stays out of the prize. Added in, a dislike of packed days pushed the prizes of several places to the
+        # zero clamp, and the solver then chose among them by travel time alone, not by the person's tastes.
+        pace = 0.0 if fixed_count else pace_bonus
+        prize = cands[j - 1].utility - floor + pace + stop_bonus + (lunch_bonus if cands[j - 1].lunch else 0.0)
         routing.AddDisjunction([idx], int(round(SCALE * max(0.0, prize))))
 
     solver = routing.solver()
@@ -296,8 +301,10 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         # in instead. A place they said they didn't enjoy never does: dayplan leaves those out before this.
         places = sorted((c.utility for c in cands if not c.lunch and not c.mine and _start_ranges(c, day_start, day_end)),
                         reverse=True)
+        # m206 (WS7 benchmark): with spares. Letting in exactly `min_stops` cards left a day short whenever those
+        # couldn't fit together (an evening after three places that close at 18:00 gave one place, not three).
         if places and sum(u > floor for u in places) < min_stops:
-            floor = min(floor, places[min(min_stops, len(places)) - 1] - 1e-6)
+            floor = min(floor, places[min(min_stops + FLOOR_SPARES, len(places)) - 1] - 1e-6)
     usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch or c.mine)
               and _start_ranges(c, day_start, day_end)]
     skipped = [c.moment_id for c in cands if c not in usable]
@@ -310,7 +317,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
                 min_stops=min_stops, max_areas=max_areas,
                 buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
-                lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places)
+                lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places,
+                fixed_count=bool(min_stops) and min_stops >= max_stops)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:

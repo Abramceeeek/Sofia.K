@@ -59,10 +59,11 @@ class Onboarding:
     p_been: dict[int, float]
 
 
-def simulate_person(pop: PopulationModel, ob: Onboarding, seed: int):
-    """True tastes δ ~ N(0, prior sd); their answers to the upfront places and tasks; the fitted posterior."""
+def simulate_person(pop: PopulationModel, ob: Onboarding, seed: int, delta: np.ndarray | None = None):
+    """True tastes δ ~ N(0, prior sd); their answers to the upfront places and tasks; the fitted posterior.
+    With `delta` (the WS7 benchmark's fixed profiles), those tastes are given instead of drawn."""
     rng = np.random.default_rng(seed)
-    delta = rng.normal(0.0, pop.delta_prior_sd)
+    delta = rng.normal(0.0, pop.delta_prior_sd) if delta is None else np.asarray(delta, dtype=float)
     b = pop.b_person(delta)
     cut = np.array(pop.cutpoints["swipe"])
     obs, loved, disliked = [], [], []

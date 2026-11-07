@@ -4,3 +4,5 @@ __pycache__/
 *.sqlite
 .pytest_cache/
 *.egg-info/
+# WS7: the benchmark's per-plan rows are re-made by scripts/benchmark_planner.py; only its summary (.txt) is kept
+benchmarks/synthetic/*.json

@@ -62,6 +62,30 @@ def test_the_floor_never_leaves_a_day_short_of_its_places(pop, test_moments):
     assert "t_pricey" not in [s.moment_id for s in plan.stops]
 
 
+def test_a_lowered_floor_lets_in_spares_when_the_best_cards_cannot_fit_together():
+    """m206 (WS7 benchmark): someone who'd enjoy nothing much, on a 17:00-22:00 evening. Their three best cards all
+    close at 18:00, so at most one fits; the floor used to let in only those three, and the day had one place."""
+    near = lambda k: Point(lat=51.5081 + 0.001 * k, lon=-0.1281)
+    early = [Candidate(f"early{k}", near(k), near(k), 40, ((600, 1080),), -2.0 - 0.1 * k) for k in range(3)]
+    late = [Candidate(f"late{k}", near(k + 3), near(k + 3), 40, ((1020, 1320),), -4.0 - 0.1 * k) for k in range(3)]
+    plan = plan_day(early + late, START, 1020, 1320, WalkingEstimate(), LEGS, max_stops=3, min_stops=3,
+                    time_limit_s=0.5)
+    assert len(plan.stops) == 3 and plan.status == "ok"
+    assert sum(s.moment_id.startswith("early") for s in plan.stops) == 1   # still the best one that fits
+
+
+def test_a_dislike_of_packed_days_never_makes_the_choice_of_places_by_distance_alone():
+    """m206 (WS7 benchmark): with the stop count fixed, the pace term is the same for every plan. It used to push the
+    prizes of low-scoring places to zero, so the nearest won: here the worse card, 3 min away, over the better one."""
+    near, far = Point(lat=51.5083, lon=-0.1281), Point(lat=51.5110, lon=-0.1281)
+    worse = Candidate("worse_near", near, near, 40, ((600, 1080),), -0.4)
+    better = Candidate("better_far", far, far, 40, ((600, 1080),), 0.0)
+    relaxed = LegWeights(transfer_15_30=-0.7, transfer_30_plus=-1.3, packed_pace=-1.5)
+    plan = plan_day([worse, better], START, 600, 780, WalkingEstimate(), relaxed, max_stops=1, min_stops=1,
+                    time_limit_s=0.5)
+    assert [s.moment_id for s in plan.stops] == ["better_far"]
+
+
 def test_best_moment_is_kept_when_only_one_fits(pop, test_moments):
     util = {m.id: 0.0 for m in test_moments}
     util["t_museum"] = 2.0
