@@ -18,56 +18,55 @@
   },
   "stops": [
    {
-    "moment_id": "m_national_gallery",
-    "key": "m_national_gallery",
-    "title": "From Trafalgar Square into the quiet of the National Gallery",
-    "arrive": "10:00",
-    "depart": "11:12",
-    "travel_min": 8,
-    "travel_mode": "walk",
-    "travel_text": "Getting there: about 8 min on foot from your stay.",
-    "approach": "Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance.",
-    "what": "You leave the noise of Trafalgar Square for high, quiet rooms and wander the free collection of paintings at your own pace.",
+    "moment_id": "m_millennium_bridge_dome",
+    "key": "m_millennium_bridge_dome",
+    "title": "Across the Millennium Bridge towards St Paul's dome",
+    "arrive": "09:53",
+    "depart": "10:09",
+    "travel_min": 23,
+    "travel_mode": "transit",
+    "travel_text": "Getting there: about 23 min by Tube or bus from your stay to Tate Modern, Bankside (Southwark or Blackfriars station).",
+    "approach": "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
+    "what": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
     "queue_min": 0,
     "best_text": "",
     "cost_gbp": 0.0,
     "cost_kind": "entry",
     "cost_text": "Cost: free",
-    "rain_swap": "",
+    "rain_swap": "Lift a real gold bar at the Bank of England Museum, about 20 min away on foot.",
     "lunch": false,
     "familiar": false,
     "rateable": true,
     "mine": null,
-    "worth_gbp": 18,
+    "worth_gbp": 25,
     "match": "A strong match for you",
-    "feel_word": "Curious",
-    "reveal": false,
+    "feel_word": "Wonder",
+    "reveal": true,
     "approach_steps": [
      {
-      "label": "Nearest station",
-      "text": "Charing Cross station"
+      "label": "From",
+      "text": "Tate Modern, Bankside (Southwark or Blackfriars station)"
      },
      {
       "label": "The way in",
-      "text": "Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance"
+      "text": "From Tate Modern's river side, step onto the south end of the bridge and walk north"
      },
      {
       "label": "You arrive",
-      "text": "The National Gallery, Trafalgar Square"
+      "text": "Millennium Bridge"
      }
     ],
     "book_ahead": "",
-    "checked": "2026-09-28",
-    "hours": "Daily 10:00–18:00, Fridays to 21:00. Free",
-    "best_light": "",
-    "best_window": "",
+    "checked": "2026-09-27",
+    "hours": "Always open. Free",
+    "best_light": "At dusk, when the dome is lit",
+    "best_window": "16:07–17:52",
     "pin": {
-     "lat": 51.509098,
-     "lon": -0.127658
+     "lat": 51.5078,
+     "lon": -0.0994
     },
     "chosen_for": [
-     "history and culture",
-     "famous sights"
+     "history and culture"
     ],
     "why": [
      {
@@ -81,53 +80,59 @@
       "contribution": -0.198
      },
      {
-      "feature": "iconic",
-      "label": "famous sights",
-      "contribution": 0.129
+      "feature": "transfer_15_30",
+      "label": "transfers of 15-30 min",
+      "contribution": -0.16
      }
     ],
     "lines": [
-     "Getting there: about 8 min on foot from your stay.",
-     "Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance.",
-     "You leave the noise of Trafalgar Square for high, quiet rooms and wander the free collection of paintings at your own pace.",
-     "Cost: free"
+     "Getting there: about 23 min by Tube or bus from your stay to Tate Modern, Bankside (Southwark or Blackfriars station).",
+     "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
+     "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+     "Cost: free",
+     "If it rains: Lift a real gold bar at the Bank of England Museum, about 20 min away on foot."
     ],
     "card": {
-     "id": "m_national_gallery",
-     "title": "From Trafalgar Square into the quiet of the National Gallery",
+     "id": "m_millennium_bridge_dome",
+     "title": "Across the Millennium Bridge towards St Paul's dome",
      "status": "ready",
      "place": {
-      "name": "The National Gallery, Trafalgar Square",
+      "name": "Millennium Bridge",
       "overture_id": null,
-      "lat": 51.509098,
-      "lon": -0.127658
+      "lat": 51.51017,
+      "lon": -0.09844
      },
      "approach": {
-      "from": "Charing Cross station",
-      "path": "Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance",
+      "from": "Tate Modern, Bankside (Southwark or Blackfriars station)",
+      "path": "From Tate Modern's river side, step onto the south end of the bridge and walk north",
       "step_free": null,
       "start_point": {
-       "lat": 51.509098,
-       "lon": -0.127658
+       "lat": 51.5078,
+       "lon": -0.0994
       }
      },
-     "what_happens": "You leave the noise of Trafalgar Square for high, quiet rooms and wander the free collection of paintings at your own pace.",
+     "what_happens": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
      "best_time": {
       "time_of_day": [
-       "10:00-18:00"
+       "07:00-23:00"
       ],
-      "light": null,
+      "light": "At dusk, when the dome is lit (GUESS)",
       "weather": [
        "any"
       ],
       "company": null,
-      "crowd_window": "Busiest at weekends (GUESS)",
-      "opening_hours": "Daily 10:00-18:00, Fridays to 21:00; free. Official site, read 2026-09-28",
+      "crowd_window": "Busiest at weekend afternoons (GUESS)",
+      "opening_hours": "Always open, free. Checked 2026-09-27 (Wikivoyage)",
       "book_ahead": null,
-      "hours": "Daily 10:00–18:00, Fridays to 21:00. Free",
+      "hours": "Always open. Free",
       "days": [],
-      "best_window": [],
-      "best_around_sunset": null
+      "best_window": [
+       "16:15-18:00"
+      ],
+      "best_around_sunset": [
+       -15,
+       90
+      ]
      },
      "cost_gbp": 0.0,
      "shot_card": null,
@@ -137,18 +142,156 @@
      {
       "you": "You loved British Museum, and this has history too.",
       "me": "I loved British Museum, and this has history too."
+     },
+     {
+      "you": "You go out to feel peaceful, and this has views.",
+      "me": "I go out to feel peaceful, and this has views."
      }
     ]
    },
    {
-    "moment_id": "lunch@m_to_river_somerset",
-    "key": "lunch@m_to_river_somerset",
-    "title": "Lunch near the Strand entrance (Temple or Covent Garden station)",
+    "moment_id": "m_city_towers_walk",
+    "key": "m_city_towers_walk",
+    "title": "Through the City towers, Bank to Liverpool Street",
+    "arrive": "10:25",
+    "depart": "10:55",
+    "travel_min": 11,
+    "travel_mode": "walk",
+    "travel_text": "Getting there: about 11 min on foot from St Paul's Cathedral.",
+    "approach": "Walk east along Cornhill and turn right into Gracechurch Street.",
+    "what": "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 0.0,
+    "cost_kind": "entry",
+    "cost_text": "Cost: free",
+    "rain_swap": "Leadenhall Market: Victorian arches on the site of Roman London, about 10 min away on foot.",
+    "lunch": false,
+    "familiar": false,
+    "rateable": true,
+    "mine": null,
+    "worth_gbp": 20,
+    "match": "A strong match for you",
+    "feel_word": "Wonder",
+    "reveal": true,
+    "approach_steps": [
+     {
+      "label": "Nearest station",
+      "text": "Bank station"
+     },
+     {
+      "label": "The way in",
+      "text": "Walk east along Cornhill and turn right into Gracechurch Street"
+     },
+     {
+      "label": "You arrive",
+      "text": "City of London towers between Bank and Liverpool Street"
+     }
+    ],
+    "book_ahead": "",
+    "checked": "2026-09-27",
+    "hours": "Public streets: always open",
+    "best_light": "",
+    "best_window": "",
+    "pin": {
+     "lat": 51.5133,
+     "lon": -0.08975
+    },
+    "chosen_for": [
+     "history and culture",
+     "photo spots"
+    ],
+    "why": [
+     {
+      "feature": "crowds",
+      "label": "crowds",
+      "contribution": -0.198
+     },
+     {
+      "feature": "history_culture",
+      "label": "history and culture",
+      "contribution": 0.129
+     },
+     {
+      "feature": "photo_potential",
+      "label": "photo spots",
+      "contribution": 0.123
+     }
+    ],
+    "lines": [
+     "Getting there: about 11 min on foot from St Paul's Cathedral.",
+     "Walk east along Cornhill and turn right into Gracechurch Street.",
+     "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+     "Cost: free",
+     "If it rains: Leadenhall Market: Victorian arches on the site of Roman London, about 10 min away on foot."
+    ],
+    "card": {
+     "id": "m_city_towers_walk",
+     "title": "Through the City towers, Bank to Liverpool Street",
+     "status": "ready",
+     "place": {
+      "name": "City of London towers between Bank and Liverpool Street",
+      "overture_id": null,
+      "lat": 51.51381,
+      "lon": -0.08229
+     },
+     "approach": {
+      "from": "Bank station",
+      "path": "Walk east along Cornhill and turn right into Gracechurch Street",
+      "step_free": null,
+      "start_point": {
+       "lat": 51.5133,
+       "lon": -0.08975
+      }
+     },
+     "what_happens": "You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.",
+     "best_time": {
+      "time_of_day": [
+       "08:00-19:00"
+      ],
+      "light": null,
+      "weather": [
+       "any"
+      ],
+      "company": null,
+      "crowd_window": "Weekdays, when the offices are full",
+      "opening_hours": "Public streets; always open",
+      "book_ahead": null,
+      "hours": "Public streets: always open",
+      "days": [
+       "mon",
+       "tue",
+       "wed",
+       "thu",
+       "fri"
+      ],
+      "best_window": [],
+      "best_around_sunset": null
+     },
+     "cost_gbp": 0.0,
+     "shot_card": null,
+     "plannable": true
+    },
+    "reasons": [
+     {
+      "you": "You loved Uber Boat on the Thames, and this has history too.",
+      "me": "I loved Uber Boat on the Thames, and this has history too."
+     },
+     {
+      "you": "You go out to feel curious, and this has somewhere local and new.",
+      "me": "I go out to feel curious, and this has somewhere local and new."
+     }
+    ]
+   },
+   {
+    "moment_id": "lunch@m_city_towers_walk",
+    "key": "lunch@m_city_towers_walk",
+    "title": "Lunch near Liverpool Street station",
     "arrive": "11:30",
     "depart": "12:15",
-    "travel_min": 13,
+    "travel_min": 0,
     "travel_mode": "walk",
-    "travel_text": "Getting there: about 13 min on foot from The National Gallery.",
+    "travel_text": "",
     "approach": "",
     "what": "Pick a café, pub or food stall nearby.",
     "queue_min": 0,
@@ -172,20 +315,19 @@
     "best_light": "",
     "best_window": "",
     "pin": {
-     "lat": 51.5111,
-     "lon": -0.1178
+     "lat": 51.51802,
+     "lon": -0.0828
     },
     "chosen_for": [],
     "why": [],
     "lines": [
-     "Getting there: about 13 min on foot from The National Gallery.",
      "Pick a café, pub or food stall nearby.",
      "Food: about £15"
     ]
    },
    {
-    "moment_id": "mine0@m_to_river_somerset",
-    "key": "mine0@m_to_river_somerset",
+    "moment_id": "mine0@m_city_towers_walk",
+    "key": "mine0@m_city_towers_walk",
     "title": "Your plans",
     "arrive": "13:00",
     "depart": "15:00",
@@ -193,7 +335,7 @@
     "travel_mode": "walk",
     "travel_text": "",
     "approach": "",
-    "what": "Where isn't decided yet, so we've left 30 min before and 30 min after to get there and back.",
+    "what": "Where isn't decided yet, so we've left 45 min before and 45 min after to get there and back.",
     "queue_min": 0,
     "best_text": "",
     "cost_gbp": 0.0,
@@ -218,253 +360,118 @@
     "chosen_for": [],
     "why": [],
     "lines": [
-     "Where isn't decided yet, so we've left 30 min before and 30 min after to get there and back."
+     "Where isn't decided yet, so we've left 45 min before and 45 min after to get there and back."
     ]
    },
    {
-    "moment_id": "m_to_river_somerset",
-    "key": "m_to_river_somerset",
-    "title": "Through Somerset House to the river terrace",
-    "arrive": "15:35",
-    "depart": "16:01",
-    "travel_min": 0,
-    "travel_mode": "walk",
-    "travel_text": "Getting there: from your plans. We've allowed about 30 min.",
-    "approach": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
-    "what": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
+    "moment_id": "m_alderman_stairs_sunset",
+    "key": "m_alderman_stairs_sunset",
+    "title": "Tower Bridge at sunset from Alderman Stairs",
+    "arrive": "16:08",
+    "depart": "16:50",
+    "travel_min": 23,
+    "travel_mode": "transit",
+    "travel_text": "Getting there: from your plans. We've allowed about 45 min.",
+    "approach": "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace.",
+    "what": "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.",
     "queue_min": 0,
-    "best_text": "Best: Sunset and evening",
+    "best_text": "Best: Sunset",
     "cost_gbp": 0.0,
     "cost_kind": "entry",
     "cost_text": "Cost: free",
-    "rain_swap": "The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot.",
+    "rain_swap": "",
     "lunch": false,
     "familiar": false,
     "rateable": true,
     "mine": null,
-    "worth_gbp": 32,
-    "match": "A strong match for you",
-    "feel_word": "Wonder",
-    "reveal": true,
-    "approach_steps": [
-     {
-      "label": "Nearest station",
-      "text": "the Strand entrance (Temple or Covent Garden station)"
-     },
-     {
-      "label": "The way in",
-      "text": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace"
-     },
-     {
-      "label": "You arrive",
-      "text": "Somerset House: the courtyard and River Terrace"
-     }
-    ],
-    "book_ahead": "",
-    "checked": "2026-09-28",
-    "hours": "Strand entrance and River Terrace 08:00–23:00. Courtyard free",
-    "best_light": "Sunset and evening",
-    "best_window": "15:52–20:22",
-    "pin": {
-     "lat": 51.5111,
-     "lon": -0.1178
-    },
-    "chosen_for": [
-     "history and culture",
-     "photo spots"
-    ],
-    "why": [
-     {
-      "feature": "history_culture",
-      "label": "history and culture",
-      "contribution": 0.259
-     },
-     {
-      "feature": "photo_potential",
-      "label": "photo spots",
-      "contribution": 0.123
-     },
-     {
-      "feature": "contrast_reveal",
-      "label": "reveals and contrast",
-      "contribution": 0.084
-     }
-    ],
-    "lines": [
-     "Getting there: from your plans. We've allowed about 30 min.",
-     "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace.",
-     "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
-     "Best: Sunset and evening",
-     "Cost: free",
-     "If it rains: The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot."
-    ],
-    "card": {
-     "id": "m_to_river_somerset",
-     "title": "Through Somerset House to the river terrace",
-     "status": "ready",
-     "place": {
-      "name": "Somerset House: the courtyard and River Terrace",
-      "overture_id": null,
-      "lat": 51.5111,
-      "lon": -0.1178
-     },
-     "approach": {
-      "from": "the Strand entrance (Temple or Covent Garden station)",
-      "path": "From the Strand, go through the arch into the courtyard, cross it, and go through to the River Terrace",
-      "step_free": null,
-      "start_point": {
-       "lat": 51.5111,
-       "lon": -0.1178
-      }
-     },
-     "what_happens": "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you.",
-     "best_time": {
-      "time_of_day": [
-       "15:30-20:30"
-      ],
-      "light": "Sunset and evening",
-      "weather": [
-       "any"
-      ],
-      "company": null,
-      "crowd_window": null,
-      "opening_hours": "Strand entrance and River Terrace 08:00-23:00; courtyard free. Somerset House via search, 2026-09-28",
-      "book_ahead": null,
-      "hours": "Strand entrance and River Terrace 08:00–23:00. Courtyard free",
-      "days": [],
-      "best_window": [
-       "16:00-20:30"
-      ],
-      "best_around_sunset": [
-       -30,
-       240
-      ]
-     },
-     "cost_gbp": 0.0,
-     "shot_card": null,
-     "plannable": true
-    },
-    "reasons": [
-     {
-      "you": "You loved Uber Boat on the Thames, and this has history too.",
-      "me": "I loved Uber Boat on the Thames, and this has history too."
-     },
-     {
-      "you": "You go out to feel peaceful, and this has views.",
-      "me": "I go out to feel peaceful, and this has views."
-     }
-    ]
-   },
-   {
-    "moment_id": "m_waterloo_bridge_sunset",
-    "key": "m_waterloo_bridge_sunset",
-    "title": "Waterloo Bridge at sunset, both ways",
-    "arrive": "16:12",
-    "depart": "16:42",
-    "travel_min": 6,
-    "travel_mode": "walk",
-    "travel_text": "Getting there: about 6 min on foot from the Somerset House River Terrace.",
-    "approach": "Walk to the south end of the bridge by the Southbank Centre and up to the middle.",
-    "what": "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.",
-    "queue_min": 0,
-    "best_text": "Best: Sunset; late autumn and winter skies are the best",
-    "cost_gbp": 0.0,
-    "cost_kind": "entry",
-    "cost_text": "Cost: free",
-    "rain_swap": "Centuries of British faces at the National Portrait Gallery, about 15 min away on foot.",
-    "lunch": false,
-    "familiar": false,
-    "rateable": true,
-    "mine": null,
-    "worth_gbp": 25,
+    "worth_gbp": 36,
     "match": "A strong match for you",
     "feel_word": "Awe",
     "reveal": false,
     "approach_steps": [
      {
-      "label": "Nearest station",
-      "text": "Waterloo station"
+      "label": "From",
+      "text": "Tower Hill station"
      },
      {
       "label": "The way in",
-      "text": "Walk to the south end of the bridge by the Southbank Centre and up to the middle"
+      "text": "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace"
      },
      {
       "label": "You arrive",
-      "text": "Waterloo Bridge"
+      "text": "Alderman Stairs, St Katharine's Way, Wapping"
      }
     ],
     "book_ahead": "",
     "checked": "2026-09-28",
-    "hours": "Always open. Free",
-    "best_light": "Sunset; late autumn and winter skies are the best",
+    "hours": "Public riverside path: always open. Stay on the terrace; the stairs lead down to the tidal foreshore",
+    "best_light": "Sunset",
     "best_window": "15:42–16:42",
     "pin": {
-     "lat": 51.50861,
-     "lon": -0.11694
+     "lat": 51.50526,
+     "lon": -0.07008
     },
     "chosen_for": [
-     "history and culture",
-     "famous sights"
+     "movement and views",
+     "history and culture"
     ],
     "why": [
      {
-      "feature": "crowds",
-      "label": "crowds",
-      "contribution": -0.198
+      "feature": "transfer_15_30",
+      "label": "transfers of 15-30 min",
+      "contribution": -0.16
+     },
+     {
+      "feature": "movement_views",
+      "label": "movement and views",
+      "contribution": 0.14
      },
      {
       "feature": "history_culture",
       "label": "history and culture",
       "contribution": 0.129
-     },
-     {
-      "feature": "iconic",
-      "label": "famous sights",
-      "contribution": 0.129
      }
     ],
     "lines": [
-     "Getting there: about 6 min on foot from the Somerset House River Terrace.",
-     "Walk to the south end of the bridge by the Southbank Centre and up to the middle.",
-     "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.",
-     "Best: Sunset; late autumn and winter skies are the best",
-     "Cost: free",
-     "If it rains: Centuries of British faces at the National Portrait Gallery, about 15 min away on foot."
+     "Getting there: from your plans. We've allowed about 45 min.",
+     "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace.",
+     "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.",
+     "Best: Sunset",
+     "Cost: free"
     ],
     "card": {
-     "id": "m_waterloo_bridge_sunset",
-     "title": "Waterloo Bridge at sunset, both ways",
+     "id": "m_alderman_stairs_sunset",
+     "title": "Tower Bridge at sunset from Alderman Stairs",
      "status": "ready",
      "place": {
-      "name": "Waterloo Bridge",
+      "name": "Alderman Stairs, St Katharine's Way, Wapping",
       "overture_id": null,
-      "lat": 51.50861,
-      "lon": -0.11694
+      "lat": 51.50526,
+      "lon": -0.07008
      },
      "approach": {
-      "from": "Waterloo station",
-      "path": "Walk to the south end of the bridge by the Southbank Centre and up to the middle",
+      "from": "Tower Hill station",
+      "path": "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace",
       "step_free": null,
       "start_point": {
-       "lat": 51.50861,
-       "lon": -0.11694
+       "lat": 51.50526,
+       "lon": -0.07008
       }
      },
-     "what_happens": "From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.",
+     "what_happens": "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.",
      "best_time": {
       "time_of_day": [
        "15:45-18:30"
       ],
-      "light": "Sunset; late autumn and winter skies are the best (CHECKED)",
+      "light": "Sunset",
       "weather": [
        "any"
       ],
       "company": null,
-      "crowd_window": null,
-      "opening_hours": "Always open, free",
+      "crowd_window": "Usually quiet (GUESS)",
+      "opening_hours": "Public riverside path. Stay on the terrace: the stairs lead down to the tidal foreshore",
       "book_ahead": null,
-      "hours": "Always open. Free",
+      "hours": "Public riverside path: always open. Stay on the terrace; the stairs lead down to the tidal foreshore",
       "days": [],
       "best_window": [
        "16:00-17:00"
@@ -475,29 +482,23 @@
       ]
      },
      "cost_gbp": 0.0,
-     "shot_card": {
-      "stand_at": {
-       "lat": 51.50861,
-       "lon": -0.11694,
-       "note": "The middle of the bridge, at the railing; then cross the road to the other side"
-      },
-      "face": "West (upriver) first; then cross over and face east (downriver)",
-      "frame": "West: the river leading to Parliament, with the London Eye in the shot. East: St Paul's dome with the City's towers behind it",
-      "when": "The 20 minutes either side of sunset: around 4:30pm after the clocks go back on 25 Oct, around 6pm in mid-October",
-      "avoid": "Stepping into the road for the shot; stay on the pavement"
-     },
+     "shot_card": null,
      "plannable": true
     },
     "reasons": [
      {
-      "you": "You go out to feel curious, and this has history.",
-      "me": "I go out to feel curious, and this has history."
+      "you": "You go out to feel peaceful, and this has views.",
+      "me": "I go out to feel peaceful, and this has views."
+     },
+     {
+      "you": "You loved British Museum, and this has history too.",
+      "me": "I loved British Museum, and this has history too."
      }
     ]
    },
    {
-    "moment_id": "mine1@m_waterloo_bridge_sunset",
-    "key": "mine1@m_waterloo_bridge_sunset",
+    "moment_id": "mine1@m_alderman_stairs_sunset",
+    "key": "mine1@m_alderman_stairs_sunset",
     "title": "Free time",
     "arrive": "17:30",
     "depart": "19:00",
@@ -505,7 +506,7 @@
     "travel_mode": "walk",
     "travel_text": "",
     "approach": "",
-    "what": "Yours to rest, shop or wander, near Waterloo Bridge. Nothing is planned.",
+    "what": "Yours to rest, shop or wander, near Alderman Stairs. Nothing is planned.",
     "queue_min": 0,
     "best_text": "",
     "cost_gbp": 0.0,
@@ -527,37 +528,37 @@
     "best_light": "",
     "best_window": "",
     "pin": {
-     "lat": 51.50861,
-     "lon": -0.11694
+     "lat": 51.50526,
+     "lon": -0.07008
     },
     "chosen_for": [],
     "why": [],
     "lines": [
-     "Yours to rest, shop or wander, near Waterloo Bridge. Nothing is planned."
+     "Yours to rest, shop or wander, near Alderman Stairs. Nothing is planned."
     ]
    }
   ],
-  "value": 4.869,
+  "value": 4.382,
   "status": "offered",
   "fit_rating": null,
-  "created_at": "2026-11-07T02:02:47.738537+00:00",
+  "created_at": "2026-11-07T02:36:41.642139+00:00",
   "title": "Monday 9 November",
   "summary": [
    "Start: your stay at 09:30 · 6 stops, including lunch",
-   "Costs: about £15 for food and entry, all on foot"
+   "Costs: about £15 for food and entry, plus about £6 transport"
   ],
   "totals": {
-   "cost_gbp": 15.0,
+   "cost_gbp": 21.0,
    "spend_gbp": 15.0,
-   "transport_gbp": 0.0,
-   "walk_min": 27,
-   "walk_km": 2.0,
+   "transport_gbp": 6.0,
+   "walk_min": 11,
+   "walk_km": 0.8,
    "finish": "19:00"
   },
   "pace": "even",
   "solver_status": "ok",
   "blind": false,
-  "feel_line": "A curious, peaceful day: some history, lunch, your own plans, the river, a wow moment, then free time",
+  "feel_line": "A curious, peaceful day: the river, a reveal, lunch, your own plans, the view of the day, then free time",
   "basis": {
    "places": 2,
    "choices": 0,
@@ -572,7 +573,7 @@
   "end": "19:00",
   "stops": 4
  },
- "title": "A curious, peaceful day: some history, lunch, your own plans, the river, a wow moment, then free time",
+ "title": "A curious, peaceful day: the river, a reveal, lunch, your own plans, the view of the day, then free time",
  "free_day": false,
  "relaxed": false,
  "mine": [

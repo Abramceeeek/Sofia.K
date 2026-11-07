@@ -126,7 +126,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            min_stops: int | None = None, budget_gbp: float | None = None,
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
            max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
-           lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2) -> DayPlan | None:
+           lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2,
+           max_places: int | None = None) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -145,7 +146,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     if buffer_walk_min or buffer_transit_min:
         for i in range(1, n + 1):
             for j in range(1, n + 1):
-                if i != j:
+                if i != j and not (cands[i - 1].mine or cands[j - 1].mine):   # m202: the person's own time has
+                    # its own allowance either side (or sits where they are), so no extra gap beside it
                     transit = mode is not None and mode(cands[i - 1].end, cands[j - 1].start) != "walk"
                     B[i][j] = buffer_transit_min if transit else buffer_walk_min
 
@@ -176,6 +178,11 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     routing.AddDimension(count_idx, 0, max_stops, True, "Stops")
     if min_stops:
         routing.GetDimensionOrDie("Stops").CumulVar(routing.End(0)).SetMin(min(min_stops, max_stops))
+    if max_places is not None:   # m202: lunch that can't fit is never replaced by a place the person didn't ask for
+        places_idx = routing.RegisterUnaryTransitCallback(
+            lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine
+            and not cands[manager.IndexToNode(fi) - 1].lunch else 0)
+        routing.AddDimension(places_idx, 0, max_places, True, "Places")
     if budget_gbp is not None:
         cost_idx = routing.RegisterUnaryTransitCallback(
             lambda fi: (math.ceil(cands[manager.IndexToNode(fi) - 1].cost_gbp)
@@ -273,7 +280,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
-             lunch_not_first: bool = False, max_theme: int = 2) -> DayPlan:
+             lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -303,7 +310,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
                 min_stops=min_stops, max_areas=max_areas,
                 buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
-                lunch_not_first=lunch_not_first, max_theme=max_theme)
+                lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places)
     status = "ok"
     best = _solve(usable, forced_last=None, **args)
     if best is None and min_stops:

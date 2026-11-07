@@ -110,7 +110,10 @@ class Block:
         return self.kind == "plans" and self.location != "near"
 
 
-AWAY_MIN = 30   # m201 (GUESS): time left to get to plans that aren't near the day's places, and back from them
+# m201, m202 (Abram, 7 Nov): time left to get to plans that aren't near the day's places, and back. "Somewhere else"
+# is a travel allowance; "not decided" is more cautious, since the plans could be anywhere. Both GUESSES, to test on
+# real journeys (after-9-Nov #84).
+AWAY_MIN = {"elsewhere": 30, "unknown": 45}
 
 
 def overlaps_lunch(b: Block) -> bool:
@@ -133,8 +136,9 @@ def mine_candidates(real: list, brief: Brief) -> list:
         if not (day_start <= b.start_min < b.end_min <= day_end):
             continue
         # m201: plans away from the places get time either side to get there and back, as far as the day allows
-        ahead = min(AWAY_MIN, b.start_min - day_start) if b.away else 0
-        behind = min(AWAY_MIN, day_end - b.end_min) if b.away else 0
+        allow = AWAY_MIN.get(b.location, AWAY_MIN["unknown"]) if b.away else 0
+        ahead = min(allow, b.start_min - day_start)
+        behind = min(allow, day_end - b.end_min)
         lo, hi = b.start_min - ahead, b.end_min + behind
         slot = lambda mid, p: Candidate(mid, p, p, hi - lo, ((lo, hi),), 0.0, 0.0, None, "moment", mine=f"mine{k}")
         out += [slot(f"mine{k}@{c.moment_id}", c.end) for c in hosts] + [slot(f"mine{k}@start", brief.start)]
@@ -365,7 +369,10 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
                   buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS,
-                  lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN)
+                  lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN,
+                  # m202: on a day with the person's own time, lunch that can't fit doesn't become an extra place
+                  max_places=(brief.stops - (1 if brief.lunch and spans_lunch(day_start, day_end) else 0))
+                  if brief.mine else None)
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))
@@ -494,6 +501,13 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         stops.append(stop)
         prev_point, prev_name, prev_exit = nxt
     lunch_stop = next((s for s in stops if s["lunch"]), None)
+    if lunch_stop is None and brief.lunch and spans_lunch(day_start, day_end):
+        # m202: plans over lunchtime, with time either side, can leave no room for lunch: say so, never drop it silently
+        for s in stops:
+            blk = mine_block(s["moment_id"], brief) if s.get("mine") else None
+            if blk and overlaps_lunch(blk) and not blk.meal:
+                s["what"] += " There's no room for a lunch stop around them, so eat before or during them."
+                break
     notes.lunch = (f"{lunch_stop['title']} at {lunch_stop['arrive']}" if lunch_stop else
                    "none fitted: add one by hand" if len(cands) > len(real) else "the day doesn't span lunch")
     # Rain swaps are backups, not part of the planned day: a loved place can be one; a disliked place never is,

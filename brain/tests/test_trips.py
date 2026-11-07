@@ -550,9 +550,10 @@ def test_the_persons_own_time_is_planned_around(client):
     assert mine[0]["title"] == "Your plans" and not mine[0]["rateable"] and mine[0]["feel_word"] == "Your time"
     assert mine[0]["cost_text"] == "" and mine[0]["what"].startswith("Where isn't decided yet")   # m201: the default
     assert mine[0]["pin"] is None
-    places = [st for st in one["plan"]["stops"] if st["rateable"]]
-    # m201: plans we can't place keep time either side: 30 min (GUESS) to get there and back
-    assert 1 <= len(places) <= 3 and all(st["depart"] <= "12:30" or st["arrive"] >= "14:30" for st in places)
+    places = [st for st in one["plan"]["stops"] if st["rateable"] and not st["lunch"]]   # a food card can be lunch
+    # m201, m202: plans not decided yet keep the cautious allowance either side: 45 min (GUESS)
+    assert "45 min before and 45 min after" in mine[0]["what"]
+    assert 1 <= len(places) <= 3 and all(st["depart"] <= "12:15" or st["arrive"] >= "14:45" for st in places)
     assert "your own plans" in one["title"].lower()
     assert not any(m.startswith("mine") for m in r.json()["used"])         # never kept as a place of the trip
     assert days[2]["relaxed"] and sum(st["rateable"] for st in days[2]["plan"]["stops"]) <= 2
@@ -626,3 +627,16 @@ def test_where_the_plans_are_and_whether_they_include_a_meal(client):
     assert any(st["lunch"] for st in near)                                   # no meal said: lunch stays
     eaten = plan(location="near", meal=True)
     assert not any(st["lunch"] for st in eaten) and "no lunch stop" in next(st for st in eaten if st["mine"])["what"]
+
+
+def test_plans_that_leave_no_room_for_lunch_say_so(client):
+    """m202: midday plans not decided yet keep 45 min either side; when that leaves no room for lunch, the plans say so
+    rather than lunch disappearing silently, and no extra place takes lunch's slot."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "your stay", "start_time": "10:00",
+            "end_time": "18:00", "stops": 4, "familiar": False,
+            "mine": [{"kind": "plans", "start": "12:00", "end": "14:00"}]}
+    stops = client.post("/v1/me/plans", headers=h, json=body).json()["stops"]
+    assert not any(st["lunch"] for st in stops)
+    assert "no room for a lunch stop" in next(st for st in stops if st["mine"])["what"]
+    assert len([st for st in stops if st["rateable"]]) <= 3                  # never a 4th place instead of lunch
