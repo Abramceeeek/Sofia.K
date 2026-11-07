@@ -338,6 +338,7 @@ data class StayCompare(
         val checkin: String, val label: String, val whole: Double? = null, val perNight: Double? = null,
         val sameTerms: Boolean = true, val differs: List<String> = emptyList(), val yours: Boolean = false,
         val lowest: Boolean = false,
+        val holidays: List<String> = emptyList(),   // m204: the destination's bank holidays in these dates, as facts
     )
 }
 

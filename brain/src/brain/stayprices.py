@@ -55,6 +55,7 @@ class DateOption:
     differs: list[str] = field(default_factory=list)
     yours: bool = False
     lowest: bool = False
+    holidays: list[str] = field(default_factory=list)   # m204: the destination's bank holidays in these dates (facts)
 
     def out(self, nights: int) -> dict:
         d = asdict(self)

@@ -22,7 +22,8 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import backup, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, triplength, trips, tripdays
+from . import (backup, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, traveltiming, triplength,
+               trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -901,6 +902,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "facets": trips.flight_facets(found), "tabs": tabs, "links": links,
                 "searched_at": datetime.now(timezone.utc).isoformat()}
 
+    @app.get("/v1/travel-timing/bank-holidays")
+    def bank_holidays_out(division: str = Query(default="england-and-wales", max_length=40),
+                          start: date = Query(alias="from"), end: date = Query(alias="to")):
+        """m204: official UK bank holidays for a division and a date range, with where they come from. Bank holidays
+        only: school holidays are a separate kind of data (traveltiming.py)."""
+        meta, _ = traveltiming.load_bank_holidays()
+        if division not in meta["names"]:
+            raise HTTPException(422, f"division is one of {', '.join(meta['names'])}")
+        if (end - start).days > 400 or end < start:
+            raise HTTPException(422, "a range of up to about a year")
+        span = traveltiming.covered(division)
+        return {"kind": "bank_holidays", "division": division, "name": meta["names"][division],
+                "source": meta["source"], "fetched": meta["fetched"],
+                "covers": {"from": span[0].isoformat(), "to": span[1].isoformat()} if span else None,
+                "holidays": [h.out() for h in traveltiming.bank_holidays(division, start, end)]}
+
     @app.post("/v1/trips/stays/compare")
     def trip_stay_compare(body: StayCompareIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
         """m203: one stay judged against the person's trip (Abram, 7 Nov): how far it is from each planned day, the
@@ -929,6 +946,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not live:
             dates = stayprices.sample_dates(terms, (body.checkin, body.checkout), options)
         stayprices.mark_lowest(dates)
+        for d in dates:   # m204: the destination's bank holidays, as facts (never "busier" or "dearer")
+            d.holidays = traveltiming.stay_holidays(dest.key, d.checkin, d.checkout)
         fit = stayprices.trip_fit(Point(lat=st.lat, lon=st.lon), [stayprices.DayEnds(d.index, d.first, d.last)
                                                                   for d in body.days], app.state.travel) \
             if st.lat is not None and st.lon is not None else {"days": [], "line": None, "to_first": None, "back": None}

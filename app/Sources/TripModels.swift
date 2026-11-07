@@ -284,6 +284,7 @@ struct StayCompare: Decodable, Hashable {
         let differs: [String]
         let yours: Bool
         let lowest: Bool
+        let holidays: [String]?            // m204: the destination's bank holidays in these dates, as facts
     }
 }
 

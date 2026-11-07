@@ -51,6 +51,7 @@
    "differs": [],
    "yours": false,
    "lowest": false,
+   "holidays": [],
    "label": "Sat 7 – Thu 12 Nov",
    "whole": 1698.69,
    "per_night": 339.74
@@ -64,6 +65,7 @@
    "differs": [],
    "yours": true,
    "lowest": true,
+   "holidays": [],
    "label": "Sun 8 – Fri 13 Nov",
    "whole": 1621.24,
    "per_night": 324.25
@@ -77,6 +79,7 @@
    "differs": [],
    "yours": false,
    "lowest": false,
+   "holidays": [],
    "label": "Mon 9 – Sat 14 Nov",
    "whole": 1746.36,
    "per_night": 349.27
@@ -90,6 +93,7 @@
    "differs": [],
    "yours": false,
    "lowest": false,
+   "holidays": [],
    "label": "Tue 10 – Sun 15 Nov",
    "whole": 1850.21,
    "per_night": 370.04
@@ -103,6 +107,7 @@
    "differs": [],
    "yours": false,
    "lowest": false,
+   "holidays": [],
    "label": "Wed 11 – Mon 16 Nov",
    "whole": 1826.91,
    "per_night": 365.38

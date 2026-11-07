@@ -102,6 +102,7 @@ def test_the_endpoint_uses_labelled_sample_prices_and_stores_nothing_about_the_s
     assert next(d for d in out["dates"] if d["yours"])["whole"] == 600
     assert out["fit"]["line"].startswith("About ") and len(out["fit"]["days"]) == 2
     assert out["cost"]["cancel"].startswith("Free cancellation")
+    assert all(isinstance(d["holidays"], list) for d in out["dates"])     # m204: bank holidays, as facts
     with client.app.state.Session() as s:
         from brain import db
         ev = s.query(db.Event).filter_by(name="stay_compare").one()

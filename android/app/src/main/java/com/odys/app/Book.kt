@@ -1054,7 +1054,8 @@ fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
                         Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Top) {
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(d.label, style = Theme.body.copy(color = if (d.yours) Theme.accent else Theme.ink))
-                                val tags = listOfNotNull("your dates".takeIf { d.yours }, "lowest of these".takeIf { d.lowest }) + d.differs
+                                val tags = listOfNotNull("your dates".takeIf { d.yours }, "lowest of these".takeIf { d.lowest }) +
+                                    d.differs + d.holidays.map { "bank holiday $it" }
                                 if (tags.isNotEmpty()) Text(tags.joinToString(" · "),
                                     style = Theme.footnote.copy(color = if (d.sameTerms) Theme.muted else Theme.accent))
                             }

@@ -1226,6 +1226,7 @@ struct StayForTrip: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(d.label).foregroundStyle(d.yours ? Theme.accent : Theme.ink).monospacedDigit()
                 let tags = (d.yours ? ["your dates"] : []) + (d.lowest ? ["lowest of these"] : []) + d.differs
+                    + (d.holidays ?? []).map { "bank holiday \($0)" }
                 if !tags.isEmpty {
                     Text(tags.joined(separator: " · ")).font(.footnote)
                         .foregroundStyle(d.sameTerms ? Theme.muted : Theme.accent)
