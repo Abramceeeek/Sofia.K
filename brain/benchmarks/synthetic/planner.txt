@@ -1,0 +1,73 @@
+Planner benchmark, 2026-11-07: synthetic travellers only. Seed 20261107; time limit 1.0 s (the app's); 6 onboarding answer seeds; population 0.2; 49 ready cards.
+Re-run: cd brain && .venv/bin/python scripts/benchmark_planner.py --seeds 6 --repeat 24
+
+SYNTHETIC TRAVELLERS ONLY: not real people, not a target to tune to.
+
+1. Hard rules (checked from outside the planner): plans with any violation
+   personal_known         0 of 132
+   personal_onboarded     0 of 792
+   no_answers             0 of 132
+   greedy                 0 of 132
+
+2. Value on each traveller's own tastes (sum of stop utilities less leg penalties), by plan
+   personal_known       mean   4.27  median   2.06
+   personal_onboarded   mean   2.04  median   0.54
+   no_answers           mean   0.63  median   0.40
+   greedy               mean   3.29  median   1.81
+   personal_known - no_answers: mean +3.64; better in 121, same in 10, worse in 1 of 132
+   personal_onboarded - no_answers: mean +1.41; better in 78, same in 1, worse in 53 of 132
+   personal_known - greedy: mean +0.98; better in 96, same in 13, worse in 23 of 132
+
+3. Places kept (asked vs planned), lunch, travel and slack, by plan
+   personal_known       places 2.80; travel 64 min (max leg p90 39); legs over 30 min 60; extra travel vs the shortest order: median 0, p90 20 min; slack median 132 min
+   personal_onboarded   places 2.77; travel 44 min (max leg p90 30); legs over 30 min 97; extra travel vs the shortest order: median 0, p90 8 min; slack median 163 min
+   no_answers           places 2.80; travel 26 min (max leg p90 26); legs over 30 min 0; extra travel vs the shortest order: median 0, p90 0 min; slack median 172 min
+   greedy               places 2.73; travel 64 min (max leg p90 48); legs over 30 min 99; extra travel vs the shortest order: median 0, p90 22 min; slack median 154 min
+
+4. By scenario (personal, known tastes): places / asked, lunch, status not ok
+   full_day_sat         places 3.1 of 3; lunch 10/11 (expected); free time kept —; not ok 0
+   testb_sat            places 3.1 of 3; lunch 10/11 (expected); free time kept —; not ok 0
+   weekday_mon          places 3.1 of 3; lunch 10/11 (expected); free time kept —; not ok 0
+   morning_sun          places 1.1 of 1; lunch 10/11 (expected); free time kept —; not ok 0
+   evening_fri          places 3.0 of 3; lunch 0/11 (none expected); free time kept —; not ok 0
+   rain_sat             places 2.1 of 2; lunch 10/11 (expected); free time kept —; not ok 0
+   plans_near_14        places 3.0 of 3; lunch 10/11 (expected); free time kept 100%; not ok 0
+   plans_unknown_lunch  places 3.0 of 3; lunch 0/11 (expected); free time kept 100%; not ok 0
+   free_afternoon       places 3.0 of 3; lunch 10/11 (expected); free time kept 100%; not ok 0
+   arrival_day          places 2.0 of 2; lunch 0/11 (none expected); free time kept —; not ok 0
+   departure_day        places 2.0 of 2; lunch 0/11 (none expected); free time kept —; not ok 0
+   long_day             places 5.1 of 5; lunch 10/11 (expected); free time kept —; not ok 0
+
+5. By traveller (personal, known tastes): strong matches available on the day vs in the plan
+   museums_architecture available median 33; in plan 33 strong, 0 good, of 33 places; stop utility p10/p50/p90 2.05/2.80/3.50
+   nature               available median 18; in plan 32 strong, 1 good, of 33 places; stop utility p10/p50/p90 1.26/1.93/2.90
+   food                 available median 30; in plan 33 strong, 0 good, of 33 places; stop utility p10/p50/p90 1.30/2.00/2.61
+   family               available median 13; in plan 31 strong, 2 good, of 33 places; stop utility p10/p50/p90 0.57/0.79/1.15
+   relaxed              available median 2; in plan 16 strong, 17 good, of 33 places; stop utility p10/p50/p90 -0.32/0.00/0.50
+   active               available median 32; in plan 33 strong, 0 good, of 33 places; stop utility p10/p50/p90 1.30/2.23/2.64
+   budget               available median 4; in plan 20 strong, 19 good, of 39 places; stop utility p10/p50/p90 0.16/0.40/0.40  [cost weighs e^1.2 ≈ 3.3 times the average; £10 a day for places and lunch]
+   strict_dietary       available median 8; in plan 31 strong, 2 good, of 33 places; stop utility p10/p50/p90 0.40/0.40/0.81  [the planner has no food-suitability data (WS2): every food stop is 'unknown']
+   accessibility        available median 0; in plan 0 strong, 33 good, of 33 places; stop utility p10/p50/p90 -0.20/0.00/0.00  [no step-free filter exists; stops are counted by what the card says]
+   likes_everything     available median 41; in plan 33 strong, 0 good, of 33 places; stop utility p10/p50/p90 8.48/9.60/11.80  [too many strong matches]
+   likes_nothing        available median 0; in plan 0 strong, 0 good, of 33 places; stop utility p10/p50/p90 -5.60/-4.40/-2.40  [no strong matches]
+   multi_city           not run: the planner plans one day in one city (decisions/multi-city-travel-architecture.md)
+
+6. What the plan can't know (personal, known tastes)
+   step-free way in unknown: 303 of 369 places; known not step-free: 0
+   accessibility traveller: unknown 28 of 33 places
+   strict dietary traveller: food stops with unknown suitability 14 (all of them: no card carries food-suitability data)
+   opening hours not written for the person: 0 of 369
+
+7. Variety: how often each card appears in personal plans (known tastes), top 8
+    53 of 132 plans  m_garden_at_120
+    36 of 132 plans  m_st_dunstan_garden
+    36 of 132 plans  m_rfh_foyers_rest
+    28 of 132 plans  m_alderman_stairs_sunset
+    18 of 132 plans  m_beigel_bake_late
+    17 of 132 plans  a_old_spitalfields_market
+    17 of 132 plans  m_transport_museum
+    14 of 132 plans  m_to_river_somerset
+   cards used at least once: 38 of 49 ready cards
+
+
+8. Stability (separate run, --repeat 24, 2 seeds): re-planned 120 plans (24 traveller-days): 2 changed
