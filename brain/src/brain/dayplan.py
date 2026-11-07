@@ -213,6 +213,7 @@ def spans_lunch(start_min: int, end_min: int) -> bool:
 # cost weight (−0.25 per £10). Checked on 150 fresh simulated people (m156): the Royal Festival Hall 38% → 28% of
 # plans, overlap 0.16 → 0.13, fit no worse.
 NUDGE_GAMMA, NUDGE_CAP = 3.0, 0.1
+SEEDED_WITH_BLOCKS = False   # m216: two-stage planning, built and benchmarked, off: no clear gain at 1 s (decisions/planner-optimisation.md)
 
 
 def _base(cid: str) -> str:
@@ -372,7 +373,10 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                   lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN,
                   # m202: on a day with the person's own time, lunch that can't fit doesn't become an extra place
                   max_places=(brief.stops - (1 if brief.lunch and spans_lunch(day_start, day_end) else 0))
-                  if brief.mine else None)
+                  if brief.mine else None,
+                  # m216: on days with the person's own time, the solver starts from a valid plan built step by
+                  # step (stage 1) and improves it (stage 2). Other days, and Test B, plan exactly as before.
+                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine))
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))

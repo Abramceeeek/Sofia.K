@@ -1,0 +1,31 @@
+m216, 7 Nov 2026. Two runs of scripts/benchmark_seeding.py (synthetic travellers only).
+
+== Current planner vs two-stage (the usual search 80% of the limit, the seeded one 20%; the better by solver cost wins)
+SYNTHETIC TRAVELLERS ONLY. Days with personal time: current planner vs two-stage (seeded).
+264 traveller-days, each planned both ways; seed 20261107; 4 plans solved at once.
+
+ size limit | better  same worse | mean gain  worst | breaks cur/new | places short cur/new | secs cur/new (p90)
+   15   0.2 |      3    41     0 |    +0.139  +0.00 |      0/0       |         6/6          |     0.72/0.75     
+   15   1.0 |      5    36     3 |    -0.017  -5.32 |      0/0       |         6/6          |     2.02/2.05     
+   30   0.2 |      3    36     5 |    +0.001  -0.66 |      0/0       |         0/0          |     0.56/0.62     
+   30   1.0 |      4    35     5 |    -0.004  -0.57 |      0/0       |         0/0          |     1.56/1.62     
+   49   0.2 |      4    35     5 |    +0.043  -0.45 |      0/0       |         0/0          |     0.62/0.75     
+   49   1.0 |      2    39     3 |    +0.003  -0.21 |      0/0       |         0/0          |     1.61/1.71     
+
+Seeded worse than current: 21 of 264 — the worst: likes_everything/plans_near_14/15 cards/1.0s -5.32; food/two_blocks/15 cards/1.0s -1.14; family/two_blocks/30 cards/0.2s -0.66; active/plans_near_14/30 cards/1.0s -0.57; nature/plans_near_14/15 cards/1.0s -0.52
+Personal time kept, every plan both ways: 528 of 528
+
+== The noise floor: the current planner against itself (--noise)
+SYNTHETIC TRAVELLERS ONLY. Days with personal time: current planner vs two-stage (seeded).
+264 traveller-days, each planned both ways; seed 20261107; 4 plans solved at once.
+
+ size limit | better  same worse | mean gain  worst | breaks cur/new | places short cur/new | secs cur/new (p90)
+   15   0.2 |      0    43     1 |    -0.006  -0.26 |      0/0       |         6/6          |     0.73/0.72     
+   15   1.0 |      0    44     0 |    +0.000  +0.00 |      0/0       |         6/6          |     2.02/2.02     
+   30   0.2 |      2    42     0 |    +0.006  +0.00 |      0/0       |         0/0          |     0.56/0.56     
+   30   1.0 |      0    43     1 |    -0.027  -1.19 |      0/0       |         0/0          |     1.56/1.56     
+   49   0.2 |      1    43     0 |    +0.000  +0.00 |      0/0       |         0/0          |     0.62/0.61     
+   49   1.0 |      0    44     0 |    +0.000  +0.00 |      0/0       |         0/0          |     1.61/1.61     
+
+Seeded worse than current: 2 of 264 — the worst: active/plans_near_14/30 cards/1.0s -1.19; strict_dietary/free_afternoon/15 cards/0.2s -0.26
+Personal time kept, every plan both ways: 528 of 528
