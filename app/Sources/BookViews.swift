@@ -1248,7 +1248,7 @@ struct StayForTrip: View {
                 }
             }
             Spacer(minLength: 8)
-            Text(d.whole.map(Money.whole) ?? "Not available").foregroundStyle(Theme.ink).monospacedDigit()
+            Text(d.whole.map { Money.whole($0) } ?? "Not available").foregroundStyle(Theme.ink).monospacedDigit()
         }
         .accessibilityElement(children: .combine)
     }
