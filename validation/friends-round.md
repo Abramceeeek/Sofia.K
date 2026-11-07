@@ -29,6 +29,7 @@ Three systems, each tested on 6 Nov:
   - A sync overwrites dashboard changes: "the next Blueprint sync overwrites them" (render.com/docs/infrastructure-as-code). It can be turned off: "set Auto Sync to No on your Blueprint's Settings page".
   - Auto-deploy can be turned off per service (On Commit, After CI Checks Pass, Off), and deploying a specific commit from the dashboard "disables automatic deploys for the service" (render.com/docs/deploys).
   - Pull request previews and preview environments are off unless turned on (render.com/docs/service-previews, /docs/preview-environments). Keep them off. The service's Deploy Hook URL (Settings) can deploy too: never share it.
+- **The swipe page** (`london-places-swipe`, not part of the round) still deploys the branch (78e82a3 did, 6 Nov). It shares the database but only its own tables, so `brain/src/brain/calibration.py` doesn't change during the round.
 - **During the round:** no commits to `main` (code or notes), no change to `render.yaml`, and no Manual Deploy, Blueprint sync or settings change on `moments-brain`. New work stays on the branch, and it only reaches testers after the round, through `main`.
 
 ## What it collects
