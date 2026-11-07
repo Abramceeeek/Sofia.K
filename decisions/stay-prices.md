@@ -25,9 +25,9 @@ The same hotel, length of stay, guests and rooms, room, board (meals) and cancel
 
 - **The Brain** answers two questions and stores nothing about the person's trip: "this stay on nearby dates" and "this watched stay now". Without a key, both answer with clearly labelled sample prices, so the screens and tests work.
 - **The phone** keeps each watch with its trip: the stay, its dates, guests, room, board, cancellation terms, and the prices seen with when.
-- **Environments (Abram, 7 Nov):** the frozen production Brain keeps its sandbox key until the round ends. For development, the key goes into this cloud session's environment through the secure form; the proxy adds it to requests to `api.liteapi.travel`, so it's never in a chat, Git or Render. When the apps need live prices, a separate staging Brain on Render deploys the branch with its own key.
+- **Environments (Abram, 7 Nov):** the frozen production Brain keeps its sandbox key until the round ends. Live prices are tried on a **separate staging Brain on Render** that deploys the branch, with its own key in its own settings (never in a chat or Git). Claude checks it by calling its endpoints. (Not this cloud session's environment: it's the Default one, shared by all of Abram's repositories.) Until then, the Brain is built against LiteAPI's documented responses, with tests, and sample prices.
 - **School holidays** (product direction, step 3): term dates are set by each local authority, so this needs a checked source per area first. Researched next, built after the two parts above.
 
 ## Hours (GUESS)
 
-The Brain ~3 h; both apps ~4 h; the Terms of Service and school-holiday sources ~1 h. Abram: the key in the form (~5 min); later the staging Brain in Render (~15 min, steps given then).
+The Brain ~3 h; both apps ~4 h; the Terms of Service and school-holiday sources ~1 h. Abram: the staging Brain in Render with the key (~15 min, steps given when the Brain part is ready).
