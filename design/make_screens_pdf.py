@@ -120,7 +120,7 @@ SCREENS = [
     ("daychange", "25b", "Trips (Abram's ODYS Trips design)", "Change this day (new)",
      "\"Made other plans?\" The hours they're free and their places, then the day planned again around them; the other days stay as they are."),
     ("tripdaymine", "25c", "Trips (branch, m200)", "A day with your own time",
-     "\"Your plans\" and \"Free time\" in the day at their own times, near the place before them, never rated; the places go around them."),
+     "\"Your plans\" and \"Free time\" in the day at their own times, near one of the day's places (it says which), never rated; the places go around them."),
     ("daychangemine", "25d", "Trips (branch, m200)", "Change this day: time for yourself",
      "Keep the day free, a relaxed day (one place fewer, longer at each), or up to two blocks of your plans or free time."),
     ("flights", "26", "Trips (Abram's ODYS Trips design)", "Flights",

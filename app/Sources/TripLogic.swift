@@ -399,8 +399,8 @@ extension AppModel {
         }
         let old = trip.days.first { $0.index == index }
         let base = { (p: Plan?) in (p?.stops ?? []).filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] } }
-        let own = Set(base(old?.plan) + base(old?.before))
-        let request = daysRequest(trip, days: [index], exclude: trip.used.filter { !own.contains($0) },
+        let kept = Set(base(old?.plan) + base(old?.before))
+        let request = daysRequest(trip, days: [index], exclude: trip.used.filter { !kept.contains($0) },
                                   hours: (from, to, places))
         var ok = false
         await run {
@@ -574,7 +574,7 @@ extension AppModel {
         t.used = days.used
         t.daysFrom = days.start
         // m200: the screenshots of a day with the person's own time (25c, 25d): that day, from the real Brain
-        if ["tripdaymine", "daychangemine"].contains(AppModel.screen ?? ""),
+        if ["tripdaymine", "daychangemine"].contains(AppConfig.screen ?? ""),
            let mine: TripDayOut = try? BrainClient.bundled("demo_trip_day_mine"),
            let i = t.days.firstIndex(where: { $0.index == mine.index }) {
             t.days[i] = mine

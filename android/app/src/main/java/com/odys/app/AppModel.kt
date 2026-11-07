@@ -540,7 +540,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val done = current.stops.take(upTo).filter { it.rateable }.map { it.momentId }
         val skip = done.toMutableList()
         if (reason == "closed" && nowIndex < current.stops.size) skip += current.stops[nowIndex].momentId
-        val left = current.stops.size - upTo
+        // m200: the person's own time isn't one of the stops to plan; it comes back from `mine` if it's still ahead
+        val left = current.stops.drop(upTo).count { it.mine == null }
         val fromHere = if (location.usable) location.roundedHere() else null
         val at = if (nowIndex < current.stops.size) current.stops[nowIndex] else current.stops.lastOrNull()
         val request = PlanRequest(
@@ -550,6 +551,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             stops = maxOf(2, minOf(6, if (reason == "tired") left - 1 else left)), familiar = false,
             exclude = (old.exclude + skip).toSet().sorted(), feelings = old.feelings,
             conditions = if (reason == "rain") PlanConditions(0.9) else null,
+            mine = old.mine, relaxed = old.relaxed,
         )
         val tripId = currentTripDay()?.first?.id
         fetchPlan(request, sameDay = false)
@@ -1014,7 +1016,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val (arrive, leave) = trip.ends
         return TripDaysRequest(trip.destination, trip.start, trip.nights, trip.feelings, trip.stay?.point,
             if (trip.stay == null) null else "your stay", days, exclude, hours?.first ?: trip.dayFrom,
-            hours?.second ?: trip.dayTo, hours?.third ?: trip.placesPerDay, trip.travelLight, arrive, leave)
+            hours?.second ?: trip.dayTo, hours?.third ?: trip.placesPerDay, trip.travelLight, arrive, leave,
+            personal = (trip.personal ?: emptyList()).filter { !it.isEmpty })
     }
 
     /** "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and plan again. */
@@ -1024,7 +1027,9 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val window = day.window ?: DayWindow("10:00", "18:00", dayPlan.stops.size)
         val request = PlanRequest(trip.stay?.point ?: AppConfig.START, trip.daysFrom ?: AppConfig.START_NAME,
             window.start, window.end, day.date, maxOf(2, minOf(window.stops, 6)), false,
-            exclude = trip.used.filter { it !in mine }, feelings = trip.feelings.ifEmpty { null })
+            exclude = trip.used.filter { it !in mine }, feelings = trip.feelings.ifEmpty { null },
+            // m200: the day's own time and pace come too, so swapping a stop or planning again never loses them
+            mine = trip.own(day.index).mine.ifEmpty { null }, relaxed = trip.own(day.index).relaxed.takeIf { it })
         plan = dayPlan
         lastRequest = request
         val r = prefs.ratings(dayPlan.id)
@@ -1103,12 +1108,16 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** One day planned again at the hours the person is free and with their places. */
-    suspend fun changeTripDay(tripId: String, index: Int, from: String, to: String, places: Int): Boolean {
-        val trip = findTrip(tripId) ?: return false
+    suspend fun changeTripDay(tripId: String, index: Int, from: String, to: String, places: Int,
+                              own: DayTime? = null): Boolean {
+        val found = findTrip(tripId) ?: return false
+        // m200: the day's own time is kept with the trip, so a re-plan of every day keeps it too
+        val trip = if (own == null) found else found.copy(
+            personal = (found.personal ?: emptyList()).filter { it.day != index } + listOfNotNull(own.takeIf { !it.isEmpty }))
         val old = trip.days.firstOrNull { it.index == index }
-        val own = ((old?.plan?.stops ?: emptyList()) + (old?.before?.stops ?: emptyList()))
+        val kept = ((old?.plan?.stops ?: emptyList()) + (old?.before?.stops ?: emptyList()))
             .filter { it.rateable }.map { it.base }.toSet()
-        val request = daysRequest(trip, listOf(index), trip.used.filter { it !in own }, Triple(from, to, places))
+        val request = daysRequest(trip, listOf(index), trip.used.filter { it !in kept }, Triple(from, to, places))
         var ok = false
         run {
             val out = client.tripDays(request)
@@ -1119,7 +1128,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             val was = old?.plan
             if (was != null && plan?.id == was.id && new.plan != null) useDay(t, new)
             client.event("trip_day_changed", mapOf("day" to "${index + 1}", "from" to from, "to" to to,
-                "places" to "$places"))
+                "places" to "$places",
+                // m200: whether the day keeps time for them, never what for
+                "own_time" to "${own?.mine?.size ?: 0}", "free_day" to "${own?.freeDay ?: false}",
+                "relaxed" to "${own?.relaxed ?: false}"))
             ok = true
         }
         return ok

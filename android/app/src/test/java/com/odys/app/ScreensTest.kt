@@ -271,6 +271,27 @@ class ScreensTest {
         shoot("25b-changeday")
     }
 
+    // m200 (branch only): a trip day with the person's own time, from the same sample day as the iPhone's (made by the
+    // Brain: brain/scripts, demo_trip_day_mine.json), and "Change this day" with its "Time for yourself"
+    private fun AppModel.ownTime(): Trip {
+        val mine = demo("demo_trip_day_mine", TripDayOut.serializer())
+        val t = trips.first()
+        val trip = t.copy(days = t.days.map { if (it.index == mine.index) mine else it },
+            personal = listOf(DayTime(mine.index, mine = mine.mine.orEmpty().map { MyTime(it.kind, it.start, it.end) })))
+        trips = listOf(trip)
+        return trip
+    }
+    @Test fun tripDayMine() = showThen("25c-tripdaymine", {
+        val trip = ownTime()
+        tripPath += Dest.TripOverview(trip.id); tripPath += Dest.TripDay(trip.id, 1)
+    }, { reach("Your plans") })
+    @Test fun changeDayMine() {
+        val trip = model.ownTime()
+        compose.setContent { RootView(model); ChangeDaySheet(model, trip, trip.days[1]) {} }
+        reach("you can also swap a stop")
+        shoot("25d-daychangemine")
+    }
+
     @Test fun airports() {
         compose.setContent { RootView(model); AirportPicker(model, {}) {} }
         shoot("22b-airports")

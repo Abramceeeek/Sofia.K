@@ -257,6 +257,7 @@ data class Stop(
     val bookAhead: String? = null,
     val hours: String? = null,
     val checked: String? = null,
+    val mine: String? = null,         // m200: "plans" or "free": the person's own time, planned around (never rated)
 ) {
     val id: String get() = "$momentId@$arrive"
 
@@ -347,10 +348,18 @@ data class PlanRequest(
     val intent: Map<String, String>? = null,
     val feelings: List<String>? = null,
     val conditions: PlanConditions? = null,
+    val mine: List<MyTime>? = null,       // m200: a trip day's own time, so swap and re-plan keep it
+    val relaxed: Boolean? = null,         // m200: a relaxed trip day
 )
 
 @Serializable
 data class PlanConditions(val rainProb: Double? = null)
+
+/** m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free". */
+@Serializable
+data class MyTime(val kind: String, val start: String, val end: String) {
+    val title: String get() = if (kind == "plans") "Your plans" else "Free time"
+}
 
 @Serializable
 data class MomentSummary(val id: String, val title: String, val status: String, val plannable: Boolean? = null)

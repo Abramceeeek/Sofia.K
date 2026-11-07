@@ -18,7 +18,7 @@ Two rules for the seed moments (D72):
 The person's own time (m200, product direction step 2): "Your plans 13:00-15:00" or "Free time 16:00-18:00" is a
 block the plan goes around. It comes as one slot beside each place (and the start), pinned to its times; at most one
 of a block's slots is in a plan, and a large bonus (`MINE_BONUS`, as lunch's) brings one in whenever the day allows,
-so the block sits near the place before it. It isn't one of the day's places. (An "exactly one" rule left the
+so the block sits beside one of the day's places (wherever the travel is least). It isn't one of the day's places. (An "exactly one" rule left the
 solver's first, greedy solution with nothing to aim for, and days with a block went unplanned: 6 Nov.)
 
 One rule for the day's shape (D127, from the algorithm review, 20 Oct): at most `max_theme` (2) history-and-culture

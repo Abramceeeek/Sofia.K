@@ -1987,7 +1987,7 @@ struct ChangeDaySheet: View {
                 .padding(.vertical, 12)
             }
             .onAppear {   // CI screenshots only (25d): the new section
-                guard AppModel.screen == "daychangemine" else { return }
+                guard AppConfig.demo, AppConfig.screen == "daychangemine" else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { proxy.scrollTo("own", anchor: .top) }
             }
             }
@@ -2022,9 +2022,10 @@ struct ChangeDaySheet: View {
 
     private var note: String {
         switch day.kind {
-        case "arrive": return "This day still starts once you've arrived. Busy in the middle of the day? Choose the part that's free."
-        case "leave": return "This day still ends in time for your journey home. Busy in the middle of the day? Choose the part that's free."
-        default: return "Busy in the middle of the day? Choose the part that's free. Once it's your day, you can also swap a stop."
+        // m200: plans in the middle of the day go in "Time for yourself", so there's no need to pick a part
+        case "arrive": return "This day still starts once you've arrived."
+        case "leave": return "This day still ends in time for your journey home."
+        default: return "Once it's your day, you can also swap a stop."
         }
     }
 
@@ -2067,7 +2068,8 @@ struct MyTimeEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(time.title).font(Theme.serif(19, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                Text("\(time.start)–\(time.end)").font(Theme.serif(19, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                    .monospacedDigit()
                 Spacer()
                 QuietButton("Remove", color: Theme.accent, action: remove)
             }

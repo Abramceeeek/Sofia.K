@@ -216,6 +216,7 @@ data class TripDaysRequest(
     val travelLight: Boolean,
     val arrive: TripEnd?,
     val leave: TripEnd?,
+    val personal: List<DayTime> = emptyList(),   // m200
 )
 
 @Serializable
@@ -228,8 +229,26 @@ data class TripDayOut(
     val window: DayWindow? = null,
     val before: Plan? = null,
     val legs: List<TripLeg>? = null,
+    val freeDay: Boolean? = null,          // m200: "a day that's yours": nothing planned
+    val relaxed: Boolean? = null,          // m200: one place fewer, longer at each
+    val mine: List<PlannedTime>? = null,   // m200: the person's own time that day, and whether the plan holds it
 ) {
     fun journeys(slot: String): List<TripLeg> = (legs ?: emptyList()).filter { it.slot == slot }
+}
+
+/** m200: one block of the person's own time, as the Brain planned it (or couldn't: outside the day's hours). */
+@Serializable
+data class PlannedTime(val kind: String, val start: String, val end: String, val planned: Boolean)
+
+/** m200: how one day of a trip leaves room for the person. Kept with the trip, and sent with every plan of its days. */
+@Serializable
+data class DayTime(
+    val day: Int,
+    val freeDay: Boolean = false,
+    val relaxed: Boolean = false,
+    val mine: List<MyTime> = emptyList(),
+) {
+    val isEmpty: Boolean get() = !freeDay && !relaxed && mine.isEmpty()
 }
 
 @Serializable
@@ -361,7 +380,9 @@ data class Trip(
     val ownFlight: Boolean? = null,
     val flightAirport: String? = null,
     val changedDays: List<Int>? = null,
+    val personal: List<DayTime>? = null,   // m200: the person's own time, by day
 ) {
+    fun own(index: Int): DayTime = personal?.firstOrNull { it.day == index } ?: DayTime(index)
     val dayFrom: String get() = hoursFrom ?: "10:00"
     val dayTo: String get() = hoursTo ?: "18:00"
     val placesPerDay: Int get() = places ?: 3

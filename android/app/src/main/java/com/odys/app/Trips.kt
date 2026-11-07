@@ -1,5 +1,9 @@
 package com.odys.app
 
+import androidx.compose.material.icons.filled.People
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.RowScope
@@ -1258,10 +1262,15 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
         val plan = day?.plan
         if (day != null && plan != null) {
             if (day.before != null || day.journeys("arrive").isNotEmpty()) SectionLabel("From your stay", Modifier.padding(top = 4.dp))
-            for (stop in plan.stops) TripDayStop(stop)
+            for (stop in plan.stops) if (stop.mine != null) MyTimeRow(stop) else TripDayStop(stop)
+            for (t in day.mine.orEmpty().filter { !it.planned }) {   // m200
+                Text("${if (t.kind == "plans") "Your plans" else "Free time"} at ${t.start}–${t.end} fall outside the hours planned for this day, so the plan doesn't go around them.",
+                    style = Theme.footnote)
+            }
             val end = day.window?.end
             val last = plan.stops.lastOrNull()
-            if (end != null && last != null && Dates.minutes(end) - Dates.minutes(last.depart) >= 60) {   // journey round 2
+            if (end != null && last != null && last.mine == null &&
+                Dates.minutes(end) - Dates.minutes(last.depart) >= 60) {   // journey round 2
                 FreeTimeRow(model, last.depart, end, trip.placesPerDay < 6) {
                     scope.launch {
                         model.changeTripDay(trip.id, index, day.window.start, end, minOf(6, trip.placesPerDay + 1))
@@ -1280,6 +1289,12 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
             PrimaryButton(if (model.busy) "Planning…" else "Plan this day", enabled = !model.busy) {
                 scope.launch { model.planDay(tripId, index) }
             }
+        } else if (day.freeDay == true) {   // m200: "a day that's yours"
+            Text("Nothing is planned, as you chose. Rest, meet someone, wander: it's your time.",
+                style = Theme.body.copy(color = Theme.inkSoft),
+                modifier = Modifier.fillMaxWidth().border(1.dp, Theme.outline, RoundedCornerShape(20.dp)).padding(20.dp))
+            day.journeys("leave").forEach { JourneyCard(it) }
+            SecondaryButton("Change this day", icon = Icons.Filled.Schedule) { changing = day }
         } else {
             day.journeys("leave").forEach { JourneyCard(it) }
             if (day.before == null) {
@@ -1309,16 +1324,27 @@ fun ChangeDaySheet(model: AppModel, trip: Trip, day: TripDayOut, onClose: () -> 
     var from by remember { mutableStateOf(if (day.kind == "arrive") trip.dayFrom else day.window?.start ?: trip.dayFrom) }
     var to by remember { mutableStateOf(if (day.kind == "leave") trip.dayTo else day.window?.end ?: trip.dayTo) }
     var places by remember { mutableIntStateOf(trip.placesPerDay) }
+    var own by remember { mutableStateOf(trip.own(day.index)) }   // m200: time for yourself
     val tooShort = Dates.minutes(to) - Dates.minutes(from) < 60
+    val badTimes = !own.freeDay && own.mine.any { Dates.minutes(it.end) <= Dates.minutes(it.start) }
+    fun add(kind: String) {   // m200: plans in the early afternoon, free time at the end of the day, inside the hours
+        val lo = Dates.minutes(from)
+        val hi = Dates.minutes(to)
+        val start = if (kind == "plans") minOf(maxOf(lo, 13 * 60), maxOf(lo, hi - 60)) else maxOf(lo, hi - 90)
+        val end = if (kind == "plans") minOf(hi, start + 120) else hi
+        own = own.copy(mine = own.mine + MyTime(kind, Dates.hhmm(start), Dates.hhmm(end)))
+    }
     val note = when (day.kind) {
-        "arrive" -> "This day still starts once you've arrived. Busy in the middle of the day? Choose the part that's free."
-        "leave" -> "This day still ends in time for your journey home. Busy in the middle of the day? Choose the part that's free."
-        else -> "Busy in the middle of the day? Choose the part that's free. Once it's your day, you can also swap a stop."
+        // m200: plans in the middle of the day go in "Time for yourself", so there's no need to pick a part
+        "arrive" -> "This day still starts once you've arrived."
+        "leave" -> "This day still ends in time for your journey home."
+        else -> "Once it's your day, you can also swap a stop."
     }
     FullSheet(model, onClose) {
         PageWithBottom(spacing = 14, bottom = {
-            PrimaryButton(if (model.busy) "Planning…" else "Plan this day again", enabled = !model.busy && !tooShort) {
-                scope.launch { if (model.changeTripDay(trip.id, day.index, from, to, places)) onClose() }
+            PrimaryButton(if (model.busy) "Planning…" else if (own.freeDay) "Keep this day free" else "Plan this day again",
+                enabled = !model.busy && (!tooShort || own.freeDay) && !badTimes) {
+                scope.launch { if (model.changeTripDay(trip.id, day.index, from, to, places, own)) onClose() }
             }
         }) {
             CloseLink("Cancel", onClose)   // 19 Oct review: Android's ✕
@@ -1334,7 +1360,74 @@ fun ChangeDaySheet(model: AppModel, trip: Trip, day: TripDayOut, onClose: () -> 
             Stepper("Places", "$places place${if (places == 1) "" else "s"}, plus lunch", places <= 1, places >= 6,
                 "One place fewer", "One place more", { places -= 1 }) { places += 1 }
             if (tooShort) Text("Leave at least an hour between the two times.", style = Theme.subheadline.copy(color = Theme.accent))
+            // m200 (product direction, step 2): time that's theirs, alongside the places
+            SectionLabel("Time for yourself", Modifier.padding(top = 8.dp))
+            SwitchRow("Keep this day free", "Nothing planned: rest, meet someone, or wander.", own.freeDay) {
+                own = own.copy(freeDay = it)
+            }
+            if (!own.freeDay) {
+                SwitchRow("A relaxed day", "One place fewer, with longer at each.", own.relaxed) { own = own.copy(relaxed = it) }
+                own.mine.forEachIndexed { k, t ->
+                    MyTimeEditor(t, from, to, { v -> own = own.copy(mine = own.mine.mapIndexed { j, x -> if (j == k) v else x }) }) {
+                        own = own.copy(mine = own.mine.filterIndexed { j, _ -> j != k })
+                    }
+                }
+                if (own.mine.size < 2) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Chip("+ Your plans", false, Modifier.weight(1f), height = 44.dp) { add("plans") }
+                        Chip("+ Free time", false, Modifier.weight(1f), height = 44.dp) { add("free") }
+                    }
+                    Text("Meeting someone, a booking, or an hour to yourself: the day is planned around it.", style = Theme.footnote)
+                }
+            }
             Text(note, style = Theme.footnote)
+        }
+    }
+}
+
+/** m200: one block of the person's own time: what it is, from when, until when. */
+@Composable
+fun MyTimeEditor(time: MyTime, dayFrom: String, dayTo: String, onChange: (MyTime) -> Unit, onRemove: () -> Unit) {
+    Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("${time.start}–${time.end}", style = Theme.serif(19.sp), modifier = Modifier.weight(1f))
+            QuietButton("Remove", color = Theme.accent, onClick = onRemove)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Chip("Your plans", time.kind == "plans", Modifier.weight(1f), height = 40.dp) { onChange(time.copy(kind = "plans")) }
+            Chip("Free time", time.kind == "free", Modifier.weight(1f), height = 40.dp) { onChange(time.copy(kind = "free")) }
+        }
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.background)) {
+            TimeMenu("From", time.start, HalfHours.from(6, 23)) { onChange(time.copy(start = it)) }
+            Hairline()
+            TimeMenu("Until", time.end, HalfHours.from(6, 23)) { onChange(time.copy(end = it)) }
+        }
+        if (Dates.minutes(time.end) <= Dates.minutes(time.start)) {
+            Text("It needs to end after it starts.", style = Theme.subheadline.copy(color = Theme.accent))
+        } else if (Dates.minutes(time.start) < Dates.minutes(dayFrom) || Dates.minutes(time.end) > Dates.minutes(dayTo)) {
+            Text("Outside $dayFrom–$dayTo, so the plan won't go around it.", style = Theme.footnote)
+        }
+    }
+}
+
+/** m200: the person's own time in a trip day: its times, what it is, and where we've assumed it is. */
+@Composable
+fun MyTimeRow(stop: Stop) {
+    val outline = Theme.outline
+    Row(Modifier.fillMaxWidth()
+        .drawBehind {
+            drawRoundRect(outline, cornerRadius = CornerRadius(20.dp.toPx()),
+                style = Stroke(1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx()))))
+        }
+        .padding(16.dp)
+        .semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Icon(if (stop.mine == "plans") Icons.Filled.People else Icons.Filled.WbSunny, null, tint = Theme.accent,
+            modifier = Modifier.size(24.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("${stop.arrive}–${stop.depart}", style = Theme.subheadline.copy(color = Theme.muted))
+            Text(stop.title, style = Theme.serif(19.sp))
+            Text(stop.what, style = Theme.subheadline.copy(color = Theme.inkSoft))
         }
     }
 }
