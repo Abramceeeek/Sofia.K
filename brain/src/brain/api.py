@@ -564,7 +564,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             weekday=day.strftime("%a").lower() if day else None,
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
-            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
+            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
+            mine=tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end)) for b in body.mine
+                       if tripdays.mins(b.start) < tripdays.mins(b.end)),   # m200
+            relaxed=body.relaxed)
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
         feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]

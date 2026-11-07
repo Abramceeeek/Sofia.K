@@ -281,6 +281,7 @@ struct TripDaysRequest: Encodable {
     let travelLight: Bool
     let arrive: TripEnd?
     let leave: TripEnd?
+    var personal: [DayTime] = []          // m200
 }
 
 struct TripDayOut: Codable, Hashable {
@@ -292,8 +293,29 @@ struct TripDayOut: Codable, Hashable {
     let window: DayWindow?                 // the day's times, so "Swap this stop" and "Regenerate" work on it
     let before: Plan?                      // D122: travelling light, one place on the way from the airport or station
     let legs: [TripLeg]?                   // D122: the journeys at each end of the trip
+    var freeDay: Bool? = nil               // m200: "a day that's yours": nothing planned
+    var relaxed: Bool? = nil               // m200: one place fewer, longer at each
+    var mine: [PlannedTime]? = nil         // m200: the person's own time that day, and whether the plan holds it
 
     func journeys(_ slot: String) -> [TripLeg] { (self.legs ?? []).filter { $0.slot == slot } }
+}
+
+/// m200: one block of the person's own time, as the Brain planned it (or couldn't: outside the day's hours).
+struct PlannedTime: Codable, Hashable {
+    let kind: String
+    let start: String
+    let end: String
+    let planned: Bool
+}
+
+/// m200: how one day of a trip leaves room for the person. Kept with the trip, and sent with every plan of its days.
+struct DayTime: Codable, Hashable {
+    var day: Int
+    var freeDay = false
+    var relaxed = false
+    var mine: [MyTime] = []
+
+    var isEmpty: Bool { !freeDay && !relaxed && mine.isEmpty }
 }
 
 /// D122: a journey at one end of the trip ("Heathrow → your stay", "Leave for Gatwick by 15:20"). Times are the Brain's
@@ -416,6 +438,9 @@ struct Trip: Codable, Hashable, Identifiable {
     var ownFlight: Bool?
     var flightAirport: String?
     var changedDays: [Int]?                // journey round 2: days changed by hand, kept when the trip is re-planned
+    var personal: [DayTime]?               // m200: the person's own time, by day
+
+    func own(_ index: Int) -> DayTime { personal?.first { $0.day == index } ?? DayTime(day: index) }
 
     var dayFrom: String { hoursFrom ?? "10:00" }
     var dayTo: String { hoursTo ?? "18:00" }

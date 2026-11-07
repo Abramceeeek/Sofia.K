@@ -550,7 +550,8 @@ final class AppModel {
         request = PlanRequest(start: request.start, startName: request.startName, startTime: request.startTime,
                               endTime: request.endTime, date: request.date, stops: request.stops + 1,
                               familiar: request.familiar, keep: current.stops.map { $0.key ?? $0.momentId },
-                              exclude: request.exclude, intent: request.intent, feelings: request.feelings)
+                              exclude: request.exclude, intent: request.intent, feelings: request.feelings,
+                              mine: request.mine, relaxed: request.relaxed)   // m200
         await fetchPlan(request, swap: true)
         await client.event("add_place", ["stops": "\(request.stops)"])
     }
@@ -569,7 +570,8 @@ final class AppModel {
         let done = current.stops.prefix(min(nowIndex, current.stops.count)).filter(\.rateable).map(\.momentId)
         var skip = done
         if reason == "closed", nowIndex < current.stops.count { skip.append(current.stops[nowIndex].momentId) }
-        let left = current.stops.count - min(nowIndex, current.stops.count)
+        // m200: the person's own time isn't one of the stops to plan; it comes back from `mine` if it's still ahead
+        let left = current.stops.dropFirst(min(nowIndex, current.stops.count)).filter { $0.mine == nil }.count
         let fromHere = location.usable ? location.roundedHere : nil
         let at = nowIndex < current.stops.count ? current.stops[nowIndex] : current.stops.last
         var request = PlanRequest(start: fromHere ?? at?.pin ?? old.start,
@@ -577,7 +579,8 @@ final class AppModel {
                                   startTime: String(format: "%02d:%02d", start / 60, start % 60), endTime: old.endTime,
                                   date: Dates.isoDay.string(from: .now),
                                   stops: max(2, min(6, reason == "tired" ? left - 1 : left)), familiar: false,
-                                  exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings)
+                                  exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings,
+                                  mine: old.mine, relaxed: old.relaxed)
         if reason == "rain" { request.conditions = PlanConditions(rainProb: 0.9) }
         let tripId = currentTripDay?.trip.id
         await fetchPlan(request, sameDay: false)   // the trip keeps the day as planned; this is today's version

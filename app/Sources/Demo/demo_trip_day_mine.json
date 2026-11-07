@@ -1,0 +1,592 @@
+{
+ "index": 1,
+ "date": "2026-11-09",
+ "kind": "full",
+ "plan": {
+  "id": 1,
+  "kind": "personal",
+  "label": null,
+  "date": "2026-11-09",
+  "intent": {
+   "trip": true,
+   "day": 1,
+   "part": "main",
+   "feelings": [
+    "curious",
+    "peaceful"
+   ]
+  },
+  "stops": [
+   {
+    "moment_id": "m_millennium_bridge_dome",
+    "key": "m_millennium_bridge_dome",
+    "title": "Across the Millennium Bridge towards St Paul's dome",
+    "arrive": "09:56",
+    "depart": "10:12",
+    "travel_min": 23,
+    "travel_mode": "transit",
+    "travel_text": "Getting there: about 23 min by Tube or bus from your stay to Tate Modern, Bankside (Southwark or Blackfriars station).",
+    "approach": "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
+    "what": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 0.0,
+    "cost_kind": "entry",
+    "cost_text": "Cost: free",
+    "rain_swap": "Lift a real gold bar at the Bank of England Museum, about 20 min away on foot.",
+    "lunch": false,
+    "familiar": false,
+    "rateable": true,
+    "mine": null,
+    "worth_gbp": 25,
+    "match": "A strong match for you",
+    "feel_word": "Wonder",
+    "reveal": true,
+    "approach_steps": [
+     {
+      "label": "From",
+      "text": "Tate Modern, Bankside (Southwark or Blackfriars station)"
+     },
+     {
+      "label": "The way in",
+      "text": "From Tate Modern's river side, step onto the south end of the bridge and walk north"
+     },
+     {
+      "label": "You arrive",
+      "text": "Millennium Bridge"
+     }
+    ],
+    "book_ahead": "",
+    "checked": "2026-09-27",
+    "hours": "Always open. Free",
+    "best_light": "At dusk, when the dome is lit",
+    "best_window": "16:07–17:52",
+    "pin": {
+     "lat": 51.5078,
+     "lon": -0.0994
+    },
+    "chosen_for": [
+     "history and culture"
+    ],
+    "why": [
+     {
+      "feature": "history_culture",
+      "label": "history and culture",
+      "contribution": 0.259
+     },
+     {
+      "feature": "crowds",
+      "label": "crowds",
+      "contribution": -0.198
+     },
+     {
+      "feature": "transfer_15_30",
+      "label": "transfers of 15-30 min",
+      "contribution": -0.16
+     }
+    ],
+    "lines": [
+     "Getting there: about 23 min by Tube or bus from your stay to Tate Modern, Bankside (Southwark or Blackfriars station).",
+     "From Tate Modern's river side, step onto the south end of the bridge and walk north.",
+     "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+     "Cost: free",
+     "If it rains: Lift a real gold bar at the Bank of England Museum, about 20 min away on foot."
+    ],
+    "card": {
+     "id": "m_millennium_bridge_dome",
+     "title": "Across the Millennium Bridge towards St Paul's dome",
+     "status": "ready",
+     "place": {
+      "name": "Millennium Bridge",
+      "overture_id": null,
+      "lat": 51.51017,
+      "lon": -0.09844
+     },
+     "approach": {
+      "from": "Tate Modern, Bankside (Southwark or Blackfriars station)",
+      "path": "From Tate Modern's river side, step onto the south end of the bridge and walk north",
+      "step_free": null,
+      "start_point": {
+       "lat": 51.5078,
+       "lon": -0.0994
+      }
+     },
+     "what_happens": "You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.",
+     "best_time": {
+      "time_of_day": [
+       "07:00-23:00"
+      ],
+      "light": "At dusk, when the dome is lit (GUESS)",
+      "weather": [
+       "any"
+      ],
+      "company": null,
+      "crowd_window": "Busiest at weekend afternoons (GUESS)",
+      "opening_hours": "Always open, free. Checked 2026-09-27 (Wikivoyage)",
+      "book_ahead": null,
+      "hours": "Always open. Free",
+      "days": [],
+      "best_window": [
+       "16:15-18:00"
+      ],
+      "best_around_sunset": [
+       -15,
+       90
+      ]
+     },
+     "cost_gbp": 0.0,
+     "shot_card": null,
+     "plannable": true
+    },
+    "reasons": [
+     {
+      "you": "You loved British Museum, and this has history too.",
+      "me": "I loved British Museum, and this has history too."
+     },
+     {
+      "you": "You go out to feel peaceful, and this has views.",
+      "me": "I go out to feel peaceful, and this has views."
+     }
+    ]
+   },
+   {
+    "moment_id": "lunch@m_bank_of_england_gold",
+    "key": "lunch@m_bank_of_england_gold",
+    "title": "Lunch near Bank station",
+    "arrive": "11:30",
+    "depart": "12:15",
+    "travel_min": 13,
+    "travel_mode": "walk",
+    "travel_text": "Getting there: about 13 min on foot from St Paul's Cathedral.",
+    "approach": "",
+    "what": "Pick a café, pub or food stall nearby.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 15.0,
+    "cost_kind": "food",
+    "cost_text": "Food: about £15",
+    "rain_swap": "",
+    "lunch": true,
+    "familiar": false,
+    "rateable": false,
+    "mine": null,
+    "worth_gbp": null,
+    "match": null,
+    "feel_word": "Lunch",
+    "reveal": false,
+    "approach_steps": [],
+    "book_ahead": "",
+    "checked": "",
+    "hours": "",
+    "best_light": "",
+    "best_window": "",
+    "pin": {
+     "lat": 51.51406,
+     "lon": -0.08806
+    },
+    "chosen_for": [],
+    "why": [],
+    "lines": [
+     "Getting there: about 13 min on foot from St Paul's Cathedral.",
+     "Pick a café, pub or food stall nearby.",
+     "Food: about £15"
+    ]
+   },
+   {
+    "moment_id": "mine0@m_st_dunstan_garden",
+    "key": "mine0@m_st_dunstan_garden",
+    "title": "Your plans",
+    "arrive": "13:00",
+    "depart": "15:00",
+    "travel_min": 12,
+    "travel_mode": "walk",
+    "travel_text": "Getting there: about 12 min on foot from Bank station.",
+    "approach": "",
+    "what": "Your own time, near St Dunstan-in-the-East. We've assumed it's there: if it's somewhere else, allow time to get there and back.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 0.0,
+    "cost_kind": "free",
+    "cost_text": "",
+    "rain_swap": "",
+    "lunch": false,
+    "familiar": false,
+    "rateable": false,
+    "mine": "plans",
+    "worth_gbp": null,
+    "match": null,
+    "feel_word": "Your time",
+    "reveal": false,
+    "approach_steps": [],
+    "book_ahead": "",
+    "checked": "",
+    "hours": "",
+    "best_light": "",
+    "best_window": "",
+    "pin": {
+     "lat": 51.50967,
+     "lon": -0.08272
+    },
+    "chosen_for": [],
+    "why": [],
+    "lines": [
+     "Getting there: about 12 min on foot from Bank station.",
+     "Your own time, near St Dunstan-in-the-East. We've assumed it's there: if it's somewhere else, allow time to get there and back."
+    ]
+   },
+   {
+    "moment_id": "m_st_dunstan_garden",
+    "key": "m_st_dunstan_garden",
+    "title": "St Dunstan-in-the-East: a ruined church garden hidden in the City",
+    "arrive": "15:05",
+    "depart": "15:30",
+    "travel_min": 0,
+    "travel_mode": "walk",
+    "travel_text": "",
+    "approach": "Walk down St Dunstan's Hill towards the river.",
+    "what": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 0.0,
+    "cost_kind": "entry",
+    "cost_text": "Cost: free",
+    "rain_swap": "Leadenhall Market: Victorian arches on the site of Roman London, about 10 min away on foot.",
+    "lunch": false,
+    "familiar": false,
+    "rateable": true,
+    "mine": null,
+    "worth_gbp": 29,
+    "match": "A strong match for you",
+    "feel_word": "Calm",
+    "reveal": true,
+    "approach_steps": [
+     {
+      "label": "Nearest station",
+      "text": "Monument or Tower Hill station"
+     },
+     {
+      "label": "The way in",
+      "text": "Walk down St Dunstan's Hill towards the river"
+     },
+     {
+      "label": "You arrive",
+      "text": "St Dunstan-in-the-East"
+     }
+    ],
+    "book_ahead": "",
+    "checked": "2026-09-27",
+    "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
+    "best_light": "Daylight",
+    "best_window": "",
+    "pin": {
+     "lat": 51.50967,
+     "lon": -0.08272
+    },
+    "chosen_for": [
+     "history and culture",
+     "photo spots"
+    ],
+    "why": [
+     {
+      "feature": "history_culture",
+      "label": "history and culture",
+      "contribution": 0.259
+     },
+     {
+      "feature": "photo_potential",
+      "label": "photo spots",
+      "contribution": 0.123
+     },
+     {
+      "feature": "local_novel",
+      "label": "local, new-to-you places",
+      "contribution": 0.104
+     }
+    ],
+    "lines": [
+     "Walk down St Dunstan's Hill towards the river.",
+     "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+     "Cost: free",
+     "If it rains: Leadenhall Market: Victorian arches on the site of Roman London, about 10 min away on foot."
+    ],
+    "card": {
+     "id": "m_st_dunstan_garden",
+     "title": "A ruined church garden hidden in the City",
+     "status": "ready",
+     "place": {
+      "name": "St Dunstan-in-the-East",
+      "overture_id": null,
+      "lat": 51.50967,
+      "lon": -0.08272
+     },
+     "approach": {
+      "from": "Monument or Tower Hill station",
+      "path": "Walk down St Dunstan's Hill towards the river",
+      "step_free": null,
+      "start_point": {
+       "lat": 51.50967,
+       "lon": -0.08272
+      }
+     },
+     "what_happens": "Among office blocks, you walk into the ruins of a medieval church that is now a public garden.",
+     "best_time": {
+      "time_of_day": [
+       "08:00-16:15"
+      ],
+      "light": "Daylight",
+      "weather": [
+       "any"
+      ],
+      "company": null,
+      "crowd_window": "Weekday lunchtimes bring office workers (GUESS)",
+      "opening_hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25-26 Dec and 1 Jan. Free. City of London, 2026-09-27",
+      "book_ahead": null,
+      "hours": "08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free",
+      "days": [],
+      "best_window": [],
+      "best_around_sunset": null
+     },
+     "cost_gbp": 0.0,
+     "shot_card": null,
+     "plannable": true
+    },
+    "reasons": [
+     {
+      "you": "You loved Uber Boat on the Thames, and this has history too.",
+      "me": "I loved Uber Boat on the Thames, and this has history too."
+     },
+     {
+      "you": "You go out to feel curious, and this has somewhere local and new.",
+      "me": "I go out to feel curious, and this has somewhere local and new."
+     }
+    ]
+   },
+   {
+    "moment_id": "m_alderman_stairs_sunset",
+    "key": "m_alderman_stairs_sunset",
+    "title": "Tower Bridge at sunset from Alderman Stairs",
+    "arrive": "15:54",
+    "depart": "16:36",
+    "travel_min": 19,
+    "travel_mode": "walk",
+    "travel_text": "Getting there: about 19 min on foot from St Dunstan-in-the-East.",
+    "approach": "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace.",
+    "what": "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.",
+    "queue_min": 0,
+    "best_text": "Best: Sunset",
+    "cost_gbp": 0.0,
+    "cost_kind": "entry",
+    "cost_text": "Cost: free",
+    "rain_swap": "",
+    "lunch": false,
+    "familiar": false,
+    "rateable": true,
+    "mine": null,
+    "worth_gbp": 36,
+    "match": "A strong match for you",
+    "feel_word": "Awe",
+    "reveal": false,
+    "approach_steps": [
+     {
+      "label": "Nearest station",
+      "text": "Tower Hill station"
+     },
+     {
+      "label": "The way in",
+      "text": "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace"
+     },
+     {
+      "label": "You arrive",
+      "text": "Alderman Stairs, St Katharine's Way, Wapping"
+     }
+    ],
+    "book_ahead": "",
+    "checked": "2026-09-28",
+    "hours": "Public riverside path: always open. Stay on the terrace; the stairs lead down to the tidal foreshore",
+    "best_light": "Sunset",
+    "best_window": "15:42–16:42",
+    "pin": {
+     "lat": 51.50526,
+     "lon": -0.07008
+    },
+    "chosen_for": [
+     "movement and views",
+     "history and culture"
+    ],
+    "why": [
+     {
+      "feature": "movement_views",
+      "label": "movement and views",
+      "contribution": 0.14
+     },
+     {
+      "feature": "history_culture",
+      "label": "history and culture",
+      "contribution": 0.129
+     },
+     {
+      "feature": "iconic",
+      "label": "famous sights",
+      "contribution": 0.129
+     }
+    ],
+    "lines": [
+     "Getting there: about 19 min on foot from St Dunstan-in-the-East.",
+     "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace.",
+     "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.",
+     "Best: Sunset",
+     "Cost: free"
+    ],
+    "card": {
+     "id": "m_alderman_stairs_sunset",
+     "title": "Tower Bridge at sunset from Alderman Stairs",
+     "status": "ready",
+     "place": {
+      "name": "Alderman Stairs, St Katharine's Way, Wapping",
+      "overture_id": null,
+      "lat": 51.50526,
+      "lon": -0.07008
+     },
+     "approach": {
+      "from": "Tower Hill station",
+      "path": "Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace",
+      "step_free": null,
+      "start_point": {
+       "lat": 51.50526,
+       "lon": -0.07008
+      }
+     },
+     "what_happens": "You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.",
+     "best_time": {
+      "time_of_day": [
+       "15:45-18:30"
+      ],
+      "light": "Sunset",
+      "weather": [
+       "any"
+      ],
+      "company": null,
+      "crowd_window": "Usually quiet (GUESS)",
+      "opening_hours": "Public riverside path. Stay on the terrace: the stairs lead down to the tidal foreshore",
+      "book_ahead": null,
+      "hours": "Public riverside path: always open. Stay on the terrace; the stairs lead down to the tidal foreshore",
+      "days": [],
+      "best_window": [
+       "16:00-17:00"
+      ],
+      "best_around_sunset": [
+       -40,
+       20
+      ]
+     },
+     "cost_gbp": 0.0,
+     "shot_card": null,
+     "plannable": true
+    },
+    "reasons": [
+     {
+      "you": "You go out to feel peaceful, and this has views.",
+      "me": "I go out to feel peaceful, and this has views."
+     },
+     {
+      "you": "You loved British Museum, and this has history too.",
+      "me": "I loved British Museum, and this has history too."
+     }
+    ]
+   },
+   {
+    "moment_id": "mine1@m_alderman_stairs_sunset",
+    "key": "mine1@m_alderman_stairs_sunset",
+    "title": "Free time",
+    "arrive": "17:30",
+    "depart": "19:00",
+    "travel_min": 0,
+    "travel_mode": "walk",
+    "travel_text": "",
+    "approach": "",
+    "what": "Yours to rest, shop or wander, near Alderman Stairs. Nothing is planned.",
+    "queue_min": 0,
+    "best_text": "",
+    "cost_gbp": 0.0,
+    "cost_kind": "free",
+    "cost_text": "",
+    "rain_swap": "",
+    "lunch": false,
+    "familiar": false,
+    "rateable": false,
+    "mine": "free",
+    "worth_gbp": null,
+    "match": null,
+    "feel_word": "Your time",
+    "reveal": false,
+    "approach_steps": [],
+    "book_ahead": "",
+    "checked": "",
+    "hours": "",
+    "best_light": "",
+    "best_window": "",
+    "pin": {
+     "lat": 51.50526,
+     "lon": -0.07008
+    },
+    "chosen_for": [],
+    "why": [],
+    "lines": [
+     "Yours to rest, shop or wander, near Alderman Stairs. Nothing is planned."
+    ]
+   }
+  ],
+  "value": 5.014,
+  "status": "offered",
+  "fit_rating": null,
+  "created_at": "2026-11-07T01:22:38.088048+00:00",
+  "title": "Monday 9 November",
+  "summary": [
+   "Start: your stay at 09:30 · 6 stops, including lunch",
+   "Costs: about £15 for food and entry, plus about £3 transport"
+  ],
+  "totals": {
+   "cost_gbp": 18.0,
+   "spend_gbp": 15.0,
+   "transport_gbp": 3.0,
+   "walk_min": 44,
+   "walk_km": 3.3,
+   "finish": "19:00"
+  },
+  "pace": "even",
+  "solver_status": "ok",
+  "blind": false,
+  "feel_line": "A curious, peaceful day: the river, lunch, your own plans, a reveal, the view of the day, then free time",
+  "basis": {
+   "places": 2,
+   "choices": 0,
+   "ratings": 0,
+   "feelings": 2,
+   "kinds": 0
+  }
+ },
+ "before": null,
+ "window": {
+  "start": "09:30",
+  "end": "19:00",
+  "stops": 4
+ },
+ "title": "A curious, peaceful day: the river, lunch, your own plans, a reveal, the view of the day, then free time",
+ "free_day": false,
+ "relaxed": false,
+ "mine": [
+  {
+   "kind": "plans",
+   "start": "13:00",
+   "end": "15:00",
+   "planned": true
+  },
+  {
+   "kind": "free",
+   "start": "17:30",
+   "end": "19:00",
+   "planned": true
+  }
+ ],
+ "legs": []
+}

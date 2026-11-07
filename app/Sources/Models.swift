@@ -334,6 +334,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let bookAhead: String?         // journey audit: a booking the visit needs, from the card's checked source
     let hours: String?             // m176: opening hours as people read them, from the card's checked source
     let checked: String?           // journey round 2: when the card's facts were last checked ("2026-10-08")
+    let mine: String?              // m200: "plans" or "free": the person's own time, planned around (never rated)
 
     var id: String { momentId + "@" + arrive }
 
@@ -436,6 +437,17 @@ struct PlanRequest: Codable, Hashable {
     var intent: [String: String]? = nil    // m176: {"must_do": card id}, a place they want in the day
     var feelings: [String]? = nil          // journey round 2: a trip day's feelings, so swaps plan it like the trip
     var conditions: PlanConditions? = nil  // journey round 2: "it's raining" when re-planning the rest of today
+    var mine: [MyTime]? = nil              // m200: a trip day's own time, so swap and re-plan keep it
+    var relaxed: Bool? = nil               // m200: a relaxed trip day
+}
+
+/// m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free".
+struct MyTime: Codable, Hashable {
+    var kind: String                       // plans | free
+    var start: String
+    var end: String
+
+    var title: String { kind == "plans" ? "Your plans" : "Free time" }
 }
 
 /// The weather the planner should assume (rain makes the rain swaps win).

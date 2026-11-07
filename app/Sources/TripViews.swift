@@ -1810,8 +1810,16 @@ struct TripDayView: View {
                             if day.before != nil || !day.journeys("arrive").isEmpty {
                                 SectionLabel(text: "From your stay").padding(.top, 4)
                             }
-                            ForEach(plan.stops) { stop in TripDayStop(stop: stop) }
-                            if let end = day.window?.end, let last = plan.stops.last,   // journey round 2: free time
+                            ForEach(plan.stops) { stop in
+                                if stop.mine != nil { MyTimeRow(stop: stop) } else { TripDayStop(stop: stop) }
+                            }
+                            ForEach(day.mine?.filter { !$0.planned } ?? [], id: \.self) { t in   // m200
+                                Text("\(t.kind == "plans" ? "Your plans" : "Free time") at \(t.start)–\(t.end) fall outside the hours planned for this day, so the plan doesn't go around them.")
+                                    .font(.footnote)
+                                    .foregroundStyle(Theme.muted)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            if let end = day.window?.end, let last = plan.stops.last, last.mine == nil,   // journey round 2: free time
                                AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
                                 FreeTimeRow(from: last.depart, to: end, canAdd: trip.placesPerDay < 6) {
                                     Task {
@@ -1838,6 +1846,14 @@ struct TripDayView: View {
                             PrimaryButton(title: model.busy ? "Planning…" : "Plan this day", disabled: model.busy) {
                                 Task { await model.planDay(tripId, index) }
                             }
+                        } else if let day, day.freeDay == true {   // m200: "a day that's yours"
+                            Text("Nothing is planned, as you chose. Rest, meet someone, wander: it's your time.")
+                                .foregroundStyle(Theme.inkSoft)
+                                .padding(20)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+                            ForEach(day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
+                            SecondaryButton(title: "Change this day", icon: "clock.arrow.circlepath") { changing = day }
                         } else {
                             ForEach(day?.journeys("leave") ?? [], id: \.self) { JourneyCard(leg: $0) }
                             if day?.before == nil {
@@ -1889,10 +1905,12 @@ struct ChangeDaySheet: View {
     @State private var from: String
     @State private var to: String
     @State private var places: Int
+    @State private var own: DayTime   // m200: time for yourself
 
     init(trip: Trip, day: TripDayOut) {
         self.trip = trip
         self.day = day
+        _own = State(initialValue: trip.own(day.index))
         // the arrival and leaving days keep the person's own hours: the journeys set their real start and end
         _from = State(initialValue: day.kind == "arrive" ? trip.dayFrom : (day.window?.start ?? trip.dayFrom))
         _to = State(initialValue: day.kind == "leave" ? trip.dayTo : (day.window?.end ?? trip.dayTo))
@@ -1909,6 +1927,7 @@ struct ChangeDaySheet: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Eyebrow("Day \(day.index + 1) · \(Dates.shortDay(day.date))")
@@ -1937,6 +1956,28 @@ struct ChangeDaySheet: View {
                             .font(.subheadline)
                             .foregroundStyle(Theme.accent)
                     }
+                    // m200 (product direction, step 2): time that's theirs, alongside the places
+                    SectionLabel(text: "Time for yourself").padding(.top, 8).id("own")
+                    OwnToggle(title: "Keep this day free", line: "Nothing planned: rest, meet someone, or wander.",
+                              on: $own.freeDay)
+                    if !own.freeDay {
+                        OwnToggle(title: "A relaxed day", line: "One place fewer, with longer at each.", on: $own.relaxed)
+                        ForEach(own.mine.indices, id: \.self) { k in   // guarded: a removed block may still be drawn once
+                            MyTimeEditor(time: Binding(get: { k < own.mine.count ? own.mine[k] : MyTime(kind: "free", start: from, end: to) },
+                                                       set: { if k < own.mine.count { own.mine[k] = $0 } }),
+                                         dayFrom: from, dayTo: to) { if k < own.mine.count { own.mine.remove(at: k) } }
+                        }
+                        if own.mine.count < 2 {
+                            HStack(spacing: 10) {
+                                Chip(title: "+ Your plans", on: false, height: 44) { add("plans") }
+                                Chip(title: "+ Free time", on: false, height: 44) { add("free") }
+                            }
+                            Text("Meeting someone, a booking, or an hour to yourself: the day is planned around it.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                     Text(note)
                         .font(.footnote)
                         .foregroundStyle(Theme.muted)
@@ -1945,12 +1986,19 @@ struct ChangeDaySheet: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
             }
+            .onAppear {   // CI screenshots only (25d): the new section
+                guard AppModel.screen == "daychangemine" else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { proxy.scrollTo("own", anchor: .top) }
+            }
+            }
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(title: model.busy ? "Planning…" : "Plan this day again", disabled: model.busy || tooShort) {
+            PrimaryButton(title: model.busy ? "Planning…" : (own.freeDay ? "Keep this day free" : "Plan this day again"),
+                          disabled: model.busy || (tooShort && !own.freeDay) || badTimes) {
                 Task {
-                    if await model.changeTripDay(trip.id, day.index, from: from, to: to, places: places) { dismiss() }
+                    if await model.changeTripDay(trip.id, day.index, from: from, to: to, places: places,
+                                                 own: own) { dismiss() }
                 }
             }
             .padding(.horizontal, 24)
@@ -1958,6 +2006,19 @@ struct ChangeDaySheet: View {
             .background(Theme.background)
         }
     }
+
+    /// m200: a block that ends before it starts can't be planned around.
+    private var badTimes: Bool { !own.freeDay && own.mine.contains { Self.minutes($0.end) <= Self.minutes($0.start) } }
+
+    /// m200: a new block, inside the day's hours: plans in the early afternoon, free time at the end of the day.
+    private func add(_ kind: String) {
+        let lo = Self.minutes(from), hi = Self.minutes(to)
+        let start = kind == "plans" ? min(max(lo, 13 * 60), max(lo, hi - 60)) : max(lo, hi - 90)
+        let end = kind == "plans" ? min(hi, start + 120) : hi
+        own.mine.append(MyTime(kind: kind, start: Self.hhmm(start), end: Self.hhmm(end)))
+    }
+
+    static func hhmm(_ m: Int) -> String { String(format: "%02d:%02d", m / 60, m % 60) }
 
     private var note: String {
         switch day.kind {
@@ -1970,6 +2031,90 @@ struct ChangeDaySheet: View {
     static func minutes(_ hhmm: String) -> Int {
         let p = hhmm.split(separator: ":").compactMap { Int($0) }
         return p.count == 2 ? p[0] * 60 + p[1] : 0
+    }
+}
+
+/// m200: a switch for the day's own time, on the surface.
+struct OwnToggle: View {
+    let title: String
+    let line: String
+    @Binding var on: Bool
+
+    var body: some View {
+        Toggle(isOn: $on) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).foregroundStyle(Theme.ink)
+                Text(line)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .tint(Theme.amberDeep)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+/// m200: one block of the person's own time: what it is, from when, until when.
+struct MyTimeEditor: View {
+    @Binding var time: MyTime
+    let dayFrom: String
+    let dayTo: String
+    let remove: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(time.title).font(Theme.serif(19, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                Spacer()
+                QuietButton("Remove", color: Theme.accent, action: remove)
+            }
+            HStack(spacing: 10) {
+                Chip(title: "Your plans", on: time.kind == "plans", height: 40) { time.kind = "plans" }
+                Chip(title: "Free time", on: time.kind == "free", height: 40) { time.kind = "free" }
+            }
+            TimeMenu(label: "From", time: $time.start, options: HalfHours.from(6, to: 23))
+            TimeMenu(label: "Until", time: $time.end, options: HalfHours.from(6, to: 23))
+            if ChangeDaySheet.minutes(time.end) <= ChangeDaySheet.minutes(time.start) {
+                Text("It needs to end after it starts.").font(.subheadline).foregroundStyle(Theme.accent)
+            } else if ChangeDaySheet.minutes(time.start) < ChangeDaySheet.minutes(dayFrom)
+                        || ChangeDaySheet.minutes(time.end) > ChangeDaySheet.minutes(dayTo) {
+                Text("Outside \(dayFrom)–\(dayTo), so the plan won't go around it.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+            }
+        }
+        .surfaceCard(padding: 16)
+    }
+}
+
+/// m200: the person's own time in a trip day: its times, what it is, and where we've assumed it is.
+struct MyTimeRow: View {
+    let stop: Stop
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: stop.mine == "plans" ? "person.2" : "sun.max")
+                .font(.body)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 24)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(stop.arrive)–\(stop.depart)").font(.subheadline.monospacedDigit()).foregroundStyle(Theme.muted)
+                Text(stop.title).font(Theme.serif(19, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                Text(stop.what)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, style: StrokeStyle(lineWidth: 1, dash: [5, 4])))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -2237,6 +2382,10 @@ struct TripDemoScreen: View {
         case "daychange":                                                                 // 25b: "Change this day"
             if let trip = model.trips.first {
                 NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: true) }
+            }
+        case "tripdaymine", "daychangemine":                                              // 25c, 25d (m200): own time
+            if let trip = model.trips.first {
+                NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: name == "daychangemine") }
             }
         case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31
             LivingHome().onAppear {

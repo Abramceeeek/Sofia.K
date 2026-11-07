@@ -99,6 +99,13 @@ class ConditionsIn(BaseModel):
     rain_prob: float | None = Field(default=None, ge=0, le=1)
 
 
+class MyTimeIn(BaseModel):
+    """m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free"."""
+    kind: Literal["plans", "free"]
+    start: str = Field(pattern=r"^\d{2}:\d{2}$")
+    end: str = Field(pattern=r"^\d{2}:\d{2}$")
+
+
 class PlanRequest(BaseModel):
     """A day to plan. The same engine as the Test B plans (brain.dayplan, D107)."""
     start: Point
@@ -113,12 +120,15 @@ class PlanRequest(BaseModel):
     intent: dict = Field(default_factory=dict)   # recharge/explore, who might come, must_do (D27)
     # D110, "swap this stop": the app sends the same request again with the other stops in `keep` and the
     # swapped-out cards (this one and any before it) in `exclude`
-    keep: list[str] = Field(default_factory=list, max_length=6)
+    keep: list[str] = Field(default_factory=list, max_length=10)   # m200: 6 places, lunch and the person's own time
     exclude: list[str] = Field(default_factory=list, max_length=120)   # journey round 2: long trips exclude more
     # journey round 2: a trip day's feelings, so swap and regenerate plan it like the trip did (this plan only)
     feelings: list[str] = Field(default_factory=list, max_length=5)
     # D115: the blind Test B comparison: no reasons, no feeling line, no "worth to you", nothing that gives it away
     blind: bool = False
+    # m200: a trip day's own time and pace, so swap, regenerate and "re-plan the rest of today" keep them
+    mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
+    relaxed: bool = False
 
 
 class CuratedStop(BaseModel):
@@ -267,13 +277,6 @@ class TripLengthIn(BaseModel):
     day_start: str = Field(default="10:00", pattern=r"^\d{2}:\d{2}$")
     day_end: str = Field(default="18:00", pattern=r"^\d{2}:\d{2}$")
     stops_per_day: int = Field(default=4, ge=1, le=6)
-
-
-class MyTimeIn(BaseModel):
-    """m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free"."""
-    kind: Literal["plans", "free"]
-    start: str = Field(pattern=r"^\d{2}:\d{2}$")
-    end: str = Field(pattern=r"^\d{2}:\d{2}$")
 
 
 class DayTimeIn(BaseModel):

@@ -581,3 +581,24 @@ def test_a_block_is_pinned_to_its_time_and_isnt_a_place():
     assert len(mine) == 1 and (mine[0].arrive_min, mine[0].depart_min) == (780, 840)
     assert len([i for i in ids if not i.startswith("mine")]) == 2          # still two places
     assert plan.peak_moment_id and not plan.peak_moment_id.startswith("mine")
+
+
+def test_swap_and_regenerate_keep_the_persons_own_time(client):
+    """m200: once a trip day is "my day", swapping a stop or planning again goes through /v1/me/plans; the person's
+    own time comes too, so it's never lost."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "your stay", "start_time": "10:00",
+            "end_time": "18:00", "stops": 4, "familiar": False,
+            "mine": [{"kind": "plans", "start": "15:00", "end": "16:00"}]}
+    first = client.post("/v1/me/plans", headers=h, json=body)
+    assert first.status_code == 201, first.text
+    stops = first.json()["stops"]
+    own = [st for st in stops if st["mine"]]
+    assert [(st["arrive"], st["depart"], st["mine"]) for st in own] == [("15:00", "16:00", "plans")]
+    out = next(st for st in stops if st["rateable"])
+    keep = [st["key"] for st in stops if st is not out]
+    again = client.post("/v1/me/plans", headers=h, json={**body, "keep": keep, "exclude": [out["moment_id"]]})
+    assert again.status_code == 201, again.text
+    new = again.json()["stops"]
+    assert [(st["arrive"], st["depart"]) for st in new if st["mine"]] == [("15:00", "16:00")]
+    assert out["moment_id"] not in {st["moment_id"] for st in new}
