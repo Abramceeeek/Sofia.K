@@ -14,7 +14,7 @@ The frozen experiment wasn't touched:
 **Tests at the end:**
 - **Brain:** 281 passed (229 at the start; +52).
 - **Android:** 98 passed (94 screen tests including 2 new large-text ones, `MoneyTest`, 3 contrast tests).
-- **iPhone:** the m209 build compiled on CI (run #99, simulator build "success"). The next run (#100) **failed to compile**: giving `Money.whole` a currency argument broke one place that passed it as a function reference (`BookViews.swift:1251`). That was the only error. It's fixed (79356c0) and run again; the result is in the closing message, not assumed here.
+- **iPhone:** the m209 build compiled on CI (run #99, simulator build "success"). The next run (#100) **failed to compile**: giving `Money.whole` a currency argument broke one place that passed it as a function reference (`BookViews.swift:1251`). That was the only error. It's fixed (79356c0), and run #101 compiled ("Build for the simulator: success").
 
 ## Workstreams
 
