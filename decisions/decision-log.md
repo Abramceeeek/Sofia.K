@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-07 — Recommendation quality and global readiness: the next sprint (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m215 | **Abram's decisions on the sprint report (7 Nov):** (1) **kinds of places become the default onboarding for everyone after the friends' round**: the 8 existing categories, keeping "Never tried: would you like to?"; later, two stages (broad interests first, then feedback on specific experiences). (2) **The planner gets two stages** (a feasible plan first, then improvement within the time limit, always a valid fallback), only if benchmarks support it, with the current planner kept as the benchmark and ordinary days and Test B unchanged. (3) **Lunch stays inside the day's budget by default**, never silently removed: if it can't fit, ODYS says so and offers cheaper ways to eat; the person can choose to leave food out of the budget. (4) **Food needs: research and design only** (halal certifiers, phone-only storage design, no allergy storage, no advertising or matching, a DPIA draft, separate explicit consent); nothing for real users until the legal, consent and data review. Phone-only storage doesn't take it out of UK GDPR. (5) **New priorities:** currency-aware flight comparison; explanations from the algorithm's actual inputs; an offline companion (design and a small proof of concept). **Order:** planner, lunch and budget, currencies, explanations, onboarding preparation, offline, school holidays. No new Home features: better decisions before more screens. | m206 options 3 and 4; m208's open questions on food | Abram, after the sprint report. |
+
 ## 2026-11-07 — The LiteAPI email, final; the global development sprint begins (branch only)
 
 | # | Decision | Replaces | Why |
