@@ -296,6 +296,51 @@ data class DayWindow(val start: String, val end: String, val stops: Int)
 @Serializable
 data class TripDaysResponse(val totalDays: Int, val days: List<TripDayOut>, val start: String, val used: List<String>)
 
+/** m203: a stay judged against the trip (POST /v1/trips/stays/compare). Nothing about it is stored by asking. */
+@Serializable
+data class StayCompareRequest(
+    val destination: String,
+    val checkin: String,
+    val checkout: String,
+    val adults: Int,
+    val stay: StayRef,
+    val days: List<DayEnds>,
+) {
+    @Serializable
+    data class StayRef(
+        val id: String, val name: String, val lat: Double?, val lon: Double?, val priceTotal: Double, val nights: Int,
+        val currency: String, val room: String, val board: String, val refundable: Boolean?, val sample: Boolean,
+    )
+
+    @Serializable
+    data class DayEnds(val index: Int, val first: Point?, val last: Point?)
+}
+
+@Serializable
+data class StayCompare(
+    val source: String,
+    val note: String? = null,
+    val fit: Fit,
+    val cost: Cost,
+    val dates: List<DateOption>,
+) {
+    @Serializable
+    data class Fit(val days: List<Row> = emptyList(), val line: String? = null) {
+        @Serializable
+        data class Row(val index: Int, val toFirst: Int, val back: Int)
+    }
+
+    @Serializable
+    data class Cost(val whole: Double, val perNight: Double, val line: String, val cancel: String, val board: String? = null)
+
+    @Serializable
+    data class DateOption(
+        val checkin: String, val label: String, val whole: Double? = null, val perNight: Double? = null,
+        val sameTerms: Boolean = true, val differs: List<String> = emptyList(), val yours: Boolean = false,
+        val lowest: Boolean = false,
+    )
+}
+
 /** m196: "How long should I stay?" (POST /v1/me/trips/length). Nothing is planned or stored by asking. */
 @Serializable
 data class TripLengthRequest(

@@ -2441,8 +2441,10 @@ struct TripDemoScreen: View {
                     }
                     .onAppear { if name != "flight" { model.book.handoff = Self.handoff(f, back: name == "handoffback") } }
             }
-        case "stay":                                                                      // 32
-            if let s = model.book.stays?.results.first { NavigationStack { StayDetailView(stay: s) } }
+        case "stay", "stayfortrip":                                                       // 32, 32b (m203)
+            if let s = model.book.stays?.results.first {
+                NavigationStack { StayDetailView(stay: s, scrollToTrip: name == "stayfortrip") }
+            }
         case "you": LivingHome().onAppear { model.path.append(TripDest.you) }            // 33 (D131: from the menu)
         case "hometoday", "homeafter":                                                    // 19b, 19c (D131)
             LivingHome().onAppear {

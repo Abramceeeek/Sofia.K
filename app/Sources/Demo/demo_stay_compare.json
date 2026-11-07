@@ -1,0 +1,111 @@
+{
+ "source": "sample",
+ "note": "Sample prices: real prices for other dates come later. Your dates' price is the one the search found.",
+ "fit": {
+  "days": [
+   {
+    "index": 0,
+    "to_first": 5,
+    "back": 5
+   },
+   {
+    "index": 1,
+    "to_first": 22,
+    "back": 31
+   },
+   {
+    "index": 2,
+    "to_first": 27,
+    "back": 51
+   },
+   {
+    "index": 3,
+    "to_first": 13,
+    "back": 8
+   },
+   {
+    "index": 4,
+    "to_first": 8,
+    "back": 17
+   }
+  ],
+  "line": "About 13 min to your first place and 17 min back, on a typical day of this trip. Day 3 is the furthest: 27 min there, 51 back.",
+  "to_first": 13,
+  "back": 17
+ },
+ "cost": {
+  "whole": 1621.24,
+  "per_night": 324.25,
+  "line": "£1,621 for 5 nights, taxes included, as the provider shows it.",
+  "cancel": "Free cancellation, as found: check the deadline on the provider's site.",
+  "board": "Room only",
+  "sample": true
+ },
+ "dates": [
+  {
+   "checkin": "2026-11-07",
+   "checkout": "2026-11-12",
+   "total": 1698.69,
+   "pay_there": 0.0,
+   "same_terms": true,
+   "differs": [],
+   "yours": false,
+   "lowest": false,
+   "label": "Sat 7 – Thu 12 Nov",
+   "whole": 1698.69,
+   "per_night": 339.74
+  },
+  {
+   "checkin": "2026-11-08",
+   "checkout": "2026-11-13",
+   "total": 1621.24,
+   "pay_there": 0.0,
+   "same_terms": true,
+   "differs": [],
+   "yours": true,
+   "lowest": true,
+   "label": "Sun 8 – Fri 13 Nov",
+   "whole": 1621.24,
+   "per_night": 324.25
+  },
+  {
+   "checkin": "2026-11-09",
+   "checkout": "2026-11-14",
+   "total": 1746.36,
+   "pay_there": 0.0,
+   "same_terms": true,
+   "differs": [],
+   "yours": false,
+   "lowest": false,
+   "label": "Mon 9 – Sat 14 Nov",
+   "whole": 1746.36,
+   "per_night": 349.27
+  },
+  {
+   "checkin": "2026-11-10",
+   "checkout": "2026-11-15",
+   "total": 1850.21,
+   "pay_there": 0.0,
+   "same_terms": true,
+   "differs": [],
+   "yours": false,
+   "lowest": false,
+   "label": "Tue 10 – Sun 15 Nov",
+   "whole": 1850.21,
+   "per_night": 370.04
+  },
+  {
+   "checkin": "2026-11-11",
+   "checkout": "2026-11-16",
+   "total": 1826.91,
+   "pay_there": 0.0,
+   "same_terms": true,
+   "differs": [],
+   "yours": false,
+   "lowest": false,
+   "label": "Wed 11 – Mon 16 Nov",
+   "whole": 1826.91,
+   "per_night": 365.38
+  }
+ ]
+}

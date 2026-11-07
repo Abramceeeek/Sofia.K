@@ -117,6 +117,8 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun tripDays(request: TripDaysRequest): TripDaysResponse = call("POST", "v1/me/trips/days", request)
     /** m196: "How long should I stay?" */
     suspend fun tripLength(request: TripLengthRequest): TripLength = call("POST", "v1/me/trips/length", request)
+    /** m203: a stay judged against the trip: days from here, the whole cost, nearby dates (sample prices for now). */
+    suspend fun stayCompare(request: StayCompareRequest): StayCompare = call("POST", "v1/trips/stays/compare", request)
 
     suspend fun event(name: String, props: Map<String, String> = emptyMap()) {
         runCatching { send("POST", "v1/me/events", EventRequest(name, props)) }

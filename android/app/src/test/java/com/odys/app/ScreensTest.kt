@@ -189,7 +189,14 @@ class ScreensTest {
         {}, layers = true)
     @Test fun flight() = show("28-flight") { openBook(); bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }
     @Test fun stays() = show("29-stays") { openBook(); book.segment = "stays" }
-    @Test fun stay() = show("32-stay") { openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
+    // m203: "For your trip" comes from the Brain; the screenshots hand in its sample answer for the first stay
+    private fun AppModel.stayAnswer() {
+        stayCompare = book.stays!!.results.first().id to demo("demo_stay_compare", StayCompare.serializer())
+    }
+    @Test fun stay() = show("32-stay") { stayAnswer(); openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
+    @Test fun stayForTrip() = showThen("32c-stayfortrip", {
+        stayAnswer(); openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first())
+    }, { reach("Your dates stay as they are") })
     @Test fun you() = show("33-you") { tripPath += Dest.You }
 
     // D131 (shape A): the home on the day (part-way through) and after it (everything rated)

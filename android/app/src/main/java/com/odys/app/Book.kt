@@ -738,6 +738,7 @@ fun StayDetailView(model: AppModel, stay: StayResult, onBack: () -> Unit) {
             Text(why, style = Theme.body.copy(color = Theme.inkSoft))
             FoundPrice(stay.priceTotal, "${Money.whole(stay.priceNight)} a night · ${stay.nights} night${if (stay.nights == 1) "" else "s"}",
                 results?.source ?: "sample", results?.searchedAt)
+            if (trip != null) StayForTrip(model, stay, trip)   // m203: judged against the trip
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SectionLabel("Where to book", Modifier.weight(1f))
@@ -1013,5 +1014,70 @@ fun StayFilterSheet(model: AppModel) {
         }
         FilterSwitch("Free cancellation", "With the rate found here", f.refundable) { book.stayFilters = f.copy(refundable = it) }
         FilterSwitch("Breakfast", "Included in the rate", f.breakfast) { book.stayFilters = f.copy(breakfast = it) }
+    }
+}
+
+/**
+ * m203 (Abram, 7 Nov): a stay judged against the person's own trip, not a list from a booking site: how far it is
+ * from each planned day, the whole cost and cancellation terms, and the same stay on nearby dates, like for like.
+ */
+@Composable
+fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
+    var answer by remember(stay.id) { mutableStateOf(model.stayCompare?.takeIf { it.first == stay.id }?.second) }
+    var failed by remember(stay.id) { mutableStateOf(false) }
+    LaunchedEffect(stay.id) {
+        if (answer != null) return@LaunchedEffect
+        val ends = trip.days.sortedBy { it.index }.mapNotNull { d ->
+            val pins = d.plan?.stops.orEmpty().mapNotNull { it.pin }
+            if (pins.isEmpty()) null else StayCompareRequest.DayEnds(d.index, pins.first(), pins.last())
+        }
+        val request = StayCompareRequest(trip.destination, trip.start, trip.startDate.plusDays(trip.nights.toLong()).toString(),
+            trip.adults, StayCompareRequest.StayRef(stay.id, stay.name, stay.lat, stay.lon, stay.priceTotal, stay.nights,
+                stay.currency, stay.room, stay.board, stay.refundable, stay.sample), ends)
+        runCatching { model.client.stayCompare(request) }
+            .onSuccess { answer = it; model.stayCompare = stay.id to it }
+            .onFailure { failed = true }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        SectionLabel("For your trip")
+        val a = answer
+        when {
+            a != null -> {
+                a.fit.line?.let { line ->
+                    StayBlock("Your days from here", line, a.fit.days.map { "Day ${it.index + 1}: ${it.toFirst} min there, ${it.back} back" })
+                }
+                StayBlock("The whole cost", a.cost.line, listOf(a.cost.cancel) + listOfNotNull(a.cost.board?.let { "$it." }))
+                Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Other dates, the same stay", style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold))
+                    a.note?.let { Text(it, style = Theme.footnote.copy(color = Theme.accent)) }
+                    for (d in a.dates) {
+                        Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Top) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(d.label, style = Theme.body.copy(color = if (d.yours) Theme.accent else Theme.ink))
+                                val tags = listOfNotNull("your dates".takeIf { d.yours }, "lowest of these".takeIf { d.lowest }) + d.differs
+                                if (tags.isNotEmpty()) Text(tags.joinToString(" · "),
+                                    style = Theme.footnote.copy(color = if (d.sameTerms) Theme.muted else Theme.accent))
+                            }
+                            Text(d.whole?.let { Money.whole(it) } ?: "Not available", style = Theme.body)
+                        }
+                    }
+                    Text("Your dates stay as they are. To try others, change the trip's dates.", style = Theme.footnote)
+                }
+            }
+            failed -> Text("This couldn't be worked out just now.", style = Theme.subheadline.copy(color = Theme.muted))
+            else -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.CircularProgressIndicator(Modifier.size(20.dp), color = Theme.accent, strokeWidth = 2.dp)
+                Text("Looking at this stay for your trip…", style = Theme.body.copy(color = Theme.muted))
+            }
+        }
+    }
+}
+
+@Composable
+private fun StayBlock(title: String, line: String, more: List<String>) {
+    Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(title, style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold))
+        Text(line, style = Theme.body.copy(color = Theme.inkSoft))
+        for (m in more) Text(m, style = Theme.footnote)
     }
 }

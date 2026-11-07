@@ -153,6 +153,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var editStep by mutableStateOf<Int?>(null)
     /** m196: the last "How long should I stay?" answer, with what was asked (the screenshots hand one in). */
     var tripLength by mutableStateOf<Pair<TripLengthRequest, TripLength>?>(null)
+    /** m203: the last "For your trip" answer, by stay (the screenshots hand one in). */
+    var stayCompare by mutableStateOf<Pair<String, StayCompare>?>(null)
     val book = BookState()
 
     // Build 2

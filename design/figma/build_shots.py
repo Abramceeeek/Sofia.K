@@ -28,7 +28,7 @@ GROUPS = [
     ("Trips", ["tripwhere", "tripwhen", "tripfrom", "airports", "tripdays", "tripfeel", "triplength", "triplength2", "trip", "trip-day", "tripday",
                "tripdaylast", "daychange", "tripdaymine", "daychangemine"]),
     ("Flights and stays", ["flights", "flights-day", "flightfilters", "flight", "handoff", "handoffback", "stays",
-                           "staysmap", "stayfilters", "stay", "stay-day"]),
+                           "staysmap", "stayfilters", "stay", "stayfortrip", "stay-day"]),
     ("You, Help & safety, your data", ["you", "you-day", "safety", "safety-day", "safetysend", "safetyreply",
                                        "settings", "settings-day", "delete"]),
 ]
@@ -53,7 +53,7 @@ NAMES = {
     "tripfeel": "New trip: the feel", "triplength": "New trip: how long", "triplength2": "How long: what longer could add", "trip": "A trip", "tripday": "A trip day", "tripdaylast": "The last day: home",
     "daychange": "Change this day", "tripdaymine": "A trip day with your own time", "daychangemine": "Change this day: time for yourself", "flights": "Flights", "flightfilters": "Flight filters", "flight": "A flight",
     "handoff": "Off to book", "handoffback": "Back from booking: did you book it?", "stays": "Stays",
-    "staysmap": "Stays: map", "stayfilters": "Stay filters", "stay": "A stay", "you": "You (from the menu)",
+    "staysmap": "Stays: map", "stayfilters": "Stay filters", "stay": "A stay", "stayfortrip": "A stay: for your trip", "you": "You (from the menu)",
     "safety": "Help & safety", "safetysend": "Help & safety: just sent", "safetyreply": "Help & safety: a reply",
     "settings": "Your data", "delete": "Delete my data",
 }

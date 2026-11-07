@@ -200,6 +200,12 @@ final class BrainClient {
         return try await call("POST", "v1/trips/stays", search)
     }
 
+    /// m203: a stay judged against the trip: days from here, the whole cost, nearby dates (sample prices for now).
+    func stayCompare(_ request: StayCompareRequest) async throws -> StayCompare {
+        if demo { return try Self.bundled("demo_stay_compare") }
+        return try await call("POST", "v1/trips/stays/compare", request)
+    }
+
     func tripLength(_ request: TripLengthRequest) async throws -> TripLength {
         if demo { return try Self.bundled("demo_trip_length") }
         return try await call("POST", "v1/me/trips/length", request)

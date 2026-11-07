@@ -137,6 +137,8 @@ SCREENS = [
     ("stayfilters", "31", "Trips (Abram's ODYS Trips design)", "Stay filters",
      "Most per night, type of place, guest rating, free cancellation and breakfast, with a live count."),
     ("stay", "32", "Trips (Abram's ODYS Trips design)", "A place to stay", "The rating, the distance, the room and rate, the price found, and where to book."),
+    ("stayfortrip", "32c", "Trips (branch, m203)", "A stay, for your trip",
+     "How far it is from each planned day, the whole cost and cancellation terms, and the same stay on nearby dates, like for like (sample prices, labelled)."),
     ("you", "33", "Trips (Abram's ODYS Trips design)", "You", "999 first, then a person; what you've told us, in plain words; your data."),
 ]
 N_SCREENS = len({s[1].rstrip("abcdefghij") for s in SCREENS})

@@ -224,6 +224,69 @@ struct TripEnd: Codable, Hashable {
     let time: String                       // "09:40": landing or arriving; on the way home, leaving
 }
 
+/// m203: a stay judged against the trip (POST /v1/trips/stays/compare). Nothing about it is stored by asking.
+struct StayCompareRequest: Encodable {
+    let destination: String
+    let checkin: String
+    let checkout: String
+    let adults: Int
+    let stay: StayRef
+    let days: [DayEnds]
+
+    struct StayRef: Encodable {
+        let id: String
+        let name: String
+        let lat: Double?
+        let lon: Double?
+        let priceTotal: Double
+        let nights: Int
+        let currency: String
+        let room: String
+        let board: String
+        let refundable: Bool?
+        let sample: Bool
+    }
+
+    struct DayEnds: Encodable {
+        let index: Int
+        let first: Point?
+        let last: Point?
+    }
+}
+
+struct StayCompare: Decodable, Hashable {
+    let source: String                     // sample | liteapi
+    let note: String?
+    let fit: Fit
+    let cost: Cost
+    let dates: [DateOption]
+
+    struct Fit: Decodable, Hashable {
+        let days: [Row]
+        let line: String?
+        struct Row: Decodable, Hashable { let index: Int; let toFirst: Int; let back: Int }
+    }
+
+    struct Cost: Decodable, Hashable {
+        let whole: Double
+        let perNight: Double
+        let line: String
+        let cancel: String
+        let board: String?
+    }
+
+    struct DateOption: Decodable, Hashable {
+        let checkin: String
+        let label: String
+        let whole: Double?
+        let perNight: Double?
+        let sameTerms: Bool
+        let differs: [String]
+        let yours: Bool
+        let lowest: Bool
+    }
+}
+
 /// m196: "How long should I stay?" (POST /v1/me/trips/length). Nothing is planned or stored by asking.
 struct TripLengthRequest: Encodable {
     let destination: String

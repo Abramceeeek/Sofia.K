@@ -1046,10 +1046,12 @@ struct StayDetailView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let stay: StayResult
+    var scrollToTrip = false       // CI screenshots only (32b): "For your trip"
 
     var body: some View {
         let trip = model.currentTrip
         let results = model.book.stays
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Color.clear
@@ -1096,6 +1098,7 @@ struct StayDetailView: View {
                         .fixedSize(horizontal: false, vertical: true)
                     FoundPrice(price: stay.priceTotal, line: "\(Money.whole(stay.priceNight)) a night · \(stay.nights) night\(stay.nights == 1 ? "" : "s")",
                                source: results?.source ?? "sample", searchedAt: results?.searchedAt)
+                    if let trip { StayForTrip(stay: stay, trip: trip).id("trip") }   // m203: judged against the trip
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .firstTextBaseline) {
                             SectionLabel(text: "Where to book")
@@ -1119,6 +1122,11 @@ struct StayDetailView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 40)
             }
+        }
+        .onAppear {
+            guard scrollToTrip else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { proxy.scrollTo("trip", anchor: .top) }
+        }
         }
         .ignoresSafeArea(edges: .top)
         .background(Theme.background)
@@ -1158,6 +1166,92 @@ struct StayDetailView: View {
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.lengthLabel, price: stay.priceTotal,
                                   searchedAt: model.book.stays?.searchedAt.flatMap(FlightDetailView.parseDate),
                                   choice: choice))
+    }
+}
+
+/// m203 (Abram, 7 Nov): a stay judged against the person's own trip, not a list from a booking site: how far it is
+/// from each planned day, the whole cost and cancellation terms, and the same stay on nearby dates, like for like.
+struct StayForTrip: View {
+    @Environment(AppModel.self) private var model
+    let stay: StayResult
+    let trip: Trip
+    @State private var answer: StayCompare?
+    @State private var failed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel(text: "For your trip")
+            if let a = answer {
+                if let line = a.fit.line {
+                    block("Your days from here", line,
+                          a.fit.days.map { "Day \($0.index + 1): \($0.toFirst) min there, \($0.back) back" })
+                }
+                block("The whole cost", a.cost.line, [a.cost.cancel] + (a.cost.board.map { [$0 + "."] } ?? []))
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Other dates, the same stay").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                    if let note = a.note {
+                        Text(note).font(.footnote).foregroundStyle(Theme.accent).fixedSize(horizontal: false, vertical: true)
+                    }
+                    ForEach(a.dates, id: \.checkin) { d in dateRow(d) }
+                    Text("Your dates stay as they are. To try others, change the trip's dates.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .surfaceCard(padding: 16)
+            } else if failed {
+                Text("This couldn't be worked out just now.").font(.subheadline).foregroundStyle(Theme.muted)
+            } else {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Looking at this stay for your trip…").foregroundStyle(Theme.muted)
+                }
+            }
+        }
+        .task(id: stay.id) { await load() }
+    }
+
+    private func block(_ title: String, _ line: String, _ more: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+            Text(line).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
+            ForEach(more, id: \.self) { Text($0).font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .surfaceCard(padding: 16)
+    }
+
+    private func dateRow(_ d: StayCompare.DateOption) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(d.label).foregroundStyle(d.yours ? Theme.accent : Theme.ink).monospacedDigit()
+                let tags = (d.yours ? ["your dates"] : []) + (d.lowest ? ["lowest of these"] : []) + d.differs
+                if !tags.isEmpty {
+                    Text(tags.joined(separator: " · ")).font(.footnote)
+                        .foregroundStyle(d.sameTerms ? Theme.muted : Theme.accent)
+                }
+            }
+            Spacer(minLength: 8)
+            Text(d.whole.map(Money.whole) ?? "Not available").foregroundStyle(Theme.ink).monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func load() async {
+        guard answer == nil else { return }
+        let ends = trip.days.sorted { $0.index < $1.index }.compactMap { d -> StayCompareRequest.DayEnds? in
+            let pins = (d.plan?.stops ?? []).compactMap(\.pin)
+            return pins.isEmpty ? nil : .init(index: d.index, first: pins.first, last: pins.last)
+        }
+        let checkout = Calendar.london.date(byAdding: .day, value: trip.nights, to: trip.startDate) ?? trip.startDate
+        let request = StayCompareRequest(
+            destination: trip.destination, checkin: trip.start, checkout: Dates.isoDay.string(from: checkout),
+            adults: trip.adults,
+            stay: .init(id: stay.id, name: stay.name, lat: stay.lat, lon: stay.lon, priceTotal: stay.priceTotal,
+                        nights: stay.nights, currency: stay.currency, room: stay.room, board: stay.board,
+                        refundable: stay.refundable, sample: stay.sample),
+            days: ends)
+        do { answer = try await model.client.stayCompare(request) } catch { failed = true }
     }
 }
 
