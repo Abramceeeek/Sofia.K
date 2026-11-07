@@ -17,7 +17,7 @@ def client(tmp_path, test_moments):
     data = tmp_path / "data"
     (data / "moments").mkdir(parents=True)
     for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv", "swipe_items.yaml", "aspiration.yaml",
-              "privacy_app.html", "categories.yaml"):
+              "privacy_app.html", "categories.yaml", "destinations.yaml"):
         shutil.copy(DATA / f, data / f)
     for f in ("m_southken_nhm_reveal.yaml", "m_waterloo_bridge_sunset.yaml"):
         shutil.copy(DATA / "moments" / f, data / "moments")
@@ -280,7 +280,7 @@ def test_a_stop_that_needs_booking_says_so(tmp_path, test_moments):
     data = tmp_path / "data"
     (data / "moments").mkdir(parents=True)
     for f in ("priors.yaml", "onboarding.yaml", "conjoint_design.csv", "swipe_items.yaml", "aspiration.yaml",
-              "privacy_app.html", "categories.yaml"):
+              "privacy_app.html", "categories.yaml", "destinations.yaml"):
         shutil.copy(DATA / f, data / f)
     shutil.copy(DATA / "moments" / "m_horizon_22.yaml", data / "moments")
     for m in test_moments:

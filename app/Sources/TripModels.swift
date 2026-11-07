@@ -257,6 +257,7 @@ struct StayCompareRequest: Encodable {
 struct StayCompare: Decodable, Hashable {
     let source: String                     // sample | liteapi
     let note: String?
+    let holidaysNote: String?              // m211: the destination's holidays (or these years) aren't known: said
     let fit: Fit
     let cost: Cost
     let dates: [DateOption]

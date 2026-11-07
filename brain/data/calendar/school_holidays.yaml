@@ -1,0 +1,45 @@
+# WS5 (m211): school holidays, council by council, ONLY as read from the official page on the date given. Nothing
+# here is copied from a third-party site, and nothing is filled in: a holiday whose end isn't on a page we read is
+# left out and said in `not_included`. Dates are inclusive. These are a council's dates: they never apply to every
+# school (independent schools, and in England academies, free schools and voluntary-aided schools, can set their own).
+#
+# Where a page gives term dates only (Wales), a holiday is the days between one term's last day and the next one's
+# first day, marked `between_terms: true`.
+areas:
+  cardiff:
+    authority: Cardiff Council
+    country: GB
+    region: england-and-wales              # the bank-holiday division
+    source: https://www.gov.wales/approved-school-term-dates-2026-2027-html
+    source_note: "Welsh Government, 'Approved school term dates 2026 to 2027', last updated 16 July 2025. 21 of the 22 Welsh councils share these dates; Powys ends the autumn term on Tue 22 Dec 2026 and the summer term on Fri 16 Jul 2027."
+    last_verified: "2026-11-07"
+    years: ["2026-27"]
+    exceptions: "Independent schools set their own dates; the page doesn't say whether every kind of school follows them."
+    holidays:
+      - {title: "Autumn half term", from: 2026-10-26, to: 2026-10-30}
+      - {title: "Christmas holiday", from: 2026-12-19, to: 2027-01-03, between_terms: true}
+      - {title: "Spring half term", from: 2027-02-08, to: 2027-02-12}
+      - {title: "Easter holiday", from: 2027-03-20, to: 2027-04-04, between_terms: true}
+      - {title: "Summer half term", from: 2027-05-31, to: 2027-06-04}
+    not_included: "The summer holiday starts on Wed 21 Jul 2027; its end is in the 2027-28 dates, not read yet."
+  edinburgh:
+    authority: City of Edinburgh Council
+    country: GB
+    region: scotland
+    source: https://www.edinburgh.gov.uk/schools/term-dates
+    source_note: "The council's 2026/27 term dates page ('Dates for holidays are inclusive'); no update date shown."
+    last_verified: "2026-11-07"
+    years: ["2026-27"]
+    exceptions: "Schools set their own start and finish times (the council's page); independent schools set their own dates."
+    holidays:
+      - {title: "Autumn holiday", from: 2026-09-14, to: 2026-09-14}
+      - {title: "Mid-term break", from: 2026-10-12, to: 2026-10-19}
+      - {title: "Winter holiday", from: 2026-12-21, to: 2027-01-05}
+      - {title: "Mid-term break", from: 2027-02-15, to: 2027-02-19}
+      - {title: "Good Friday", from: 2027-03-26, to: 2027-03-26}
+      - {title: "Easter Monday", from: 2027-03-29, to: 2027-03-29}
+      - {title: "Spring holiday", from: 2027-04-05, to: 2027-04-19}
+      - {title: "May Day", from: 2027-05-03, to: 2027-05-03}
+      - {title: "Staff-only day (no pupils)", from: 2027-05-04, to: 2027-05-04}
+      - {title: "Victoria Day", from: 2027-05-24, to: 2027-05-24}
+    not_included: "The summer holiday starts after the term ends on Tue 29 Jun 2027; its end is in the 2027/28 dates, not read yet."

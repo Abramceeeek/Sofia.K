@@ -1194,6 +1194,9 @@ struct StayForTrip: View {
                         Text(note).font(.footnote).foregroundStyle(Theme.accent).fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(a.dates, id: \.checkin) { d in dateRow(d) }
+                    if let h = a.holidaysNote {
+                        Text(h).font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+                    }
                     Text("Your dates stay as they are. To try others, change the trip's dates.")
                         .font(.footnote)
                         .foregroundStyle(Theme.muted)

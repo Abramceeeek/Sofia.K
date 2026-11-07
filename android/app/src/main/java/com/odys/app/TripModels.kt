@@ -320,6 +320,7 @@ data class StayCompareRequest(
 data class StayCompare(
     val source: String,
     val note: String? = null,
+    val holidaysNote: String? = null,      // m211: the destination's holidays (or these years) aren't known: said
     val fit: Fit,
     val cost: Cost,
     val dates: List<DateOption>,

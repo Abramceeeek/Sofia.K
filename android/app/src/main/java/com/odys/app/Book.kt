@@ -1062,6 +1062,7 @@ fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
                             Text(d.whole?.let { Money.whole(it) } ?: "Not available", style = Theme.body)
                         }
                     }
+                    a.holidaysNote?.let { Text(it, style = Theme.footnote) }   // m211: holidays not known, said
                     Text("Your dates stay as they are. To try others, change the trip's dates.", style = Theme.footnote)
                 }
             }

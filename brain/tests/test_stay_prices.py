@@ -109,3 +109,15 @@ def test_the_endpoint_uses_labelled_sample_prices_and_stores_nothing_about_the_s
         assert set(ev.props) == {"nights", "days", "live"}                 # never the stay, its price or the dates
     bad = {**body, "checkin": (date.today() - timedelta(days=1)).isoformat()}
     assert client.post("/v1/trips/stays/compare", headers=h, json=bad).status_code == 422
+
+
+def test_the_comparison_says_when_holidays_are_known(client):
+    h, _ = install(client)
+    ci = date.today() + timedelta(days=10)
+    body = {"checkin": ci.isoformat(), "checkout": (ci + timedelta(days=2)).isoformat(), "adults": 1,
+            "stay": {"id": "lp1", "name": "Sample hotel", "lat": 51.5117, "lon": -0.1240, "price_total": 300,
+                     "nights": 2}, "days": []}
+    out = client.post("/v1/trips/stays/compare", headers=h, json=body).json()
+    covered_to = date(2028, 12, 26)
+    # London is known through 2028 (GOV.UK's file); later than that, the note says how far it goes
+    assert (out["holidays_note"] is None) == (ci + timedelta(days=5) <= covered_to)

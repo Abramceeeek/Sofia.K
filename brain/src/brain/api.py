@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, traveltiming, triplength,
+from . import (backup, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -39,6 +39,7 @@ from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, Correcti
                       TripLengthIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
+from .places import load_destinations
 from .travel import LondonEstimate
 from .tfl import TflTravel, TravelStore, next_weekday_1pm
 from .ghoidc import GithubOIDC
@@ -128,6 +129,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.tester_codes = (yaml.safe_load(f) or {}).get("codes") or {}   # Build 2
         places = settings.data_dir / "airports.yaml"
         airports, dests = trips.load_places(places if places.exists() else DATA_DIR / "airports.yaml")
+        app.state.destinations = load_destinations(settings.data_dir / "destinations.yaml")   # WS1 registry
         app.state.trips = trips.TripSearch(airports, dests, duffel_token=settings.duffel_token,   # D120
                                            liteapi_key=settings.liteapi_key)
         arr = settings.data_dir / "arrivals.yaml"
@@ -961,7 +963,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "note": None if live else "Sample prices: real prices for other dates come later. Your dates' price "
                                           "is the one the search found.",
                 "fit": fit, "cost": stayprices.cost_lines(terms, sample=st.sample),
-                "dates": [d.out(nights) for d in dates]}
+                "dates": [d.out(nights) for d in dates],
+                # m211: when the destination's holidays (or these years) aren't known, say so: never read as "none"
+                "holidays_note": travelcalendar.stay_note(app.state.destinations.get(dest.key), dest.key,
+                                                          options[0][0], options[-1][1])}
 
     @app.post("/v1/trips/stays")
     def trip_stays(body: StaySearchIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
