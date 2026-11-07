@@ -21,9 +21,12 @@ from functools import lru_cache
 from pathlib import Path
 
 from .config import DATA_DIR
+from .places import load_destinations
 
-# The bank holidays that apply where a destination is (a destination's own calendar, not the traveller's)
-DESTINATION_DIVISION = {"london": "england-and-wales"}
+# The bank holidays that apply where a destination is (a destination's own calendar, not the traveller's), from the
+# destination registry (WS1, data/destinations.yaml), so no second list of destinations lives here
+DESTINATION_DIVISION = {k: d.bank_holidays for k, d in load_destinations(DATA_DIR / "destinations.yaml").items()
+                        if d.bank_holidays}
 
 
 @dataclass(frozen=True)

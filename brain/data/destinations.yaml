@@ -1,0 +1,17 @@
+# WS1 (m207): the places ODYS plans in, and what changes from one to the next. One entry per destination; nothing
+# outside this file should say "London" to mean "the destination". Coverage is "checked" only where the moment cards,
+# travel times and opening hours have been checked (product-direction.md, E): everywhere else it's "none", and the app
+# says so instead of guessing.
+destinations:
+  london:
+    name: London
+    country: GB                    # ISO 3166-1 alpha-2
+    region: England
+    timezone: Europe/London        # IANA
+    currency: GBP                  # ISO 4217
+    languages: [en-GB]             # BCP 47
+    centre: {lat: 51.5074, lon: -0.1278}   # as brain/src/brain/sun.py
+    bank_holidays: england-and-wales       # the GOV.UK division (data/calendar/bank_holidays.json)
+    coverage: checked              # 49 ready moment cards, checked 27 Sep - 8 Oct 2026
+    travel: tfl                    # TfL Journey Planner times where known, else the straight-line estimate
+    weather: met_office
