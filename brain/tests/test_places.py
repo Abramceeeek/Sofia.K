@@ -49,3 +49,16 @@ def test_ids_from_different_sources_never_collide():
     card = from_card(load_moments(DATA_DIR / "moments")[0])
     osm = from_osm_element(FIXTURE["elements"][0], "london", "2026-11-07")
     assert card.id.split(":")[0] != osm.id.split(":")[0]
+
+
+def test_the_two_destination_lists_never_drift_apart():
+    """The trips code still reads its destinations from airports.yaml (airport, start point, whether days can be
+    planned); the WS1 registry holds the zone, currency and calendar. Until they're one list (the sprint report), the
+    same keys and countries, and the registry's coverage matching day plans."""
+    from brain.trips import load_places
+    _, trip_dests = load_places(DATA_DIR / "airports.yaml")
+    registry = load_destinations(DATA_DIR / "destinations.yaml")
+    assert set(trip_dests) == set(registry)
+    for k, d in trip_dests.items():
+        assert d.country_code == registry[k].country
+        assert d.day_plans == (registry[k].coverage == "checked")
