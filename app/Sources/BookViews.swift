@@ -1098,7 +1098,8 @@ struct StayDetailView: View {
                         .fixedSize(horizontal: false, vertical: true)
                     FoundPrice(price: stay.priceTotal, line: "\(Money.whole(stay.priceNight)) a night · \(stay.nights) night\(stay.nights == 1 ? "" : "s")",
                                source: results?.source ?? "sample", searchedAt: results?.searchedAt)
-                    if let trip { StayForTrip(stay: stay, trip: trip).id("trip") }   // m203: judged against the trip
+                    if scrollToTrip { Color.clear.frame(height: 40).id("trip") }   // CI only: clear of the status bar
+                    if let trip { StayForTrip(stay: stay, trip: trip) }   // m203: judged against the trip
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .firstTextBaseline) {
                             SectionLabel(text: "Where to book")
