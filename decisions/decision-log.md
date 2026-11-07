@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-07 — The LiteAPI email, final; the global development sprint begins (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m205 | **The LiteAPI email is Abram's final wording** (`decisions/liteapi-clarification.md`): ODYS is evaluating the integration with live prices off; nearby dates keep the stay length, guests and room terms; saved-stay checks happen only when the person opens ODYS, at most once in 24 hours; it asks for explicit written permission, ideally with the clause or an addendum; the price index is $0.05 a request on all three pages (Abram's re-read), so the email asks Nuitée to confirm it. **Abram sends it to hello@nuitee.com himself**; the reply is recorded in the repo. Until then: `stay_dates_live` off, no price-index calls, nothing in production on LiteAPI. The answer may decide referrals vs booking through LiteAPI: Abram's decision. **The global development sprint starts** on the branch, in Abram's order: the planner benchmark, global place data, food and halal, hotels, several cities, the travel calendar, the whole-trip budget, then global UX. Each piece is inspected, built, tested and committed before the next. | The 7 Nov draft email | Abram's review, 7 Nov. |
+
 ## 2026-11-07 — Stays judged against the trip; travel timing begins (branch only)
 
 | # | Decision | Replaces | Why |
