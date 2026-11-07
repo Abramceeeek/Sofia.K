@@ -6,32 +6,38 @@
    {
     "index": 0,
     "to_first": 5,
-    "back": 5
+    "back": 5,
+    "text": "Day 1: you arrive from your journey; 5 min back here at the end"
    },
    {
     "index": 1,
     "to_first": 22,
-    "back": 31
+    "back": 31,
+    "text": "Day 2: 22 min there, 31 back"
    },
    {
     "index": 2,
     "to_first": 27,
-    "back": 51
+    "back": 51,
+    "text": "Day 3: 27 min there, 51 back"
    },
    {
     "index": 3,
     "to_first": 13,
-    "back": 8
+    "back": 8,
+    "text": "Day 4: 13 min there, 8 back"
    },
    {
     "index": 4,
     "to_first": 8,
-    "back": 17
+    "back": 17,
+    "text": "Day 5: 8 min there, 17 back"
    }
   ],
-  "line": "About 13 min to your first place and 17 min back, on a typical day of this trip. Day 3 is the furthest: 27 min there, 51 back.",
-  "to_first": 13,
-  "back": 17
+  "line": "About 18 min to your first place and 17 min back, on a typical day of this trip. Day 3 is the furthest: 27 min there, 51 back.",
+  "to_first": 18,
+  "back": 17,
+  "missing": []
  },
  "cost": {
   "whole": 1621.24,

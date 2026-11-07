@@ -948,8 +948,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         stayprices.mark_lowest(dates)
         for d in dates:   # m204: the destination's bank holidays, as facts (never "busier" or "dearer")
             d.holidays = traveltiming.stay_holidays(dest.key, d.checkin, d.checkout)
-        fit = stayprices.trip_fit(Point(lat=st.lat, lon=st.lon), [stayprices.DayEnds(d.index, d.first, d.last)
-                                                                  for d in body.days], app.state.travel) \
+        # m209: day 1 is the check-in day (the morning comes from the journey), the day after the last night the
+        # check-out day (the evening goes to the journey home): one stay for the trip, as trips are today
+        fit = stayprices.trip_fit(Point(lat=st.lat, lon=st.lon),
+                                  [stayprices.DayEnds(d.index, d.first, d.last, arrive=d.index == 0,
+                                                      leave=d.index == nights) for d in body.days], app.state.travel) \
             if st.lat is not None and st.lon is not None else {"days": [], "line": None, "to_first": None, "back": None}
         s.add(db.Event(user_id=user.id, name="stay_compare",
                        props={"nights": nights, "days": len(body.days), "live": bool(live)}))   # never the stay or dates

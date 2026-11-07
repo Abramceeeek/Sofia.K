@@ -327,7 +327,7 @@ data class StayCompare(
     @Serializable
     data class Fit(val days: List<Row> = emptyList(), val line: String? = null) {
         @Serializable
-        data class Row(val index: Int, val toFirst: Int, val back: Int)
+        data class Row(val index: Int, val toFirst: Int, val back: Int, val text: String? = null)   // m209: the Brain's words
     }
 
     @Serializable

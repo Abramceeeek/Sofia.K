@@ -204,6 +204,7 @@ class Stay:
     distance_km: float | None = None
     sample: bool = False
     pay_there: float = 0.0          # m203: taxes or fees the provider marks as not included (paid at the property)
+    pay_there_other: str = ""       # m209: such fees in another currency, said, never added to the total
 
     @property
     def price_night(self) -> float:
@@ -323,11 +324,36 @@ def liteapi_body(q: StayQuery) -> dict:
             "limit": LITEAPI_LIMIT, "timeout": 12, "maxRatesPerHotel": 1, "includeHotelData": True}
 
 
-def rate_pay_there(rate: dict) -> float:
-    """m203: what's paid at the property: the `taxesAndFees` marked `included: false` (LiteAPI's docs: "Indicates
-    whether the tax is included in the total price"; read 7 Nov 2026)."""
+def rate_currency(rate: dict) -> str | None:
+    total = ((rate.get("retailRate") or {}).get("total") or [{}])[0]
+    return total.get("currency")
+
+
+def rate_fees_there(rate: dict) -> tuple[float, list[tuple[float, str]]]:
+    """m203, m209: what's paid at the property: the `taxesAndFees` marked `included: false` (LiteAPI's docs:
+    "Indicates whether the tax is included in the total price"; read 7 Nov 2026). Fees in the rate's own currency (or
+    with none given) are summed; a fee in another currency (a city tax in euros on a total in pounds) is kept apart,
+    never added to a different currency."""
     fees = (rate.get("retailRate") or {}).get("taxesAndFees") or rate.get("taxesAndFees") or []
-    return round(sum(float(f.get("amount") or 0) for f in fees if f.get("included") is False), 2)
+    cur, same, other = rate_currency(rate), 0.0, []
+    for f in fees:
+        if f.get("included") is not False:
+            continue
+        amount, c = float(f.get("amount") or 0), f.get("currency")
+        if c and cur and c != cur:
+            other.append((round(amount, 2), c))
+        else:
+            same += amount
+    return round(same, 2), other
+
+
+def rate_pay_there(rate: dict) -> float:
+    return rate_fees_there(rate)[0]
+
+
+def other_fees_line(other: list[tuple[float, str]]) -> str:
+    """m209: "12.00 EUR paid at the property, not added in" (another currency)."""
+    return " and ".join(f"{a:.2f} {c}" for a, c in other) + " paid at the property, not added in" if other else ""
 
 
 def parse_liteapi(resp: dict, q: StayQuery) -> list[Stay]:
@@ -362,7 +388,7 @@ def parse_liteapi(resp: dict, q: StayQuery) -> list[Stay]:
                         nights=q.nights, room=rate.get("name") or "", board=board,
                         breakfast=board_type in _BREAKFAST_BOARDS or "breakfast" in board.lower(),
                         refundable=True if tag == "RFN" else False if tag == "NRFN" else None,
-                        pay_there=rate_pay_there(rate)))
+                        pay_there=rate_pay_there(rate), pay_there_other=other_fees_line(rate_fees_there(rate)[1])))
     return out
 
 

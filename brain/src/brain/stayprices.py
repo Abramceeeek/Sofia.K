@@ -23,7 +23,7 @@ from datetime import date, timedelta
 from typing import Callable
 
 from .moments import Point
-from .trips import LITEAPI_MARKET, LITEAPI_URL, StayQuery, rate_pay_there
+from .trips import LITEAPI_MARKET, LITEAPI_URL, StayQuery, other_fees_line, rate_currency, rate_fees_there
 
 AROUND = 3   # days either side of the person's own check-in (Abram, 7 Nov)
 
@@ -107,11 +107,13 @@ def liteapi_hotel_body(stay: StayTerms, q: StayQuery) -> dict:
             "currency": stay.currency or "GBP", "guestNationality": LITEAPI_MARKET, "occupancies": occ, "timeout": 8}
 
 
-def _rate_price(rate: dict) -> tuple[float | None, float]:
-    """(the total the guest pays, what's paid at the property): `retailRate.total` and the `taxesAndFees` marked
-    `included: false` (LiteAPI's docs: "Indicates whether the tax is included in the total price")."""
+def _rate_price(rate: dict) -> tuple[float | None, float, list[tuple[float, str]]]:
+    """(the total the guest pays, what's paid at the property in the same currency, fees in another currency):
+    `retailRate.total` and the `taxesAndFees` marked `included: false` (LiteAPI's docs: "Indicates whether the tax is
+    included in the total price")."""
     total = ((rate.get("retailRate") or {}).get("total") or [{}])[0].get("amount")
-    return (float(total) if total is not None else None), rate_pay_there(rate)
+    there, other = rate_fees_there(rate)
+    return (float(total) if total is not None else None), there, other
 
 
 def _terms(rate: dict) -> tuple[str, str, bool | None]:
@@ -127,17 +129,26 @@ def match_rate(resp: dict, want: StayTerms) -> tuple[float | None, float, list[s
     for item in resp.get("data") or []:
         for rt in item.get("roomTypes") or []:
             for rate in rt.get("rates") or []:
-                total, there = _rate_price(rate)
+                total, there, other = _rate_price(rate)
                 if total is None:
                     continue
+                cur = rate_currency(rate)
+                if cur and want.currency and cur != want.currency:
+                    continue   # m209: a price in another currency is never compared with this one
                 name, board, refundable = _terms(rate)
                 differs = []
                 if want.room and name.casefold() != want.room.casefold():
                     differs.append(f"a different room ({name})" if name else "a different room")
-                if want.board and board and board.casefold() != want.board.casefold():
+                if want.board and not board:
+                    differs.append("meals not given")   # m209: unknown is never "the same"
+                elif want.board and board.casefold() != want.board.casefold():
                     differs.append(board.lower())
-                if want.refundable is not None and refundable is not None and refundable != want.refundable:
+                if want.refundable is not None and refundable is None:
+                    differs.append("cancellation terms not given")
+                elif want.refundable is not None and refundable != want.refundable:
                     differs.append("free cancellation" if refundable else "non-refundable")
+                if other:   # m209: a fee in another currency can't be added in, so the whole cost isn't like for like
+                    differs.append(other_fees_line(other))
                 key = (len(differs), total + there)
                 if best is None or key < best[0]:
                     best = (key, total, there, differs)
@@ -172,30 +183,55 @@ class DayEnds:
     index: int
     first: Point | None             # the day's first planned place
     last: Point | None              # and its last
+    arrive: bool = False            # m209: the check-in day: the morning comes from the journey, not from the stay
+    leave: bool = False             # m209: the check-out day: the evening goes to the journey home, not back here
 
 
 def trip_fit(stay: Point, days: list[DayEnds], travel) -> dict:
     """How far each planned day's places are from the stay: there in the morning, back at the end."""
-    rows = []
+    rows, missing = [], [d.index for d in days if d.first is None or d.last is None]
+    counted = []   # m209: (row, legs that happen): no morning leg from here on arrival, no evening leg on leaving
     for d in days:
         if d.first is None or d.last is None:
             continue
-        rows.append({"index": d.index, "to_first": round(travel.minutes(stay, d.first)),
-                     "back": round(travel.minutes(d.last, stay))})
-    if not rows:
-        return {"days": [], "line": "Plan your days to see how far they are from here.", "to_first": None, "back": None}
-    to_first = round(statistics.median(r["to_first"] for r in rows))
-    back = round(statistics.median(r["back"] for r in rows))
-    far = max(rows, key=lambda r: r["to_first"] + r["back"])
-    line = f"About {to_first} min to your first place and {back} min back, on a typical day of this trip."
-    if far["to_first"] + far["back"] >= to_first + back + 20 and len(rows) > 1:
-        line += f" Day {far['index'] + 1} is the furthest: {far['to_first']} min there, {far['back']} back."
-    return {"days": rows, "line": line, "to_first": to_first, "back": back}
+        r = {"index": d.index, "to_first": round(travel.minutes(stay, d.first)),
+             "back": round(travel.minutes(d.last, stay))}
+        n = d.index + 1
+        r["text"] = (f"Day {n}: you arrive from your journey; {r['back']} min back here at the end" if d.arrive else
+                     f"Day {n}: {r['to_first']} min there; at the end you leave for your journey" if d.leave else
+                     f"Day {n}: {r['to_first']} min there, {r['back']} back")
+        rows.append(r)
+        counted.append((r, not d.arrive, not d.leave))
+    firsts = [r["to_first"] for r, a, _ in counted if a]
+    backs = [r["back"] for r, _, b in counted if b]
+    if not firsts and not backs:
+        return {"days": rows, "line": "Plan your days to see how far they are from here.", "to_first": None,
+                "back": None, "missing": missing}
+    to_first = round(statistics.median(firsts)) if firsts else None
+    back = round(statistics.median(backs)) if backs else None
+    if to_first is not None and back is not None:
+        line = f"About {to_first} min to your first place and {back} min back, on a typical day of this trip."
+    elif to_first is not None:
+        line = f"About {to_first} min to your first place, on a typical day of this trip."
+    else:
+        line = f"About {back} min back here at the end of a typical day of this trip."
+    legs = lambda item: (item[0]["to_first"] if item[1] else 0) + (item[0]["back"] if item[2] else 0)
+    full = [c for c in counted if c[1] and c[2]]
+    if len(full) > 1 and to_first is not None and back is not None:
+        far = max(full, key=legs)[0]
+        if far["to_first"] + far["back"] >= to_first + back + 20:
+            line += f" Day {far['index'] + 1} is the furthest: {far['to_first']} min there, {far['back']} back."
+    if missing:   # m209: a day with no places yet is said, not silently left out of the typical day
+        names = ", ".join(str(i + 1) for i in missing)
+        line += f" {'Days' if len(missing) > 1 else 'Day'} {names} {'have' if len(missing) > 1 else 'has'} no places yet, so {'they aren' if len(missing) > 1 else 'it isn'}'t counted."
+    return {"days": rows, "line": line, "to_first": to_first, "back": back, "missing": missing}
 
 
 def cost_lines(stay: StayTerms, sample: bool) -> dict:
     def money(x: float) -> str:   # pence only where they matter: under £100 and not a whole pound
         n = f"{x:,.2f}" if x < 100 and round(x, 2) != int(x) else f"{x:,.0f}"
+        if not stay.currency:
+            return f"{n} (currency not given)"   # m209: never assumed to be pounds
         return f"£{n}" if stay.currency == "GBP" else f"{n} {stay.currency}"
     whole = stay.price_total + stay.pay_there
     line = f"{money(whole)} for {stay.nights} night{'s' if stay.nights != 1 else ''}, " + (

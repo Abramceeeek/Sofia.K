@@ -1185,7 +1185,7 @@ struct StayForTrip: View {
             if let a = answer {
                 if let line = a.fit.line {
                     block("Your days from here", line,
-                          a.fit.days.map { "Day \($0.index + 1): \($0.toFirst) min there, \($0.back) back" })
+                          a.fit.days.map { $0.text ?? "Day \($0.index + 1): \($0.toFirst) min there, \($0.back) back" })
                 }
                 block("The whole cost", a.cost.line, [a.cost.cancel] + (a.cost.board.map { [$0 + "."] } ?? []))
                 VStack(alignment: .leading, spacing: 10) {

@@ -1044,7 +1044,7 @@ fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
         when {
             a != null -> {
                 a.fit.line?.let { line ->
-                    StayBlock("Your days from here", line, a.fit.days.map { "Day ${it.index + 1}: ${it.toFirst} min there, ${it.back} back" })
+                    StayBlock("Your days from here", line, a.fit.days.map { it.text ?: "Day ${it.index + 1}: ${it.toFirst} min there, ${it.back} back" })
                 }
                 StayBlock("The whole cost", a.cost.line, listOf(a.cost.cancel) + listOfNotNull(a.cost.board?.let { "$it." }))
                 Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

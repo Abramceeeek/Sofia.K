@@ -264,7 +264,10 @@ struct StayCompare: Decodable, Hashable {
     struct Fit: Decodable, Hashable {
         let days: [Row]
         let line: String?
-        struct Row: Decodable, Hashable { let index: Int; let toFirst: Int; let back: Int }
+        struct Row: Decodable, Hashable {
+            let index: Int; let toFirst: Int; let back: Int
+            let text: String?   // m209: the Brain's words, e.g. the arrival day has no morning leg from the stay
+        }
     }
 
     struct Cost: Decodable, Hashable {
