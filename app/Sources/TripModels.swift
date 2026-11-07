@@ -664,6 +664,10 @@ extension Dates {
 }
 
 extension Money {
-    /// £398, or £1,318: rounded to the pound for prices that aren't ours to promise.
-    static func whole(_ gbp: Double) -> String { "£" + Int(gbp.rounded()).formatted(.number.grouping(.automatic)) }
+    /// £398, or £1,318: rounded to the pound for prices that aren't ours to promise. WS8 (m213): an amount in another
+    /// currency keeps its own code ("1,318 EUR", as the Brain writes it), never a pound sign it doesn't have.
+    static func whole(_ amount: Double, _ currency: String = "GBP") -> String {
+        let n = Int(amount.rounded()).formatted(.number.grouping(.automatic).locale(Locale(identifier: "en_GB")))
+        return currency == "GBP" ? "£" + n : currency.isEmpty ? n : "\(n) \(currency)"
+    }
 }

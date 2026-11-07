@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -401,7 +402,7 @@ fun FlightRow(flight: Flight, adults: Int, onClick: () -> Unit) {
                 Text(bagLabel(flight.checkedBags), style = Theme.footnote.copy(color = if ((flight.checkedBags ?: 0) > 0) Theme.inkSoft else Theme.muted))
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(Money.whole(flight.price), style = Theme.serif(26.sp))
+                Text(Money.whole(flight.price, flight.currency), style = Theme.serif(26.sp))
                 Text(if (adults > 1) "total for $adults" else "return, 1 adult", style = Theme.caption)
             }
         }
@@ -465,7 +466,7 @@ fun FlightDetailView(model: AppModel, flight: Flight, onBack: () -> Unit) {
         Text(bags + refund, style = Theme.subheadline.copy(color = Theme.inkSoft),
             modifier = Modifier.fillMaxWidth().border(1.dp, Theme.outline, RoundedCornerShape(18.dp)).padding(horizontal = 18.dp, vertical = 14.dp))
         FoundPrice(flight.price, trip?.let { if (it.adults > 1) "total for ${it.adults}" else "return, 1 adult" } ?: "",
-            results?.source ?: "sample", results?.searchedAt)
+            results?.source ?: "sample", results?.searchedAt, flight.currency)
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SectionLabel("Where to book", Modifier.weight(1f))
@@ -518,20 +519,31 @@ fun LegCard(label: String, leg: FlightLeg) {
 
 /** The price found here, and what it is: a sample, a test price, or a real offer found n minutes ago. */
 @Composable
-fun FoundPrice(price: Double, line: String, source: String, searchedAt: String?) {
+fun FoundPrice(price: Double, line: String, source: String, searchedAt: String?, currency: String = "GBP") {
     val sourceLine = when (source) {
         "sample" -> "A sample price, made up for testing"
         "duffel_test", "liteapi_sandbox" -> "A test price, not a real offer"
         else -> minutesAgo(searchedAt)?.let { if (it < 1) "Checked just now" else "Checked $it minute${if (it == 1L) "" else "s"} ago" } ?: "A real offer"
     }
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Theme.deep).padding(16.dp), verticalAlignment = Alignment.Bottom) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("Found here", style = Theme.footnote)
-            Text(sourceLine, style = Theme.footnote.copy(color = Theme.inkSoft))
+    val box = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Theme.deep).padding(16.dp)
+    val source = @Composable {
+        Text("Found here", style = Theme.footnote)
+        Text(sourceLine, style = Theme.footnote.copy(color = Theme.inkSoft))
+    }
+    val amount = @Composable {
+        Text(Money.whole(price, currency), style = Theme.serif(26.sp))
+        Text(line, style = Theme.caption)
+    }
+    // m213: with large text the price goes under its source line, so neither is squeezed into a sliver
+    if (LocalDensity.current.fontScale >= 1.3f) {
+        Column(box, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) { source() }
+            Column { amount() }
         }
-        Column(horizontalAlignment = Alignment.End) {
-            Text(Money.whole(price), style = Theme.serif(26.sp))
-            Text(line, style = Theme.caption)
+    } else {
+        Row(box, verticalAlignment = Alignment.Bottom) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) { source() }
+            Column(horizontalAlignment = Alignment.End) { amount() }
         }
     }
 }
@@ -610,7 +622,7 @@ fun StayList(model: AppModel, trip: Trip) {
             if (book.stayMap) {
                 val placed = r.results.filter { it.point != null }
                 val pins = listOf(MapPin(AppConfig.START, r.centre, dot = true)) +
-                    placed.map { MapPin(it.point!!, it.name, price = Money.whole(it.priceNight), highlight = !it.tags.isNullOrEmpty()) }
+                    placed.map { MapPin(it.point!!, it.name, price = Money.whole(it.priceNight, it.currency), highlight = !it.tags.isNullOrEmpty()) }
                 OsmMap(pins, Modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(20.dp))
                     .semantics { contentDescription = "Map of ${r.results.size} places to stay" }) { i ->
                     if (i > 0) model.bookPath += BookDest.StayDetail(placed[i - 1])
@@ -684,8 +696,8 @@ fun StayCard(stay: StayResult, centre: String, onClick: () -> Unit) {
             Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.Bottom) {
                 Text(stay.room, style = Theme.footnote, maxLines = 1, modifier = Modifier.weight(1f).padding(end = 8.dp))
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(Money.whole(stay.priceNight), style = Theme.serif(24.sp))
-                    Text("a night · ${Money.whole(stay.priceTotal)} total", style = Theme.caption)
+                    Text(Money.whole(stay.priceNight, stay.currency), style = Theme.serif(24.sp))
+                    Text("a night · ${Money.whole(stay.priceTotal, stay.currency)} total", style = Theme.caption)
                 }
             }
         }
@@ -736,8 +748,8 @@ fun StayDetailView(model: AppModel, stay: StayResult, onBack: () -> Unit) {
                 if (stay.refundable == true) "Free cancellation with this rate." else null,
                 if (stay.refundable == false) "This rate can't be refunded." else null).joinToString(" ")
             Text(why, style = Theme.body.copy(color = Theme.inkSoft))
-            FoundPrice(stay.priceTotal, "${Money.whole(stay.priceNight)} a night · ${stay.nights} night${if (stay.nights == 1) "" else "s"}",
-                results?.source ?: "sample", results?.searchedAt)
+            FoundPrice(stay.priceTotal, "${Money.whole(stay.priceNight, stay.currency)} a night · ${stay.nights} night${if (stay.nights == 1) "" else "s"}",
+                results?.source ?: "sample", results?.searchedAt, stay.currency)
             if (trip != null) StayForTrip(model, stay, trip)   // m203: judged against the trip
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1025,7 +1037,8 @@ fun StayFilterSheet(model: AppModel) {
 fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
     var answer by remember(stay.id) { mutableStateOf(model.stayCompare?.takeIf { it.first == stay.id }?.second) }
     var failed by remember(stay.id) { mutableStateOf(false) }
-    LaunchedEffect(stay.id) {
+    var attempt by remember(stay.id) { mutableStateOf(0) }   // m213: "Try again" asks once more
+    LaunchedEffect(stay.id, attempt) {
         if (answer != null) return@LaunchedEffect
         val ends = trip.days.sortedBy { it.index }.mapNotNull { d ->
             val pins = d.plan?.stops.orEmpty().mapNotNull { it.pin }
@@ -1066,7 +1079,11 @@ fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
                     Text("Your dates stay as they are. To try others, change the trip's dates.", style = Theme.footnote)
                 }
             }
-            failed -> Text("This couldn't be worked out just now.", style = Theme.subheadline.copy(color = Theme.muted))
+            failed -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("This couldn't be worked out just now.", style = Theme.subheadline.copy(color = Theme.muted))
+                Text("Try again", style = Theme.subheadline.copy(color = Theme.accent, fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier.heightIn(min = 48.dp).pressable { failed = false; attempt += 1 })
+            }
             else -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.CircularProgressIndicator(Modifier.size(20.dp), color = Theme.accent, strokeWidth = 2.dp)
                 Text("Looking at this stay for your trip…", style = Theme.body.copy(color = Theme.muted))

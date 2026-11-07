@@ -519,7 +519,7 @@ struct FlightRow: View {
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 0) {
-                    Text(Money.whole(flight.price)).font(Theme.serif(26, relativeTo: .title2)).foregroundStyle(Theme.ink)
+                    Text(Money.whole(flight.price, flight.currency)).font(Theme.serif(26, relativeTo: .title2)).foregroundStyle(Theme.ink)
                     Text(adults > 1 ? "total for \(adults)" : "return, 1 adult").font(.caption).foregroundStyle(Theme.muted)
                 }
             }
@@ -583,7 +583,7 @@ struct FlightDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.outline, lineWidth: 1))
                 FoundPrice(price: flight.price, line: trip.map { $0.adults > 1 ? "total for \($0.adults)" : "return, 1 adult" } ?? "",
-                           source: results?.source ?? "sample", searchedAt: results?.searchedAt)
+                           source: results?.source ?? "sample", searchedAt: results?.searchedAt, currency: flight.currency)
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .firstTextBaseline) {
                         SectionLabel(text: "Where to book")
@@ -720,19 +720,25 @@ struct FoundPrice: View {
     let line: String
     let source: String
     let searchedAt: String?
+    var currency = "GBP"                   // m213: the price's own currency
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        // m213: with large text the price goes under its source line, so neither is squeezed into a sliver
+        let layout = typeSize >= .xxxLarge ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+                                           : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Found here").font(.footnote).foregroundStyle(Theme.muted)
                 Text(sourceLine).font(.footnote).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 0) {
-                Text(Money.whole(price)).font(Theme.serif(26, relativeTo: .title2)).foregroundStyle(Theme.ink)
+            if typeSize < .xxxLarge { Spacer() }
+            VStack(alignment: typeSize >= .xxxLarge ? .leading : .trailing, spacing: 0) {
+                Text(Money.whole(price, currency)).font(Theme.serif(26, relativeTo: .title2)).foregroundStyle(Theme.ink)
                 Text(line).font(.caption).foregroundStyle(Theme.muted)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Theme.deep, in: RoundedRectangle(cornerRadius: 16))
     }
@@ -960,8 +966,8 @@ struct StayCard: View {
                     Text(stay.room).font(.footnote).foregroundStyle(Theme.muted).lineLimit(1)
                     Spacer(minLength: 8)
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text(Money.whole(stay.priceNight)).font(Theme.serif(24, relativeTo: .title2)).foregroundStyle(Theme.ink)
-                        Text("a night · \(Money.whole(stay.priceTotal)) total").font(.caption).foregroundStyle(Theme.muted)
+                        Text(Money.whole(stay.priceNight, stay.currency)).font(Theme.serif(24, relativeTo: .title2)).foregroundStyle(Theme.ink)
+                        Text("a night · \(Money.whole(stay.priceTotal, stay.currency)) total").font(.caption).foregroundStyle(Theme.muted)
                     }
                 }
                 .padding(.top, 8)
@@ -1024,7 +1030,7 @@ struct StayMap: View {
             ForEach(stays.filter { $0.point != nil }) { s in
                 Annotation(s.name, coordinate: s.point!.coordinate) {
                     Button { onOpen(s) } label: {
-                        Text(Money.whole(s.priceNight))
+                        Text(Money.whole(s.priceNight, s.currency))
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(Theme.onAccent)
                             .padding(.horizontal, 10)
@@ -1096,8 +1102,8 @@ struct StayDetailView: View {
                     Text(why)
                         .foregroundStyle(Theme.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
-                    FoundPrice(price: stay.priceTotal, line: "\(Money.whole(stay.priceNight)) a night · \(stay.nights) night\(stay.nights == 1 ? "" : "s")",
-                               source: results?.source ?? "sample", searchedAt: results?.searchedAt)
+                    FoundPrice(price: stay.priceTotal, line: "\(Money.whole(stay.priceNight, stay.currency)) a night · \(stay.nights) night\(stay.nights == 1 ? "" : "s")",
+                               source: results?.source ?? "sample", searchedAt: results?.searchedAt, currency: stay.currency)
                     if scrollToTrip { Color.clear.frame(height: 40).id("trip") }   // CI only: clear of the status bar
                     if let trip { StayForTrip(stay: stay, trip: trip) }   // m203: judged against the trip
                     VStack(alignment: .leading, spacing: 10) {
@@ -1178,6 +1184,7 @@ struct StayForTrip: View {
     let trip: Trip
     @State private var answer: StayCompare?
     @State private var failed = false
+    @State private var attempt = 0          // m213: "Try again" asks once more
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -1204,7 +1211,11 @@ struct StayForTrip: View {
                 }
                 .surfaceCard(padding: 16)
             } else if failed {
-                Text("This couldn't be worked out just now.").font(.subheadline).foregroundStyle(Theme.muted)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("This couldn't be worked out just now.").font(.subheadline).foregroundStyle(Theme.muted)
+                    Button("Try again") { failed = false; attempt += 1 }
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.accent)
+                }
             } else {
                 HStack(spacing: 10) {
                     ProgressView()
@@ -1212,7 +1223,7 @@ struct StayForTrip: View {
                 }
             }
         }
-        .task(id: stay.id) { await load() }
+        .task(id: "\(stay.id)#\(attempt)") { await load() }
     }
 
     private func block(_ title: String, _ line: String, _ more: [String]) -> some View {

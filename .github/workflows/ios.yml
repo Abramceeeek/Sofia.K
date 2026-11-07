@@ -120,6 +120,13 @@ jobs:
           xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen hometoday -sky golden >/dev/null
           sleep 5
           xcrun simctl io "$UDID" screenshot "shots/hometoday-golden.png" >/dev/null
+          # WS8 (m213): the newest screens with large text (Accessibility Large), so nothing is cut off or squeezed
+          for s in stayfortrip tripdaymine; do
+            xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" \
+              -UIPreferredContentSizeCategoryName UICTContentSizeCategoryAccessibilityL >/dev/null
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "shots/$s-largetext.png" >/dev/null
+          done
           ls shots
 
       - name: Upload the screenshots

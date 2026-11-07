@@ -585,6 +585,10 @@ object Money {
     fun text(gbp: Double): String =
         if (gbp == Math.rint(gbp)) "£${gbp.toLong()}" else String.format(Locale.UK, "£%.2f", gbp)
 
-    /** £398, or £1,318: rounded to the pound for prices that aren't ours to promise. */
-    fun whole(gbp: Double): String = "£" + String.format(Locale.UK, "%,d", gbp.roundToInt())
+    /** £398, or £1,318: rounded to the pound for prices that aren't ours to promise. WS8 (m213): an amount in another
+     *  currency keeps its own code ("1,318 EUR", as the Brain writes it), never a pound sign it doesn't have. */
+    fun whole(amount: Double, currency: String = "GBP"): String {
+        val n = String.format(Locale.UK, "%,d", amount.roundToInt())
+        return if (currency == "GBP") "£$n" else if (currency.isEmpty()) n else "$n $currency"
+    }
 }

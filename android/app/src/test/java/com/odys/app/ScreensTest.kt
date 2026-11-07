@@ -199,6 +199,17 @@ class ScreensTest {
     }, { reach("Your dates stay as they are") })
     @Test fun you() = show("33-you") { tripPath += Dest.You }
 
+    // WS8 (m213): the newest screens on a small phone with large text (font scale 1.6), so nothing is cut off
+    @Config(qualifiers = "w320dp-h568dp-xhdpi", fontScale = 1.6f)
+    @Test fun stayForTripLargeText() = showThen("90-stayfortrip-large", {
+        stayAnswer(); openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first())
+    }, { reach("Day 1: you arrive") })
+    @Config(qualifiers = "w320dp-h568dp-xhdpi", fontScale = 1.6f)
+    @Test fun tripDayMineLargeText() = showThen("91-tripdaymine-large", {
+        val trip = ownTime()
+        tripPath += Dest.TripOverview(trip.id); tripPath += Dest.TripDay(trip.id, 1)
+    }, { reach("Your plans") })
+
     // D131 (shape A): the home on the day (part-way through) and after it (everything rated)
     private fun AppModel.today(at: Int) {
         plan = plan!!.copy(date = Dates.todayIso())
