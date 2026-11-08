@@ -6,7 +6,7 @@
 # Where a page gives term dates only (Wales), a holiday is the days between one term's last day and the next one's
 # first day, marked `between_terms: true`.
 areas:
-  cardiff:
+  cardiff: &wales_2026
     authority: Cardiff Council
     country: GB
     region: england-and-wales              # the bank-holiday division
@@ -22,6 +22,39 @@ areas:
       - {title: "Easter holiday", from: 2027-03-20, to: 2027-04-04, between_terms: true}
       - {title: "Summer half term", from: 2027-05-31, to: 2027-06-04}
     not_included: "The summer holiday starts on Wed 21 Jul 2027; its end is in the 2027-28 dates, not read yet."
+  # m222: the other 20 Welsh councils sharing Cardiff's dates, from the same Welsh Government table (re-read 8 Nov
+  # 2026: each council's own table on the page, with the same rows). Names as the page lists them.
+  anglesey: {<<: *wales_2026, authority: "Anglesey council", last_verified: "2026-11-08"}
+  blaenau_gwent: {<<: *wales_2026, authority: "Blaenau Gwent council", last_verified: "2026-11-08"}
+  bridgend: {<<: *wales_2026, authority: "Bridgend council", last_verified: "2026-11-08"}
+  caerphilly: {<<: *wales_2026, authority: "Caerphilly council", last_verified: "2026-11-08"}
+  carmarthenshire: {<<: *wales_2026, authority: "Carmarthenshire council", last_verified: "2026-11-08"}
+  ceredigion: {<<: *wales_2026, authority: "Ceredigion council", last_verified: "2026-11-08"}
+  conwy: {<<: *wales_2026, authority: "Conwy council", last_verified: "2026-11-08"}
+  denbighshire: {<<: *wales_2026, authority: "Denbighshire council", last_verified: "2026-11-08"}
+  flintshire: {<<: *wales_2026, authority: "Flintshire council", last_verified: "2026-11-08"}
+  gwynedd: {<<: *wales_2026, authority: "Gwynedd council", last_verified: "2026-11-08"}
+  merthyr_tydfil: {<<: *wales_2026, authority: "Merthyr Tydfil council", last_verified: "2026-11-08"}
+  monmouthshire: {<<: *wales_2026, authority: "Monmouthshire council", last_verified: "2026-11-08"}
+  neath_port_talbot: {<<: *wales_2026, authority: "Neath Port Talbot council", last_verified: "2026-11-08"}
+  newport: {<<: *wales_2026, authority: "Newport council", last_verified: "2026-11-08"}
+  pembrokeshire: {<<: *wales_2026, authority: "Pembrokeshire council", last_verified: "2026-11-08"}
+  rhondda_cynon_taf: {<<: *wales_2026, authority: "Rhondda Cynon Taf council", last_verified: "2026-11-08"}
+  swansea: {<<: *wales_2026, authority: "Swansea council", last_verified: "2026-11-08"}
+  torfaen: {<<: *wales_2026, authority: "Torfaen council", last_verified: "2026-11-08"}
+  vale_of_glamorgan: {<<: *wales_2026, authority: "Vale of Glamorgan council", last_verified: "2026-11-08"}
+  wrexham: {<<: *wales_2026, authority: "Wrexham council", last_verified: "2026-11-08"}
+  powys:   # the one Welsh council with different dates: the autumn term ends Tue 22 Dec 2026, the summer term Fri 16 Jul 2027
+    <<: *wales_2026
+    authority: Powys council
+    last_verified: "2026-11-08"
+    holidays:
+      - {title: "Autumn half term", from: 2026-10-26, to: 2026-10-30}
+      - {title: "Christmas holiday", from: 2026-12-23, to: 2027-01-03, between_terms: true}
+      - {title: "Spring half term", from: 2027-02-08, to: 2027-02-12}
+      - {title: "Easter holiday", from: 2027-03-20, to: 2027-04-04, between_terms: true}
+      - {title: "Summer half term", from: 2027-05-31, to: 2027-06-04}
+    not_included: "The summer holiday starts on Sat 17 Jul 2027; its end is in the 2027-28 dates, not published yet (8 Nov 2026: the 2027-28 page is 404)."
   edinburgh:
     authority: City of Edinburgh Council
     country: GB
@@ -43,3 +76,108 @@ areas:
       - {title: "Staff-only day (no pupils)", from: 2027-05-04, to: 2027-05-04}
       - {title: "Victoria Day", from: 2027-05-24, to: 2027-05-24}
     not_included: "The summer holiday starts after the term ends on Tue 29 Jun 2027; its end is in the 2027/28 dates, not read yet."
+  # m222: Northern Ireland, from the Department of Education (read 8 Nov 2026). These are "non-operational dates":
+  # schools can open on them at their own discretion, and staff training days differ from school to school.
+  northern_ireland:
+    authority: Department of Education (Northern Ireland)
+    country: GB
+    region: northern-ireland
+    source: https://www.education-ni.gov.uk/articles/school-holidays
+    source_note: "'Dates (inclusive)' of the non-operational dates for schools in 2026/2027; no update date shown."
+    last_verified: "2026-11-08"
+    years: ["2026-27"]
+    exceptions: "Non-operational dates only: schools can operate on them at their own discretion, and their own staff training and development days differ from school to school (the Department's page)."
+    holidays:
+      - {title: "Additional closure day (granted by the Minister for 2026/27)", from: 2026-09-25, to: 2026-09-25}
+      - {title: "Halloween", from: 2026-10-29, to: 2026-10-30}
+      - {title: "Christmas and New Year", from: 2026-12-21, to: 2027-01-01}
+      - {title: "Additional closure day (granted by the Minister for 2026/27)", from: 2027-01-25, to: 2027-01-25}
+      - {title: "Mid-term", from: 2027-02-11, to: 2027-02-12}
+      - {title: "St Patrick's Day", from: 2027-03-17, to: 2027-03-17}
+      - {title: "Easter", from: 2027-03-25, to: 2027-04-02}
+      - {title: "May Day", from: 2027-05-03, to: 2027-05-03}
+      - {title: "Additional closure day (granted by the Minister for 2026/27)", from: 2027-05-04, to: 2027-05-04}
+      - {title: "Spring Bank Holiday", from: 2027-05-31, to: 2027-05-31}
+    not_included: "The summer holiday begins on 1 Jul 2027; its end is the 2027/28 return, not read."
+
+  # m222: France, from the Ministry of Education's open data ('Le calendrier scolaire', DNE - Ministere de l'Education
+  # Nationale, Licence Ouverte v2.0 (Etalab), modified 1 Oct 2026; read 8 Nov 2026). The dataset says holidays begin
+  # "apres la classe des jours indiques" and classes resume "le matin des jours indiques"; its timestamps are local
+  # midnight. So a holiday here runs from the start day to the day before classes resume, inclusive. Which academies
+  # are in each zone is on the ministry's page, which refused automated reading (403): not listed here.
+  france_zone_a: &france_2026
+    authority: "France, zone A (Ministry of Education)"
+    country: FR
+    region: zone-a
+    source: https://data.education.gouv.fr/explore/dataset/fr-en-calendrier-scolaire/
+    source_note: "Open data 'Le calendrier scolaire' (DNE - Ministère de l'Education Nationale), Licence Ouverte v2.0, modified 2026-10-01. Pupils' dates (eleves); teachers' summer ends a day earlier."
+    last_verified: "2026-11-08"
+    years: ["2026-27"]
+    exceptions: "The data doesn't say which kinds of schools follow it. Holidays begin after class on the first day shown (the data's own definition)."
+    holidays:
+      - {title: "Vacances de la Toussaint", from: 2026-10-17, to: 2026-11-01}
+      - {title: "Vacances de Noël", from: 2026-12-19, to: 2027-01-03}
+      - {title: "Vacances d'hiver", from: 2027-02-13, to: 2027-02-28}
+      - {title: "Vacances de printemps", from: 2027-04-10, to: 2027-04-25}
+      - {title: "Vacances d'été", from: 2027-07-03, to: 2027-09-01}
+    not_included: "The Ascension bridge (pont de l'Ascension): the data gives the same start and end time, so it isn't added until read on the ministry's page."
+  france_zone_b:
+    <<: *france_2026
+    authority: "France, zone B (Ministry of Education)"
+    region: zone-b
+    holidays:
+      - {title: "Vacances de la Toussaint", from: 2026-10-17, to: 2026-11-01}
+      - {title: "Vacances de Noël", from: 2026-12-19, to: 2027-01-03}
+      - {title: "Vacances d'hiver", from: 2027-02-20, to: 2027-03-07}
+      - {title: "Vacances de printemps", from: 2027-04-17, to: 2027-05-02}
+      - {title: "Vacances d'été", from: 2027-07-03, to: 2027-09-01}
+  france_zone_c:
+    <<: *france_2026
+    authority: "France, zone C (Ministry of Education)"
+    region: zone-c
+    holidays:
+      - {title: "Vacances de la Toussaint", from: 2026-10-17, to: 2026-11-01}
+      - {title: "Vacances de Noël", from: 2026-12-19, to: 2027-01-03}
+      - {title: "Vacances d'hiver", from: 2027-02-06, to: 2027-02-21}
+      - {title: "Vacances de printemps", from: 2027-04-03, to: 2027-04-18}
+      - {title: "Vacances d'été", from: 2027-07-03, to: 2027-09-01}
+
+  # m222: the Netherlands, from the government's open data (Ministerie van Onderwijs, Cultuur en Wetenschap; CC0 1.0;
+  # last modified 7 May 2025; read 8 Nov 2026). Times are UTC; the last day ends at 23:59 Dutch time, so the dates are
+  # inclusive. The ministry gives only advice dates for the autumn, spring and May holidays ("Scholen mogen hier dus van
+  # afwijken": schools may differ); Christmas and summer are compulsory dates. Provinces per region aren't in the data.
+  netherlands_noord: &nl_2026
+    authority: "the Netherlands, region noord (Ministry of Education)"
+    country: NL
+    region: noord
+    source: https://opendata.rijksoverheid.nl/v1/infotypes/schoolholidays/schoolyear/2026-2027
+    source_note: "Government open data, 'Overzicht schoolvakanties schooljaar 2026-2027', CC0 1.0, last modified 2025-05-07."
+    last_verified: "2026-11-08"
+    years: ["2026-27"]
+    exceptions: "Autumn, spring and May dates are the ministry's advice: schools may differ, and the ministry advises asking the school."
+    holidays:
+      - {title: "Herfstvakantie (autumn)", from: 2026-10-10, to: 2026-10-18, note: "Advice dates: schools may differ."}
+      - {title: "Kerstvakantie (Christmas)", from: 2026-12-19, to: 2027-01-03}
+      - {title: "Voorjaarsvakantie (spring)", from: 2027-02-20, to: 2027-02-28, note: "Advice dates: schools may differ."}
+      - {title: "Meivakantie (May)", from: 2027-04-24, to: 2027-05-02, note: "Advice dates: schools may differ."}
+      - {title: "Zomervakantie (summer)", from: 2027-07-10, to: 2027-08-22}
+  netherlands_midden:
+    <<: *nl_2026
+    authority: "the Netherlands, region midden (Ministry of Education)"
+    region: midden
+    holidays:
+      - {title: "Herfstvakantie (autumn)", from: 2026-10-17, to: 2026-10-25, note: "Advice dates: schools may differ."}
+      - {title: "Kerstvakantie (Christmas)", from: 2026-12-19, to: 2027-01-03}
+      - {title: "Voorjaarsvakantie (spring)", from: 2027-02-20, to: 2027-02-28, note: "Advice dates: schools may differ."}
+      - {title: "Meivakantie (May)", from: 2027-04-24, to: 2027-05-02, note: "Advice dates: schools may differ."}
+      - {title: "Zomervakantie (summer)", from: 2027-07-17, to: 2027-08-29}
+  netherlands_zuid:
+    <<: *nl_2026
+    authority: "the Netherlands, region zuid (Ministry of Education)"
+    region: zuid
+    holidays:
+      - {title: "Herfstvakantie (autumn)", from: 2026-10-17, to: 2026-10-25, note: "Advice dates: schools may differ."}
+      - {title: "Kerstvakantie (Christmas)", from: 2026-12-19, to: 2027-01-03}
+      - {title: "Voorjaarsvakantie (spring)", from: 2027-02-13, to: 2027-02-21, note: "Advice dates: schools may differ."}
+      - {title: "Meivakantie (May)", from: 2027-04-24, to: 2027-05-02, note: "Advice dates: schools may differ."}
+      - {title: "Zomervakantie (summer)", from: 2027-07-24, to: 2027-09-05}

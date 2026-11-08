@@ -27,7 +27,27 @@ Every entry carries:
 | School holidays in Scotland | Each council | Edinburgh: https://www.edinburgh.gov.uk/schools/term-dates ("Dates for holidays are inclusive"; "Schools set their own start and finish times") |
 | Northern Ireland | Not researched yet | — |
 
-## Council coverage (the start of the table to grow)
+## Coverage matrix (m222, 8 Nov 2026): what's checked, and what isn't
+
+The matrix is data (`brain/data/calendar/coverage.yaml`), not prose. A test holds it to the dates both ways: every area with dates is in a "checked" row, and every "checked" row has its dates. **Two councils are never "UK-wide"**: England has no council checked.
+
+| Where | Level | Status | Source (read) | Years | Notes |
+|---|---|---|---|---|---|
+| **Wales**, all 22 councils | council | **checked** | Welsh Government's approved term dates (gov.wales, updated 16 Jul 2025; re-read 8 Nov) | 2026-27 | 21 share dates. **Powys** ends the autumn term Tue 22 Dec 2026 and the summer term Fri 16 Jul 2027. The page doesn't say which kinds of school follow them. Summer 2027's end: the 2027-28 page doesn't exist yet (404) |
+| **Scotland**, City of Edinburgh | council | **checked** | edinburgh.gov.uk (7 Nov) | 2026-27 | — |
+| Scotland, the other 31 councils | council | not checked | — | — | one council at a time |
+| **Northern Ireland** | national | **checked** | Department of Education, "school holidays" (8 Nov) | 2026-27 | "Non-operational dates": schools "can operate on these dates at their own discretion". It includes the Minister's three extra closure days (25 Sep 2026, 25 Jan 2027, 4 May 2027). Summer starts 1 Jul 2027 |
+| England: Camden, Manchester, Westminster, Birmingham, Kent, Hampshire, Leeds | council | **blocked** | each council's page refused automated reading (403; Leeds 404, moved) | — | to read by hand (~10 min each), never from an aggregator |
+| England, every other council | council | not checked | — | — | — |
+| **France**, zones A, B and C | region | **checked** | Ministry of Education open data "Le calendrier scolaire" (DNE, Licence Ouverte v2.0, modified 1 Oct 2026; read 8 Nov) | 2026-27 | **The definition:** the data says holidays begin "après la classe des jours indiqués" and classes resume "le matin des jours indiqués". So each holiday runs from its Saturday to the day before classes resume. Winter and spring differ by zone. The Ascension bridge is left out: its row has the same start and end time. Which académies are in each zone: the ministry's page is 403. Corsica and overseas aren't added |
+| **The Netherlands**, regions noord, midden and zuid | region | **checked** | Government open data (Ministerie van OCW, CC0, modified 7 May 2025; read 8 Nov) | 2026-27 | Autumn, spring and May are **advice dates** ("Scholen mogen hier dus van afwijken"), and each says so. Christmas and summer are compulsory. Provinces per region aren't in the data |
+| Every other country | national | not checked | — | — | — |
+
+**Bank holidays stay separate.** On 17 March 2027 a Northern Ireland traveller sees two entries: the bank holiday (GOV.UK) and the school's non-operational day (the Department), each with its source (tested).
+
+**Found:** France and the Netherlands publish official, machine-readable school calendars under open licences. That makes them the cheapest next countries. England has no national source, and 7 of 7 English council pages tried refused automated reading.
+
+## Council coverage (7 Nov, the first table; superseded by the matrix above)
 
 | Country | Region | Council | Source | School years | Last verified | Exceptions | Status |
 |---|---|---|---|---|---|---|---|

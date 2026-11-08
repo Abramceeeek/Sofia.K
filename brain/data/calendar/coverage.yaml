@@ -1,0 +1,27 @@
+# m222: which school-holiday jurisdictions ODYS has checked, and which it hasn't. Two councils are never "UK-wide"
+# (Abram, 7 Nov). A row is "checked" only if its dates are in school_holidays.yaml (a test cross-checks both ways);
+# "blocked" means the official page refused automated reading; "not checked" means not tried yet. Bank holidays are a
+# separate kind of data (GOV.UK's file, m204) and aren't counted here.
+#
+# status: checked | blocked | not checked     level: national | region | council
+rows:
+  # ---- Wales: one Welsh Government table for all 22 councils (gov.wales, 2026-27, last updated 16 Jul 2025)
+  - {country: GB, nation: Wales, level: council, name: "All 22 Welsh councils (21 share dates; Powys differs)", status: checked, years: "2026-27", areas: [cardiff, anglesey, blaenau_gwent, bridgend, caerphilly, carmarthenshire, ceredigion, conwy, denbighshire, flintshire, gwynedd, merthyr_tydfil, monmouthshire, neath_port_talbot, newport, pembrokeshire, rhondda_cynon_taf, swansea, torfaen, vale_of_glamorgan, wrexham, powys], last_verified: "2026-11-08", note: "Summer 2027's end is in the 2027-28 table, not published yet (404 on 8 Nov 2026)."}
+  # ---- Scotland: each of 32 councils sets its own
+  - {country: GB, nation: Scotland, level: council, name: "City of Edinburgh Council", status: checked, years: "2026-27", areas: [edinburgh], last_verified: "2026-11-07"}
+  - {country: GB, nation: Scotland, level: council, name: "The other 31 Scottish councils", status: not checked, note: "Each council's own page, one at a time."}
+  # ---- Northern Ireland: the Department of Education's non-operational dates (schools can differ)
+  - {country: GB, nation: Northern Ireland, level: national, name: "Department of Education (NI) non-operational dates", status: checked, years: "2026-27", areas: [northern_ireland], last_verified: "2026-11-08", note: "Schools can operate on these dates at their own discretion."}
+  # ---- England: each council sets dates for its community schools; academies and others can set their own
+  - {country: GB, nation: England, level: council, name: "London Borough of Camden", status: blocked, last_tried: "2026-11-07", note: "403"}
+  - {country: GB, nation: England, level: council, name: "Manchester City Council", status: blocked, last_tried: "2026-11-07", note: "403"}
+  - {country: GB, nation: England, level: council, name: "Westminster City Council", status: blocked, last_tried: "2026-11-05", note: "500 and 403 (m204)"}
+  - {country: GB, nation: England, level: council, name: "Birmingham City Council", status: blocked, last_tried: "2026-11-08", note: "403"}
+  - {country: GB, nation: England, level: council, name: "Kent County Council", status: blocked, last_tried: "2026-11-08", note: "403"}
+  - {country: GB, nation: England, level: council, name: "Hampshire County Council", status: blocked, last_tried: "2026-11-08", note: "403"}
+  - {country: GB, nation: England, level: council, name: "Leeds City Council", status: blocked, last_tried: "2026-11-08", note: "404: the term-dates page has moved"}
+  - {country: GB, nation: England, level: council, name: "Every other English council", status: not checked}
+  # ---- Beyond the UK: national open data where the government publishes it
+  - {country: FR, nation: France, level: region, name: "Zones A, B and C (Ministry of Education open data)", status: checked, years: "2026-27", areas: [france_zone_a, france_zone_b, france_zone_c], last_verified: "2026-11-08", note: "Which académies are in each zone: the ministry's page refused automated reading (403). Corsica and overseas: not added."}
+  - {country: NL, nation: the Netherlands, level: region, name: "Regions noord, midden and zuid (government open data)", status: checked, years: "2026-27", areas: [netherlands_noord, netherlands_midden, netherlands_zuid], last_verified: "2026-11-08", note: "Autumn, spring and May: advice dates only. Provinces per region: not in the data."}
+  - {country: "*", nation: "Every other country", level: national, name: "Not researched", status: not checked}

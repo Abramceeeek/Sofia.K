@@ -66,6 +66,7 @@ class SchoolArea:
     years: tuple[str, ...]          # school years covered, "2026-27"
     exceptions: str
     holidays: tuple[tuple[str, date, date], ...]
+    notes: tuple[str, ...] = ()     # m222: one per holiday ("Advice dates: schools may differ."), "" when none
 
 
 def load_school_areas(path: Path = DATA_DIR / "calendar" / "school_holidays.yaml") -> dict[str, SchoolArea]:
@@ -79,7 +80,8 @@ def load_school_areas(path: Path = DATA_DIR / "calendar" / "school_holidays.yaml
             if t < f:
                 raise ValueError(f"{key}: {title} ends before it starts")
         out[key] = SchoolArea(a["authority"], a["country"], a["region"], a["source"], str(a["last_verified"]),
-                              tuple(a.get("years") or ()), a.get("exceptions", ""), hols)
+                              tuple(a.get("years") or ()), a.get("exceptions", ""), hols,
+                              tuple(h.get("note", "") for h in a.get("holidays") or []))
     return out
 
 
@@ -106,10 +108,12 @@ def _school(area_key: str, start: date, end: date, view: View, areas: dict[str, 
     covered_until = max((t for _, _, t in a.holidays), default=None)
     if covered_until is None or end > covered_until:
         view.unknown.append(f"{a.authority}'s school holidays are checked for {', '.join(a.years)} only.")
-    for title, f, t in a.holidays:
+    notes = a.notes or ("",) * len(a.holidays)
+    for (title, f, t), note in zip(a.holidays, notes):
         if f <= end and t >= start:
             view.entries.append(Entry("school_holiday", title, f, t, a.country, a.region, a.authority, a.source,
-                                      a.last_verified, f"Schools that follow {a.authority}'s dates", a.exceptions))
+                                      a.last_verified, f"Schools that follow {a.authority}'s dates",
+                                      " ".join(x for x in (note, a.exceptions) if x)))
 
 
 def home_calendar(division: str | None, school_area: str | None, start: date, end: date,
@@ -155,3 +159,38 @@ def stay_note(dest: Destination | None, key: str, checkin: date, checkout: date)
     v = destination_calendar(dest, key, checkin, checkout - timedelta(days=0))
     gaps = [u for u in v.unknown if not u.startswith("Festivals")]
     return " ".join(gaps) or None
+
+
+# ---- m222: what's checked, and what isn't (data/calendar/coverage.yaml) --------------------------------------------
+
+def load_coverage(path: Path = DATA_DIR / "calendar" / "coverage.yaml") -> list[dict]:
+    """The coverage matrix, one row per jurisdiction tried or still to do. A "checked" row names the areas whose dates
+    are in school_holidays.yaml; `check_coverage` holds the two files to each other."""
+    d = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return list(d.get("rows") or [])
+
+
+def check_coverage(rows: list[dict], areas: dict[str, SchoolArea]) -> list[str]:
+    """Problems, in words (none means the matrix and the data agree): every area is in a "checked" row, every
+    "checked" row's areas exist, and a blocked or unchecked row names no areas."""
+    problems, listed = [], set()
+    for r in rows:
+        names = r.get("areas") or []
+        if r["status"] == "checked":
+            if not names:
+                problems.append(f"{r['name']}: checked but names no areas")
+            problems += [f"{r['name']}: no dates for {a}" for a in names if a not in areas]
+            listed |= set(names)
+        elif names:
+            problems.append(f"{r['name']}: {r['status']} but names areas")
+    problems += [f"{a}: dates with no 'checked' row" for a in areas if a not in listed]
+    return problems
+
+
+def coverage_summary(rows: list[dict]) -> dict[str, dict[str, int]]:
+    """Per nation: how many rows are checked, blocked or not checked (rows, not schools or councils)."""
+    out: dict[str, dict[str, int]] = {}
+    for r in rows:
+        c = out.setdefault(r["nation"], {"checked": 0, "blocked": 0, "not checked": 0})
+        c[r["status"]] += 1
+    return out
