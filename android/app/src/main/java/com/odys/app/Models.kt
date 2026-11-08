@@ -28,6 +28,7 @@ data class Onboarding(
     val based: BasedQuestion? = null,                         // D116
     val categoryCards: List<CategoryCard>? = null,            // D116
     val categories: CategoriesPrompt? = null,
+    val placesMode: String? = null,                           // m220: "kinds" gives everyone the category cards
     val conjointWords: List<PatternWords>? = null,            // D117
     val summary: SummaryText? = null,                         // D117
     val testb: TestBText? = null,                             // Build 2

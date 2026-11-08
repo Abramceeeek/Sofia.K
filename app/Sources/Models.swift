@@ -28,6 +28,7 @@ struct Onboarding: Codable {
     let based: BasedQuestion?                     // D116: "Where are you based?", the first question
     let categoryCards: [CategoryCard]?            // D116: visitors from abroad get these instead of the London places
     let categories: CategoriesPrompt?
+    var placesMode: String? = nil                 // m220: "kinds" gives everyone the category cards (after the round)
     let conjointWords: [PatternWords]?            // D117: "So far you've picked less walking every time"
     let summary: SummaryText?                     // D117: "So far, I've learned…"
     let testb: TestBText?                         // Build 2: the blind Plan 1 / Plan 2 pair

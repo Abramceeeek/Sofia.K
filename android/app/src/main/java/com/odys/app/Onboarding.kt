@@ -122,7 +122,7 @@ fun OnboardingView(model: AppModel) {
     Column(Modifier.screen().statusBarsPadding().navigationBarsPadding()) {
         if (model.step != Step.Based && model.onboarding != null && previous != null) {
             // m176: a way back to the step before
-            val label = if (previous == Step.Places && model.isVisitor) "Kinds of places" else previous.title
+            val label = if (previous == Step.Places && model.usesKinds) "Kinds of places" else previous.title
             Box(Modifier.padding(horizontal = 12.dp)) { BackLink("Back to $label") { model.back() } }   // 19 Oct: Android's arrow
         }
         val ob = model.onboarding
@@ -136,7 +136,7 @@ fun OnboardingView(model: AppModel) {
                     Step.Why -> WhyStep(model)
                     Step.Places -> {
                         val cards = ob.categoryCards
-                        if (model.isVisitor && !cards.isNullOrEmpty()) CategoryStep(model, cards) { model.finishCategories() }
+                        if (model.usesKinds && !cards.isNullOrEmpty()) CategoryStep(model, cards) { model.finishCategories() }   // m220
                         else PlacesStep(model, ob.swipePlaces) { model.finishPlaces() }
                     }
                     Step.ThisOrThat -> ThisOrThatStep(model, ob.conjointTasks) { model.finishThisOrThat() }
@@ -845,7 +845,7 @@ fun ImproveView(model: AppModel, onClose: () -> Unit) {
                         Box(Modifier.padding(top = 12.dp)) { ArchGlyph(width = 22.dp) }
                         PageTitle("Thank you.")
                         Text("Your next plans will use your budget and interests.", style = Theme.body.copy(color = Theme.inkSoft))
-                        val later = if (model.isVisitor) emptyList() else (model.onboarding?.swipePlacesLater ?: emptyList())
+                        val later = if (model.usesKinds) emptyList() else (model.onboarding?.swipePlacesLater ?: emptyList())
                         val laterTasks = model.onboarding?.conjointTasksLater ?: emptyList()
                         if (later.isNotEmpty() || laterTasks.isNotEmpty()) {
                             Text("Want to go further? About 2 minutes more.", style = Theme.headline, modifier = Modifier.padding(top = 8.dp))

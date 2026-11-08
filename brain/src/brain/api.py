@@ -323,7 +323,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
              "reactions": {**summary.place_reactions(c.phrase),                                  # D117
                            "want_yes": f"Noted: you'd like to try {c.phrase}."}}
             for c in cats.items.values()]
+        mode = app.state.onboarding.get("places_mode", "named")
         return {**app.state.onboarding,
+                # m220: "kinds" gives everyone the category cards (after the friends' round); else visitors only
+                "places_mode": mode if mode in ("named", "kinds") else "named",
                 # D116: visitors from abroad get kinds of place instead of the London places
                 "category_cards": kinds,
                 "categories": None if cats is None else {"prompt": cats.prompt, "note": cats.note,

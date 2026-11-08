@@ -22,6 +22,11 @@ based:   # D116: the first question. "abroad" gets the category cards instead of
 why_travel:   # D115: feelings, each mapped onto existing features in brain/reasons.py (FEELINGS) and used in the fit
   prompt: "How do you most want to feel on a day out? Pick one or two."   # D118: "None of these" is a link below
   options: [restored, excited, connected, curious, peaceful]
+# m220 (Abram, 7 Nov): after the friends' round, kinds of places become the onboarding for everyone. "named" keeps the
+# London places for people based in the UK, as the friends' round has it; "kinds" gives everyone the category cards
+# (with "Never tried: would you like to?"). Visitors from abroad get the kinds either way, and stay their own cohort.
+# Change to "kinds" only after the friends' round (decisions/universal-onboarding.md); builds before this ignore it.
+places_mode: named
 swipe:
   prompt: "Have you been? How did it feel?"
   reactions: [loved, fine, didnt_enjoy, havent_been, skip]   # skip: "Not sure" (D110)

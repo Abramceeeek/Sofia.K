@@ -108,9 +108,12 @@ final class AppModel {
 
     /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
     var isVisitor: Bool { profile.based == "abroad" }
+    /// m220: who answers kinds of places rather than named London places: visitors, and everyone once the Brain says
+    /// "kinds" (after the friends' round). Only the places step follows this; the cohort stays `isVisitor`.
+    var usesKinds: Bool { isVisitor || onboarding?.placesMode == "kinds" }
 
-    /// Screen titles follow the person's path: visitors see "Kinds of places" where others see the London places.
-    var stepTitle: String { step == .places && isVisitor ? "Kinds of places" : step.title }
+    /// Screen titles follow the person's path: kinds of places where others see the London places.
+    var stepTitle: String { step == .places && usesKinds ? "Kinds of places" : step.title }
     var why: [String] = []
     var reactions: [Int: String] = [:]
     var choices: [Int: String] = [:]
@@ -289,7 +292,7 @@ final class AppModel {
     private func questions(in step: Step) -> Int {
         switch step {
         case .based, .bestHour, .why: return 1
-        case .places: return isVisitor ? (onboarding?.categoryCards?.count ?? 0) : (onboarding?.swipePlaces.count ?? 0)
+        case .places: return usesKinds ? (onboarding?.categoryCards?.count ?? 0) : (onboarding?.swipePlaces.count ?? 0)
         case .thisOrThat: return onboarding?.conjointTasks.count ?? 0
         case .learned: return 0
         }

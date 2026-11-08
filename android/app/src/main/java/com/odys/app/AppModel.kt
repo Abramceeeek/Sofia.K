@@ -202,7 +202,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var lastRequest by mutableStateOf<PlanRequest?>(null)
 
     val isVisitor: Boolean get() = profile.based == "abroad"
-    val stepTitle: String get() = if (step == Step.Places && isVisitor) "Kinds of places" else step.title
+    /** m220: who answers kinds of places rather than named London places: visitors, and everyone once the Brain says
+     *  "kinds" (after the friends' round). Only the places step follows this; the cohort stays [isVisitor]. */
+    val usesKinds: Boolean get() = isVisitor || onboarding?.placesMode == "kinds"
+    val stepTitle: String get() = if (step == Step.Places && usesKinds) "Kinds of places" else step.title
 
     init {
         if (client.token == null) {
@@ -303,7 +306,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     private fun questionsIn(s: Step): Int = when (s) {
         Step.Based, Step.BestHour, Step.Why -> 1
-        Step.Places -> if (isVisitor) (onboarding?.categoryCards?.size ?: 0) else (onboarding?.swipePlaces?.size ?: 0)
+        Step.Places -> if (usesKinds) (onboarding?.categoryCards?.size ?: 0) else (onboarding?.swipePlaces?.size ?: 0)
         Step.ThisOrThat -> onboarding?.conjointTasks?.size ?: 0
         Step.Learned -> 0
     }

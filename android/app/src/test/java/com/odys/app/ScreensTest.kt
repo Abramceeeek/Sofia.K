@@ -151,6 +151,12 @@ class ScreensTest {
     @Test fun categories() = show("06b-categories") {
         route = Route.Onboarding; step = Step.Places; profile = profile.copy(based = "abroad")
     }
+    // m220: after the friends' round, a Londoner gets the kinds of places too, and stays a resident (Test B cohort)
+    @Test fun categoriesEveryone() = show("06c-categories-everyone") {
+        route = Route.Onboarding; step = Step.Places; profile = profile.copy(based = "london")
+        onboarding = onboarding!!.copy(placesMode = "kinds")
+        check(usesKinds && !isVisitor) { "a Londoner with kinds of places must stay a resident" }
+    }
     @Test fun thisOrThat() = show("07-thisorthat") { route = Route.Onboarding; step = Step.ThisOrThat }
     @Test fun learnedStep() = show("07b-learned") { route = Route.Onboarding; step = Step.Learned }
     @Test fun survey() = show("15-survey") { surveyDone = false }
