@@ -27,6 +27,10 @@ class Settings:
     # m203: live prices for a stay's nearby dates. Off until Nuitée confirms its terms in writing (Abram, 7 Nov):
     # decisions/liteapi-clarification.md. Off means labelled sample prices.
     stay_dates_live: bool = False
+    # m218: the ECB's daily euro reference rates (free, no key), to compare prices in different currencies. Off until
+    # Abram switches it on (decisions/currency-comparison.md). Off means: one currency is compared as before; several
+    # are grouped by currency, never ranked against each other.
+    fx_rates_live: bool = False
 
 
 def driver_url(raw: str) -> str:

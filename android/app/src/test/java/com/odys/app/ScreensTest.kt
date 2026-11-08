@@ -189,6 +189,10 @@ class ScreensTest {
     // D131: flights and stays open inside the trip, and You from the home's menu
     private fun AppModel.openBook() { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.Book }
     @Test fun flights() = show("26-flights") { openBook(); book.segment = "flights" }
+    // m218: three fares in euros, compared at a dated ECB rate: the estimate beside each fare, never instead of it
+    @Test fun flightsCurrency() = show("26b-flightscurrency") {
+        book.flights = demo("demo_flights_mixed", FlightResults.serializer()); openBook(); book.segment = "flights"
+    }
     @Test fun flightFilters() = showThen("27-flightfilters", { openBook(); book.segment = "flights"; book.showFilters = true },
         {}, layers = true)
     @Test fun flight() = show("28-flight") { openBook(); bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }

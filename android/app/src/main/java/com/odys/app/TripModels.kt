@@ -90,13 +90,23 @@ data class Flight(
     val stops: Int = 0,
     val durationMin: Int = 0,
     val tags: List<String>? = null,
+    val estimate: PriceEstimate? = null,   // m218: in pounds, beside a fare in another currency; never instead of it
 )
 
+/** m218: a price in another currency converted to pounds at a dated rate (the ECB's): an estimate, shown beside the
+ *  price, which stays in its own currency. */
 @Serializable
-data class StopFacet(val stops: Int, val minPrice: Double)
+data class PriceEstimate(val amount: Double, val currency: String = "GBP", val line: String = "",
+                         val total: Double? = null) {
+    val text: String get() = "≈ ${Money.whole(amount, currency)} · $line"
+}
 
 @Serializable
-data class AirlineFacet(val name: String, val code: String, val minPrice: Double, val count: Int)
+data class StopFacet(val stops: Int, val minPrice: Double, val currency: String? = null)   // m218: its own currency
+
+@Serializable
+data class AirlineFacet(val name: String, val code: String, val minPrice: Double, val count: Int,
+                        val currency: String? = null)
 
 @Serializable
 data class FlightFacets(
@@ -104,10 +114,15 @@ data class FlightFacets(
     val airlines: List<AirlineFacet> = emptyList(),
     val price: List<Double>? = null,
     val legMinutes: List<Int>? = null,
-)
+    val currency: String? = null,          // m218: the price slider's currency
+    val estimated: Boolean? = null,        // and whether its figures are converted estimates
+) {
+    /** "£389", or "≈ £334" when the figure is converted. */
+    fun money(amount: Double): String = (if (estimated == true) "≈ " else "") + Money.whole(amount, currency ?: "GBP")
+}
 
 @Serializable
-data class FlightTab(val price: Double, val durationMin: Int)
+data class FlightTab(val price: Double, val durationMin: Int, val currency: String? = null)
 
 @Serializable
 data class FlightResults(
@@ -120,6 +135,7 @@ data class FlightResults(
     val tabs: Map<String, FlightTab?>? = null,
     val links: List<TripLink> = emptyList(),
     val searchedAt: String? = null,
+    val compareNotes: List<String>? = null,   // m218: how the prices compare (currencies), and whether bags differ
 )
 
 // ---- stays (POST /v1/trips/stays) -------------------------------------------------------------------------------
@@ -167,6 +183,9 @@ data class StayResult(
     val priceNight: Double,
     val links: List<TripLink> = emptyList(),
     val tags: List<String>? = null,
+    val estimate: PriceEstimate? = null,   // m218
+    val payThere: Double? = null,          // m203: taxes or fees paid at the property, in the stay's currency
+    val payThereOther: String? = null,     // m209: such fees in another currency, said, never added
 ) {
     val point: Point? get() = if (lat != null && lon != null) Point(lat, lon) else null
 }
@@ -176,10 +195,13 @@ data class KindFacet(val kind: String, val count: Int)
 
 @Serializable
 data class StayFacets(val priceNight: List<Double>? = null, val kinds: List<KindFacet> = emptyList(),
-                      val maxKm: Double? = null)
+                      val maxKm: Double? = null, val currency: String? = null, val estimated: Boolean? = null) {
+    fun money(amount: Double): String = (if (estimated == true) "≈ " else "") + Money.whole(amount, currency ?: "GBP")
+}
 
 @Serializable
-data class StayTab(val priceNight: Double, val rating: Double? = null, val distanceKm: Double? = null)
+data class StayTab(val priceNight: Double, val rating: Double? = null, val distanceKm: Double? = null,
+                   val currency: String? = null)
 
 @Serializable
 data class StayResults(
@@ -193,6 +215,7 @@ data class StayResults(
     val links: List<TripLink> = emptyList(),
     val centre: String = "",
     val searchedAt: String? = null,
+    val compareNotes: List<String>? = null,   // m218
 )
 
 // ---- days (POST /v1/me/trips/days) ------------------------------------------------------------------------------
@@ -396,7 +419,11 @@ data class TripChoice(
     val forNights: Int? = null,
     val sample: Boolean? = null,
     val landsNextDay: Boolean? = null,
-)
+    val currency: String? = null,          // m218: the price's own currency; older saved choices are in pounds
+) {
+    val money: String get() = Money.whole(price, currency ?: "GBP")
+    val inPounds: Boolean get() = (currency ?: "GBP") == "GBP"
+}
 
 @Serializable
 data class Trip(

@@ -94,11 +94,24 @@ struct Flight: Codable, Hashable, Identifiable {
     let stops: Int
     let durationMin: Int
     let tags: [String]?
+    var estimate: PriceEstimate? = nil     // m218: in pounds, beside a fare in another currency; never instead of it
+}
+
+/// m218: a price in another currency converted to pounds at a dated rate (the ECB's): an estimate, shown beside the
+/// price, which stays in its own currency.
+struct PriceEstimate: Codable, Hashable {
+    let amount: Double
+    let currency: String
+    let line: String                       // "ECB rate of 6 Nov 2026"
+    var total: Double? = nil               // a stay's whole price, converted
+
+    var text: String { "≈ \(Money.whole(amount, currency)) · \(line)" }
 }
 
 struct StopFacet: Codable, Hashable {
     let stops: Int
     let minPrice: Double
+    var currency: String? = nil            // m218: each price says its own currency
 }
 
 struct AirlineFacet: Codable, Hashable {
@@ -106,6 +119,7 @@ struct AirlineFacet: Codable, Hashable {
     let code: String
     let minPrice: Double
     let count: Int
+    var currency: String? = nil
 }
 
 struct FlightFacets: Codable, Hashable {
@@ -113,11 +127,19 @@ struct FlightFacets: Codable, Hashable {
     let airlines: [AirlineFacet]
     let price: [Double]?
     let legMinutes: [Int]?
+    var currency: String? = nil            // m218: the price slider's currency
+    var estimated: Bool? = nil             // and whether its figures are converted estimates
+
+    /// "£389", or "≈ £334" when the figure is converted.
+    func money(_ amount: Double) -> String {
+        (estimated == true ? "≈ " : "") + Money.whole(amount, currency ?? "GBP")
+    }
 }
 
 struct FlightTab: Codable, Hashable {
     let price: Double
     let durationMin: Int
+    var currency: String? = nil
 }
 
 struct FlightResults: Codable, Hashable {
@@ -130,6 +152,7 @@ struct FlightResults: Codable, Hashable {
     let tabs: [String: FlightTab?]?
     let links: [TripLink]
     let searchedAt: String?
+    var compareNotes: [String]? = nil      // m218: how the prices compare (currencies), and whether bags differ
 }
 
 // ---- stays (POST /v1/trips/stays) -------------------------------------------------------------------------------
@@ -181,6 +204,9 @@ struct StayResult: Codable, Hashable, Identifiable {
     let priceNight: Double
     let links: [TripLink]
     let tags: [String]?
+    var estimate: PriceEstimate? = nil     // m218
+    var payThere: Double? = nil            // m203: taxes or fees paid at the property, in the stay's currency
+    var payThereOther: String? = nil       // m209: such fees in another currency, said, never added
 
     var point: Point? { lat.flatMap { la in lon.map { Point(lat: la, lon: $0) } } }
 }
@@ -194,12 +220,19 @@ struct StayFacets: Codable, Hashable {
     let priceNight: [Double]?
     let kinds: [KindFacet]
     let maxKm: Double?
+    var currency: String? = nil            // m218
+    var estimated: Bool? = nil
+
+    func money(_ amount: Double) -> String {
+        (estimated == true ? "≈ " : "") + Money.whole(amount, currency ?? "GBP")
+    }
 }
 
 struct StayTab: Codable, Hashable {
     let priceNight: Double
     let rating: Double?
     let distanceKm: Double?
+    var currency: String? = nil
 }
 
 struct StayResults: Codable, Hashable {
@@ -213,6 +246,7 @@ struct StayResults: Codable, Hashable {
     let links: [TripLink]
     let centre: String
     let searchedAt: String?
+    var compareNotes: [String]? = nil      // m218
 }
 
 // ---- days (POST /v1/me/trips/days) ------------------------------------------------------------------------------
@@ -474,6 +508,10 @@ struct TripChoice: Codable, Hashable {
     var forNights: Int? = nil
     var sample: Bool? = nil                // journey round 2: a sample result (no search keys yet), never a real price
     var landsNextDay: Bool? = nil          // journey round 2: an overnight flight; the trip starts the day it lands
+    var currency: String? = nil            // m218: the price's own currency; older saved choices are in pounds
+
+    var money: String { Money.whole(price, currency ?? "GBP") }
+    var inPounds: Bool { (currency ?? "GBP") == "GBP" }
 }
 
 struct Trip: Codable, Hashable, Identifiable {

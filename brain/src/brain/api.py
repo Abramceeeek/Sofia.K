@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, daybudget, dayplan, db, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+from . import (backup, daybudget, dayplan, db, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -132,6 +132,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.destinations = load_destinations(settings.data_dir / "destinations.yaml")   # WS1 registry
         app.state.trips = trips.TripSearch(airports, dests, duffel_token=settings.duffel_token,   # D120
                                            liteapi_key=settings.liteapi_key)
+        app.state.rates = fx.EcbRates() if settings.fx_rates_live else None   # m218: off by default
         arr = settings.data_dir / "arrivals.yaml"
         app.state.arrivals = tripdays.load_arrivals(arr if arr.exists() else DATA_DIR / "arrivals.yaml")   # D122
         with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
@@ -929,8 +930,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             max_stops=f.max_stops, stops=f.stops, out_times=f.out_times, in_times=f.in_times, out_depart=f.out_depart,
             in_depart=f.in_depart, max_leg_min=f.max_leg_min, airlines=f.airlines, max_price=f.max_price,
             checked_bag=f.checked_bag, refundable=f.refundable, sort=f.sort)
-        shown = trips.filter_flights(found, ff)
-        tabs, tags = trips.flight_tops(found, ff)
+        px = trips.flight_pricing(found, app.state.rates.get() if app.state.rates else None)   # m218
+        shown = trips.filter_flights(found, ff, px)
+        tabs, tags = trips.flight_tops(found, ff, px)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "flights", source, len(found), len(shown), f.sort, used)
         note = {"sample": trips.SAMPLE_NOTE,
@@ -941,8 +943,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "duffel": "Some low-cost airlines, such as Ryanair, sell only on their own sites and a few partners, so "
                           "they may be missing here. Skyscanner, below, shows them."}.get(source)
         return {"source": source, "note": note, "total": len(found), "shown": len(shown),
-                "results": [{**trips.flight_out(x), "tags": tags.get(x.id, [])} for x in shown[:60]],
-                "facets": trips.flight_facets(found), "tabs": tabs, "links": links,
+                "results": [{**trips.flight_out(x), "tags": tags.get(x.id, []),
+                             "estimate": px.estimate(x.price, x.currency)} for x in shown[:60]],
+                "facets": trips.flight_facets(found, px), "tabs": tabs, "links": links,
+                # m218: how the prices compare (currencies), and whether the fares include the same bags
+                "compare_notes": [n for n in (px.note("flights"), trips.bags_note(shown, ff)) if n],
                 "searched_at": datetime.now(timezone.utc).isoformat()}
 
     @app.get("/v1/travel-timing/bank-holidays")
@@ -1038,8 +1043,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         sf = trips.StayFilters(
             max_night=f.max_night, min_night=f.min_night, min_stars=f.min_stars, min_rating=f.min_rating,
             kinds=f.kinds, refundable=f.refundable, breakfast=f.breakfast, max_km=f.max_km, sort=f.sort)
-        shown = trips.filter_stays(found, sf)
-        tabs, tags = trips.stay_tops(found, sf)
+        px = trips.stay_pricing(found, app.state.rates.get() if app.state.rates else None)   # m218
+        shown = trips.filter_stays(found, sf, px)
+        tabs, tags = trips.stay_tops(found, sf, px)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "stays", source, len(found), len(shown), f.sort, used)
         results = []
@@ -1047,11 +1053,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             d = trips.stay_out(x)
             d["links"] = trips.stay_links(q, stay=x)
             d["tags"] = tags.get(x.id, [])
+            d["estimate"] = trips.stay_estimate(px, x)   # m218: beside the price in its own currency, never instead
             results.append(d)
         note = {"sample": trips.SAMPLE_STAY_NOTE, "liteapi_sandbox": trips.SANDBOX_STAY_NOTE}.get(source)
         return {"source": source, "note": note,
-                "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found),
+                "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found, px),
                 "tabs": tabs, "links": links, "centre": dest.centre_name,
+                "compare_notes": [n for n in (px.note("places to stay"),) if n],   # m218
                 "searched_at": datetime.now(timezone.utc).isoformat()}
 
     @app.post("/v1/me/trips/length")

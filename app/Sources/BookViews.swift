@@ -268,7 +268,7 @@ struct FlightSortTabs: View {
             HStack(spacing: 6) {
                 ForEach([("best", "Best"), ("cheapest", "Cheapest"), ("fastest", "Fastest")], id: \.0) { key, label in
                     let top = tabs[key] ?? nil
-                    SortTab(label: label, sub: top.map { "\(Money.whole($0.price)) · \(Dates.duration($0.durationMin))" } ?? "–",
+                    SortTab(label: label, sub: top.map { "\(Money.whole($0.price, $0.currency ?? "GBP")) · \(Dates.duration($0.durationMin))" } ?? "–",
                             on: model.book.flightFilters.sort == key) { model.book.flightFilters.sort = key }
                 }
             }
@@ -296,8 +296,9 @@ struct StaySortTabs: View {
     }
 
     static func sub(_ key: String, _ t: StayTab) -> String {
-        if key == "rating", let r = t.rating { return String(format: "%.1f · ", r) + Money.whole(t.priceNight) }
-        return Money.whole(t.priceNight) + (t.distanceKm.map { String(format: " · %.1f km", $0) } ?? "")
+        let price = Money.whole(t.priceNight, t.currency ?? "GBP")   // m218: its own currency
+        if key == "rating", let r = t.rating { return String(format: "%.1f · ", r) + price }
+        return price + (t.distanceKm.map { String(format: " · %.1f km", $0) } ?? "")
     }
 }
 
@@ -430,6 +431,7 @@ struct FlightList: View {
                     .foregroundStyle(Theme.muted)
                     .padding(.horizontal, 4)
                 if let note = r.note { SourceNote(text: note) }
+                ForEach(r.compareNotes ?? [], id: \.self) { SourceNote(text: $0) }   // m218: currencies, bags
                 ForEach(r.results) { f in
                     NavigationLink(value: f) { FlightRow(flight: f, adults: trip.adults) }
                         .buttonStyle(PressStyle())
@@ -521,6 +523,9 @@ struct FlightRow: View {
                 VStack(alignment: .trailing, spacing: 0) {
                     Text(Money.whole(flight.price, flight.currency)).font(Theme.serif(26, relativeTo: .title2)).foregroundStyle(Theme.ink)
                     Text(adults > 1 ? "total for \(adults)" : "return, 1 adult").font(.caption).foregroundStyle(Theme.muted)
+                    if let e = flight.estimate {   // m218: converted at a dated rate, beside the fare, never instead
+                        Text(e.text).font(.caption).foregroundStyle(Theme.muted)
+                    }
                 }
             }
             .padding(.top, 10)
@@ -583,7 +588,8 @@ struct FlightDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.outline, lineWidth: 1))
                 FoundPrice(price: flight.price, line: trip.map { $0.adults > 1 ? "total for \($0.adults)" : "return, 1 adult" } ?? "",
-                           source: results?.source ?? "sample", searchedAt: results?.searchedAt, currency: flight.currency)
+                           source: results?.source ?? "sample", searchedAt: results?.searchedAt, currency: flight.currency,
+                           estimate: flight.estimate)
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .firstTextBaseline) {
                         SectionLabel(text: "Where to book")
@@ -664,7 +670,8 @@ struct FlightDetailView: View {
                                 arriveTime: sameDay || nextDay ? flight.outbound.arriveTime : nil,
                                 leaveTime: back.flatMap { $0.departDay == trip.end ? $0.departTime : nil },
                                 arrivePlace: flight.outbound.destination, leavePlace: back?.origin,
-                                sample: flight.sample, landsNextDay: nextDay && trip.nights >= 1 ? true : nil)
+                                sample: flight.sample, landsNextDay: nextDay && trip.nights >= 1 ? true : nil,
+                                currency: flight.currency)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.nights > 0 ? "Return flight" : "Flight",
                                   price: flight.price, searchedAt: model.book.flights?.searchedAt.flatMap(Self.parseDate),
                                   choice: choice))
@@ -721,6 +728,7 @@ struct FoundPrice: View {
     let source: String
     let searchedAt: String?
     var currency = "GBP"                   // m213: the price's own currency
+    var estimate: PriceEstimate? = nil     // m218: in pounds at a dated rate, under the price
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
@@ -736,6 +744,9 @@ struct FoundPrice: View {
             VStack(alignment: typeSize >= .xxxLarge ? .leading : .trailing, spacing: 0) {
                 Text(Money.whole(price, currency)).font(Theme.serif(26, relativeTo: .title2)).foregroundStyle(Theme.ink)
                 Text(line).font(.caption).foregroundStyle(Theme.muted)
+                if let e = estimate {
+                    Text(e.text).font(.caption).foregroundStyle(Theme.muted)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -863,6 +874,7 @@ struct StayList: View {
                 }
                 .padding(.horizontal, 4)
                 if let note = r.note { SourceNote(text: note) }
+                ForEach(r.compareNotes ?? [], id: \.self) { SourceNote(text: $0) }   // m218
                 if book.stayMap {
                     StayMap(stays: r.results, centre: r.centre) { openStay = $0 }
                         .frame(height: 300)
@@ -968,6 +980,10 @@ struct StayCard: View {
                     VStack(alignment: .trailing, spacing: 0) {
                         Text(Money.whole(stay.priceNight, stay.currency)).font(Theme.serif(24, relativeTo: .title2)).foregroundStyle(Theme.ink)
                         Text("a night · \(Money.whole(stay.priceTotal, stay.currency)) total").font(.caption).foregroundStyle(Theme.muted)
+                        if let fee = stay.payThere, fee > 0 {   // m218: "Cheapest" counts these; so does the card
+                            Text("+ \(Money.whole(fee, stay.currency)) paid at the property").font(.caption).foregroundStyle(Theme.muted)
+                        }
+                        if let e = stay.estimate { Text(e.text + " a night").font(.caption).foregroundStyle(Theme.muted) }
                     }
                 }
                 .padding(.top, 8)
@@ -1169,7 +1185,7 @@ struct StayDetailView: View {
     private func open(_ link: TripLink, _ trip: Trip?) {
         guard let url = URL(string: link.url), let trip else { return }
         let choice = TripChoice(kind: "stay", title: stay.name, provider: link.name, price: stay.priceTotal, booked: false,
-                                point: stay.point, sample: stay.sample)
+                                point: stay.point, sample: stay.sample, currency: stay.currency)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.lengthLabel, price: stay.priceTotal,
                                   searchedAt: model.book.stays?.searchedAt.flatMap(FlightDetailView.parseDate),
                                   choice: choice))
@@ -1248,7 +1264,7 @@ struct StayForTrip: View {
                 }
             }
             Spacer(minLength: 8)
-            Text(d.whole.map { Money.whole($0) } ?? "Not available").foregroundStyle(Theme.ink).monospacedDigit()
+            Text(d.whole.map { Money.whole($0, stay.currency) } ?? "Not available").foregroundStyle(Theme.ink).monospacedDigit()
         }
         .accessibilityElement(children: .combine)
     }
@@ -1297,7 +1313,7 @@ struct HandoffSheet: View {
         HStack {
             Text(h.what).font(.subheadline).foregroundStyle(Theme.inkSoft)
             Spacer()
-            Text(h.price.map { Money.whole($0) } ?? "See their price").font(.headline).foregroundStyle(Theme.ink)
+            Text(h.price.map { Money.whole($0, h.choice.currency ?? "GBP") } ?? "See their price").font(.headline).foregroundStyle(Theme.ink)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -1475,7 +1491,7 @@ struct FlightFilterSheet: View {
         if let prices = book.flights?.facets.price, prices.count == 2, prices[0] < prices[1] {
             let hi = prices[1].rounded(.up)
             VStack(alignment: .leading, spacing: 8) {
-                FilterTitle(text: "Maximum price", value: book.flightFilters.maxPrice.map { Money.whole($0) } ?? "No limit")
+                FilterTitle(text: "Maximum price", value: book.flightFilters.maxPrice.map { book.flights?.facets.money($0) ?? Money.whole($0) } ?? "No limit")
                 Slider(value: Binding(get: { book.flightFilters.maxPrice ?? hi },
                                       set: { v in book.flightFilters.maxPrice = v >= hi ? nil : v }),
                        in: prices[0].rounded(.down)...hi, step: 10)
@@ -1501,7 +1517,8 @@ struct FlightFilterSheet: View {
             VStack(alignment: .leading, spacing: 4) {
                 FilterTitle(text: "Airlines").padding(.bottom, 6)
                 ForEach(airlines, id: \.name) { a in
-                    AirlineRow(name: a.name, price: a.minPrice, on: book.flightFilters.airlines.contains(a.name)) {
+                    AirlineRow(name: a.name, price: a.minPrice, currency: a.currency ?? "GBP",
+                               estimated: book.flights?.facets.estimated == true, on: book.flightFilters.airlines.contains(a.name)) {
                         if let i = book.flightFilters.airlines.firstIndex(of: a.name) {
                             book.flightFilters.airlines.remove(at: i)
                         } else {
@@ -1526,8 +1543,12 @@ struct FlightFilterSheet: View {
     }
 
     private func fromPrice(_ r: FlightResults?, _ k: Int) -> String {
-        let ps = (r?.facets.stops ?? []).filter { min($0.stops, 2) == k }.map(\.minPrice)
-        return ps.min().map { "from \(Money.whole($0))" } ?? "none"
+        // m218: the lowest per number of stops, in its own currency (the Brain never takes a minimum across currencies)
+        let ps = (r?.facets.stops ?? []).filter { min($0.stops, 2) == k }
+        let unit = r?.facets.currency ?? "GBP"
+        let low = ps.filter { ($0.currency ?? unit) == unit }.min { $0.minPrice < $1.minPrice } ?? ps.min { $0.minPrice < $1.minPrice }
+        return low.map { "from " + ((($0.currency ?? unit) == unit) ? (r?.facets.money($0.minPrice) ?? Money.whole($0.minPrice))
+                                                                    : Money.whole($0.minPrice, $0.currency ?? unit)) } ?? "none"
     }
 
     private func showLabel(_ r: FlightResults?) -> String {
@@ -1539,6 +1560,8 @@ struct FlightFilterSheet: View {
 struct AirlineRow: View {
     let name: String
     let price: Double
+    var currency = "GBP"                   // m218: the airline's lowest fare, in its own currency
+    var estimated = false                  // converted to pounds at a dated rate
     let on: Bool
     let action: () -> Void
 
@@ -1548,7 +1571,7 @@ struct AirlineRow: View {
                 TickBox(on: on)
                 Text(name).foregroundStyle(Theme.ink)
                 Spacer()
-                Text(Money.whole(price)).font(.footnote).foregroundStyle(Theme.muted)
+                Text((estimated && currency == "GBP" ? "≈ " : "") + Money.whole(price, currency)).font(.footnote).foregroundStyle(Theme.muted)
             }
             .font(.subheadline)
             .frame(minHeight: 44)
@@ -1575,7 +1598,7 @@ struct StayFilterSheet: View {
             if let prices = r?.facets.priceNight, prices.count == 2, prices[0] < prices[1] {
                 let lo = prices[0].rounded(.down), hi = prices[1].rounded(.up)
                 VStack(alignment: .leading, spacing: 8) {
-                    FilterTitle(text: "Maximum per night", value: f.maxNight.map { Money.whole($0) } ?? "No limit")
+                    FilterTitle(text: "Maximum per night", value: f.maxNight.map { r?.facets.money($0) ?? Money.whole($0) } ?? "No limit")
                     Slider(value: Binding(get: { f.maxNight ?? hi },
                                           set: { v in book.stayFilters.maxNight = v >= hi ? nil : v }),
                            in: lo...hi, step: 5)

@@ -1068,10 +1068,10 @@ fun TripOverview(model: AppModel, tripId: String, onHelp: () -> Unit, onBack: ()
             val f = trip.flight
             val sub = when {
                 f != null && !trip.fits(f) -> "Chosen for other dates: check it on ${f.provider}, or choose again"
-                f != null -> "${f.provider} · ${Money.whole(f.price)}" + if (f.sample == true) " · a sample price, not a real fare" else ""
+                f != null -> "${f.provider} · ${f.money}" + if (f.sample == true) " · a sample price, not a real fare" else ""
                 trip.origin == null -> "Choose where you're flying from"
                 results && model.book.flights?.facets?.price?.firstOrNull() != null ->
-                    "From ${Money.whole(model.book.flights!!.facets.price!!.first())} · ${model.book.flights!!.total} options from ${trip.origin.city}"
+                    "From ${model.book.flights!!.facets.money(model.book.flights!!.facets.price!!.first())} · ${model.book.flights!!.total} options from ${trip.origin.city}"
                 else -> "Search flights from ${trip.origin.city}"
             }
             TripStepCard("1 · Getting there", { ChoiceStatus(f, trip.fits(f)) }, f?.title ?: "Choose your flight", sub) {
@@ -1083,9 +1083,9 @@ fun TripOverview(model: AppModel, tripId: String, onHelp: () -> Unit, onBack: ()
             val s = trip.stay
             val sub = when {
                 s != null && !trip.fits(s) -> "Chosen for other dates: check it on ${s.provider}, or choose again"
-                s != null -> "${s.provider} · ${Money.whole(s.price)} for ${trip.lengthLabel}" + if (s.sample == true) " · a sample price" else ""
+                s != null -> "${s.provider} · ${s.money} for ${trip.lengthLabel}" + if (s.sample == true) " · a sample price" else ""
                 results && model.book.stays?.facets?.priceNight?.firstOrNull() != null ->
-                    "From ${Money.whole(model.book.stays!!.facets.priceNight!!.first())} a night · ${model.book.stays!!.total} places"
+                    "From ${model.book.stays!!.facets.money(model.book.stays!!.facets.priceNight!!.first())} a night · ${model.book.stays!!.total} places"
                 else -> "Hotels, flats and hostels, from where your days happen"
             }
             TripStepCard("${if (trip.needFlight) 2 else 1} · Where you'll stay", { ChoiceStatus(s, trip.fits(s)) },
@@ -1184,8 +1184,10 @@ fun TripTotal(trip: Trip, flights: FlightResults?, stays: StayResults?) {
         val low = flights?.facets?.price?.firstOrNull()
         rows += when {
             f != null && !trip.fits(f) -> Triple("Flight", "for other dates", null)
-            f != null -> Triple("Flight", Money.whole(f.price), f.price)
-            low != null -> Triple("Flight", "from ${Money.whole(low)}", low)
+            // m218: a fare in another currency is shown, never added to the pounds total
+            f != null -> Triple("Flight", f.money, if (f.inPounds) f.price else null)
+            low != null -> Triple("Flight", "from ${flights?.facets?.money(low) ?: Money.whole(low)}",
+                if ((flights?.facets?.currency ?: "GBP") == "GBP") low else null)
             else -> Triple("Flight", "not chosen yet", null)
         }
     }
@@ -1195,8 +1197,9 @@ fun TripTotal(trip: Trip, flights: FlightResults?, stays: StayResults?) {
         val label = "Stay · ${trip.lengthLabel}"
         rows += when {
             s != null && !trip.fits(s) -> Triple(label, "for other dates", null)
-            s != null -> Triple(label, Money.whole(s.price), s.price)
-            low != null -> Triple(label, "from ${Money.whole(low * trip.nights)}", low * trip.nights)
+            s != null -> Triple(label, s.money, if (s.inPounds) s.price else null)
+            low != null -> Triple(label, "from ${stays?.facets?.money(low * trip.nights) ?: Money.whole(low * trip.nights)}",
+                if ((stays?.facets?.currency ?: "GBP") == "GBP") low * trip.nights else null)
             else -> Triple(label, "not chosen yet", null)
         }
     }
@@ -1214,6 +1217,13 @@ fun TripTotal(trip: Trip, flights: FlightResults?, stays: StayResults?) {
         }
         if (trip.flight?.sample == true || trip.stay?.sample == true || flights?.source == "sample" || stays?.source == "sample") {
             Text("Includes sample prices: the real ones show once live search is on.", style = Theme.footnote)
+        }
+        // m218: a price in another currency is listed, never added to the pounds total
+        val chosen = listOfNotNull(trip.flight.takeIf { trip.needFlight }, trip.stay.takeIf { trip.needStay })
+        val searched = (trip.needFlight && trip.flight == null && (flights?.facets?.currency ?: "GBP") != "GBP") ||
+            (trip.needStay && trip.stay == null && (stays?.facets?.currency ?: "GBP") != "GBP")
+        if (chosen.any { trip.fits(it) && !it.inPounds } || searched) {
+            Text("Prices in another currency are listed below, not added to this total.", style = Theme.footnote)
         }
         for ((label, value, _) in rows) {
             Row {

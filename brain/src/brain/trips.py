@@ -34,6 +34,8 @@ from zoneinfo import ZoneInfo
 
 import yaml
 
+from . import fx
+
 DUFFEL_URL = "https://api.duffel.com/air/offer_requests"
 LITEAPI_URL = "https://api.liteapi.travel/v3.0/hotels/rates"
 LITEAPI_LIMIT = 400   # hotels per search. 7 Oct, live sandbox: 400 found 365-386 London hotels (ibis, easyHotel, Point A…) in
@@ -209,6 +211,12 @@ class Stay:
     @property
     def price_night(self) -> float:
         return self.price_total / max(self.nights, 1)
+
+    @property
+    def cost_night(self) -> float:
+        """m218: what a night really costs in the stay's currency: the price plus the fees paid at the property in that
+        currency (fees in another currency are said, never added). "Cheapest" sorts by this."""
+        return (self.price_total + self.pay_there) / max(self.nights, 1)
 
 
 # ---- Duffel (flights) ---------------------------------------------------------------------------------------------
@@ -541,12 +549,36 @@ def _norm(values: list[float]) -> Callable[[float], float]:
     return lambda v: 0.0 if hi == lo else (v - lo) / (hi - lo)
 
 
-def best_scores(flights: list[Flight]) -> dict[str, float]:
+def _price_scale(keys: dict[str, tuple[int, float]]) -> Callable[[str], float]:
+    """m218: each result's price scaled 0..1 among the results it can be compared with (all of them, or, when the
+    currencies can't be compared, those in its own currency). `keys` are fx.Pricing.key values by result id."""
+    groups: dict[int, list[float]] = {}
+    for g, v in keys.values():
+        groups.setdefault(g, []).append(v)
+    norms = {g: _norm(vs) for g, vs in groups.items()}
+    return lambda i: norms[keys[i][0]](keys[i][1])
+
+
+def flight_pricing(flights: list[Flight], rates: fx.Rates | None = None) -> fx.Pricing:
+    return fx.pricing([x.currency for x in flights], rates)
+
+
+def best_scores(flights: list[Flight], px: fx.Pricing | None = None) -> dict[str, float]:
     """Our own "Best": 60% price and 40% total time, each scaled across the results (lower is better). Not
-    Skyscanner's formula, which isn't public; it puts cheap-but-slow and quick-but-dear behind the balanced ones."""
-    p = _norm([f.price for f in flights])
+    Skyscanner's formula, which isn't public; it puts cheap-but-slow and quick-but-dear behind the balanced ones.
+    m218: prices are scaled only among prices that can be compared (fx.Pricing)."""
+    px = px or flight_pricing(flights)
+    p = _price_scale({f.id: px.key(f.price, f.currency) for f in flights})
     d = _norm([float(f.duration_min) for f in flights])
-    return {f.id: 0.6 * p(f.price) + 0.4 * d(float(f.duration_min)) for f in flights}
+    return {f.id: 0.6 * p(f.id) + 0.4 * d(float(f.duration_min)) for f in flights}
+
+
+def _within(px: fx.Pricing, amount: float, currency: str, most: float | None, least: float | None = None) -> bool:
+    """m218: a price filter is in `px.unit`. A price that can't be put in that unit fails it, like any unknown."""
+    if most is None and least is None:
+        return True
+    v = px.in_unit(amount, currency)
+    return v is not None and (most is None or v <= most) and (least is None or v >= least)
 
 
 def _in_window(minute: int, window: tuple[int, int] | None) -> bool:
@@ -561,7 +593,8 @@ def time_bucket(minute: int) -> str:
     return next(k for k, (lo, hi) in TIME_BUCKETS.items() if lo <= minute <= hi)
 
 
-def filter_flights(flights: list[Flight], f: FlightFilters) -> list[Flight]:
+def filter_flights(flights: list[Flight], f: FlightFilters, px: fx.Pricing | None = None) -> list[Flight]:
+    px = px or flight_pricing(flights)
     keep = [x for x in flights
             if (f.max_stops is None or x.stops <= f.max_stops)
             and (not f.stops or min(x.stops, 2) in f.stops)
@@ -571,54 +604,115 @@ def filter_flights(flights: list[Flight], f: FlightFilters) -> list[Flight]:
             and (x.inbound is None or _in_window(x.inbound.depart_minute, f.in_depart))
             and (f.max_leg_min is None or x.longest_leg_min <= f.max_leg_min)
             and (not f.airlines or x.airline in f.airlines)
-            and (f.max_price is None or x.price <= f.max_price)
+            and _within(px, x.price, x.currency, f.max_price)
             and (not f.checked_bag or (x.checked_bags or 0) >= 1)
             and (not f.refundable or x.refundable is True)]
+    pk = lambda x: px.key(x.price, x.currency)   # m218: never ranks one currency against another unconverted
     if f.sort == "cheapest":
-        return sorted(keep, key=lambda x: (x.price, x.duration_min))
+        return sorted(keep, key=lambda x: (pk(x), x.duration_min))
     if f.sort == "fastest":
-        return sorted(keep, key=lambda x: (x.duration_min, x.price))
-    scores = best_scores(flights)
-    return sorted(keep, key=lambda x: (scores.get(x.id, 1.0), x.price))
+        return sorted(keep, key=lambda x: (x.duration_min, pk(x)))
+    scores = best_scores(flights, px)
+    group = (lambda x: pk(x)[0]) if px.mode == "grouped" else (lambda x: 0)
+    return sorted(keep, key=lambda x: (group(x), scores.get(x.id, 1.0), pk(x)))
 
 
 FLIGHT_TAGS = {"best": "Best", "cheapest": "Cheapest", "fastest": "Fastest"}
 
 
-def flight_tops(flights: list[Flight], f: FlightFilters) -> tuple[dict, dict[str, list[str]]]:
-    """The design's sort tabs: the top of each sort within the current filters (its price and time, shown on the tab),
-    and each result's tags ("Best · Cheapest")."""
+def _cheapest_label(px: fx.Pricing, currency: str) -> str:
+    """m218: "Cheapest" only where prices compare; else "Cheapest in EUR", within its own currency."""
+    return "Cheapest" if px.mode != "grouped" else f"Cheapest in {currency}"
+
+
+def flight_tops(flights: list[Flight], f: FlightFilters,
+                px: fx.Pricing | None = None) -> tuple[dict, dict[str, list[str]]]:
+    """The design's sort tabs: the top of each sort within the current filters (its price, in its own currency, and
+    time, shown on the tab), and each result's tags ("Best · Cheapest"). m218: when the currencies can't be compared,
+    the top of each currency is "Cheapest in …", and nothing is the cheapest overall."""
+    px = px or flight_pricing(flights)
     tabs, tags = {}, {}
     for sort, label in FLIGHT_TAGS.items():
-        top = filter_flights(flights, replace(f, sort=sort))
-        tabs[sort] = {"price": top[0].price, "duration_min": top[0].duration_min} if top else None
-        if top:
+        top = filter_flights(flights, replace(f, sort=sort), px)
+        tabs[sort] = ({"price": top[0].price, "currency": top[0].currency, "duration_min": top[0].duration_min}
+                      if top else None)
+        if not top:
+            continue
+        if sort == "cheapest" and px.mode == "grouped":
+            for cur in px.currencies:
+                first = next((x for x in top if x.currency == cur), None)
+                if first is not None:
+                    tags.setdefault(first.id, []).append(_cheapest_label(px, cur))
+        else:
             tags.setdefault(top[0].id, []).append(label)
     return tabs, tags
 
 
-def flight_facets(flights: list[Flight]) -> dict:
+def _lowest(px: fx.Pricing, prices: list[tuple[float, str]]) -> tuple[float, str]:
+    """m218: the lowest of these prices, as (amount, currency): in `px.unit` when they can be put in it, else the
+    lowest in the first currency group they have (never a minimum across currencies)."""
+    inside = [v for a, c in prices if (v := px.in_unit(a, c)) is not None]
+    if inside:
+        return round(min(inside), 2), px.unit
+    g = min(px.key(a, c)[0] for a, c in prices)
+    return min((a, c) for a, c in prices if px.key(a, c)[0] == g)
+
+
+def flight_facets(flights: list[Flight], px: fx.Pricing | None = None) -> dict:
     """What the filter screen needs, from all results (not only the filtered ones): the cheapest price per number of
-    stops and per airline, and the ranges for the sliders; plus the top of each sort, as on the tabs."""
+    stops and per airline, and the ranges for the sliders; plus the top of each sort, as on the tabs. m218: every
+    price says its currency; the slider's range is in `currency`, and `estimated` says it's converted."""
     if not flights:
-        return {"stops": [], "airlines": [], "price": None, "leg_minutes": None, "tabs": {}}
-    stops = {}
+        return {"stops": [], "airlines": [], "price": None, "leg_minutes": None, "tabs": {}, "currency": fx.HOME,
+                "estimated": False}
+    px = px or flight_pricing(flights)
+    by_stops: dict[int, list[tuple[float, str]]] = {}
     for x in flights:
-        stops[x.stops] = min(stops.get(x.stops, math.inf), x.price)
+        by_stops.setdefault(x.stops, []).append((x.price, x.currency))
+    stops = []
+    for k in sorted(by_stops):
+        v, c = _lowest(px, by_stops[k])
+        stops.append({"stops": k, "min_price": v, "currency": c})
     airlines: dict[str, dict] = {}
     for x in flights:
-        a = airlines.setdefault(x.airline, {"name": x.airline, "code": x.airline_code, "min_price": math.inf, "count": 0})
-        a["min_price"] = min(a["min_price"], x.price)
+        a = airlines.setdefault(x.airline, {"name": x.airline, "code": x.airline_code, "prices": [], "count": 0})
+        a["prices"].append((x.price, x.currency))
         a["count"] += 1
+    rows = []
+    for a in airlines.values():
+        v, c = _lowest(px, a.pop("prices"))
+        rows.append({**a, "min_price": v, "currency": c})
     tabs = {}
     for sort in ("best", "cheapest", "fastest"):
-        top = filter_flights(flights, FlightFilters(sort=sort))[0]
-        tabs[sort] = {"price": top.price, "duration_min": top.duration_min}
-    return {"stops": [{"stops": k, "min_price": v} for k, v in sorted(stops.items())],
-            "airlines": sorted(airlines.values(), key=lambda a: a["min_price"]),
-            "price": [min(x.price for x in flights), max(x.price for x in flights)],
+        top = filter_flights(flights, FlightFilters(sort=sort), px)[0]
+        tabs[sort] = {"price": top.price, "currency": top.currency, "duration_min": top.duration_min}
+    inside = [v for x in flights if (v := px.in_unit(x.price, x.currency)) is not None]
+    return {"stops": stops,
+            "airlines": sorted(rows, key=lambda a: (px.key(a["min_price"], a["currency"]), a["name"])),
+            "price": [round(min(inside), 2), round(max(inside), 2)] if inside else None,
             "leg_minutes": [min(x.longest_leg_min for x in flights), max(x.longest_leg_min for x in flights)],
-            "tabs": tabs}
+            "tabs": tabs, "currency": px.unit,
+            "estimated": px.mode == "converted" and any(c != px.unit for c in px.currencies)}
+
+
+def bags_note(flights: list[Flight], f: FlightFilters) -> str | None:
+    """m218: fares are compared as sold. When some include a checked bag and some don't (or it isn't known), say so:
+    a bag's own price isn't asked of Duffel here (only its single-offer call returns `available_services`)."""
+    if f.checked_bag:
+        return None
+    yes = any(x.checked_bags is not None and x.checked_bags >= 1 for x in flights)
+    no = any(x.checked_bags == 0 for x in flights)
+    unknown = any(x.checked_bags is None for x in flights)
+    if yes and no:
+        head = "Some of these fares include a checked bag and some don't" + (", and for some it isn't known" if unknown else "")
+    elif unknown and yes:
+        head = "Some of these fares include a checked bag, and for others it isn't known"
+    elif unknown and no:
+        head = "Some of these fares have no checked bag, and for others it isn't known"
+    else:
+        return None
+    return (f"{head}. A bag costs extra and its price isn't shown here: to compare like for like, filter for "
+            f"\u201cChecked bag included\u201d.")
 
 
 @dataclass
@@ -648,55 +742,73 @@ def add_distances(stays: list[Stay], lat: float, lon: float) -> list[Stay]:
     return stays
 
 
-def recommended_scores(stays: list[Stay]) -> dict[str, float]:
+def stay_pricing(stays: list[Stay], rates: fx.Rates | None = None) -> fx.Pricing:
+    return fx.pricing([x.currency for x in stays], rates)
+
+
+def recommended_scores(stays: list[Stay], px: fx.Pricing | None = None) -> dict[str, float]:
     """Our own "Recommended" (higher is better): 45% guests' rating, 35% cheaper per night, 20% nearer the centre,
-    each scaled across the results. A place with no rating counts as middling."""
+    each scaled across the results. A place with no rating counts as middling. m218: the price is the night's real
+    cost (fees paid there included), scaled only among prices that can be compared."""
+    px = px or stay_pricing(stays)
     rating = _norm([s.rating for s in stays if s.rating is not None] or [5.0])
-    price = _norm([s.price_night for s in stays])
+    price = _price_scale({s.id: px.key(s.cost_night, s.currency) for s in stays})
     dist = _norm([s.distance_km for s in stays if s.distance_km is not None] or [0.0])
     return {s.id: 0.45 * (rating(s.rating) if s.rating is not None else 0.5)
-                  + 0.35 * (1 - price(s.price_night))
+                  + 0.35 * (1 - price(s.id))
                   + 0.2 * (1 - dist(s.distance_km) if s.distance_km is not None else 0.5) for s in stays}
 
 
-def filter_stays(stays: list[Stay], f: StayFilters) -> list[Stay]:
+def filter_stays(stays: list[Stay], f: StayFilters, px: fx.Pricing | None = None) -> list[Stay]:
+    px = px or stay_pricing(stays)
     keep = [s for s in stays
-            if (f.max_night is None or s.price_night <= f.max_night)
-            and (f.min_night is None or s.price_night >= f.min_night)
+            if _within(px, s.price_night, s.currency, f.max_night, f.min_night)
             and (f.min_stars is None or (s.stars or 0) >= f.min_stars)
             and (f.min_rating is None or (s.rating or 0) >= f.min_rating)
             and (not f.kinds or s.kind in f.kinds)
             and (not f.refundable or s.refundable is True)
             and (not f.breakfast or s.breakfast)
             and (f.max_km is None or (s.distance_km is not None and s.distance_km <= f.max_km))]
+    pk = lambda s: px.key(s.cost_night, s.currency)   # m218: fees paid there included; never across currencies
     if f.sort == "price":
-        return sorted(keep, key=lambda s: s.price_night)
+        return sorted(keep, key=pk)
     if f.sort == "rating":
-        return sorted(keep, key=lambda s: (-(s.rating or 0), s.price_night))
+        return sorted(keep, key=lambda s: (-(s.rating or 0), pk(s)))
     if f.sort == "distance":
         return sorted(keep, key=lambda s: (s.distance_km if s.distance_km is not None else math.inf))
-    scores = recommended_scores(stays)
-    return sorted(keep, key=lambda s: -scores.get(s.id, 0.0))
+    scores = recommended_scores(stays, px)
+    group = (lambda s: pk(s)[0]) if px.mode == "grouped" else (lambda s: 0)
+    return sorted(keep, key=lambda s: (group(s), -scores.get(s.id, 0.0)))
 
 
 STAY_TAGS = {"recommended": "Best for your days", "price": "Cheapest", "rating": "Top rated"}
 
 
-def stay_tops(stays: list[Stay], f: StayFilters) -> tuple[dict, dict[str, list[str]]]:
-    """As flight_tops, for stays: the top of each sort within the filters, and the tags (not "Top rated" as a tag)."""
+def stay_tops(stays: list[Stay], f: StayFilters, px: fx.Pricing | None = None) -> tuple[dict, dict[str, list[str]]]:
+    """As flight_tops, for stays: the top of each sort within the filters, and the tags (not "Top rated" as a tag).
+    m218: each tab's price says its currency; "Cheapest" only where prices compare, else "Cheapest in …"."""
+    px = px or stay_pricing(stays)
     tabs, tags = {}, {}
     for sort, label in STAY_TAGS.items():
-        top = filter_stays(stays, replace(f, sort=sort))
-        tabs[sort] = ({"price_night": round(top[0].price_night, 2), "rating": top[0].rating,
-                       "distance_km": top[0].distance_km} if top else None)
-        if top and sort != "rating":
+        top = filter_stays(stays, replace(f, sort=sort), px)
+        tabs[sort] = ({"price_night": round(top[0].price_night, 2), "currency": top[0].currency,
+                       "rating": top[0].rating, "distance_km": top[0].distance_km} if top else None)
+        if not top or sort == "rating":
+            continue
+        if sort == "price" and px.mode == "grouped":
+            for cur in px.currencies:
+                first = next((x for x in top if x.currency == cur), None)
+                if first is not None:
+                    tags.setdefault(first.id, []).append(_cheapest_label(px, cur))
+        else:
             tags.setdefault(top[0].id, []).append(label)
     return tabs, tags
 
 
-def stay_facets(stays: list[Stay]) -> dict:
+def stay_facets(stays: list[Stay], px: fx.Pricing | None = None) -> dict:
     if not stays:
-        return {"price_night": None, "stars": [], "kinds": [], "max_km": None}
+        return {"price_night": None, "stars": [], "kinds": [], "max_km": None, "currency": fx.HOME, "estimated": False}
+    px = px or stay_pricing(stays)
     stars: dict[float, int] = {}
     kinds: dict[str, int] = {}
     for s in stays:
@@ -704,10 +816,20 @@ def stay_facets(stays: list[Stay]) -> dict:
             stars[s.stars] = stars.get(s.stars, 0) + 1
         kinds[s.kind] = kinds.get(s.kind, 0) + 1
     dists = [s.distance_km for s in stays if s.distance_km is not None]
-    return {"price_night": [round(min(s.price_night for s in stays), 2), round(max(s.price_night for s in stays), 2)],
+    inside = [v for s in stays if (v := px.in_unit(s.price_night, s.currency)) is not None]
+    return {"price_night": [round(min(inside), 2), round(max(inside), 2)] if inside else None,
             "stars": [{"stars": k, "count": v} for k, v in sorted(stars.items())],
             "kinds": [{"kind": k, "count": v} for k, v in sorted(kinds.items(), key=lambda kv: -kv[1])],
-            "max_km": round(max(dists), 1) if dists else None}
+            "max_km": round(max(dists), 1) if dists else None, "currency": px.unit,
+            "estimated": px.mode == "converted" and any(c != px.unit for c in px.currencies)}
+
+
+def stay_estimate(px: fx.Pricing, s: Stay) -> dict | None:
+    """m218: a stay in another currency, converted beside its own price (a night and the whole stay)."""
+    est = px.estimate(s.price_night, s.currency)
+    if est is not None:
+        est["total"] = px.rates.convert(s.price_total, s.currency)
+    return est
 
 
 # ---- links out (book on the provider's own site; no affiliate IDs, D120) -------------------------------------------

@@ -97,7 +97,8 @@ def test_flight_filters_and_sorts():
     assert [f.id for f in trips.filter_flights(fl, trips.FlightFilters(airlines=["Turkish Airlines"]))] == ["off_2"]
     assert trips.filter_flights(fl, trips.FlightFilters(max_price=300)) == []
     facets = trips.flight_facets(fl)
-    assert facets["stops"] == [{"stops": 0, "min_price": 512.4}, {"stops": 1, "min_price": 389.0}]
+    assert facets["stops"] == [{"stops": 0, "min_price": 512.4, "currency": "GBP"},   # m218: each says its currency
+                               {"stops": 1, "min_price": 389.0, "currency": "GBP"}]
     assert facets["tabs"]["cheapest"]["price"] == 389.0 and facets["price"] == [389.0, 512.4]
 
 

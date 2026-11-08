@@ -1578,11 +1578,11 @@ struct TripOverview: View {
             return "Chosen for other dates: check it on \(f.provider), or choose again"
         }
         if let f = trip.flight {
-            return "\(f.provider) · \(Money.whole(f.price))" + (f.sample == true ? " · a sample price, not a real fare" : "")
+            return "\(f.provider) · \(f.money)" + (f.sample == true ? " · a sample price, not a real fare" : "")
         }
         guard let origin = trip.origin else { return "Choose where you're flying from" }
         if model.book.resultsFor == trip.id, let r = model.book.flights, let low = r.facets.price?.first {
-            return "From \(Money.whole(low)) · \(r.total) options from \(origin.city)"
+            return "From \(r.facets.money(low)) · \(r.total) options from \(origin.city)"
         }
         return "Search flights from \(origin.city)"
     }
@@ -1592,10 +1592,10 @@ struct TripOverview: View {
             return "Chosen for other dates: check it on \(s.provider), or choose again"
         }
         if let s = trip.stay {
-            return "\(s.provider) · \(Money.whole(s.price)) for \(trip.lengthLabel)" + (s.sample == true ? " · a sample price" : "")
+            return "\(s.provider) · \(s.money) for \(trip.lengthLabel)" + (s.sample == true ? " · a sample price" : "")
         }
         if model.book.resultsFor == trip.id, let r = model.book.stays, let low = r.facets.priceNight?.first {
-            return "From \(Money.whole(low)) a night · \(r.total) places"
+            return "From \(r.facets.money(low)) a night · \(r.total) places"
         }
         return "Hotels, flats and hostels, from where your days happen"
     }
@@ -1702,10 +1702,10 @@ struct TripTotal: View {
         if trip.needFlight {
             if let f = trip.flight, !trip.fits(f) {   // journey audit: chosen for other dates, so not counted
                 out.append(("Flight", "for other dates", nil))
-            } else if let f = trip.flight {
-                out.append(("Flight", Money.whole(f.price), f.price))
-            } else if let low = flights?.facets.price?.first {
-                out.append(("Flight", "from \(Money.whole(low))", low))
+            } else if let f = trip.flight {   // m218: a fare in another currency is shown, never added to pounds
+                out.append(("Flight", f.money, f.inPounds ? f.price : nil))
+            } else if let r = flights, let low = r.facets.price?.first {
+                out.append(("Flight", "from \(r.facets.money(low))", (r.facets.currency ?? "GBP") == "GBP" ? low : nil))
             } else {
                 out.append(("Flight", "not chosen yet", nil))
             }
@@ -1714,10 +1714,10 @@ struct TripTotal: View {
             if let s = trip.stay, !trip.fits(s) {
                 out.append(("Stay · \(trip.lengthLabel)", "for other dates", nil))
             } else if let s = trip.stay {
-                out.append(("Stay · \(trip.lengthLabel)", Money.whole(s.price), s.price))
-            } else if let low = stays?.facets.priceNight?.first {
+                out.append(("Stay · \(trip.lengthLabel)", s.money, s.inPounds ? s.price : nil))
+            } else if let r = stays, let low = r.facets.priceNight?.first {
                 let total = low * Double(trip.nights)
-                out.append(("Stay · \(trip.lengthLabel)", "from \(Money.whole(total))", total))
+                out.append(("Stay · \(trip.lengthLabel)", "from \(r.facets.money(total))", (r.facets.currency ?? "GBP") == "GBP" ? total : nil))
             } else {
                 out.append(("Stay · \(trip.lengthLabel)", "not chosen yet", nil))
             }
@@ -1728,6 +1728,14 @@ struct TripTotal: View {
             out.append(("Days out (\(days.count) planned)", Money.whole(total), total))
         }
         return out
+    }
+
+    /// m218: a price in another currency is listed, never added to the pounds total.
+    private var apart: Bool {
+        let chosen = [trip.needFlight ? trip.flight : nil, trip.needStay ? trip.stay : nil].compactMap { $0 }
+        let searched = (trip.needFlight && trip.flight == nil && (flights?.facets.currency ?? "GBP") != "GBP")
+            || (trip.needStay && trip.stay == nil && (stays?.facets.currency ?? "GBP") != "GBP")
+        return chosen.contains { trip.fits($0) && !$0.inPounds } || searched
     }
 
     var body: some View {
@@ -1741,6 +1749,12 @@ struct TripTotal: View {
             }
             if trip.flight?.sample == true || trip.stay?.sample == true || flights?.source == "sample" || stays?.source == "sample" {
                 Text("Includes sample prices: the real ones show once live search is on.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if apart {
+                Text("Prices in another currency are listed below, not added to this total.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -2422,7 +2436,7 @@ struct TripDemoScreen: View {
             if let trip = model.trips.first {
                 NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: name == "daychangemine") }
             }
-        case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31
+        case "flights", "flightfilters", "flightscurrency", "stays", "staysmap", "stayfilters":   // 26, 27, 26b (m218), 29-31
             LivingHome().onAppear {
                 model.book.segment = name.hasPrefix("flight") ? .flights : .stays
                 model.book.stayMap = name == "staysmap"

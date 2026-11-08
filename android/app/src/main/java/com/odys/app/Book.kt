@@ -203,7 +203,7 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 for ((key, label) in listOf("best" to "Best", "cheapest" to "Cheapest", "fastest" to "Fastest")) {
                     val t = tabs[key]
-                    SortTab(label, t?.let { "${Money.whole(it.price)} · ${Dates.duration(it.durationMin)}" } ?: "–",
+                    SortTab(label, t?.let { "${Money.whole(it.price, it.currency ?: "GBP")} · ${Dates.duration(it.durationMin)}" } ?: "–",
                         book.flightFilters.sort == key, Modifier.weight(1f)) { book.flightFilters = book.flightFilters.copy(sort = key) }
                 }
             }
@@ -216,8 +216,9 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
                 for ((key, label) in listOf("recommended" to "For your days", "price" to "Cheapest", "rating" to "Top rated")) {
                     val t = tabs[key]
                     val s = t?.let {
-                        if (key == "rating" && it.rating != null) String.format(Locale.UK, "%.1f · ", it.rating) + Money.whole(it.priceNight)
-                        else Money.whole(it.priceNight) + (it.distanceKm?.let { km -> String.format(Locale.UK, " · %.1f km", km) } ?: "")
+                        val price = Money.whole(it.priceNight, it.currency ?: "GBP")   // m218: its own currency
+                        if (key == "rating" && it.rating != null) String.format(Locale.UK, "%.1f · ", it.rating) + price
+                        else price + (it.distanceKm?.let { km -> String.format(Locale.UK, " · %.1f km", km) } ?: "")
                     } ?: "–"
                     SortTab(label, s, book.stayFilters.sort == key, Modifier.weight(1f)) { book.stayFilters = book.stayFilters.copy(sort = key) }
                 }
@@ -329,6 +330,7 @@ fun FlightList(model: AppModel, trip: Trip, chooseAirport: () -> Unit) {
             Text("${r.shown} of ${r.total} flights" + priceKind(r.source), style = Theme.subheadline.copy(color = Theme.muted),
                 modifier = Modifier.padding(horizontal = 4.dp))
             r.note?.let { SourceNote(it) }
+            r.compareNotes?.forEach { SourceNote(it) }   // m218: currencies, bags
             for (f in r.results) FlightRow(f, trip.adults) { model.bookPath += BookDest.FlightDetail(f) }
             if (r.results.isEmpty() && r.total > 0) {
                 NoMatch("No flights match all of that.", "Loosening one filter usually helps.") { book.flightFilters = book.flightFilters.cleared() }
@@ -404,6 +406,7 @@ fun FlightRow(flight: Flight, adults: Int, onClick: () -> Unit) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(Money.whole(flight.price, flight.currency), style = Theme.serif(26.sp))
                 Text(if (adults > 1) "total for $adults" else "return, 1 adult", style = Theme.caption)
+                flight.estimate?.let { Text(it.text, style = Theme.caption) }   // m218: beside the fare, never instead
             }
         }
     }
@@ -445,7 +448,7 @@ fun FlightDetailView(model: AppModel, flight: Flight, onBack: () -> Unit) {
             arriveTime = if (sameDay || nextDay) flight.outbound.arriveTime else null,
             leaveTime = back?.let { if (it.departDay == t.end) it.departTime else null },
             arrivePlace = flight.outbound.destination, leavePlace = back?.origin, sample = flight.sample,
-            landsNextDay = if (nextDay && t.nights >= 1) true else null)
+            landsNextDay = if (nextDay && t.nights >= 1) true else null, currency = flight.currency)
         model.openHandoff(Handoff(link.name, link.url, if (t.nights > 0) "Return flight" else "Flight", flight.price,
             results?.searchedAt, choice))
     }
@@ -466,7 +469,7 @@ fun FlightDetailView(model: AppModel, flight: Flight, onBack: () -> Unit) {
         Text(bags + refund, style = Theme.subheadline.copy(color = Theme.inkSoft),
             modifier = Modifier.fillMaxWidth().border(1.dp, Theme.outline, RoundedCornerShape(18.dp)).padding(horizontal = 18.dp, vertical = 14.dp))
         FoundPrice(flight.price, trip?.let { if (it.adults > 1) "total for ${it.adults}" else "return, 1 adult" } ?: "",
-            results?.source ?: "sample", results?.searchedAt, flight.currency)
+            results?.source ?: "sample", results?.searchedAt, flight.currency, flight.estimate)
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SectionLabel("Where to book", Modifier.weight(1f))
@@ -519,7 +522,8 @@ fun LegCard(label: String, leg: FlightLeg) {
 
 /** The price found here, and what it is: a sample, a test price, or a real offer found n minutes ago. */
 @Composable
-fun FoundPrice(price: Double, line: String, source: String, searchedAt: String?, currency: String = "GBP") {
+fun FoundPrice(price: Double, line: String, source: String, searchedAt: String?, currency: String = "GBP",
+               estimate: PriceEstimate? = null) {
     val sourceLine = when (source) {
         "sample" -> "A sample price, made up for testing"
         "duffel_test", "liteapi_sandbox" -> "A test price, not a real offer"
@@ -533,6 +537,7 @@ fun FoundPrice(price: Double, line: String, source: String, searchedAt: String?,
     val amount = @Composable {
         Text(Money.whole(price, currency), style = Theme.serif(26.sp))
         Text(line, style = Theme.caption)
+        estimate?.let { Text(it.text, style = Theme.caption) }   // m218: in pounds at a dated rate
     }
     // m213: with large text the price goes under its source line, so neither is squeezed into a sliver
     if (LocalDensity.current.fontScale >= 1.3f) {
@@ -619,6 +624,7 @@ fun StayList(model: AppModel, trip: Trip) {
                 }
             }
             r.note?.let { SourceNote(it) }
+            r.compareNotes?.forEach { SourceNote(it) }   // m218
             if (book.stayMap) {
                 val placed = r.results.filter { it.point != null }
                 val pins = listOf(MapPin(AppConfig.START, r.centre, dot = true)) +
@@ -698,6 +704,9 @@ fun StayCard(stay: StayResult, centre: String, onClick: () -> Unit) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(Money.whole(stay.priceNight, stay.currency), style = Theme.serif(24.sp))
                     Text("a night · ${Money.whole(stay.priceTotal, stay.currency)} total", style = Theme.caption)
+                    // m218: "Cheapest" counts the fees paid there; so does the card
+                    stay.payThere?.takeIf { it > 0 }?.let { Text("+ ${Money.whole(it, stay.currency)} paid at the property", style = Theme.caption) }
+                    stay.estimate?.let { Text(it.text + " a night", style = Theme.caption) }
                 }
             }
         }
@@ -716,7 +725,8 @@ fun StayDetailView(model: AppModel, stay: StayResult, onBack: () -> Unit) {
     val results = model.book.stays
     fun open(link: TripLink) {
         val t = trip ?: return
-        val choice = TripChoice("stay", stay.name, link.name, stay.priceTotal, false, point = stay.point, sample = stay.sample)
+        val choice = TripChoice("stay", stay.name, link.name, stay.priceTotal, false, point = stay.point, sample = stay.sample,
+            currency = stay.currency)
         model.openHandoff(Handoff(link.name, link.url, t.lengthLabel, stay.priceTotal, results?.searchedAt, choice))
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -810,7 +820,7 @@ fun HandoffSheet(model: AppModel, h: Handoff) {
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Theme.background).padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Text(h.what, style = Theme.subheadline.copy(color = Theme.inkSoft), modifier = Modifier.weight(1f))
-                    Text(h.price?.let { Money.whole(it) } ?: "See their price", style = Theme.headline)
+                    Text(h.price?.let { Money.whole(it, h.choice.currency ?: "GBP") } ?: "See their price", style = Theme.headline)
                 }
                 val ago = minutesAgo(h.searchedAt)
                 val checked = ago?.let { if (it < 1) "Price found just now" else "Price found $it minute${if (it == 1L) "" else "s"} ago" }
@@ -896,8 +906,13 @@ fun FlightFilterSheet(model: AppModel) {
             FilterTitle("Stops")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for ((k, l) in listOf(0 to "Direct", 1 to "1 stop", 2 to "2+ stops")) {
-                    val from = (r?.facets?.stops ?: emptyList()).filter { minOf(it.stops, 2) == k }.minOfOrNull { it.minPrice }
-                    OptionTile(l, from?.let { "from ${Money.whole(it)}" } ?: "none", f.stops.isEmpty() || k in f.stops, Modifier.weight(1f)) {
+                    // m218: the lowest per number of stops, in its own currency (never a minimum across currencies)
+                    val unit = r?.facets?.currency ?: "GBP"
+                    val rows = (r?.facets?.stops ?: emptyList()).filter { minOf(it.stops, 2) == k }
+                    val low = rows.filter { (it.currency ?: unit) == unit }.minByOrNull { it.minPrice } ?: rows.minByOrNull { it.minPrice }
+                    val from = low?.let { if ((it.currency ?: unit) == unit) r?.facets?.money(it.minPrice) ?: Money.whole(it.minPrice)
+                                          else Money.whole(it.minPrice, it.currency ?: unit) }
+                    OptionTile(l, from?.let { "from $it" } ?: "none", f.stops.isEmpty() || k in f.stops, Modifier.weight(1f)) {
                         book.flightFilters = f.copy(stops = toggleStop(f.stops, k))
                     }
                 }
@@ -940,7 +955,7 @@ fun FlightFilterSheet(model: AppModel) {
             val lo = kotlin.math.floor(prices[0])
             val hi = kotlin.math.ceil(prices[1])
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Maximum price", f.maxPrice?.let { Money.whole(it) } ?: "No limit")
+                FilterTitle("Maximum price", f.maxPrice?.let { r?.facets?.money(it) ?: Money.whole(it) } ?: "No limit")
                 FilterSlider(f.maxPrice ?: hi, lo, hi, 10.0) { v -> book.flightFilters = f.copy(maxPrice = if (v >= hi) null else v) }
             }
         }
@@ -958,7 +973,8 @@ fun FlightFilterSheet(model: AppModel) {
                     }.semantics { selected = on }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TickBox(on)
                         Text(a.name, style = Theme.subheadline, modifier = Modifier.weight(1f))
-                        Text(Money.whole(a.minPrice), style = Theme.footnote)
+                        val cur = a.currency ?: "GBP"   // m218: the airline's lowest fare, in its own currency
+                        Text((if (r?.facets?.estimated == true && cur == "GBP") "≈ " else "") + Money.whole(a.minPrice, cur), style = Theme.footnote)
                     }
                 }
             }
@@ -989,7 +1005,7 @@ fun StayFilterSheet(model: AppModel) {
             val lo = kotlin.math.floor(prices[0])
             val hi = kotlin.math.ceil(prices[1])
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterTitle("Maximum per night", f.maxNight?.let { Money.whole(it) } ?: "No limit")
+                FilterTitle("Maximum per night", f.maxNight?.let { r?.facets?.money(it) ?: Money.whole(it) } ?: "No limit")
                 FilterSlider(f.maxNight ?: hi, lo, hi, 5.0) { v -> book.stayFilters = f.copy(maxNight = if (v >= hi) null else v) }
             }
         }
@@ -1072,7 +1088,7 @@ fun StayForTrip(model: AppModel, stay: StayResult, trip: Trip) {
                                 if (tags.isNotEmpty()) Text(tags.joinToString(" · "),
                                     style = Theme.footnote.copy(color = if (d.sameTerms) Theme.muted else Theme.accent))
                             }
-                            Text(d.whole?.let { Money.whole(it) } ?: "Not available", style = Theme.body)
+                            Text(d.whole?.let { Money.whole(it, stay.currency) } ?: "Not available", style = Theme.body)
                         }
                     }
                     a.holidaysNote?.let { Text(it, style = Theme.footnote) }   // m211: holidays not known, said
