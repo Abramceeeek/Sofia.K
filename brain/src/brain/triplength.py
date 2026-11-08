@@ -160,6 +160,8 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
         k = _covered(core, yours, per_day)
         short = f"In {days(yours)} you'd see {k} of your {len(core)} best. {days(need).capitalize()} would cover them all."
     return {"place": place, "strong_matches": len(strong), "good_matches": len(good), "checked": len(cards),
+            # m219: what the suggestion is built on (the strong matches, or the best few days' worth standing in)
+            "best": len(core), "capped": days_for(core, per_day) > MAX_DAYS,
             "places_per_day": per_day, "suggested_days": need, "your_days": yours,
             "spare_days": max(0, yours - need) if yours else None, "headline": f"Around {days(need)}",
             "why": why, "note": note, "short": short,

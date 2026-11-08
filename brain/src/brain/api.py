@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, daybudget, dayplan, db, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+from . import (backup, daybudget, dayplan, db, explain, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -566,6 +566,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         n_choices = sum(ch.choice in ("A", "B") for ch in user.choices)
         amap, fields = app.state.amap, person_fields(user)
         taken: set[str] = set()   # m187: what earlier stops said, so the day's reasons don't repeat
+        budget_block = money(stops) if money else None
+        # m219: where the travel times come from (TfL's for the day where it has the pair, else the estimate)
+        legs_from = "TfL journey times where known, else a distance estimate" if hasattr(travel, "check") else \
+            "a distance estimate"
+        for st, inner in zip(out, stops):
+            if not blind and not st.get("mine"):   # m219: why this stop, from the planner's own inputs
+                card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
+                u = inner.get("predicted")
+                prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
+                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows() if card_m else [],
+                                             hours_text=inner.get("hours") or "", budget=budget_block,
+                                             travel_source=legs_from, labels=dayplan.APP_LABELS)
         for st in out:
             base = st["moment_id"].split("#")[0]
             if st["rateable"] and base in by_id:
@@ -580,7 +592,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
-                "budget": money(stops) if money else None,   # m217: the day's money, line by line
+                "budget": budget_block,   # m217: the day's money, line by line
                 "solver_status": plan.status, "blind": blind,
                 "feel_line": None if blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
                 "basis": None if blind else reasons.basis(
@@ -1005,10 +1017,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.add(db.Event(user_id=user.id, name="stay_compare",
                        props={"nights": nights, "days": len(body.days), "live": bool(live)}))   # never the stay or dates
         s.commit()
+        cost = stayprices.cost_lines(terms, sample=st.sample)
+        yours = next((d for d in dates if d.yours), None)
         return {"source": "liteapi" if live else "sample",
                 "note": None if live else "Sample prices: real prices for other dates come later. Your dates' price "
                                           "is the one the search found.",
-                "fit": fit, "cost": stayprices.cost_lines(terms, sample=st.sample),
+                # m219: why this stay suits the trip (or doesn't), from the fit and the cost above
+                "explain": explain.stay_for_trip(fit, cost, st.currency, st.refundable, yours.holidays if yours else []),
+                "fit": fit, "cost": cost,
                 "dates": [d.out(nights) for d in dates],
                 # m211: when the destination's holidays (or these years) aren't known, say so: never read as "none"
                 "holidays_note": travelcalendar.stay_note(app.state.destinations.get(dest.key), dest.key,
@@ -1049,8 +1065,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "stays", source, len(found), len(shown), f.sort, used)
         results = []
+        ranked = explain.stay_rank(found, px, dest.centre_name)   # m219: the ranking's own parts
         for x in shown[:60]:
             d = trips.stay_out(x)
+            d["explain"] = ranked.get(x.id)
             d["links"] = trips.stay_links(q, stay=x)
             d["tags"] = tags.get(x.id, [])
             d["estimate"] = trips.stay_estimate(px, x)   # m218: beside the price in its own currency, never instead
@@ -1088,6 +1106,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         per_day = max(1, min(body.stops_per_day, span // tripdays.MIN_PER_STOP))
         out = triplength.suggest(p, post, ready, asp=asp, skip=disliked, per_day=per_day, nights=body.nights,
                                  place=dest.name)
+        out["explain"] = explain.trip_length(out)   # m219: the counts the suggestion rests on
         s.add(db.Event(user_id=user.id, name="trip_length",
                        props={"nights": body.nights, "suggested": out["suggested_days"], "good": out["good_matches"],
                               "per_day": per_day}))
