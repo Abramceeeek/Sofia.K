@@ -188,8 +188,11 @@ def test_the_chosen_legs_are_checked_for_the_day_and_a_big_change_replans():
     replies = {"table": 18, "day": 40}
     tr = TflTravel("k", fetch=lambda url, params: tfl_reply(replies["day" if params["date"] == day.strftime(
         "%Y%m%d") else "table"]))
-    day = date.today() + timedelta(days=3)
-    tr.fill(tr.pairs([(A, B)]), next_weekday_1pm(date.today()), sleep=lambda s: None)
+    # 8 Nov: never the table's own reference Wednesday (on a Sunday, "3 days from today" was that day, so the day's
+    # reply filled the table too and the test failed every Sunday): the day after it, within TfL's four weeks
+    ref = next_weekday_1pm(date.today())
+    day = ref.date() + timedelta(days=1)
+    tr.fill(tr.pairs([(A, B)]), ref, sleep=lambda s: None)
     view = tr.for_day(day, "12:00")
     assert view.minutes(A, B) == 18
     view.route(A, B)                     # the plan uses this leg
