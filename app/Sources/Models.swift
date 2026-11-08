@@ -439,7 +439,6 @@ struct Profile: Codable, Equatable {
     var chronotype: String?
     var activity: String?
     var grewUp: String?
-    var foodsAvoided: String?
     var photosMatter: Int?
     var shotCardAppeal: Int?
     var fields: [String] = []

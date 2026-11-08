@@ -346,7 +346,6 @@ data class Profile(
     val chronotype: String? = null,
     val activity: String? = null,
     val grewUp: String? = null,
-    val foodsAvoided: String? = null,
     val photosMatter: Int? = null,
     val shotCardAppeal: Int? = null,
     val fields: List<String> = emptyList(),

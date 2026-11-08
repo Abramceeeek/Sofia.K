@@ -9,6 +9,8 @@ import yaml
 
 from brain import food
 from brain.food import Consent, FoodNeeds, PurposeError, VenueFood
+
+from test_api import client  # noqa: F401  (the client fixture, m223)
 from brain.places import from_osm_element
 
 HERE = Path(__file__).parent / "fixtures"
@@ -88,3 +90,20 @@ def test_allergies_are_never_called_safe():
     line = food.allergy_line(frozenset({"peanuts"}))
     assert "safe" not in line.replace("can't confirm what's safe", "") and "ask the venue" in line.lower()
     assert len(food.ALLERGENS) == 14 and food.allergy_line(frozenset()) == ""
+
+
+def test_food_needs_are_never_stored_until_their_dpia(client):
+    """m223 (Abram, 7 Nov: "Do not implement food preference persistence before its DPIA and legal review"): the old
+    free-text "foods you avoid" (D19, no longer asked since D123) is accepted from older builds and dropped, never
+    stored; and no profile or user field can hold a food need, a diet or an allergy."""
+    from test_api import ADMIN, install
+    from brain import db
+    from brain.schemas import ProfileIn
+    h, uid = install(client)
+    r = client.put("/v1/me/profile", headers=h, json={"based": "london", "foods_avoided": "pork, peanuts"})
+    assert r.status_code == 204
+    me = next(u for u in client.get("/v1/admin/export", headers=ADMIN).json()["users"] if u["id"] == uid)
+    assert "foods_avoided" not in (me.get("profile") or {}) and "peanuts" not in str(me)
+    risky = ("diet", "halal", "kosher", "allerg", "religio", "vegan", "vegetarian")
+    assert not [f for f in ProfileIn.model_fields if any(w in f for w in risky)]
+    assert not [c for c in db.User.__table__.columns.keys() if any(w in c for w in risky + ("food",))]

@@ -44,7 +44,7 @@ CLAUDE.md already points the same way. D19 asked no allergy question, because al
 | **Export** | Rights of access | Shown in "Your data" on the phone, where they are kept |
 | **Analytics** | — | **None.** No event carries a food need, not even a count: a "halal filter used" count would itself be special category data about groups of people |
 | **Third parties** | — | Never sent to venues, booking partners, LiteAPI, Duffel or anyone else |
-| **DPIA** | Mandatory for large-scale special category processing (Art 35(3)(b)). The ICO's high-risk list includes decisions on access to a service that involve special category data | **A DPIA before building it** (product-direction.md already says so), even while the scale is small, and signed off by Abram. Its draft is the next step (~2 h) |
+| **DPIA** | Mandatory for large-scale special category processing (Art 35(3)(b)). The ICO's high-risk list includes decisions on access to a service that involve special category data | **A DPIA before building it** (product-direction.md already says so), even while the scale is small, and signed off by Abram. **Drafted: `decisions/dpia-food-needs.md` (m223), unsigned** |
 | **Privacy notice** | — | A new section: what is kept (on the phone), the purpose, the basis, withdrawal |
 
 ## 3. Where checked halal evidence comes from (read 7 Nov)
@@ -52,6 +52,7 @@ CLAUDE.md already points the same way. D19 asked no allergy question, because al
 | Source | What it is | What we found | How ODYS can use it |
 |---|---|---|---|
 | **Halal Monitoring Committee (HMC)** | "an independent, not for profit, registered charity which monitors, inspects and certifies Halal products" (charity no. 1147462) | A public list of "HMC certified butchers, caterers, takeaways and dessert shops" at [halalhmc.org/outlets](https://halalhmc.org/outlets/), and a search by name at [halalhmc.org/outlets-by-name](https://halalhmc.org/outlets-by-name/) ([homepage](https://halalhmc.org/)). How often outlets are audited isn't stated on the homepage | `certified`, with "Halal Monitoring Committee", the outlet's listing URL and the date we saw it. Checked by hand per venue first. Any automated use of their directory needs HMC's permission |
+| **HMC, more (read 8 Nov, m223)** | Its FAQ: "Does HMC accept and certify stunned meat or poultry?" "No. Part of our criteria is that animals are not stunned." It describes "continuous inspections at HMC certified stores" ([halalhmc.org/faqs](https://halalhmc.org/faqs/)) | So certifiers' standards do differ (this replaces the UNVERIFIED line below for HMC) | Name the certifier, never "halal" alone |
 | **Halal Food Authority (HFA)** | Calls itself the "UK's Leading Halal Certification Body" ([halalfoodauthority.com](https://halalfoodauthority.com/)) | Only the page title could be read. **No public directory found** (UNVERIFIED either way). A third-party guide points to a business search: unconfirmed | Only if a listing can be checked at the source |
 | **Other certifiers** | Others exist in the UK | Not researched in this session | Later, one by one |
 | **The venue's own words** | Its website or menu | — | `whole_menu` or `some_dishes`, quoted with the URL: "The venue says its whole menu is halal." Never "certified" |

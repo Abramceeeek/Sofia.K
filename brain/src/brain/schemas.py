@@ -88,7 +88,9 @@ class ProfileIn(BaseModel):
     chronotype: Literal["morning", "night", "neither"] | None = None
     activity: Literal["gentle", "medium", "full_on"] | None = None
     grew_up: Literal["big_city", "town", "coast", "countryside"] | None = None
-    foods_avoided: str | None = Field(default=None, max_length=200)   # D19: optional, no allergy question
+    # D19, D123, m223: no longer asked (D123), and never stored: free text here could hold beliefs or allergies, and
+    # food needs wait for their DPIA (m215). Older builds may still send it, so it's accepted and dropped (api.py).
+    foods_avoided: str | None = Field(default=None, max_length=200)
     photos_matter: int | None = Field(default=None, ge=1, le=5)        # D16
     shot_card_appeal: int | None = Field(default=None, ge=1, le=5)     # D16
     fields: list[str] = Field(default_factory=list, max_length=5)      # inspiring fields (D77): aspiration.yaml codes
