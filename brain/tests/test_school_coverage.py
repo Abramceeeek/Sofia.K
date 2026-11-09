@@ -11,8 +11,9 @@ ROWS = tc.load_coverage()
 def test_the_matrix_and_the_data_agree_both_ways():
     assert tc.check_coverage(ROWS, AREAS) == []
     england = [r for r in ROWS if r["nation"] == "England"]
-    assert england and not any(r["status"] == "checked" for r in england)   # England: nothing checked, and said so
-    assert tc.coverage_summary(ROWS)["England"]["blocked"] == 7
+    summary = tc.coverage_summary(ROWS)["England"]
+    assert summary == {"checked": 3, "blocked": 4, "not checked": 1}       # m225: three councils, never "England"
+    assert any(r["name"] == "Every other English council" and r["status"] == "not checked" for r in england)
     assert any(r["nation"] == "Scotland" and r["status"] == "not checked" for r in ROWS)   # one council isn't Scotland
     # a made-up area with no "checked" row, or a checked row with no dates, is caught
     fake = {**AREAS, "glasgow": AREAS["edinburgh"]}
@@ -59,3 +60,16 @@ def test_northern_ireland_keeps_bank_and_school_holidays_apart():
     assert "at their own discretion" in school.exceptions and school.applies_to.startswith("Schools that follow")
     later = tc.home_calendar("northern-ireland", "northern_ireland", date(2027, 7, 1), date(2027, 8, 1))
     assert "Department of Education (Northern Ireland)'s school holidays are checked for 2026-27 only." in later.unknown
+
+
+def test_english_councils_are_each_their_own_and_say_who_can_differ():
+    """m225: Westminster, Birmingham and Leeds from their own pages; never one council's dates for another."""
+    for key in ("westminster", "birmingham", "leeds"):
+        a = AREAS[key]
+        assert a.region == "england-and-wales" and a.last_verified == "2026-11-09"
+        assert "academ" in a.exceptions.lower() or "vary" in a.exceptions.lower()
+    easter = {k: dict((t, (f, e)) for t, f, e in AREAS[k].holidays)["Easter holiday"] for k in ("westminster", "birmingham", "leeds")}
+    assert len(set(easter.values())) == 3                         # three councils, three Easters
+    v = tc.home_calendar("england-and-wales", "leeds", date(2027, 3, 25), date(2027, 3, 30))
+    good_friday = [e for e in v.entries if e.start == date(2027, 3, 26)]
+    assert sorted(e.kind for e in good_friday) == ["bank_holiday", "school_holiday"]   # kept apart, two sources

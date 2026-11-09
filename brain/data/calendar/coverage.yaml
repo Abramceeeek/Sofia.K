@@ -13,13 +13,13 @@ rows:
   # ---- Northern Ireland: the Department of Education's non-operational dates (schools can differ)
   - {country: GB, nation: Northern Ireland, level: national, name: "Department of Education (NI) non-operational dates", status: checked, years: "2026-27", areas: [northern_ireland], last_verified: "2026-11-08", note: "Schools can operate on these dates at their own discretion."}
   # ---- England: each council sets dates for its community schools; academies and others can set their own
-  - {country: GB, nation: England, level: council, name: "London Borough of Camden", status: blocked, last_tried: "2026-11-07", note: "403"}
-  - {country: GB, nation: England, level: council, name: "Manchester City Council", status: blocked, last_tried: "2026-11-07", note: "403"}
-  - {country: GB, nation: England, level: council, name: "Westminster City Council", status: blocked, last_tried: "2026-11-05", note: "500 and 403 (m204)"}
-  - {country: GB, nation: England, level: council, name: "Birmingham City Council", status: blocked, last_tried: "2026-11-08", note: "403"}
-  - {country: GB, nation: England, level: council, name: "Kent County Council", status: blocked, last_tried: "2026-11-08", note: "403"}
-  - {country: GB, nation: England, level: council, name: "Hampshire County Council", status: blocked, last_tried: "2026-11-08", note: "403"}
-  - {country: GB, nation: England, level: council, name: "Leeds City Council", status: blocked, last_tried: "2026-11-08", note: "404: the term-dates page has moved"}
+  - {country: GB, nation: England, level: council, name: "London Borough of Camden", status: blocked, last_tried: "2026-11-09", note: "403: a Cloudflare bot challenge on the whole site. To read by hand"}
+  - {country: GB, nation: England, level: council, name: "Manchester City Council", status: blocked, last_tried: "2026-11-09", note: "403: a Cloudflare bot challenge on the whole site. To read by hand"}
+  - {country: GB, nation: England, level: council, name: "Westminster City Council (bi-borough with Kensington and Chelsea)", status: checked, years: "2026-27", areas: [westminster], last_verified: "2026-11-09", note: "Recommended dates; schools may vary them. Kensington and Chelsea shares the PDF but isn't added from Westminster's page"}
+  - {country: GB, nation: England, level: council, name: "Birmingham City Council", status: checked, years: "2026-27", areas: [birmingham], last_verified: "2026-11-09", note: "Page updated 12 Oct 2026; the old address redirects elsewhere"}
+  - {country: GB, nation: England, level: council, name: "Kent County Council", status: blocked, last_tried: "2026-11-09", note: "403: a Cloudflare bot challenge; its schools site (kelsi.org.uk) refused by this environment. To read by hand"}
+  - {country: GB, nation: England, level: council, name: "Hampshire County Council", status: blocked, last_tried: "2026-11-09", note: "403: a captcha on the whole site, documents host included. To read by hand"}
+  - {country: GB, nation: England, level: council, name: "Leeds City Council", status: checked, years: "2026-27", areas: [leeds], last_verified: "2026-11-09", note: "Found at its new address"}
   - {country: GB, nation: England, level: council, name: "Every other English council", status: not checked}
   # ---- Beyond the UK: national open data where the government publishes it
   - {country: FR, nation: France, level: region, name: "Zones A, B and C (Ministry of Education open data)", status: checked, years: "2026-27", areas: [france_zone_a, france_zone_b, france_zone_c], last_verified: "2026-11-08", note: "Which académies are in each zone: the ministry's page refused automated reading (403). Corsica and overseas: not added."}

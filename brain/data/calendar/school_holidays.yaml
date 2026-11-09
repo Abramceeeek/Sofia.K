@@ -181,3 +181,56 @@ areas:
       - {title: "Voorjaarsvakantie (spring)", from: 2027-02-13, to: 2027-02-21, note: "Advice dates: schools may differ."}
       - {title: "Meivakantie (May)", from: 2027-04-24, to: 2027-05-02, note: "Advice dates: schools may differ."}
       - {title: "Zomervakantie (summer)", from: 2027-07-24, to: 2027-09-05}
+
+  # m225: England, council by council, each from its own official page (read 9 Nov 2026). In England a council's dates
+  # never apply to every school: academies, free, foundation and voluntary-aided schools can set their own.
+  westminster:
+    authority: Westminster City Council (bi-borough with Kensington and Chelsea)
+    country: GB
+    region: england-and-wales
+    source: https://www.westminster.gov.uk/children-and-families/education/school-term-and-holiday-dates
+    source_note: "The page (last updated 29 October 2026) and its PDFs 'Bi-borough determined term and holiday dates 2026-27' and '2027-28'. Recommended dates: 'schools have the autonomy to determine their own term dates'."
+    last_verified: "2026-11-09"
+    years: ["2026-27"]
+    exceptions: "Recommended dates only: 'schools are now able to vary these dates as they see fit' (the council). Five staff training days are set by each school's governing body."
+    holidays:
+      - {title: "Autumn half term", from: 2026-10-26, to: 2026-10-30}
+      - {title: "Christmas holiday", from: 2026-12-21, to: 2027-01-01}
+      - {title: "Spring half term", from: 2027-02-15, to: 2027-02-19}
+      - {title: "Easter holiday", from: 2027-03-26, to: 2027-04-09}
+      - {title: "Summer half term", from: 2027-05-31, to: 2027-06-04}
+      - {title: "Summer holiday", from: 2027-07-23, to: 2027-08-31, between_terms: true}
+  birmingham:
+    authority: Birmingham City Council
+    country: GB
+    region: england-and-wales
+    source: https://www.birmingham.gov.uk/info/20014/schools_and_learning/685/school_term_dates
+    source_note: "The council's 'School term dates' page, 'Page last updated: 12 October 2026'. Term dates only: holidays are the days between terms."
+    last_verified: "2026-11-09"
+    years: ["2026-27"]
+    exceptions: "'The dates on this page may not apply to academies, foundation, free or voluntary aided schools' (the council); contact the school to confirm."
+    holidays:
+      - {title: "Autumn half term", from: 2026-10-26, to: 2026-10-30}
+      - {title: "Christmas holiday", from: 2026-12-19, to: 2027-01-03, between_terms: true}
+      - {title: "Spring half term", from: 2027-02-15, to: 2027-02-19}
+      - {title: "Easter holiday", from: 2027-03-26, to: 2027-04-11, between_terms: true}
+      - {title: "Summer half term", from: 2027-05-31, to: 2027-06-04}
+      - {title: "Summer holiday", from: 2027-07-22, to: 2027-09-01, between_terms: true}
+  leeds:
+    authority: Leeds City Council
+    country: GB
+    region: england-and-wales
+    source: https://www.leeds.gov.uk/schools-and-education/school-holidays-and-term-dates
+    source_note: "The council's 'School holidays and term dates' page (2026-2027 and 2027-2028 tables; no update date shown). The old address (/school-term-dates) is 404."
+    last_verified: "2026-11-09"
+    years: ["2026-27"]
+    exceptions: "'Some schools set their own term dates': academies, free schools, foundation schools and voluntary-aided faith schools (the council). Each school also closes for 5 training days of its own."
+    holidays:
+      - {title: "Autumn half term", from: 2026-10-26, to: 2026-10-30}
+      - {title: "Christmas holiday", from: 2026-12-21, to: 2027-01-01}
+      - {title: "Spring half term", from: 2027-02-15, to: 2027-02-19}
+      - {title: "Easter bank holiday", from: 2027-03-26, to: 2027-03-29}
+      - {title: "Easter holiday", from: 2027-04-05, to: 2027-04-16}
+      - {title: "May Day bank holiday", from: 2027-05-03, to: 2027-05-03}
+      - {title: "Summer half term", from: 2027-05-31, to: 2027-06-04}
+      - {title: "Summer holidays", from: 2027-07-23, to: 2027-09-03}

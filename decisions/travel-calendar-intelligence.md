@@ -37,7 +37,10 @@ The matrix is data (`brain/data/calendar/coverage.yaml`), not prose. A test hold
 | **Scotland**, City of Edinburgh | council | **checked** | edinburgh.gov.uk (7 Nov) | 2026-27 | — |
 | Scotland, the other 31 councils | council | not checked | — | — | one council at a time |
 | **Northern Ireland** | national | **checked** | Department of Education, "school holidays" (8 Nov) | 2026-27 | "Non-operational dates": schools "can operate on these dates at their own discretion". It includes the Minister's three extra closure days (25 Sep 2026, 25 Jan 2027, 4 May 2027). Summer starts 1 Jul 2027 |
-| England: Camden, Manchester, Westminster, Birmingham, Kent, Hampshire, Leeds | council | **blocked** | each council's page refused automated reading (403; Leeds 404, moved) | — | to read by hand (~10 min each), never from an aggregator |
+| **England, Westminster** (bi-borough with Kensington and Chelsea) | council | **checked** (m225, 9 Nov) | westminster.gov.uk "School term and holiday dates" (updated 29 Oct 2026) and its 2026-27 and 2027-28 PDFs | 2026-27 | **Recommended** dates: "schools have the autonomy to determine their own term dates". Kensington and Chelsea shares the PDF but isn't added from Westminster's page |
+| **England, Birmingham** | council | **checked** (m225) | birmingham.gov.uk "School term dates" (updated 12 Oct 2026) | 2026-27 | Term dates only (holidays between terms). "May not apply to academies, foundation, free or voluntary aided schools" |
+| **England, Leeds** | council | **checked** (m225) | leeds.gov.uk "School holidays and term dates" (its new address; the old one is 404) | 2026-27 | Academies, free, foundation and voluntary-aided schools can set their own. Each school has 5 training days of its own |
+| England: Camden, Manchester, Kent, Hampshire | council | **blocked** (re-tried 9 Nov) | Camden, Manchester and Kent: a Cloudflare bot challenge on the whole site. Hampshire: a captcha, documents host included. Kent's schools site is refused by this environment's network | — | **For Abram to read by hand** (~10 min each), never from an aggregator. Not worked around: getting past a bot check isn't reading the page as the council offers it |
 | England, every other council | council | not checked | — | — | — |
 | **France**, zones A, B and C | region | **checked** | Ministry of Education open data "Le calendrier scolaire" (DNE, Licence Ouverte v2.0, modified 1 Oct 2026; read 8 Nov) | 2026-27 | **The definition:** the data says holidays begin "après la classe des jours indiqués" and classes resume "le matin des jours indiqués". So each holiday runs from its Saturday to the day before classes resume. Winter and spring differ by zone. The Ascension bridge is left out: its row has the same start and end time. Which académies are in each zone: the ministry's page is 403. Corsica and overseas aren't added |
 | **The Netherlands**, regions noord, midden and zuid | region | **checked** | Government open data (Ministerie van OCW, CC0, modified 7 May 2025; read 8 Nov) | 2026-27 | Autumn, spring and May are **advice dates** ("Scholen mogen hier dus van afwijken"), and each says so. Christmas and summer are compulsory. Provinces per region aren't in the data |
@@ -45,7 +48,7 @@ The matrix is data (`brain/data/calendar/coverage.yaml`), not prose. A test hold
 
 **Bank holidays stay separate.** On 17 March 2027 a Northern Ireland traveller sees two entries: the bank holiday (GOV.UK) and the school's non-operational day (the Department), each with its source (tested).
 
-**Found:** France and the Netherlands publish official, machine-readable school calendars under open licences. That makes them the cheapest next countries. England has no national source, and 7 of 7 English council pages tried refused automated reading.
+**Found:** France and the Netherlands publish official, machine-readable school calendars under open licences. That makes them the cheapest next countries. England has no national source. Of the 7 English councils tried, 3 are checked from their own pages (m225) and 4 sit behind bot checks.
 
 ## Council coverage (7 Nov, the first table; superseded by the matrix above)
 
