@@ -24,6 +24,11 @@ from typing import Literal
 from .places import PlaceRecord
 
 NEEDS = ("halal", "kosher", "vegetarian", "vegan", "no_alcohol")   # what someone may choose; each is optional
+# m232 (Abram, m224; decisions/dpia-food-needs.md): what each need can reveal. "religion": potentially reveals religious
+# belief (UK GDPR Art 9(1)). "context": may or may not reveal a belief, and ODYS never asks why. Allergies (health
+# data) are not a need at all: never asked, never stored. Every class gets the same safeguards and consent standard.
+NEED_CLASS = {"halal": "religion", "kosher": "religion", "vegetarian": "context", "vegan": "context",
+              "no_alcohol": "context"}
 # The 14 allergens UK law names (Food Standards Agency, allergen guidance for food businesses)
 ALLERGENS = ("celery", "cereals_gluten", "crustaceans", "eggs", "fish", "lupin", "milk", "molluscs", "mustard",
              "tree_nuts", "peanuts", "sesame", "soya", "sulphites")
@@ -34,16 +39,45 @@ Status = Literal["certified", "whole_menu", "some_dishes", "not_suitable", "unkn
 Evidence = Literal["certifier_directory", "venue_own", "community_tag", "our_visit"]
 
 
+# ---- the old free-text field (m233; Abram's decision 5, m224) -------------------------------------------------------
+# D19's "Any foods or drinks you avoid?" was stored as `foods_avoided` in a person's profile until D123 (8 Oct) stopped
+# asking. It can hold religion or health in free text. m223 stopped storing it; these find and remove any left.
+# Only counts ever leave these functions: never a value, not even its length.
+RETIRED_PROFILE_KEYS = ("foods_avoided",)
+
+
+def audit_profiles(profiles) -> dict[str, int]:
+    """How many profiles still hold the retired key, and how many with something in it. Counts only."""
+    rows = [p or {} for p in profiles]
+    has = [p for p in rows if any(k in p for k in RETIRED_PROFILE_KEYS)]
+    filled = [p for p in has if any(str(p.get(k) or "").strip() for k in RETIRED_PROFILE_KEYS)]
+    return {"profiles": len(rows), "with_key": len(has), "non_empty": len(filled)}
+
+
+def scrub_profile(profile: dict | None) -> dict | None:
+    """The profile without the retired key (a new dict; None stays None)."""
+    if profile is None:
+        return None
+    return {k: v for k, v in profile.items() if k not in RETIRED_PROFILE_KEYS}
+
+
 class PurposeError(PermissionError):
     """Food needs used for anything but the person's own suggestions."""
 
 
 @dataclass(frozen=True)
 class Consent:
-    """Explicit consent, recorded as given: which text, when, for what. Withdrawing deletes the needs."""
+    """Consent, recorded as given: which text, when, for what. Withdrawing deletes the needs and ends both grounds.
+
+    m232 (Abram, m224): the two legal grounds are named apart. The Article 6 basis is consent, 6(1)(a). The Article 9
+    condition is explicit consent, 9(2)(a), which in the UK also needs an Article 6(1) basis (the Art 9(2) lead-in,
+    Data (Use and Access) Act 2025). One screen may carry both; the solicitor's review decides (the DPIA).
+    """
     text_version: str
     given_on: date
     purpose: str = PURPOSE
+    article6: str = "6(1)(a) consent"
+    article9: str = "9(2)(a) explicit consent"
 
 
 @dataclass(frozen=True)

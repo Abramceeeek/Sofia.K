@@ -1,14 +1,19 @@
-# Food needs, halal included: privacy, evidence and the flow (WS2, 7 Nov 2026; m208)
+# Food needs, halal included: privacy, evidence and the flow (WS2, 7 Nov 2026; m208; reconciled 9 Nov, m232)
 
-**Decision (proposed; the lawful basis, the DPIA and the privacy notice are Abram's).**
+**Decision (Abram, m224): legal review first.** The DPIA (`decisions/dpia-food-needs.md`) is a draft. A UK data-protection solicitor checks it before any user, and food-need collection stays off until then.
 
-How ODYS treats the data:
-- **All food needs are special category data:** halal, kosher, vegetarian, vegan and allergies alike.
-- **The lawful basis is explicit consent**, separate and specific, and withdrawn with one switch.
+> **Reconciled with the DPIA (m232).** This page first said every food need was special category data, and that the needs were sent with each suggestions request. Both are corrected below, following Abram's decision 5 (m224) and the DPIA: classes by what the data can reveal, and **on-device filtering**, so the need never leaves the phone.
+
+How ODYS treats the data (the DPIA's classes):
+- **Halal and kosher potentially reveal religious belief**: special category data.
+- **Allergies are health data, and are not asked or stored.**
+- **Vegetarian, vegan and "places not centred on alcohol" are assessed on context.** They may or may not reveal a belief, and ODYS never asks why.
+- **The same high security for all of them.**
+- **The lawful basis, identified separately:** Article 6(1)(a) consent and Article 9(2)(a) explicit consent. They're recorded apart and withdrawn together with one switch.
 - **Use is limited to the person's own food suggestions.** Never matching people, advertising, analytics or anyone else.
 
 How the data is held:
-- **Kept on the phone only.** It is sent with each suggestions request and never stored on the server, as with location (D123).
+- **Kept and used on the phone only.** The Brain sends every food venue's evidence for every need, and **the phone** chooses what to show and in what order. So the need is never in a request, a log or the database, and the server can't infer it.
 - **Allergies are never stored.** Every food stop tells everyone to ask the venue, because UK law makes the venue give allergen information dish by dish.
 
 What a venue can be called:
@@ -20,13 +25,15 @@ What a venue can be called:
 
 Not legal advice: a solicitor or the DPIA review checks the reading below before launch.
 
-## 1. Why it's special category data
+## 1. What each need is
+
+The DPIA's table (classes 1–4) replaces this one where they differ (m232).
 
 | Need | Why | Source |
 |---|---|---|
 | Halal, kosher | Can reveal religious belief. The ICO says an inference is special category data if the processing aims to make it, *or if you treat someone differently because of it*, however confident you are. ODYS treats people differently by design: different food suggestions. | ICO, "What is special category data?" ([page](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/special-category-data/what-is-special-category-data/); read through ICO-domain search extracts on 7 Nov, because the page refused automated reading) |
 | Allergies | Data concerning health, which the ICO reads broadly, including when it's only implied | Same page |
-| Vegetarian, vegan | Not religion or health in itself. Ethical veganism has been held to be a protected philosophical belief in an employment tribunal (UNVERIFIED: not read in this session). Treated as special category to be safe: it costs nothing more, since the same consent covers all needs | — |
+| Vegetarian, vegan, "places not centred on alcohol" | **Assessed on context** (m224): not religion or health in itself, but for some people they follow from a religion or a philosophical belief. Ethical veganism has been held to be a protected philosophical belief in an employment tribunal (UNVERIFIED: not read in this session). ODYS can't know the reason and doesn't ask, so the same consent standard and safeguards apply | Abram's decision 5 (m224); the DPIA, class 3 |
 
 CLAUDE.md already points the same way. D19 asked no allergy question, because allergies are health data and halal may reveal religion. D123 stopped asking about food because no plan used it.
 
@@ -34,13 +41,13 @@ CLAUDE.md already points the same way. D19 asked no allergy question, because al
 
 | Requirement | What the ICO says (via search extracts, 7 Nov; [conditions](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/special-category-data/what-are-the-conditions-for-processing/), [valid consent](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/consent/what-is-valid-consent/), [DPIA examples](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/accountability-and-governance/data-protection-impact-assessments-dpias/examples-of-processing-likely-to-result-in-high-risk/)) | ODYS |
 |---|---|---|
-| **Article 6 basis** | One is needed as well as an Article 9 condition | **Consent, Art 6(1)(a)** (proposed). It matches Article 9 and the feature is optional. Abram decides |
-| **Article 9 condition** | Explicit consent, Art 9(2)(a). No DPA 2018 Schedule 1 condition and no appropriate policy document are required for it (the ICO's table: "none required") | Explicit consent |
+| **Article 6 basis** | One is needed as well as an Article 9 condition. In the UK, Article 9(2) now opens "Paragraph 1 shall not apply if [the processing is based on Article 6(1) and] …" (Data (Use and Access) Act 2025, in force 20 Aug 2025; legislation.gov.uk, read 9 Nov) | **Consent, Art 6(1)(a)** (Abram, m224), for every food need |
+| **Article 9 condition** | Explicit consent, Art 9(2)(a). No DPA 2018 Schedule 1 condition and no appropriate policy document are required for it (the ICO's table: "none required") | **Explicit consent, Art 9(2)(a)**, for halal and kosher, and for the others whenever they reveal a belief. Recorded apart from the Article 6 consent (the DPIA, "Lawful basis") |
 | **Explicit** | Confirmed "in a clear statement", which names the kind of special category data; kept apart from other consents. Where the data is needed for the service, you must show consent is still freely given | Its own screen, naming the data (below). Never bundled with the app's privacy consent. ODYS works fully without it |
 | **Withdrawal** | Withdrawing should be easy, "one-step", with no detriment | One switch, "Use my food needs", in You. Off deletes them on the phone. The rest of the app is unchanged |
 | **Purpose limitation** | One or more specified purposes | One purpose: the person's own food suggestions. Enforced in code: `FoodNeeds.use()` raises for any other purpose, and there's a test for matching, advertising, analytics and group trips |
 | **Minimisation** | Only what the purpose needs | Only the chosen needs, and "strict" where it applies. No free text, no "why", no allergy list (section 5) |
-| **Retention and deletion** | Not longer than needed | **On the phone only.** Sent with each suggestions request and used for that answer only; never written to the database, the logs or a backup. Deleted when withdrawn, with "Delete my data", or with the app |
+| **Retention and deletion** | Not longer than needed | **On the phone only, and used there** (on-device filtering, m232). Never sent with a request, so never in the database, the logs or a server backup. Kept out of the phone's own backups too (the DPIA explains this exception to m226). Deleted when withdrawn, with "Delete my data", or with the app |
 | **Export** | Rights of access | Shown in "Your data" on the phone, where they are kept |
 | **Analytics** | — | **None.** No event carries a food need, not even a count: a "halal filter used" count would itself be special category data about groups of people |
 | **Third parties** | — | Never sent to venues, booking partners, LiteAPI, Duffel or anyone else |
@@ -95,10 +102,10 @@ Kosher (London Beth Din, KLBD and others), vegetarian and vegan sources: not res
 
 ## 6. Decisions for Abram
 
-1. The Article 6 basis: consent (proposed), or contract.
-2. Phone-only storage (proposed): no server copy, no analytics.
-3. Allergies never stored, with the line for everyone (proposed).
-4. Sign off the DPIA (Claude drafts it, ~2 h) and the privacy-notice section (~0.5 h).
+1. ~~The Article 6 basis.~~ **Decided (m224): Article 6(1)(a) consent, with Article 9(2)(a) explicit consent, identified separately.**
+2. Phone-only storage and on-device filtering: no server copy, no analytics (proposed; the DPIA's recommendation).
+3. ~~Allergies.~~ **Decided (m224): health data, never stored**, with the line for everyone.
+4. **The DPIA goes to a UK data-protection solicitor before any user (m224).** Abram signs after their review; Claude doesn't sign. Then the privacy-notice section (~0.5 h).
 5. The first evidence: HMC's public directory checked by hand for the cards' food stops. Ask HMC before any automated use.
 6. Whether "Places not centred on alcohol" belongs here (it's a preference about venues, not a belief), or in the day's feel.
 

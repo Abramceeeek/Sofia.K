@@ -23,6 +23,19 @@ def _venues():
     return {name: {need: VenueFood(need, **v) for need, v in (needs or {}).items()} for name, needs in raw.items()}
 
 
+def test_each_need_has_its_class_and_consent_names_both_legal_grounds():
+    """m232 (Abram, m224): halal and kosher potentially reveal religion; vegetarian, vegan and alcohol-free are
+    assessed on context; allergies aren't a need at all. Article 6(1)(a) and Article 9(2)(a) are recorded apart."""
+    assert set(food.NEED_CLASS) == set(food.NEEDS)
+    assert {n for n, c in food.NEED_CLASS.items() if c == "religion"} == {"halal", "kosher"}
+    assert {n for n, c in food.NEED_CLASS.items() if c == "context"} == {"vegetarian", "vegan", "no_alcohol"}
+    assert not set(food.ALLERGENS) & set(food.NEEDS)            # health data: never a need ODYS keeps
+    assert (CONSENT.article6, CONSENT.article9) == ("6(1)(a) consent", "9(2)(a) explicit consent")
+    # every class needs the same consent: a context need without it is refused like halal
+    with pytest.raises(ValueError, match="consent"):
+        FoodNeeds(frozenset({"vegetarian"}))
+
+
 def test_needs_are_kept_only_with_explicit_consent_and_only_offered_ones():
     with pytest.raises(ValueError, match="consent"):
         FoodNeeds(frozenset({"halal"}))
