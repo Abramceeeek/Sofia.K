@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-09 — Abram's decisions on the next sprint; the decision implementation sprint (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m224 | **Abram's decisions on the next sprint report (9 Nov):** (1) **ECB rates: approved** with the live flight integration, after the round. Keep the fare and currency; show the estimate apart with source and date; rates over five days old stop cross-currency ranking; never present a conversion as payable. (2) **Explanations: approved**, as a collapsed "Why this stop?" on the stop card, at most three reasons from actual inputs, **no raw scores or percentages**, never in Test B. (3) **Kinds of places for everyone: approved with changes.** Prepare a globally neutral wording (no "in London"), broaden the eight, benchmark it, switch after the round. (4) **Offline: partly.** The Android token migration and the offline "Now" view are approved. **The 30-day deletion applies to disposable offline content only, never the person's trip.** **No blanket iPhone backup exclusion** until user data is separated from disposable cache (Apple: `isExcludedFromBackup` is for files not needed in backups, not user documents). (5) **Food: legal review first.** Correct the DPIA's classification: halal and kosher potentially reveal religion; allergies are health data and aren't stored; vegetarian, vegan and alcohol-free are assessed in context, with the same safeguards. Art 6(1)(a) and 9(2)(a) are identified separately. Reconcile the food documents to on-device filtering. A UK data-protection solicitor checks it before users. **Approved:** a count-only audit and deletion of old `foods_avoided` values. (6) **English school holidays: approved**: the seven councils by hand, official sources only, each separate. **Order:** offline retention and backups; the Android token; the offline Now view; onboarding wording; explanations; ECB activation (with live keys); the DPIA and audit; the seven councils; the iPhone currency screenshot. | m221's 30-day trip deletion and iPhone backup proposal; m223's "all food needs are special category" | Abram, after reading the report, the DPIA, the offline design and the onboarding configuration: "trip information belongs to the traveller". |
+
 ## 2026-11-07 — Recommendation quality and global readiness: the next sprint (branch only)
 
 | # | Decision | Replaces | Why |
