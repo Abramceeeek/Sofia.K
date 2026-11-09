@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, daybudget, dayplan, db, explain, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+from . import (backup, daybudget, dayplan, db, explain, food, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -1370,6 +1370,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ("safety_replies", db.SafetyReply), ("day_feedback", db.DayFeedback)]} | {   # D118: never the contacts people left
             # D116: visitors from abroad are their own group, left out of the Test B analysis
             "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
+
+    @app.get("/v1/admin/audit/foods-avoided", dependencies=[Depends(admin)])
+    def audit_foods_avoided(s: Session = Depends(session)):
+        """m233 (Abram, m224): how many profiles still hold the old free-text food field. Counts only, never a value."""
+        counts = food.audit_profiles(u.profile for u in s.scalars(select(db.User)))
+        ops.log.info("foods_avoided audit: %d of %d profiles hold the key, %d non-empty",
+                     counts["with_key"], counts["profiles"], counts["non_empty"])
+        return counts
+
+    @app.post("/v1/admin/audit/foods-avoided/delete", dependencies=[Depends(admin)])
+    def delete_foods_avoided(body: dict = Body(...), s: Session = Depends(session)):
+        """m233: removes the old field from every profile. Destructive, so it needs {"confirm": "delete"}; Abram runs
+        it (m224 approves deleting any that exist). Answers with counts before and after, never a value."""
+        if body.get("confirm") != "delete":
+            raise HTTPException(400, 'send {"confirm": "delete"} to remove the field from every profile')
+        users = list(s.scalars(select(db.User)))
+        before = food.audit_profiles(u.profile for u in users)
+        for u in users:
+            if u.profile and any(k in u.profile for k in food.RETIRED_PROFILE_KEYS):
+                u.profile = food.scrub_profile(u.profile)
+        s.commit()
+        after = food.audit_profiles(u.profile for u in s.scalars(select(db.User)))
+        ops.log.info("foods_avoided deleted: %d profiles held the key; %d now", before["with_key"], after["with_key"])
+        return {"before": before, "after": after}
 
     @app.get("/v1/admin/backup")
     def backup_now(authorization: str = Header(default="")):

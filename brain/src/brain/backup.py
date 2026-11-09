@@ -35,7 +35,7 @@ from pathlib import Path
 from sqlalchemy import Date, DateTime, Integer, Table, func, inspect, select, text
 from sqlalchemy.engine import Engine
 
-from . import calibration, db
+from . import calibration, db, food
 
 MAGIC = b"ODYSBK1\n"
 INFO = b"odys-backup-v1"
@@ -66,8 +66,16 @@ def dump(engine: Engine) -> dict:
     with engine.connect() as c:
         for t in tables():
             if t.name in have:
-                out[t.name] = [{k: _plain(v) for k, v in r._mapping.items()} for r in c.execute(select(t))]
+                out[t.name] = [_scrubbed(t.name, {k: _plain(v) for k, v in r._mapping.items()})
+                               for r in c.execute(select(t))]
     return {"format": 1, "made_at": datetime.now(timezone.utc).isoformat(), "tables": out}
+
+
+def _scrubbed(table: str, row: dict) -> dict:
+    """m233: the retired free-text food field never goes into a backup, and never comes back out of an older one."""
+    if table == "users" and isinstance(row.get("profile"), dict):
+        return {**row, "profile": food.scrub_profile(row["profile"])}
+    return row
 
 
 def _typed(t: Table, row: dict) -> dict:
@@ -97,7 +105,7 @@ def restore(engine: Engine, data: dict) -> dict[str, int]:
             if c.execute(select(func.count()).select_from(t)).scalar():
                 raise BackupError(f"{t.name} already has rows: restore into an empty database")
             if rows:
-                c.execute(t.insert(), [_typed(t, r) for r in rows])
+                c.execute(t.insert(), [_typed(t, _scrubbed(t.name, r)) for r in rows])
             counts[t.name] = len(rows)
             pk = list(t.primary_key.columns)
             if engine.dialect.name == "postgresql" and rows and len(pk) == 1 and isinstance(pk[0].type, Integer):
