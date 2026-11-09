@@ -2455,6 +2455,11 @@ struct TripDemoScreen: View {
                     }
                     .onAppear { if name != "flight" { model.book.handoff = Self.handoff(f, back: name == "handoffback") } }
             }
+        case "flightcurrency":                                                            // 28c (m231)
+            // a fare in euros: its price in its own currency, and under it the estimate in pounds with the rate's date
+            if let f = model.book.flights?.results.first(where: { $0.estimate != nil }) {
+                NavigationStack { FlightDetailView(flight: f) }
+            }
         case "stay", "stayfortrip":                                                       // 32, 32b (m203)
             if let s = model.book.stays?.results.first {
                 NavigationStack { StayDetailView(stay: s, scrollToTrip: name == "stayfortrip") }

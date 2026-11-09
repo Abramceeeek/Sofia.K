@@ -234,6 +234,7 @@ struct BookHeader: View {
 struct SortTab: View {
     let label: String
     let sub: String
+    var detail: String? = nil          // m231: the time or distance on its own line, so a long price never cuts off
     let on: Bool
     let action: () -> Void
 
@@ -246,10 +247,14 @@ struct SortTab: View {
                 Text(label).font(.footnote.weight(.semibold)).foregroundStyle(Theme.ink)
                 Text(sub).font(.footnote).foregroundStyle(on ? Theme.accent : Theme.muted).lineLimit(1)
                     .minimumScaleFactor(0.8)
+                if let detail {
+                    Text(detail).font(.footnote).foregroundStyle(on ? Theme.accent : Theme.muted).lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(on ? Theme.selected : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Theme.accent : Color.clear, lineWidth: 1.5))
             .animation(Motion.select, value: on)
@@ -268,10 +273,13 @@ struct FlightSortTabs: View {
             HStack(spacing: 6) {
                 ForEach([("best", "Best"), ("cheapest", "Cheapest"), ("fastest", "Fastest")], id: \.0) { key, label in
                     let top = tabs[key] ?? nil
-                    SortTab(label: label, sub: top.map { "\(Money.whole($0.price, $0.currency ?? "GBP")) · \(Dates.duration($0.durationMin))" } ?? "–",
+                    // m231: price and time on their own lines, so "357 EUR" and "22h 53m" both fit (run #105 cut it off)
+                    SortTab(label: label, sub: top.map { Money.whole($0.price, $0.currency ?? "GBP") } ?? "–",
+                            detail: top.map { Dates.duration($0.durationMin) },
                             on: model.book.flightFilters.sort == key) { model.book.flightFilters.sort = key }
                 }
             }
+            .fixedSize(horizontal: false, vertical: true)
             if model.book.flightFilters.sort == "best" {   // m191 (design review): "Best" is a judgement, so say whose
                 Text("Best balances price and journey time.")
                     .font(.footnote)
@@ -289,16 +297,18 @@ struct StaySortTabs: View {
         HStack(spacing: 6) {
             ForEach([("recommended", "For your days"), ("price", "Cheapest"), ("rating", "Top rated")], id: \.0) { key, label in
                 let top = tabs[key] ?? nil
-                SortTab(label: label, sub: top.map { Self.sub(key, $0) } ?? "–",
+                SortTab(label: label, sub: top.map { Money.whole($0.priceNight, $0.currency ?? "GBP") } ?? "–",   // m218
+                        detail: top.flatMap { Self.detail(key, $0) },
                         on: model.book.stayFilters.sort == key) { model.book.stayFilters.sort = key }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
-    static func sub(_ key: String, _ t: StayTab) -> String {
-        let price = Money.whole(t.priceNight, t.currency ?? "GBP")   // m218: its own currency
-        if key == "rating", let r = t.rating { return String(format: "%.1f · ", r) + price }
-        return price + (t.distanceKm.map { String(format: " · %.1f km", $0) } ?? "")
+    /// m231: the rating or distance on its own line under the price, so a long price never cuts off.
+    static func detail(_ key: String, _ t: StayTab) -> String? {
+        if key == "rating", let r = t.rating { return String(format: "Rated %.1f", r) }
+        return t.distanceKm.map { String(format: "%.1f km", $0) }
     }
 }
 

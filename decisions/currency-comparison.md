@@ -67,6 +67,25 @@ Fetching rates is **off** until Abram switches it on (`Settings.fx_rates_live`, 
 - **Android:** `MoneyTest.estimatesAndChoicesKeepTheirCurrency`, and the screenshot `26b-flightscurrency`.
 - **iPhone:** demo screen `flightscurrency`, with the same data (`app/Sources/Demo/demo_flights_mixed.json`). That file is the sample flights with three fares re-priced in euros and compared at the 6 Nov rate. It's sample data, labelled "sample prices" on the screen.
 
+## The sort tabs and the estimate screenshot (m231, 9 Nov 2026; branch only)
+
+- **The fault:** the iPhone's "Cheapest" tab cut off "357 EUR · 22h 5…" (run #105). A currency code is longer than a £ sign.
+- **The fix, both apps:** each tab puts the price on one line and the time (flights) or the distance or rating (stays) on the next. A line may shrink to 80% before anything is cut, as the iPhone already did. The three tabs keep one height.
+- **Measured on Android** (`SortTabFitTest`, 3 tests), on a 360 dp phone with the header's 20 dp sides:
+  - "12,345 USD", "9,999 EUR", "1,234 USD", "22h 53m" and "Rated 4.5" fit at full size ("12,345 USD" needs 135 of 166 px);
+  - the old one-line form still doesn't fit even at 80%.
+- **On the iPhone:** the CI screenshots `flightscurrency` (the tabs) and a new `flightcurrency`. The new one opens a fare in euros: its price in euros, and under it "≈ £306 · ECB rate of 6 Nov 2026", the estimate kept apart from the fare.
+- **Abram's conditions for switching the ECB rates on (m224), checked against the code:**
+
+  | Condition | Where it's met |
+  |---|---|
+  | The fare keeps its own currency | The price shown is always the fare's own |
+  | The estimate is shown apart, with its source and date | The "≈ … · ECB rate of …" line |
+  | Rates over five days old stop cross-currency ranking | `fx.MAX_AGE_DAYS = 5`; older than that, nothing is converted and the currencies are grouped |
+  | A conversion is never presented as payable | "≈", and the line sits under the fare, never in its place |
+
+  **Still off:** `fx_rates_live = False`.
+
 ## What's left, and Abram's decision
 
 - **Switch on the ECB rates?** (`fx_rates_live = True`, one line, then a deploy after the friends' round.) This would be ODYS's first data from the ECB; it's free and needs no key. Until it's on, the app never shows an estimate, and mixed currencies are grouped. **Recommendation:** switch it on when live flight keys are added, not before, because sample results are all in pounds.

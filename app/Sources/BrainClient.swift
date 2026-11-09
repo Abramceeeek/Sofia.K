@@ -192,7 +192,10 @@ final class BrainClient {
 
     func flights(_ search: FlightSearch) async throws -> FlightResults {
         // m218: the "flightscurrency" screenshot searches the mixed-currency sample (three fares in euros)
-        if demo { return try Self.bundled(AppConfig.screen == "flightscurrency" ? "demo_flights_mixed" : "demo_flights") }
+        if demo {
+            let mixed = ["flightscurrency", "flightcurrency"].contains(AppConfig.screen ?? "")
+            return try Self.bundled(mixed ? "demo_flights_mixed" : "demo_flights")
+        }
         return try await call("POST", "v1/trips/flights", search)
     }
 

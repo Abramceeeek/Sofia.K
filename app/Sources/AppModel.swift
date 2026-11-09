@@ -153,7 +153,9 @@ final class AppModel {
                 trips = [trip]
                 currentTripId = trip.id
                 // m218: "flightscurrency": three fares in euros, compared at a dated ECB rate (sample results)
-                book.flights = try? BrainClient.bundled(screen == "flightscurrency" ? "demo_flights_mixed" : "demo_flights")
+                // m231: "flightcurrency" opens one of those fares, to show the estimate line under its price
+                book.flights = try? BrainClient.bundled(["flightscurrency", "flightcurrency"].contains(screen ?? "")
+                                                        ? "demo_flights_mixed" : "demo_flights")
                 book.stays = try? BrainClient.bundled("demo_stays")
                 book.resultsFor = trip.id
             }

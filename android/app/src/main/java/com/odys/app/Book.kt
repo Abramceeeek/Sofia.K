@@ -41,6 +41,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -59,6 +61,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -200,11 +203,13 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
         }
         if (segment == "flights") {
             val tabs = book.flights?.tabs ?: emptyMap()
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 for ((key, label) in listOf("best" to "Best", "cheapest" to "Cheapest", "fastest" to "Fastest")) {
                     val t = tabs[key]
-                    SortTab(label, t?.let { "${Money.whole(it.price, it.currency ?: "GBP")} · ${Dates.duration(it.durationMin)}" } ?: "–",
-                        book.flightFilters.sort == key, Modifier.weight(1f)) { book.flightFilters = book.flightFilters.copy(sort = key) }
+                    // m231: price and time on their own lines, so "357 EUR" and "22h 53m" both fit (it cut off before)
+                    SortTab(label, t?.let { Money.whole(it.price, it.currency ?: "GBP") } ?: "–",
+                        book.flightFilters.sort == key, Modifier.weight(1f).fillMaxHeight(),
+                        detail = t?.let { Dates.duration(it.durationMin) }) { book.flightFilters = book.flightFilters.copy(sort = key) }
                 }
             }
             // m191 (design review): "Best" is a judgement, so say whose
@@ -212,15 +217,12 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
         }
         if (segment == "stays") {
             val tabs = book.stays?.tabs ?: emptyMap()
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 for ((key, label) in listOf("recommended" to "For your days", "price" to "Cheapest", "rating" to "Top rated")) {
                     val t = tabs[key]
-                    val s = t?.let {
-                        val price = Money.whole(it.priceNight, it.currency ?: "GBP")   // m218: its own currency
-                        if (key == "rating" && it.rating != null) String.format(Locale.UK, "%.1f · ", it.rating) + price
-                        else price + (it.distanceKm?.let { km -> String.format(Locale.UK, " · %.1f km", km) } ?: "")
-                    } ?: "–"
-                    SortTab(label, s, book.stayFilters.sort == key, Modifier.weight(1f)) { book.stayFilters = book.stayFilters.copy(sort = key) }
+                    SortTab(label, t?.let { Money.whole(it.priceNight, it.currency ?: "GBP") } ?: "–",   // m218: its own currency
+                        book.stayFilters.sort == key, Modifier.weight(1f).fillMaxHeight(),
+                        detail = t?.let { stayTabDetail(key, it) }) { book.stayFilters = book.stayFilters.copy(sort = key) }
                 }
             }
         }
@@ -229,14 +231,36 @@ fun BookHeader(model: AppModel, trip: Trip, segment: String?, onHelp: () -> Unit
     Box(Modifier.fillMaxWidth().height(1.dp).background(Theme.hairline))
 }
 
+/** m231: the rating or distance on its own line under the price, so a long price never cuts off. As on the iPhone. */
+fun stayTabDetail(key: String, t: StayTab): String? =
+    if (key == "rating" && t.rating != null) String.format(Locale.UK, "Rated %.1f", t.rating)
+    else t.distanceKm?.let { String.format(Locale.UK, "%.1f km", it) }
+
 @Composable
-fun SortTab(label: String, sub: String, on: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun SortTab(label: String, sub: String, on: Boolean, modifier: Modifier = Modifier, detail: String? = null,
+            onClick: () -> Unit) {
     Column(modifier.pressable(haptic = true, onClick = onClick).semantics { selected = on }.clip(RoundedCornerShape(12.dp))
         .background(if (on) Theme.selected else Theme.surface).border(1.5.dp, if (on) Theme.accent else Color.Transparent, RoundedCornerShape(12.dp))
         .padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
         Text(label, style = Theme.footnote.copy(color = Theme.ink, fontWeight = FontWeight.SemiBold))
-        Text(sub, style = Theme.footnote.copy(color = if (on) Theme.accent else Theme.muted), maxLines = 1)
+        FitLine(sub, Theme.footnote.copy(color = if (on) Theme.accent else Theme.muted))
+        if (detail != null) FitLine(detail, Theme.footnote.copy(color = if (on) Theme.accent else Theme.muted))
     }
+}
+
+/**
+ * m231: one line that shrinks, to 80% at most, rather than cut off: the iPhone's `minimumScaleFactor(0.8)`. It's drawn
+ * only once it fits (or can't shrink further), so it never flickers through the sizes.
+ */
+@Composable
+private fun FitLine(text: String, style: TextStyle) {
+    var scale by remember(text) { mutableFloatStateOf(1f) }
+    var ready by remember(text) { mutableStateOf(false) }
+    Text(text, style = style.copy(fontSize = style.fontSize * scale, lineHeight = style.lineHeight * scale), maxLines = 1,
+        softWrap = false, modifier = Modifier.drawWithContent { if (ready) drawContent() },
+        onTextLayout = { r ->
+            if (r.hasVisualOverflow && scale > 0.8f) scale = maxOf(0.8f, scale - 0.05f) else ready = true
+        })
 }
 
 /** "Filters · 2", then the one-tap ones. */
