@@ -103,15 +103,17 @@ The aim was Abram's: **an ODYS that makes better decisions, not just one with mo
 |---|---|---|
 | Brain (pytest) | 281 passed | **335 passed** (+54: budget 25, currency 9, explanations 6, offline 4, school coverage 5, onboarding switch 2, food guard 1, two-stage 2) |
 | Android (unit + screenshots, Robolectric) | 98 | **102 passed** (planbudget, flightscurrency, categories-everyone, money estimates) |
-| iPhone (CI, simulator, no upload) | run #101 success | **#102 success** (m217; the `planbudget` screenshot checked: "Your budget £30", lunch £15, fares £6, £9 left). **#103** (m218 + m220) compiled; screenshots pending at writing. **#104** for the final head (m223's model change) to follow |
+| iPhone (CI, simulator, no upload) | run #101 success | **#102 success** (m217; the `planbudget` screenshot checked: "Your budget £30", lunch £15, fares £6, £9 left). **#103** success (m218 + m220), but its `flightscurrency` screenshot showed pounds only: the demo search reloaded the plain sample. Fixed (screenshot data only, `039efbf`). **#105 success on the final code** (#104, on the commit before, was cancelled by the newer run): the euro fares, their tabs in euros and both comparison notes show. The estimate line under the first fare is below the bottom of the screenshot, so it's seen on Android only |
 
 New screenshots:
 - iPhone: `planbudget`, `flightscurrency`;
 - Android: `09g-planbudget`, `26b-flightscurrency` ("367 EUR / ≈ £306 · ECB rate of 6 Nov 2026"), `06c-categories-everyone`.
 
+**One small layout point** (iPhone, `flightscurrency`): the "Cheapest" tab's line cuts off ("357 EUR · 22h 5…") because a currency code is longer than a £ sign. It shows only when fares aren't in pounds. It's on the list for the currency switch-on (after-9-Nov #91).
+
 ## Commits (branch)
 
-`6d076b7` m216 · `cde0259` m217 · `d75876c` TfL test fix · `edca2e7` m218 · `466c737` m219 · `6058712` m220 · `fc5d6c8` m221 · `b1cd91c` m222 · `12f1d23` m223
+`6d076b7` m216 · `cde0259` m217 · `d75876c` TfL test fix · `edca2e7` m218 · `466c737` m219 · `6058712` m220 · `fc5d6c8` m221 · `b1cd91c` m222 · `12f1d23` m223 · `b14e0cd` this report · `eba7f73` after-9-Nov #87–#92 · `039efbf` iPhone screenshot fix
 
 ## Hours
 
