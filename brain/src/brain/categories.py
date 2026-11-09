@@ -27,7 +27,7 @@ class Category:
     title: str
     line: str
     phrase: str          # inside a sentence: "You love big museums, …"
-    example: str         # a ready London card whose photo the app shows
+    example: str | None  # a ready London card whose photo the app shows (always set in the served file, tested)
     moment: Moment       # the tags, as a pseudo-place
 
 
@@ -44,13 +44,16 @@ def load_categories(path: Path) -> Categories | None:
         return None
     with open(path, encoding="utf-8") as f:
         d = yaml.safe_load(f)
-    items = {}
-    for key, it in d["items"].items():
-        m = Moment.model_validate({"id": f"cat_{key}", "title": it["title"], "place": {"name": it["title"]},
-                                   "features": {"place": it["place"], "moment": it["moment"]},
-                                   "cost_gbp": None, "source": "category-card"})
-        items[key] = Category(key, it["title"], it["line"], it["phrase"], it["example"], m)
+    items = {key: category_from(key, it) for key, it in d["items"].items()}
     return Categories(d["prompt"], d["note"], d["want_prompt"], items)
+
+
+def category_from(key: str, it: dict) -> Category:
+    """One kind of place from its YAML entry (also used by the benchmark for m229's proposed kinds)."""
+    m = Moment.model_validate({"id": f"cat_{key}", "title": it["title"], "place": {"name": it["title"]},
+                               "features": {"place": it["place"], "moment": it["moment"]},
+                               "cost_gbp": None, "source": "category-card"})
+    return Category(key, it["title"], it["line"], it["phrase"], it.get("example"), m)
 
 
 def category_observation(pop: PopulationModel, cat: Category, reaction: str, want: str | None) -> Observation | None:

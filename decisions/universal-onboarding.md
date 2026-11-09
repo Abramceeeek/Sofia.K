@@ -59,6 +59,70 @@ To switch on after the round: set `places_mode: kinds`, deploy the Brain, and us
 2. One this-or-that day that varies "active" against "relaxed".
 3. Ask for the first ratings early: the second stage is worth more than any onboarding question.
 
+## The globally neutral proposal (m229, 9 Nov 2026; Abram's decision 3, m224)
+
+**Recommendation: keep eight kinds, with the wording below.** Don't add shopping or live entertainment as kinds yet. The first needs a shopping taste in the model; the second needs cards. **Not switched:** `brain/data/categories_global.yaml` is a proposal that nothing serves (tested). The Brain still serves `categories.yaml` with "in London", and `places_mode` stays `named` for the round.
+
+### The wording
+
+| Key | Now (`categories.yaml`) | Proposed (`categories_global.yaml`) | Why |
+|---|---|---|---|
+| (never tried) | "Would you like to try it in London?" | "Would you like to try this kind of experience?" | Abram's wording |
+| (note) | "Wherever you're from. There are no wrong answers." | "Wherever you're from, wherever you're going. There are no wrong answers." | The trip may not be to London |
+| (photo caption, in the apps) | "In London, for example: …" | "For example, in {city}: …" | Every ready card is in London, so the caption still says London. It now comes from the card, never claims a photo is anywhere else, and changes by itself once other cities have cards |
+| `parks` | "Parks and gardens": "Grass, trees and water in the middle of the city." | "Parks, gardens and green places": "Grass, trees and water, in town or just outside it." | Nature and outdoors (below) |
+| `views_above` | "…with the whole city below." | "…with everything laid out below." | Not every view is of a city |
+| `river` | "Boats and the river": "Seeing the city from the water." | **"Water experiences and boat trips"**: "Rivers, lakes and the sea: seeing a place from the water." | Abram's wording; not every place has a river |
+| `street_food` | "Street-food markets": "Busy stalls, food from everywhere, eating as you go." | **"Local food and food markets"**: "Markets, stalls and the dishes a place is known for." | Abram's wording |
+| `hands_on` | "Something hands-on": "Swimming outdoors, cycling through a park, doing rather than looking." | **"Hands-on activities and adventures"**: "Swimming, cycling, climbing or a kayak: doing rather than looking." | Abram's wording; examples that travel |
+| `big_museums`, `art_galleries`, `old_buildings` | unchanged | unchanged | Already neutral |
+
+**Tags.** Where a kind's meaning broadened, its tags moved (GUESS, like every tag; each change is commented in the file):
+- **water:** history 1 → 0, iconic 1 → 0, outdoors 1 → 2, green 0 → 1;
+- **local food:** local 1 → 2, crowds 2 → 1, walking 1 → 0.
+
+The keys stay the same, so an answer stored under `river` keeps its place.
+
+### What was investigated
+
+- **Global relevance.** Five kinds were already neutral. "In London", "the city" and "a river" were the London- or city-specific parts. They're gone, except the photo caption, which says where the photo is from.
+- **Shopping.** There are five ready shopping cards (`triplength.SHOPPING`), but **the model has no shopping taste**: those cards have no shopping tag. So a shopping kind (tagged as the five cards' mean) would read "I love shopping" as liking photo spots, famous sights, local places and crowds, not shopping. In the benchmark it doesn't help rank the shopping cards (0.57 with or without it). **To ask about it properly:** a `shopping` tag on the cards and its own personal weight. That's a model change, for after the round (on `after-9-nov.md`).
+- **Live entertainment.** **No ready card is a show, a gig or a match.** Evensong at St Paul's is the nearest. The planner couldn't use the answer, and D123 says not to ask what no plan uses. **Cards first, then the question.** The candidate is in the file with no example photo, said rather than faked.
+- **Food.** "Local food and food markets" is still the only kind high on food, so food stays weakly learned (7–8% of its prior variance, as before). A kind that separates food tastes (a sit-down meal against grazing) is the way to learn more. It isn't a dietary question, so it doesn't touch the food work (m223).
+- **Nature and outdoors.** "Parks and gardens" was a city's park. Broadened to green places in or just outside town. Mountains, coast and countryside aren't in any ready card, so they aren't promised.
+- **London-only kinds.** None of the eight is only London's. Their examples are, because every ready card is.
+
+### The benchmark (`scripts/compare_onboarding.py --n 1000`; `benchmarks/synthetic/onboarding.txt`, and `onboarding_tried60.txt` for P(tried) 0.6)
+
+The same synthetic set-up as above (the model's own prior; every arm has the 5 this-or-that days). **Only the tags enter the simulation, so it can't show anything about the wording itself.** Rank ρ is over the 49 ready cards, ± one standard error.
+
+| Arm | Asked | Answers | Rank ρ | True top 8 found | Shopping cards ρ | At P(tried) 0.6: rank ρ |
+|---|---|---|---|---|---|---|
+| Named places, a Londoner | 6 | 4.5 | 0.399 ± 0.009 | 2.64 | 0.56 | 0.399 |
+| Kinds, current eight | 8 | 7.7 | 0.433 ± 0.009 | 2.79 | 0.54 | 0.420 |
+| **Kinds, proposed eight** | 8 | 7.8 | **0.442 ± 0.009** | 2.86 | 0.57 | 0.425 |
+| Proposed eight, then 4 rated stops | 8 + 4 | 7.8 | 0.503 ± 0.008 | 3.24 | 0.74 | 0.472 |
+| Ten (proposed eight + shopping + live) | 10 | 9.7 | 0.451 ± 0.009 | 2.95 | 0.57 | 0.427 |
+| Eight with shopping in (museums and galleries as one) | 8 | 7.8 | 0.426 ± 0.009 | 2.86 | 0.58 | 0.422 |
+
+**What it says:**
+- **The proposed eight lose nothing against the current eight** (0.442 against 0.433, within noise). They learn a little more about local places (+0.03) and outdoors (+0.02), from the broadened tags.
+- **Ten kinds aren't worth two more questions.** Rank ρ moves 0.009, within noise, and less still at P(tried) 0.6 (0.002). They add a little on photo spots, places to bring people and absorption (+0.03 to +0.04).
+- **Swapping shopping in for the second history kind costs history** (−0.03) and gains nothing on the shopping cards.
+- **The first rated stops still matter most:** 0.44 to 0.50, and the shopping cards from 0.57 to 0.74.
+- **Assumptions (all GUESSES):**
+  - every kind is tried with the same P (0.9; 0.6 as the sensitivity);
+  - "not sure" with P 0.3;
+  - the answers follow the model's own swipe and stated-choice models;
+  - the cards are London's 49.
+- **What it can't say:** whether people find the new words clearer, whether visitors from abroad try kinds at the same rate, or how a taste the model doesn't have (shopping, live shows) would behave. The friends' round and later testers show that.
+
+### Before switching (after the round; not built)
+
+1. Serve `example_note` and use it in both apps in place of the hard-coded "In London, for example" (`OnboardingViews.swift:254`, `Onboarding.kt:306`). ~0.5 h. Both apps already take the never-tried question from the Brain.
+2. Copy the proposed wording into `categories.yaml`, then set `places_mode: kinds`. Abram checks the eight first (~0.5 h).
+3. Revisit the visitor cohort split, as above.
+
 ## Hours
 
-Claude ~3 h. Abram: none now. After the round: flip the switch (one line) and check the eight kinds' wording (~0.5 h, as #86 says).
+Claude ~3 h (m220) and ~2 h (m229: the proposal, the investigation, the benchmark and its test). Abram: none now. After the round: check the eight's wording (~0.5 h) and decide on a shopping taste.

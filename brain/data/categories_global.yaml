@@ -1,0 +1,110 @@
+# m229: PROPOSED, NOT SERVED. A globally neutral version of the kinds of places (data/categories.yaml), for after the
+# friends' round (Abram's decision 3, m224). Nothing reads this file except its test and
+# scripts/compare_onboarding.py. The Brain serves data/categories.yaml, and places_mode stays "named".
+#
+# Same structure, same eight keys, so an answer stored under a key keeps its place. What changed and why is in
+# decisions/universal-onboarding.md ("The globally neutral proposal"). In short:
+# - Abram's wordings: the "never tried" question, water, food and hands-on.
+# - Nothing names London. The example photo's caption says which city it's from (`example_note`), because every
+#   ready card is in London. A photo from London is labelled as London, never passed off as anywhere.
+# - Three kinds were broadened, so their tags moved where the new meaning changed them (GUESS, like every tag here).
+#
+# `candidates` are kinds that were investigated and not put in the eight. The benchmark tries them.
+
+version: "0.2-proposed"
+prompt: "What kinds of places do you enjoy?"
+note: "Wherever you're from, wherever you're going. There are no wrong answers."
+want_prompt: "Would you like to try this kind of experience?"
+example_note: "For example, in {city}: {title}"   # {city} is the example card's city: London, for now
+items:
+  big_museums:
+    title: "Big museums with famous collections"
+    line: "Treasures from around the world, under one roof."
+    phrase: "big museums"
+    example: m_bm_great_court
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 1, absorption: 1, awe: 1, social_pull: 0}
+  art_galleries:
+    title: "Art galleries"
+    line: "Paintings you've seen in books, in front of you."
+    phrase: "art galleries"
+    example: m_national_gallery
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 0}
+  old_buildings:
+    title: "Old buildings and hidden history"
+    line: "Ruins, courtyards and corners with a story."
+    phrase: "old buildings and hidden history"
+    example: m_st_dunstan_garden
+    place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 2, iconic: 0, local_novel: 2, crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
+    moment: {contrast_reveal: 2, absorption: 0, awe: 1, social_pull: 1}
+  parks:
+    # Broadened: green places outside the centre too (many trips aren't to a big city). Tags unchanged.
+    title: "Parks, gardens and green places"
+    line: "Grass, trees and water, in town or just outside it."
+    phrase: "parks and green places"
+    example: m_park_break_st_james
+    place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+  views_above:
+    title: "Views from above"
+    line: "Towers, hills and cable cars, with everything laid out below."
+    phrase: "views from above"
+    example: m_horizon_22
+    place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
+  river:
+    # Abram: "Water experiences and boat trips". Broadened from a city's river to lakes and the sea:
+    # history_culture 1 -> 0 and iconic 1 -> 0 (open water isn't a sight); outdoor_exposure 1 -> 2; green_nature 0 -> 1.
+    title: "Water experiences and boat trips"
+    line: "Rivers, lakes and the sea: seeing a place from the water."
+    phrase: "water and boat trips"
+    example: m_uber_boat_west_day
+    place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 2, photo_potential: 2}
+    moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
+  street_food:
+    # Abram: "Local food and food markets". Broadened from busy street stalls to a place's own food:
+    # local_novel 1 -> 2 (it's in the name); crowds 2 -> 1 and walking_effort 1 -> 0 (not only eating on your feet in a crowd).
+    title: "Local food and food markets"
+    line: "Markets, stalls and the dishes a place is known for."
+    phrase: "local food and food markets"
+    example: m_borough_market_graze
+    place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 2, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 1}
+    moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+  hands_on:
+    # Abram: "Hands-on activities and adventures". The examples now travel (no "through a park"). Tags unchanged.
+    title: "Hands-on activities and adventures"
+    line: "Swimming, cycling, climbing or a kayak: doing rather than looking."
+    phrase: "hands-on activities and adventures"
+    example: m_london_fields_lido
+    place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 1, active: 2, outdoor_exposure: 2, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 1}
+
+candidates:
+  shopping:
+    # Investigated (Abram: "investigate shopping"). Tags: the five ready shopping cards' mean, rounded (triplength.SHOPPING).
+    # The model has no shopping taste of its own, so a "love it" is read as these tags, not as liking shopping.
+    title: "Shops, arcades and markets"
+    line: "Browsing old arcades, department stores, stalls and local makers."
+    phrase: "shops and markets"
+    example: m_burlington_arcade
+    place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+    moment: {contrast_reveal: 1, absorption: 1, awe: 0, social_pull: 1}
+  live:
+    # Investigated (Abram: "investigate live entertainment"). No ready card is a show, a gig or a match
+    # (evensong at St Paul's is the nearest), so there is no example photo and no plan could use the answer yet.
+    title: "Live shows, music and sport"
+    line: "Theatre, concerts, comedy or a match: being there while it happens."
+    phrase: "live shows and sport"
+    example: null
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+    moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 2}
+  museums_and_galleries:
+    # A way to keep eight with shopping in: big museums and art galleries as one kind. Tags: the two kinds' mean,
+    # halves rounded up.
+    title: "Museums and galleries"
+    line: "Famous collections and paintings you've seen in books."
+    phrase: "museums and galleries"
+    example: m_bm_great_court
+    place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+    moment: {contrast_reveal: 1, absorption: 2, awe: 1, social_pull: 0}

@@ -1,42 +1,48 @@
 SYNTHETIC PEOPLE ONLY (the model's own prior). What each set of onboarding questions lets the model learn,
 if people answer as the model assumes. 1000 people, seed 20261108; every arm also has the 5 upfront
 this-or-that days. P(been) Londoner 0.75, visitor 0.15; kinds: P(tried) 0.9, 'not sure' 0.3 (all GUESSES).
+'shops': across people, how well the fitted mean utility of the 5 shopping cards follows the true one.
 
-arm                  | place answers | rank rho | true top 8 found
-named, Londoner      |           4.5 |    0.399 |         2.64 of 8
-named, visitor       |           0.9 |    0.310 |         2.26 of 8
-kinds of places      |           7.7 |    0.433 |         2.79 of 8
-kinds, then 4 rated  |           7.8 |    0.504 |         3.25 of 8
+arm                  | asked | place answers | rank rho (± se) | true top 8 found | shops
+named, Londoner      |     6 |           4.5 |    0.399 ±0.009 |         2.64 of 8 |  0.56
+named, visitor       |     6 |           0.9 |    0.310 ±0.010 |         2.26 of 8 |  0.39
+kinds, current 8     |     8 |           7.7 |    0.433 ±0.009 |         2.79 of 8 |  0.54
+kinds, global 8      |     8 |           7.8 |    0.442 ±0.009 |         2.86 of 8 |  0.57
+global 8, 4 rated    |     8 |           7.8 |    0.503 ±0.008 |         3.24 of 8 |  0.74
+global 10            |    10 |           9.7 |    0.451 ±0.009 |         2.95 of 8 |  0.57
+global 8, shops in   |     8 |           7.8 |    0.426 ±0.009 |         2.86 of 8 |  0.58
 
 Per dimension: share of the prior variance removed (0 = nothing learned) / correlation of fitted with true
-dimension              |      named, Londoner |       named, visitor |      kinds of places |  kinds, then 4 rated
-movement_views         |      0.07 /    0.25  |      0.01 /    0.12  |      0.11 /    0.35  |      0.18 /    0.44 
-food                   |      0.05 /    0.20  |      0.01 /    0.12  |      0.07 /    0.25  |      0.08 /    0.30 
-green_nature           |      0.09 /    0.30  |      0.02 /    0.15  |      0.08 /    0.28  |      0.15 /    0.41 
-history_culture        |      0.08 /    0.24  |      0.02 /    0.11  |      0.14 /    0.38  |      0.22 /    0.49 
-iconic                 |      0.06 /    0.28  |      0.02 /    0.18  |      0.08 /    0.27  |      0.15 /    0.36 
-local_novel            |      0.06 /    0.19  |      0.01 /    0.10  |      0.08 /    0.28  |      0.16 /    0.40 
-crowds                 |      0.35 /    0.52  |      0.33 /    0.52  |      0.35 /    0.55  |      0.37 /    0.56 
-walking_effort         |      0.06 /    0.23  |      0.02 /    0.12  |      0.05 /    0.24  |      0.10 /    0.29 
-active                 |      0.02 /    0.15  |      0.01 /    0.09  |      0.07 /    0.22  |      0.09 /    0.28 
-outdoor_exposure       |      0.08 /    0.23  |      0.02 /    0.16  |      0.11 /    0.30  |      0.20 /    0.40 
-photo_potential        |      0.06 /    0.22  |      0.02 /    0.10  |      0.11 /    0.31  |      0.18 /    0.41 
-contrast_reveal        |      0.05 /    0.21  |      0.01 /    0.12  |      0.08 /    0.25  |      0.14 /    0.35 
-absorption             |      0.02 /    0.12  |      0.00 /    0.06  |      0.12 /    0.32  |      0.16 /    0.40 
-awe                    |      0.10 /    0.30  |      0.03 /    0.17  |      0.07 /    0.28  |      0.14 /    0.35 
-social_pull            |      0.06 /    0.24  |      0.02 /    0.13  |      0.10 /    0.32  |      0.15 /    0.35 
-cost_per_10gbp         |      0.07 /    0.40  |      0.07 /    0.34  |      0.07 /    0.37  |      0.07 /    0.41 
-hot_outdoor            |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan 
-rain_outdoor           |      0.28 /    0.47  |      0.28 /    0.51  |      0.28 /    0.47  |      0.28 /    0.46 
-cold_outdoor           |      0.11 /    0.28  |      0.11 /    0.24  |      0.11 /    0.25  |      0.11 /    0.28 
-transfer_15_30         |      0.13 /    0.36  |      0.13 /    0.39  |      0.13 /    0.37  |      0.13 /    0.35 
-transfer_30_plus       |      0.25 /    0.41  |      0.25 /    0.48  |      0.25 /    0.44  |      0.25 /    0.46 
-packed_pace            |      0.29 /    0.51  |      0.29 /    0.52  |      0.29 /    0.51  |      0.29 /    0.50 
-long_walk              |      0.28 /    0.50  |      0.28 /    0.51  |      0.28 /    0.49  |      0.28 /    0.52 
-aspiration_match       |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan 
-swipe_level            |      0.38 /    0.63  |      0.15 /    0.33  |      0.54 /    0.73  |      0.62 /    0.78 
+dimension              |      named, Londoner |       named, visitor |     kinds, current 8 |      kinds, global 8 |    global 8, 4 rated |            global 10 |   global 8, shops in
+movement_views         |      0.07 /    0.25  |      0.01 /    0.12  |      0.11 /    0.35  |      0.11 /    0.31  |      0.18 /    0.45  |      0.11 /    0.35  |      0.11 /    0.34 
+food                   |      0.05 /    0.20  |      0.01 /    0.12  |      0.07 /    0.25  |      0.07 /    0.28  |      0.07 /    0.30  |      0.08 /    0.28  |      0.08 /    0.26 
+green_nature           |      0.09 /    0.30  |      0.02 /    0.15  |      0.08 /    0.28  |      0.08 /    0.29  |      0.15 /    0.36  |      0.09 /    0.26  |      0.08 /    0.30 
+history_culture        |      0.08 /    0.24  |      0.02 /    0.11  |      0.14 /    0.38  |      0.15 /    0.37  |      0.22 /    0.46  |      0.15 /    0.36  |      0.11 /    0.34 
+iconic                 |      0.06 /    0.28  |      0.02 /    0.18  |      0.08 /    0.27  |      0.08 /    0.28  |      0.16 /    0.41  |      0.09 /    0.31  |      0.08 /    0.28 
+local_novel            |      0.06 /    0.19  |      0.01 /    0.10  |      0.08 /    0.28  |      0.11 /    0.35  |      0.18 /    0.42  |      0.11 /    0.33  |      0.10 /    0.33 
+crowds                 |      0.35 /    0.52  |      0.33 /    0.52  |      0.35 /    0.55  |      0.34 /    0.53  |      0.36 /    0.55  |      0.35 /    0.50  |      0.34 /    0.53 
+walking_effort         |      0.06 /    0.23  |      0.02 /    0.12  |      0.05 /    0.24  |      0.05 /    0.20  |      0.10 /    0.34  |      0.05 /    0.24  |      0.05 /    0.20 
+active                 |      0.02 /    0.15  |      0.01 /    0.09  |      0.07 /    0.22  |      0.07 /    0.21  |      0.09 /    0.31  |      0.07 /    0.21  |      0.07 /    0.23 
+outdoor_exposure       |      0.08 /    0.23  |      0.02 /    0.16  |      0.11 /    0.30  |      0.13 /    0.33  |      0.21 /    0.44  |      0.14 /    0.38  |      0.13 /    0.30 
+photo_potential        |      0.06 /    0.22  |      0.02 /    0.10  |      0.11 /    0.31  |      0.11 /    0.31  |      0.18 /    0.39  |      0.15 /    0.36  |      0.12 /    0.34 
+contrast_reveal        |      0.05 /    0.21  |      0.01 /    0.12  |      0.08 /    0.25  |      0.08 /    0.24  |      0.14 /    0.37  |      0.08 /    0.23  |      0.08 /    0.28 
+absorption             |      0.02 /    0.12  |      0.00 /    0.06  |      0.12 /    0.32  |      0.12 /    0.37  |      0.16 /    0.35  |      0.15 /    0.40  |      0.12 /    0.30 
+awe                    |      0.10 /    0.30  |      0.03 /    0.17  |      0.07 /    0.28  |      0.08 /    0.27  |      0.14 /    0.31  |      0.09 /    0.28  |      0.08 /    0.26 
+social_pull            |      0.06 /    0.24  |      0.02 /    0.13  |      0.10 /    0.32  |      0.10 /    0.26  |      0.15 /    0.37  |      0.13 /    0.36  |      0.09 /    0.31 
+cost_per_10gbp         |      0.07 /    0.40  |      0.07 /    0.34  |      0.07 /    0.37  |      0.07 /    0.41  |      0.07 /    0.39  |      0.07 /    0.42  |      0.07 /    0.39 
+hot_outdoor            |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan 
+rain_outdoor           |      0.28 /    0.47  |      0.28 /    0.51  |      0.28 /    0.47  |      0.28 /    0.46  |      0.28 /    0.47  |      0.28 /    0.51  |      0.28 /    0.51 
+cold_outdoor           |      0.11 /    0.28  |      0.11 /    0.24  |      0.11 /    0.25  |      0.11 /    0.29  |      0.11 /    0.30  |      0.11 /    0.32  |      0.11 /    0.33 
+transfer_15_30         |      0.13 /    0.36  |      0.13 /    0.39  |      0.13 /    0.37  |      0.13 /    0.35  |      0.13 /    0.36  |      0.13 /    0.33  |      0.13 /    0.34 
+transfer_30_plus       |      0.25 /    0.41  |      0.25 /    0.48  |      0.25 /    0.44  |      0.25 /    0.46  |      0.24 /    0.42  |      0.25 /    0.41  |      0.25 /    0.44 
+packed_pace            |      0.29 /    0.51  |      0.29 /    0.52  |      0.29 /    0.51  |      0.29 /    0.50  |      0.29 /    0.50  |      0.29 /    0.50  |      0.29 /    0.52 
+long_walk              |      0.28 /    0.50  |      0.28 /    0.51  |      0.28 /    0.49  |      0.28 /    0.52  |      0.28 /    0.49  |      0.28 /    0.52  |      0.28 /    0.46 
+aspiration_match       |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan  |      0.00 /     nan 
+swipe_level            |      0.38 /    0.63  |      0.15 /    0.33  |      0.54 /    0.73  |      0.54 /    0.74  |      0.62 /    0.78  |      0.56 /    0.73  |      0.52 /    0.73 
 
-Learned by no onboarding arm (under 10% of the prior variance removed by each of the first three): food, green_nature, iconic, local_novel, walking_effort, active, contrast_reveal, awe, social_pull, cost_per_10gbp, hot_outdoor, aspiration_match
-... and still under 10% after 4 rated stops: food, walking_effort, active, cost_per_10gbp, hot_outdoor, aspiration_match
-Kinds of places learn more than named places (Londoner) on: swipe_level (+0.16), absorption (+0.10), history_culture (+0.07), photo_potential (+0.05), active (+0.04), social_pull (+0.04), movement_views (+0.04), outdoor_exposure (+0.03), contrast_reveal (+0.03), iconic (+0.02)
-Named places (Londoner) learn more on: awe (+0.03)
+Learned by no onboarding arm (under 10% of the prior variance removed by every arm without ratings): food, green_nature, iconic, walking_effort, active, contrast_reveal, awe, cost_per_10gbp, hot_outdoor, aspiration_match
+... and still under 10% after 4 rated stops: food, active, cost_per_10gbp, hot_outdoor, aspiration_match
+kinds, current 8 vs named, Londoner: learns more on swipe_level (+0.16), absorption (+0.10), history_culture (+0.07), photo_potential (+0.05), active (+0.04), social_pull (+0.04), movement_views (+0.04), outdoor_exposure (+0.03), contrast_reveal (+0.03), iconic (+0.02); less on awe (-0.03)
+kinds, global 8 vs kinds, current 8: learns more on local_novel (+0.03), outdoor_exposure (+0.02); less on nothing
+global 10 vs kinds, global 8: learns more on photo_potential (+0.04), social_pull (+0.03), absorption (+0.03), swipe_level (+0.02); less on nothing
+global 8, shops in vs kinds, global 8: learns more on nothing; less on history_culture (-0.03), swipe_level (-0.02)
