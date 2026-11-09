@@ -210,6 +210,11 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     init {
         if (client.token == null) {
             route = Route.Welcome
+            // m226: trips belong to the traveller. With no token (one that can't be read, e.g. a lost Keystore key)
+            // the trips on this phone are still theirs: kept in memory, so the next save adds to them instead of
+            // replacing the file. "Delete my data" removes the file first, so it isn't this.
+            trips = files.load(ListSerializer(Trip.serializer()), "trips.json") ?: emptyList()
+            currentTripId = trips.firstOrNull()?.id
         } else {
             route = if (prefs.bool("onboardingDone")) Route.Home else Route.Onboarding
             step = prefs.int("onboardingStep")?.let { Step.values().getOrNull(it) } ?: Step.Based

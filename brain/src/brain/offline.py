@@ -16,8 +16,13 @@ is fetched to build it. Each item carries:
 - a status: current, check, expired or past;
 - the one action to take when it isn't current.
 
-Missing data is said ("not saved"), never filled in. A trip's offline copy is deleted 30 days after its last day
-(GUESS, for Abram), and at once with "Delete my data".
+Missing data is said ("not saved"), never filled in.
+
+**Retention (m226, Abram 9 Nov: "trip information belongs to the traveller").** What the phone keeps falls into five
+classes (`STORAGE` below). The person's own trips, plans, ratings and settings are never deleted automatically: only
+by the person (a trip, or "Delete my data"). After a trip, its booking details read "expired" and its summary stays.
+The 30-day rule (GUESS) applies only to **disposable** content: a stored copy of an offline pack, cached images, share
+images. The pack itself is derived from the trip record, so it can always be built again while the trip exists.
 """
 
 from __future__ import annotations
@@ -28,7 +33,7 @@ from datetime import date, datetime, timedelta
 SECTIONS = ("itinerary", "stay", "travel", "emergency")   # Abram's order: the saved itinerary first
 CARD_CHECK_DAYS = 90       # GUESS: a card's facts (hours, prices) older than this say "check on the day"
 PLAN_STALE_DAYS = 7        # GUESS: a day planned this long before its date says travel times may have changed
-KEEP_AFTER_TRIP_DAYS = 30  # GUESS: the offline copy is deleted this long after the trip's last day
+DISPOSABLE_AFTER_TRIP_DAYS = 30  # GUESS: a stored offline pack or cached content for a trip may go this long after it
 PACK_BUDGET_BYTES = 512 * 1024   # GUESS: the pack is text only; card photos are web images, not kept offline
 
 # The same lines as Help & safety in both apps (bundled there, so they work with no signal: m221 audit)
@@ -56,9 +61,37 @@ def trip_end(trip: dict) -> date:
     return date.fromisoformat(trip["start"]) + timedelta(days=int(trip["nights"]))
 
 
-def keep_until(trip: dict) -> date:
-    """After this day the trip's offline copy is deleted from the phone (and at once with "Delete my data")."""
-    return trip_end(trip) + timedelta(days=KEEP_AFTER_TRIP_DAYS)
+# m226: what the phone keeps, by class. Only "derived" and "cache" ever expire on their own; "user" and "history" are
+# the traveller's, kept until they delete them; "credential" is the install token, never in plain storage.
+STORAGE = {
+    "trips.json": ("user", "Your trips: dates, the chosen flight and stay, your own time, each day's plan."),
+    "plan.json": ("user", "Your current day's plan."),
+    "request.json": ("user", "The settings of your last plan (start, hours, places a day)."),
+    "profile.json": ("user", "Your answers that shape plans."),
+    "pending_ratings.json": ("user", "Ratings made with no signal, until the Brain has them."),
+    "handoff.json": ("user", "A booking you went to make, until you say whether you booked it."),
+    "settings": ("user", "Small settings: the onboarding step, reminders, your ratings per plan, where you are in a day."),
+    "past trips": ("history", "A trip after its last day: its summary and days, with booking details marked expired."),
+    "offline pack (stored copy)": ("derived", "Built from trips.json; any stored copy may go 30 days after the trip."),
+    "images and share cards": ("cache", "Card photos and share images: the system may clear them; never backed up."),
+    "install token": ("credential", "iPhone Keychain; Android: encrypted with an Android Keystore key."),
+}
+EXPIRES = {"derived", "cache"}   # the only classes with an automatic deletion rule
+
+
+def disposable_after(trip: dict) -> date:
+    """From the day after this, a stored offline pack or cached content for the trip may be discarded. The trip
+    itself, its days and its summary stay until the person deletes them."""
+    return trip_end(trip) + timedelta(days=DISPOSABLE_AFTER_TRIP_DAYS)
+
+
+def summary(trip: dict) -> dict:
+    """A past trip's lasting record (kept, never expired): where, when, the days and places, what was chosen."""
+    days = sorted(trip.get("days") or [], key=lambda d: d["index"])
+    places = [st.get("title") for d in days for st in ((d.get("plan") or {}).get("stops") or []) if st.get("rateable")]
+    return {"city": trip.get("city"), "start": trip["start"], "end": trip_end(trip).isoformat(),
+            "nights": int(trip["nights"]), "days_planned": sum(1 for d in days if d.get("plan")), "places": places,
+            "stay": (trip.get("stay") or {}).get("title"), "flight": (trip.get("flight") or {}).get("title")}
 
 
 def _day(day: dict, today: date) -> dict:
@@ -126,10 +159,9 @@ def _choice(kind: str, c: dict | None, trip: dict, today: date) -> dict:
 
 
 def build_pack(trip: dict, today: date, built_at: datetime) -> dict:
-    """The offline pack for one trip, from the phone's own copy (the trip JSON both apps keep)."""
-    if today > keep_until(trip):
-        return {"built_at": built_at.isoformat(), "deleted": True, "sections": [], "bytes": 0,
-                "line": "This trip ended more than 30 days ago, so its offline copy is deleted."}
+    """The offline pack for one trip, from the phone's own copy (the trip JSON both apps keep). m226: it's always
+    built from the trip record, past trips included; nothing about the trip is ever deleted here. After the trip, the
+    pack only says whether a stored copy of it is still worth keeping (`keep_stored_copy`)."""
     days = [_day(d, today) for d in sorted(trip.get("days") or [], key=lambda d: d["index"])]
     sections = [
         {"name": "itinerary", "items": days},
@@ -139,7 +171,9 @@ def build_pack(trip: dict, today: date, built_at: datetime) -> dict:
         {"name": "emergency", "items": [_item(e["title"], e["lines"], "bundled in the app", None, "current")
                                         for e in EMERGENCY]},
     ]
-    pack = {"built_at": built_at.isoformat(), "deleted": False, "keep_until": keep_until(trip).isoformat(),
+    pack = {"built_at": built_at.isoformat(), "past": today > trip_end(trip),
+            "keep_stored_copy": today <= disposable_after(trip), "disposable_after": disposable_after(trip).isoformat(),
+            "summary": summary(trip) if today > trip_end(trip) else None,
             "sections": sections, "photos": "not kept offline: card photos are web images"}
     pack["bytes"] = len(json.dumps(pack).encode())
     pack["within_budget"] = pack["bytes"] <= PACK_BUDGET_BYTES

@@ -72,14 +72,28 @@ def test_stale_unbooked_and_missing_are_said_never_filled_in():
     assert s["status"] == "check" and s["action"].startswith("A sample price")
 
 
-def test_after_the_trip_it_expires_then_is_deleted():
+def test_after_the_trip_bookings_expire_and_the_trip_is_kept():
+    """m226 (Abram, 9 Nov): the traveller's trip is never deleted automatically. After it, booking details read
+    "expired" and the summary stays; only a stored copy of the pack becomes disposable after 30 days."""
     trip = _trip()
     end = offline.trip_end(trip)
     after = offline.build_pack(trip, end + timedelta(days=1), NOW)
     assert after["sections"][1]["items"][0]["status"] == "expired"
     assert all(d["status"] == "past" for d in after["sections"][0]["items"])
-    gone = offline.build_pack(trip, end + timedelta(days=offline.KEEP_AFTER_TRIP_DAYS + 1), NOW)
-    assert gone["deleted"] and gone["sections"] == [] and gone["line"].startswith("This trip ended more than 30 days")
+    assert after["past"] and after["keep_stored_copy"] and after["summary"]["places"]
+    later = offline.build_pack(trip, end + timedelta(days=offline.DISPOSABLE_AFTER_TRIP_DAYS + 365), NOW)
+    assert later["sections"][0]["items"] == after["sections"][0]["items"]    # a year on: still all there
+    assert not later["keep_stored_copy"] and later["summary"] == after["summary"]
+    assert later["summary"]["nights"] == trip["nights"] and later["summary"]["stay"] == trip["stay"]["title"]
+
+
+def test_only_disposable_content_can_expire():
+    classes = {k: c for k, (c, _) in offline.STORAGE.items()}
+    assert offline.EXPIRES == {"derived", "cache"}
+    for name in ("trips.json", "plan.json", "profile.json", "pending_ratings.json", "past trips"):
+        assert classes[name] not in offline.EXPIRES, name           # the traveller's own: never on a timer
+    assert classes["install token"] == "credential"
+    assert {c for c in classes.values()} == {"user", "history", "derived", "cache", "credential"}
 
 
 def test_ratings_made_offline_are_never_lost_and_the_later_one_wins():

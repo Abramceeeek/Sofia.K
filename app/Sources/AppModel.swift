@@ -170,6 +170,11 @@ final class AppModel {
             route = .welcome
         } else if brain.token == nil {
             route = .welcome
+            // m226: trips belong to the traveller. With no token (a restore that didn't bring the Keychain item, or
+            // a token that can't be read) the trips on this phone are still theirs: kept in memory, so the next save
+            // adds to them instead of replacing the file. "Delete my data" removes the file first, so it isn't this.
+            trips = AppModel.loadCached([Trip].self, "trips.json") ?? []
+            currentTripId = trips.first?.id
         } else {
             UserDefaults.standard.set(true, forKey: "installMarker")   // older builds: mark this install as known
             route = UserDefaults.standard.bool(forKey: "onboardingDone") ? .home : .onboarding
