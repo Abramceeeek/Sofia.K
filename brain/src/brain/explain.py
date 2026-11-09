@@ -66,7 +66,7 @@ def p_good(scale: float, cutpoint: float, u: float) -> float:
 
 def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_text: str = "",
          budget: dict | None = None, travel_source: str = "straight-line estimate",
-         labels: dict[str, str] | None = None) -> dict:
+         labels: dict[str, str] | None = None, taste: set[str] | None = None) -> dict:
     """Why one stop is in the day, from what the planner used:
 
     - `st`: the stop as dayplan builds it. Its `why` is scoring.contributions, the named terms x_k·β_k of this
@@ -75,10 +75,14 @@ def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_tex
     - `p`: P(Good or better) from the rating model, or None for a slot with no card (lunch, your own time).
     - `windows`: the card's allowed times that the planner fitted the visit into (Moment.windows).
     - `budget`: the day's money block (daybudget.block), when there's a budget.
+    - `taste`: the score's terms that are tastes (place, moment, interests). Only these are named in "Why this
+      stop?": cost, travel and weather terms have their own factors there.
     """
     f: list[Factor] = []
     unknown: list[str] = []
     labels = labels or {}
+    pros: list[str] = []      # m230: the score's own named terms, for "Why this stop?" (never their values)
+    cons: list[str] = []
     if p is not None:
         strong, good = p >= 0.75, p >= 0.5
         word = "A strong match for you" if strong else "A good match for you" if good else "Worth a try"
@@ -90,6 +94,8 @@ def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_tex
             if abs(c) < 0.05:
                 continue
             label = labels.get(w["feature"], w["label"])
+            if taste is None or w["feature"] in taste:
+                (pros if c > 0 else cons).append(label)
             f.append(Factor("preference", FOR if c > 0 else AGAINST,
                             f"{label[:1].upper() + label[1:]}: counts {'for' if c > 0 else 'against'} it, for you.",
                             round(c, 3), "your answers (the scoring weights)"))
@@ -144,7 +150,59 @@ def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_tex
         else:
             f.append(Factor("budget", FOR if not cost else NEUTRAL, "Free." if not cost else f"{_money(cost)}.",
                             round(cost, 2), "the card's price"))
-    return _out(f, unknown)
+    return {**_out(f, unknown), "why": why_this_stop(f, pros, cons) if p is not None else []}
+
+
+# ---- "Why this stop?" on the stop card (m230; Abram's decision 2, m224) -----------------------------------------
+
+WHY_MAX = 3   # Abram: "no more than three meaningful reasons"
+
+
+def why_this_stop(factors: list[Factor], pros: list[str], cons: list[str]) -> list[dict]:
+    """At most three reasons for a stop, each from a factor above, worded with no model score or percentage (Abram,
+    m224: "don't expose raw model scores or percentages"). Times, minutes and prices are the plan's own facts, so they
+    stay. A fixed rule, in this order:
+
+    1. A familiar place: "You loved it before…".
+    2. Your answers: the score's two largest terms for it, by name only ("From your answers, it has what you like:
+       photo spots, awe"). Labels can hold "and" or a comma themselves, so they're listed, not joined with "and".
+    3. The time: inside its best time, else inside the card's visiting window (not "any time").
+    4. The travel there, when it's short (15 min or less, the planner's first transfer penalty).
+    5. The money, when it's free.
+
+    If anything counts against the stop (a long journey, a day over budget, a term against it in the score), the last
+    place goes to one trade-off, so the reasons never read as all upside. Nothing is added that the planner didn't use.
+    """
+    pick = lambda kind, effect: next((x for x in factors if x.kind == kind and x.effect == effect), None)
+    fors: list[tuple[str, str]] = []
+    if any(x.value == "familiar" for x in factors):
+        fors.append(("preference", "You loved it before, so it's your one familiar place today."))
+    if pros:
+        top = pros[:2]
+        fors.append(("preference", f"From your answers, it has what you like: {', '.join(top)}."))
+    best = pick("best_time", FOR)
+    hours = pick("hours", FOR)
+    if best:
+        lo, hi = str(best.value).split("-")
+        fors.append(("best_time", f"You're there at its best time, {lo}–{hi}."))
+    elif hours and hours.value != "any":
+        lo, hi = str(hours.value).split("-")
+        fors.append(("hours", f"It fits the card's visiting window, {lo}–{hi}."))
+    travel = pick("travel", FOR)
+    if travel:
+        fors.append(("travel", travel.text))
+    money = pick("budget", FOR)
+    if money:
+        fors.append(("budget", "Free to visit." if not money.value else money.text))
+    against = [x for x in factors if x.effect == AGAINST and x.kind in ("travel", "budget")]
+    trade = None
+    if against:
+        x = against[0]
+        trade = (x.kind, f"The trade-off: {x.text[:1].lower() + x.text[1:]}")
+    elif cons:
+        trade = ("preference", f"The trade-off: it has {cons[0]}, which your answers count against.")
+    keep = fors[:WHY_MAX - (1 if trade else 0)] + ([trade] if trade else [])
+    return [{"kind": k, "effect": AGAINST if (k, t) == trade else FOR, "text": t} for k, t in keep]
 
 
 # ---- a place to stay among the search results ("Best for your days") ---------------------------------------------

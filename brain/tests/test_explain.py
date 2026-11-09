@@ -103,6 +103,45 @@ def test_a_stay_against_the_trip_and_a_trip_length():
     assert t[1]["text"] == "Fewer strong matches than your places a day, so it uses your best 9 for now (strong and good ones)."
 
 
+TASTE = {"movement_views", "crowds", "aspiration_match", "awe"}
+
+
+def test_why_this_stop_is_at_most_three_reasons_with_no_score_or_percentage():
+    """m230 (Abram, m224): a collapsed "Why this stop?", at most three reasons from the planner's own inputs, no raw
+    model scores or percentages, and one trade-off when something counts against the stop."""
+    e = explain.stop(_st(), p=0.81, windows=[(600, 1050)], hours_text="10:00-17:30",
+                     labels={"aspiration_match": "one of your interests"}, taste=TASTE)
+    assert [w["text"] for w in e["why"]] == [
+        "From your answers, it has what you like: views, one of your interests.",   # the score's top two terms, named
+        "It fits the card's visiting window, 10:00–17:30.",
+        "The trade-off: it has crowds, which your answers count against."]       # never all upside
+    assert [w["effect"] for w in e["why"]] == ["for", "for", "against"]
+    for w in e["why"]:
+        assert "%" not in w["text"] and "81" not in w["text"] and "0.4" not in w["text"] and "0.2" not in w["text"]
+    # at its best time, a short walk, free, and nothing against it: three reasons, no trade-off
+    ok = explain.stop(_st(arrive="16:10", depart="17:00", why=_st()["why"][:1]), p=0.81, windows=[(600, 1050)],
+                      taste=TASTE)
+    assert [w["text"] for w in ok["why"]] == ["From your answers, it has what you like: views.",
+                                              "You're there at its best time, 16:00–17:30.",
+                                              "12 min on foot from Charing Cross station."]
+
+
+def test_the_trade_off_is_the_journey_or_the_budget_first():
+    far = explain.stop(_st(travel_min=41, travel_mode="transit"), p=0.6, windows=[(600, 1050)], taste=TASTE)
+    assert far["why"][-1] == {"kind": "travel", "effect": "against",
+                              "text": "The trade-off: 41 min by Tube or bus from Charing Cross station."}
+    block = {"budget_gbp": 20.0, "total_gbp": 21.0, "status": "over"}
+    over = explain.stop(_st(cost_gbp=6.0), p=0.4, windows=[(0, 1440)], budget=block, taste=TASTE)
+    assert over["why"][-1]["text"] == "The trade-off: £6 of your £20; the day comes to £21."
+    assert len(over["why"]) <= explain.WHY_MAX
+    # cost, travel and weather terms of the score aren't named as tastes: they have their own reasons
+    cost = explain.stop(_st(why=[{"feature": "cost_per_10gbp", "label": "cost (per £10)", "contribution": -0.5}]),
+                        p=0.6, windows=[], taste=TASTE)
+    assert not [w for w in cost["why"] if "cost (per" in w["text"]]
+    # no card (lunch, your own time): nothing to say why
+    assert explain.stop(_st(), p=None, windows=[])["why"] == []
+
+
 def test_a_lunch_slot_is_an_estimate_not_a_venue():
     block = {"budget_gbp": 12.0, "total_gbp": 12.0, "status": "tight",
              "lines": [{"label": "Lunch", "gbp": 6.0, "note": "A cheaper lunch: a supermarket, bakery or market stall"}]}
@@ -134,6 +173,9 @@ def test_explanations_come_with_plans_stays_and_lengths_and_never_with_the_blind
             total = explain._money(plan["budget"]["total_gbp"])                # the day's own total (m217)
             assert f"of your £30; the day comes to {total}." in f["budget"]["text"] or \
                 f["budget"]["text"] == f"Free. The day comes to {total} of your £30."
+    for st in places:                                                        # m230: "Why this stop?"
+        why = st["explain"]["why"]
+        assert 1 <= len(why) <= explain.WHY_MAX and not [w for w in why if "%" in w["text"]]
     blind = client.post("/v1/me/plans", headers=h, json={**DAY, "blind": True}).json()
     assert all("explain" not in st for st in blind["stops"])
     soon = date.today() + timedelta(days=30)

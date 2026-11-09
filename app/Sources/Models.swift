@@ -360,6 +360,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let hours: String?             // m176: opening hours as people read them, from the card's checked source
     let checked: String?           // journey round 2: when the card's facts were last checked ("2026-10-08")
     let mine: String?              // m200: "plans" or "free": the person's own time, planned around (never rated)
+    var explain: StopExplain? = nil  // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
 
     var id: String { momentId + "@" + arrive }
 
@@ -371,6 +372,19 @@ struct Stop: Codable, Hashable, Identifiable {
 
     /// The word for this stop on "How the day moves" and its line.
     var word: String { feelWord ?? (rateable ? "Easy" : "Lunch") }
+}
+
+/// m230 (Abram, m224): "Why this stop?". At most three reasons, each from an input the planner really used
+/// (brain/src/brain/explain.py, why_this_stop), with no model score or percentage. "against" is the one trade-off.
+struct WhyLine: Codable, Hashable {
+    let kind: String
+    let effect: String
+    let text: String
+}
+
+/// Only the reasons are read here: the factors behind them stay in the Brain's answer.
+struct StopExplain: Codable, Hashable {
+    let why: [WhyLine]?
 }
 
 // ---- requests ---------------------------------------------------------------------------------

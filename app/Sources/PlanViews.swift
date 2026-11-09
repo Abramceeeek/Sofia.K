@@ -1186,13 +1186,64 @@ struct MomentHero: View {
     }
 }
 
+/// m230 (Abram, m224): "Why this stop?", collapsed until tapped. At most three reasons from the planner's own inputs,
+/// in words, never a score or a percentage; the trade-off, when there is one, comes last and quieter.
+struct WhyThisStop: View {
+    let lines: [WhyLine]
+    @Binding var open: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { open.toggle() }
+            } label: {
+                HStack {
+                    Text("Why this stop?").font(.subheadline).foregroundStyle(Theme.accent)
+                    Spacer()
+                    Image(systemName: open ? "chevron.up" : "chevron.down")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.accent)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(open ? "Hides the reasons" : "Shows up to three reasons")
+            if open {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(lines, id: \.self) { line in
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Image(systemName: line.effect == "against" ? "minus.circle" : "checkmark.circle")
+                                .font(.footnote)
+                                .foregroundStyle(line.effect == "against" ? Theme.muted : Theme.accent)
+                            Text(line.text)
+                                .font(.subheadline)
+                                .foregroundStyle(line.effect == "against" ? Theme.inkSoft : Theme.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    Text("From the plan's own inputs: your answers, the times, the travel and the price.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .transition(.opacity)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
 /// Everything under the picture (D112, D115, D119): why it was picked, the way in, the shot card, then the details.
 /// All of it comes from the verified card or the plan.
 struct MomentCardBody: View {
     let stop: Stop
     var basis: Basis?
     var showWhy = true             // D115: never in the blind Test B comparison or the example day
+    var openWhy = false            // CI screenshots only: "Why this stop?" open
     @State private var showShot = false
+    @State private var whyOpen = false
 
     /// Decision 4: "Hours, prices and the way in last checked on 27 Sep, from the place's own site."
     private var checkedText: String {
@@ -1231,6 +1282,10 @@ struct MomentCardBody: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+            }
+            if showWhy, let why = stop.explain?.why, !why.isEmpty {
+                WhyThisStop(lines: why, open: $whyOpen)
+                    .onAppear { if openWhy { whyOpen = true } }
             }
             if !stop.travelText.isEmpty || !(stop.approachSteps ?? []).isEmpty || !stop.approach.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
@@ -1405,6 +1460,7 @@ struct StopView: View {
     let stop: Stop
     var demoScroll: String?            // CI screenshots only: scrolled to this part ("body")
     var demoSwap = false               // CI screenshots only: "Swap this stop?" open
+    var demoWhy = false                // CI screenshots only: "Why this stop?" open (m230)
     @State private var showRating = false
     @State private var confirmSwap = false
     @State private var confirmRegenerate = false
@@ -1421,7 +1477,8 @@ struct StopView: View {
             VStack(alignment: .leading, spacing: 0) {
                 MomentHero(stop: stop, drift: true)
                 VStack(alignment: .leading, spacing: 26) {
-                    MomentCardBody(stop: stop, basis: model.plan?.basis, showWhy: !(model.plan?.isBlind ?? false))
+                    MomentCardBody(stop: stop, basis: model.plan?.basis, showWhy: !(model.plan?.isBlind ?? false),
+                                   openWhy: demoWhy)
                         .id("body")
                     VStack(spacing: 10) {
                         if canRate {

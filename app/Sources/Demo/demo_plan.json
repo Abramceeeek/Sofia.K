@@ -45,7 +45,27 @@
     "Getting there: about 12 min on foot from Charing Cross station.",
     "Pick a café, pub or food stall nearby.",
     "Food: about £15"
-   ]
+   ],
+   "explain": {
+    "factors": [
+     {
+      "kind": "travel",
+      "effect": "for",
+      "text": "12 min on foot from Charing Cross station.",
+      "value": 12,
+      "source": "a distance estimate"
+     },
+     {
+      "kind": "budget",
+      "effect": "neutral",
+      "text": "Lunch at a café, pub or food stall: about £15, an estimate. The day comes to £21 of your £40.",
+      "value": 15.0,
+      "source": "ODYS's planning estimate and your budget"
+     }
+    ],
+    "unknown": [],
+    "why": []
+   }
   },
   {
    "moment_id": "m_garden_at_120",
@@ -176,7 +196,85 @@
      "you": "You loved the view from the top of Greenwich Park, and this has a big reveal too.",
      "me": "I loved the view from the top of Greenwich Park, and this has a big reveal too."
     }
-   ]
+   ],
+   "explain": {
+    "factors": [
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "A strong match for you: the rating model gives a 83% chance you'd rate it Good or better.",
+      "value": 0.831,
+      "source": "your answers (the rating model)"
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "Movement and views: counts for it, for you.",
+      "value": 0.451,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "against",
+      "text": "Local, new-to-you places: counts against it, for you.",
+      "value": -0.263,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "Reveals and contrast: counts for it, for you.",
+      "value": 0.199,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "travel",
+      "effect": "neutral",
+      "text": "26 min by Tube or bus from Waterloo station.",
+      "value": 26,
+      "source": "a distance estimate"
+     },
+     {
+      "kind": "hours",
+      "effect": "for",
+      "text": "You're there 13:33–14:23, inside the card's visiting window (10:00–17:00).",
+      "value": "10:00-17:00",
+      "source": "the card's visiting window; opening hours: Until 31 Mar: daily 10:00–18:30, weekends to 17:00; closed bank holidays. Free, no booking"
+     },
+     {
+      "kind": "best_time",
+      "effect": "neutral",
+      "text": "Its best time is 16:12–17:12; this plan has you there 13:33–14:23.",
+      "value": "16:12-17:12",
+      "source": "the card's best time"
+     },
+     {
+      "kind": "budget",
+      "effect": "for",
+      "text": "Free. The day comes to £21 of your £40.",
+      "value": 0.0,
+      "source": "the card's price and your budget"
+     }
+    ],
+    "unknown": [],
+    "why": [
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "From your answers, it has what you like: movement and views, reveals and contrast."
+     },
+     {
+      "kind": "hours",
+      "effect": "for",
+      "text": "It fits the card's visiting window, 10:00–17:00."
+     },
+     {
+      "kind": "preference",
+      "effect": "against",
+      "text": "The trade-off: it has local, new-to-you places, which your answers count against."
+     }
+    ]
+   }
   },
   {
    "moment_id": "m_st_dunstan_garden",
@@ -302,7 +400,78 @@
      "you": "It fits your interest in history & culture.",
      "me": "It fits my interest in history & culture."
     }
-   ]
+   ],
+   "explain": {
+    "factors": [
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "A strong match for you: the rating model gives a 82% chance you'd rate it Good or better.",
+      "value": 0.818,
+      "source": "your answers (the rating model)"
+     },
+     {
+      "kind": "preference",
+      "effect": "against",
+      "text": "Local, new-to-you places: counts against it, for you.",
+      "value": -0.263,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "One of your interests: counts for it, for you.",
+      "value": 0.25,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "Reveals and contrast: counts for it, for you.",
+      "value": 0.199,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "travel",
+      "effect": "for",
+      "text": "6 min on foot from The Garden at 120.",
+      "value": 6,
+      "source": "a distance estimate"
+     },
+     {
+      "kind": "hours",
+      "effect": "for",
+      "text": "You're there 14:34–15:19, inside the card's visiting window (08:00–16:15).",
+      "value": "08:00-16:15",
+      "source": "the card's visiting window; opening hours: 08:00 to 19:00 or dusk, whichever is earlier; closed 25–26 Dec and 1 Jan. Free"
+     },
+     {
+      "kind": "budget",
+      "effect": "for",
+      "text": "Free. The day comes to £21 of your £40.",
+      "value": 0.0,
+      "source": "the card's price and your budget"
+     }
+    ],
+    "unknown": [],
+    "why": [
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "From your answers, it has what you like: one of your interests, reveals and contrast."
+     },
+     {
+      "kind": "hours",
+      "effect": "for",
+      "text": "It fits the card's visiting window, 08:00–16:15."
+     },
+     {
+      "kind": "preference",
+      "effect": "against",
+      "text": "The trade-off: it has local, new-to-you places, which your answers count against."
+     }
+    ]
+   }
   },
   {
    "moment_id": "m_greenwich_wolfe_view",
@@ -434,7 +603,92 @@
      "you": "You go out to feel peaceful, and this has views.",
      "me": "I go out to feel peaceful, and this has views."
     }
-   ]
+   ],
+   "explain": {
+    "factors": [
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "A strong match for you: the rating model gives a 81% chance you'd rate it Good or better.",
+      "value": 0.814,
+      "source": "your answers (the rating model)"
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "Movement and views: counts for it, for you.",
+      "value": 0.451,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "against",
+      "text": "Crowds: counts against it, for you.",
+      "value": -0.404,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "against",
+      "text": "Transfers over 30 min: counts against it, for you.",
+      "value": -0.353,
+      "source": "your answers (the scoring weights)"
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "You loved it before, so it's your one familiar place today.",
+      "value": "familiar",
+      "source": "your answers (places you loved)"
+     },
+     {
+      "kind": "travel",
+      "effect": "against",
+      "text": "41 min by Tube or bus from St Dunstan-in-the-East.",
+      "value": 41,
+      "source": "a distance estimate"
+     },
+     {
+      "kind": "hours",
+      "effect": "for",
+      "text": "You're there 16:10–17:00, inside the card's visiting window (09:00–17:00).",
+      "value": "09:00-17:00",
+      "source": "the card's visiting window; opening hours: Park gates from 06:00; they close from about 18:00 in winter. Free"
+     },
+     {
+      "kind": "best_time",
+      "effect": "for",
+      "text": "Your visit overlaps its best time, 14:37–16:52.",
+      "value": "14:37-16:52",
+      "source": "the card's best time"
+     },
+     {
+      "kind": "budget",
+      "effect": "for",
+      "text": "Free. The day comes to £21 of your £40.",
+      "value": 0.0,
+      "source": "the card's price and your budget"
+     }
+    ],
+    "unknown": [],
+    "why": [
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "You loved it before, so it's your one familiar place today."
+     },
+     {
+      "kind": "preference",
+      "effect": "for",
+      "text": "From your answers, it has what you like: movement and views."
+     },
+     {
+      "kind": "travel",
+      "effect": "against",
+      "text": "The trade-off: 41 min by Tube or bus from St Dunstan-in-the-East."
+     }
+    ]
+   }
   }
  ],
  "value": 3.126,

@@ -1,6 +1,6 @@
 # Explanations from the algorithm's actual inputs (8 Nov 2026; m219)
 
-**Decision: built in the Brain and its API, on the branch; not yet shown in the apps.**
+**Decision: built in the Brain and its API, on the branch. Shown on the stop card as "Why this stop?" (m230, below; Abram's decision 2, m224). Stays and trip lengths aren't shown yet.**
 
 Every recommendation now carries an `explain` block:
 - a stop in a day;
@@ -86,4 +86,36 @@ Where to show it in the apps (a "Why this stop" section on the stop card, the st
 - a lunch slot is an estimate, not a venue;
 - through the API: places in a plan explain themselves, the match words agree with the stop's, the score terms are the stop's own `why`, the budget text matches the day's total, the blind pair has no explanation, and the stays' explained scores come out in the list's own order.
 
-**Hours:** Claude ~3 h. Abram: decide where (or whether) the apps show it. Recommended: a "Why this stop" section on the stop card, after the friends' round.
+**Hours:** Claude ~3 h. Abram decided where (m224): the stop card.
+
+## "Why this stop?" on the stop card (m230, 9 Nov 2026; branch only)
+
+Abram's decision 2 (m224): a collapsible "Why this stop?" on the stop card, at most three meaningful reasons from the algorithm's actual inputs, no raw model scores or percentages, and none on the blind Test B plans.
+
+**What a person sees.** Under "Why we picked this for you", a quiet card reads "Why this stop?", closed until tapped. Open, it shows up to three lines and "From the plan's own inputs: your answers, the times, the travel and the price."
+
+**Where the lines come from** (`explain.why_this_stop`, from the same factors as above). It's a fixed rule, in this order:
+1. A familiar place: "You loved it before, so it's your one familiar place today."
+2. The score's two largest terms for it, by name only: "From your answers, it has what you like: movement and views, reveals and contrast." Only tastes are named (place and moment tags, interests); cost, travel and weather have their own lines.
+3. The time: at its best time, else inside the card's visiting window (never "any time").
+4. A short journey (15 min or less, the planner's first transfer penalty).
+5. Free to visit.
+
+**One trade-off.** If anything counts against the stop, it takes the last place, so the reasons never read as all upside. In order: a long journey (over 30 min), a day over budget, then a taste term against it. Example: "The trade-off: 41 min by Tube or bus from St Dunstan-in-the-East."
+
+**What it never shows:** the match percentage, the score or its terms' values. The match words ("A strong match for you") stay where they were. Times, minutes and prices are shown: they're the plan's own facts, not model scores.
+
+**Never on the blind pair.** The Brain doesn't send it on a blind plan (tested). Both apps also hide it whenever the plan is blind, as they do the other reasons.
+
+**In the apps.** iPhone `WhyThisStop` (`PlanViews.swift`) and Android `WhyThisStop` (`Plan.kt`): the same words and order. The trade-off is quieter (muted, a minus sign), and the rest are ticked in amber. The demo plan carries the Brain's own lines for its stops (`demo_plan.json`, made by the real Brain for the same person as `make_demo.py`).
+
+**Checks:**
+- `test_explain.py`, 2 new tests and 1 extended:
+  - at most three reasons, with no "%" and no model numbers in any line;
+  - the trade-off order (journey, then budget, then taste);
+  - cost terms aren't named as tastes;
+  - no reasons for a slot with no card;
+  - through the API, every place in a plan has 1–3 reasons and the blind plan has none.
+- Screenshots: Android `10o-stopwhy` (tapped open in the test) and iPhone `stopwhy` (CI).
+
+**Not built:** the same for a stay and a trip length (their factors exist; where to show them is a design call). **Hours:** Claude ~2.5 h.

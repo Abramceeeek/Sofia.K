@@ -573,6 +573,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # m219: where the travel times come from (TfL's for the day where it has the pair, else the estimate)
         legs_from = "TfL journey times where known, else a distance estimate" if hasattr(travel, "check") else \
             "a distance estimate"
+        taste = {n for n in p.names if p.spec(n).group in ("place", "moment", "person")}   # m230: tastes only
         for st, inner in zip(out, stops):
             if not blind and not st.get("mine"):   # m219: why this stop, from the planner's own inputs
                 card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
@@ -580,7 +581,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
                 st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows() if card_m else [],
                                              hours_text=inner.get("hours") or "", budget=budget_block,
-                                             travel_source=legs_from, labels=dayplan.APP_LABELS)
+                                             travel_source=legs_from, labels=dayplan.APP_LABELS,
+                                             taste=taste)
         for st in out:
             base = st["moment_id"].split("#")[0]
             if st["rateable"] and base in by_id:

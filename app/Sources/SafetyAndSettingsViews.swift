@@ -377,6 +377,10 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
+        case "stopwhy":                                                         // 10o (m230): "Why this stop?" open
+            if let stop = demoStop {
+                NavigationStack { StopView(stop: stop, demoScroll: "body", demoWhy: true) }
+            }
         case "nowoffline", "offlinesaved":                                      // 10m, 10n (m228): no signal
             DayScreen().onAppear {
                 if let plan = model.plan { model.plan = plan.dated(Dates.isoDay.string(from: .now)) }

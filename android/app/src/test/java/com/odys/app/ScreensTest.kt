@@ -394,6 +394,10 @@ class ScreensTest {
     @Test fun planEnd() = showThen("09f-planend", { tripPath += Dest.Day }, { reach("Another day") })
     @Test fun stopMore() = showThen("10a-stop2",
         { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }, { reach("Best time and light") })
+    // m230: "Why this stop?" tapped open, on the stop the iPhone shows (one with a best-light window)
+    @Test fun stopWhy() = showThen("10o-stopwhy",
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { !it.bestWindow.isNullOrEmpty() && it.rateable }) },
+        { reach("Why this stop?", tap = true); reach("From the plan's own inputs") })
     @Test fun nowLocation() = showThen("10g-nowlocation", { today(1); showNow = true },
         { reach("No thanks") })
     @Test fun replan() = showThen("10h-replan", { today(1); showNow = true },

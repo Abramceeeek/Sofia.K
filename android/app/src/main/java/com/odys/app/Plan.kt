@@ -49,11 +49,15 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Tram
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -881,6 +885,36 @@ fun MomentHero(stop: Stop, height: Dp = 380.dp, rounded: Boolean = false, drift:
     }
 }
 
+/**
+ * m230 (Abram, m224): "Why this stop?", collapsed until tapped. At most three reasons from the planner's own inputs, in
+ * words, never a score or a percentage; the trade-off, when there is one, comes last and quieter. As on the iPhone.
+ */
+@Composable
+fun WhyThisStop(lines: List<WhyLine>) {
+    var open by remember { mutableStateOf(false) }
+    Column(Modifier.surfaceCard(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().clickable(onClickLabel = if (open) "Hide the reasons" else "Show up to three reasons") {
+            open = !open
+        }, verticalAlignment = Alignment.CenterVertically) {
+            Text("Why this stop?", style = Theme.subheadline.copy(color = Theme.accent), modifier = Modifier.weight(1f))
+            Icon(if (open) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, null, tint = Theme.accent)
+        }
+        AnimatedVisibility(open, enter = fadeIn(), exit = fadeOut()) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                for (line in lines) {
+                    val against = line.effect == "against"
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Icon(if (against) Icons.Outlined.RemoveCircleOutline else Icons.Outlined.CheckCircle, null,
+                            tint = if (against) Theme.muted else Theme.accent, modifier = Modifier.size(16.dp).padding(top = 2.dp))
+                        Text(line.text, style = Theme.subheadline.copy(color = if (against) Theme.inkSoft else Theme.ink))
+                    }
+                }
+                Text("From the plan's own inputs: your answers, the times, the travel and the price.", style = Theme.footnote)
+            }
+        }
+    }
+}
+
 /** Everything under the picture (D112, D115, D119): why it was picked, the way in, the shot card, then the details. */
 @Composable
 fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean = true) {
@@ -906,6 +940,8 @@ fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean 
                 }
             }
         }
+        val why = if (showWhy) stop.explain?.why ?: emptyList() else emptyList()
+        if (why.isNotEmpty()) WhyThisStop(why)
         val steps = stop.approachSteps ?: emptyList()
         if (stop.travelText.isNotEmpty() || steps.isNotEmpty() || stop.approach.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {

@@ -280,6 +280,7 @@ data class Stop(
     val hours: String? = null,
     val checked: String? = null,
     val mine: String? = null,         // m200: "plans" or "free": the person's own time, planned around (never rated)
+    val explain: StopExplain? = null, // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
 ) {
     val id: String get() = "$momentId@$arrive"
 
@@ -295,6 +296,17 @@ data class Stop(
 
     val base: String get() = momentId.substringBefore("#")
 }
+
+/**
+ * m230 (Abram, m224): one reason on "Why this stop?". At most three, each from an input the planner really used
+ * (brain/src/brain/explain.py, why_this_stop), with no model score or percentage; "against" is the one trade-off.
+ */
+@Serializable
+data class WhyLine(val kind: String, val effect: String, val text: String)
+
+/** Only the reasons are read here: the factors behind them stay in the Brain's answer. */
+@Serializable
+data class StopExplain(val why: List<WhyLine>? = null)
 
 // ---- requests ---------------------------------------------------------------------------------
 
