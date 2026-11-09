@@ -165,6 +165,13 @@ extension AppModel {
 
     var currentTrip: Trip? { trips.first { $0.id == currentTripId } ?? trips.first }
 
+    /// m228: the trip happening today (its first day to its last), else the current one: whose stay and journey the
+    /// offline view shows.
+    var tripForToday: Trip? {
+        let today = Calendar.london.startOfDay(for: .now)
+        return trips.first { $0.startDate <= today && today <= $0.endDate } ?? currentTrip
+    }
+
     func findTrip(_ id: UUID) -> Trip? { trips.first { $0.id == id } }
 
     func save(_ trip: Trip) {

@@ -64,6 +64,7 @@ fun NowView(model: AppModel) {
     var card by remember { mutableStateOf<Stop?>(null) }
     var onTheWay by remember { mutableStateOf<Stop?>(null) }
     var replanning by remember { mutableStateOf(false) }
+    var showSaved by remember { mutableStateOf(model.screenSaved) }   // m228: what's saved on this phone
     var asked by remember { mutableStateOf(setOf<String>()) }
     val reduce = rememberReduceMotion()
     val glow = remember { Animatable(0f) }
@@ -127,6 +128,7 @@ fun NowView(model: AppModel) {
         Box(Modifier.fillMaxSize().skyBackground(Theme.calm)) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp)
             .padding(top = 40.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (!model.connectivity.online) OfflineBanner { showSaved = true }   // m228: no signal, and what's still here
             if (i == 0 && tripDay != null) {   // m176: the trip's first journeys come before the first stop
                 tripDay.journeys("arrive").forEach { JourneyCard(it) }
                 tripDay.before?.let { before ->
@@ -240,6 +242,7 @@ fun NowView(model: AppModel) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 if (i < stops.size || next != null) QuietButton("See the whole day") { close() }
                 Spacer(Modifier.weight(1f))
+                QuietButton("Saved on this phone") { showSaved = true }   // m228
                 QuietButton("Help") { showSafety = true }
             }
         }
@@ -253,6 +256,7 @@ fun NowView(model: AppModel) {
     rating?.let { stop -> RatingView(model, stop, onNext = { advance() }) { rating = null } }
     onTheWay?.let { stop -> RatingView(model, stop, planId = tripDay?.before?.id) { onTheWay = null } }
     if (showSafety) SafetyView(model) { showSafety = false }
+    if (showSaved) OfflineView(model) { showSaved = false }
     if (replanning) ReplanRestDialog(model) { replanning = false }
 }
 

@@ -132,6 +132,7 @@ final class AppModel {
     let client: BrainClient
     let screen: String?
     let location: Location                 // D123: where they are while out, on the phone only
+    let connectivity = Connectivity()      // m228: whether there's signal, for "what's saved on this phone"
 
     init() {
         location = Location()

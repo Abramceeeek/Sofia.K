@@ -245,13 +245,14 @@ struct Plan: Codable, Hashable, Identifiable {
     let blind: Bool?               // D115: the blind Test B comparison: no reasons, no feeling line, no worth
     let weather: Weather?          // Stage 1: the Met Office forecast the plan was made with, if any
     var budget: DayBudget? = nil   // m217: the day's money against the person's budget, line by line
+    var createdAt: String? = nil   // m228: when the Brain made it, for "saved on this phone"
 
     var isBlind: Bool { blind == true }
 
     /// The same plan on another day (CI screenshots: the home on the day, D131).
     func dated(_ day: String) -> Plan {
         Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
-             basis: basis, blind: blind, weather: weather, budget: budget)
+             basis: basis, blind: blind, weather: weather, budget: budget, createdAt: createdAt)
     }
 }
 

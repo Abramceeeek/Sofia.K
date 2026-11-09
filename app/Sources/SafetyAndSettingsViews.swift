@@ -377,6 +377,13 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
+        case "nowoffline", "offlinesaved":                                      // 10m, 10n (m228): no signal
+            DayScreen().onAppear {
+                if let plan = model.plan { model.plan = plan.dated(Dates.isoDay.string(from: .now)) }
+                model.connectivity.pin(online: false)
+                model.nowIndex = 1
+                model.showNow = true
+            }
         case "now", "nowlocation", "replan":                                    // 10b (D119, D130): today, on the way
             // to the second stop (not a look ahead); 10g the location ask under it, 10h "Re-plan the rest of today?"
             DayScreen().onAppear {

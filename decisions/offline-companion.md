@@ -92,7 +92,12 @@ It runs on the apps' own demo trip (`app/Sources/Demo/demo_trip_days.json`). The
 
 1. ~~**iPhone: exclude the app's files from backups.**~~ **Withdrawn (m224, m226):** every file it would have excluded is the traveller's own data (below).
 2. **Android: move the token off the deprecated library.** **Built (m227):** an AES-256-GCM Keystore key seals the token in `noBackupFilesDir/tokens`; the old store is read once, the copy checked, then removed; any failure keeps the old copy, so nobody is signed out. 7 tests (`TokenStoreTest`).
-3. **"Offline" view on "Now":** the pack's four parts, with statuses and actions, shown when there's no signal. ~6 h, both apps, after Abram sees the design.
+3. **"Offline" view on "Now":** the pack's four parts, with statuses and actions, shown when there's no signal. **Built on the branch (m228), both apps** (`app/Sources/Offline.swift`, `android/.../Offline.kt`):
+   - **What it shows, in Abram's order:** today's itinerary, where you're staying, the journey, emergency help. Each card has its source, the day it was saved, a status chip (Saved, Check, Expired or Past; amber only for Check), the one thing to do, and "Not saved: …" for anything missing.
+   - **Where:** "Saved on this phone" on "Now" is always there. With no network path, a banner at the top says "No signal. Your day, stay and journey are saved on this phone. Nothing shown is live." and opens it.
+   - **Built on the phone** from the plan and the trip it already keeps; nothing is fetched. The rules are the Brain's reference; the app shows today only, not every day of the trip.
+   - **Online and offline:** the phones' network monitors (`NWPathMonitor`, `ConnectivityManager`) only switch the banner and the heading. Neither state claims anything is live. Tested on Android (`OfflinePackTest`, 4 tests); the iPhone draws `nowoffline` and `offlinesaved` in CI.
+   - **Differences from the reference, on purpose:** the stay says "The address isn't saved on this phone" as a line, and a booked stay points to the provider's confirmation; the emergency lines are Help & safety's own words.
 4. **Photos offline** stay out until licensing is checked.
 
 **Hours:** Claude ~3 h (audit, sources, design, proof of concept). Abram: decide the 30-day deletion and whether to build items 1–3 after the round.

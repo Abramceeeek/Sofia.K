@@ -176,6 +176,9 @@ class ScreensTest {
     @Test fun stop() = show("10-stop") { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }
     @Test fun now() = show("10b-now") { today(1); showNow = true }   // today, on the way (as the iPhone's)
     @Test fun nowAhead() = show("10k-nowahead") { nowIndex = 1; showNow = true }   // a later day: a look ahead
+    // m228: no signal on "Now": the note, and what's saved on this phone (today's day, the stay, the journey, help)
+    @Test fun nowOffline() = show("10m-nowoffline") { today(1); connectivity.pin(false); showNow = true }
+    @Test fun offlineSaved() = show("10n-offlinesaved") { today(1); connectivity.pin(false); screenSaved = true; showNow = true }
     @Test fun trip() = show("24-trip") { tripPath += Dest.TripOverview(trips.first().id) }
     @Test fun tripDay() = show("25-tripday") { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.TripDay(trips.first().id, 0) }
     @Test fun tripCreate() = show("20-tripcreate") { showCreate = true }

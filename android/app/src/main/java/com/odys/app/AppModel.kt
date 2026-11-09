@@ -118,6 +118,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     val prefs = Prefs(app)
     val files = Files(app)
     val tokens = TokenStore(app)
+    val connectivity = Connectivity(app)   // m228: whether there's signal, for "what's saved on this phone"
     val client = BrainClient(AppConfig.BASE_URL, tokens)
     val location = Location(app, prefs)
     val reminders = Reminders(app)
@@ -167,6 +168,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var remindersOn by mutableStateOf(prefs.bool("remindersOn"))
     var reminderAsked by mutableStateOf(prefs.bool("reminderAsked"))
     var showNow by mutableStateOf(false)
+    var screenSaved = false   // screenshots only (m228): "Now" opens with what's saved on this phone
     var nowIndex by mutableStateOf(0)
 
     var why by mutableStateOf<List<String>>(emptyList())
@@ -930,6 +932,13 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     // ---- D120: trips ---------------------------------------------------------------------------------------------
 
     val currentTrip: Trip? get() = trips.firstOrNull { it.id == currentTripId } ?: trips.firstOrNull()
+
+    /** m228: the trip happening today (first day to last), else the current one: whose stay and journey the offline
+     *  view shows. */
+    val tripForToday: Trip? get() {
+        val today = Dates.today()
+        return trips.firstOrNull { it.startDate <= today && today <= it.endDate } ?: currentTrip
+    }
 
     fun findTrip(id: String): Trip? = trips.firstOrNull { it.id == id }
 

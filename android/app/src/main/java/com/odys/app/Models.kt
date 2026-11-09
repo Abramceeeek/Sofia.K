@@ -184,6 +184,7 @@ data class Plan(
     val blind: Boolean? = null,
     val weather: Weather? = null,     // Stage 1: the Met Office forecast the plan was made with, if any
     val budget: DayBudget? = null,    // m217: the day's money against the person's budget, line by line
+    val createdAt: String? = null,    // m228: when the Brain made it, for "saved on this phone"
 ) {
     val isBlind: Boolean get() = blind == true
 }
