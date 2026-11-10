@@ -53,6 +53,7 @@ FROM users;
    - Backups made after the deletion don't hold it.
    - The older ones expire within 30 days.
    - To close that window sooner, Abram can delete the older artifacts in GitHub Actions. That's his choice: they are also the study's only off-Render copies.
+   - **First make sure a clean replacement exists** (Abram, m234). After the deletion, let the next nightly backup run, or run it by hand from the ops workflow, and check that it succeeded. Open it with Abram's key and run the same count on it: `with_key` must be 0. Only then delete older artifacts, if at all.
    - **Any restore must use the branch's restore command,** which strips the field. A restore with main's command, or the 6 Dec database swap (README) done before the branch is live, is followed by the count, and by the deletion if needed.
 5. **Never:** export, print, log, copy or quote a value, not even its length. The audit and the delete only ever report counts (tested).
 

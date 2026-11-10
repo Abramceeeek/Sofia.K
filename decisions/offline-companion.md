@@ -146,6 +146,11 @@ Today Android backs up nothing: `allowBackup="false"`, and every domain is exclu
 
 Until then the asymmetry is stated, not hidden: the privacy notice and the trip screen can say "Trips are kept on this phone. On Android, export them before changing phones."
 
+### Decisions after the review (m234)
+
+- **Android "Export and import my trips": approved for after the friends' round.** The export holds trips, personal plans and selected bookings (the choices the person marked). **Never** the install token or any credential, food preferences or API secrets. It's a file the person saves and moves themselves, until accounts sync trips.
+- **Emergency help is UK-specific today** (999, NHS 111, Samaritans 116 123), and is labelled that way in the app. **The pack will carry each destination's own emergency numbers,** from that country's official sources and with the date they were checked. The model for that is `destinations.emergency` (m236).
+
 ### Retention, in one line each
 
 - **The traveller's trips, plans, ratings, answers and settings:** kept until they delete them.
