@@ -4,6 +4,20 @@ Openly licensed photos from Wikimedia Commons (Abram, 30 Sep 2026: "use openly l
 
 **Flag any photo you'd change: one line each.**
 
+**Re-checked 10 Nov 2026 (m243), as the catalogue grows (Abram, m234):**
+- **A test now guards it** (`brain/tests/test_photo_credits.py`, 4 tests, no network). It fails the build if:
+  - the two apps' photos or credits differ;
+  - a photo has no credit, or a credit has no photo;
+  - a credit lacks a title, author, licence or Commons source page;
+  - a licence isn't CC0, public domain, CC BY or CC BY-SA (no NC or ND), or its link doesn't match its name;
+  - a credited card is missing from this page, or isn't a ready card;
+  - the app stops showing "title by author, licence, Wikimedia Commons (resized)".
+- **Six source pages re-read on Commons, 10 Nov 2026:** Covent Garden Piazza, Coal Drops Yard, The Garden at 120, Leadenhall Market roof, Horizon 22 and London Fields Lido. All six still state the author and licence in this table.
+  - Leadenhall's author is the Flickr account "It's No Game". The page also files it under "Photographs by Duncan Harris" without linking the two names, so the credit stays as the page's Author field gives it.
+- **Not re-read:** the other 39. A batch read of Commons' metadata was refused for too many requests (HTTP 429), and wasn't retried in a loop.
+  - **GUESS: Claude ~0.5 h** to re-read them, a few at a time, before the public release.
+  - The share card says "(cropped)" rather than "(resized)", because it crops the photo.
+
 | Card | Photo | Author | Licence |
 |---|---|---|---|
 | `a_covent_garden_soho` | [London , Westminster - Covent Garden Piazza](https://commons.wikimedia.org/wiki/File:London_,_Westminster_-_Covent_Garden_Piazza_-_geograph.org.uk_-_1784895.jpg) | Lewis Clarke | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
