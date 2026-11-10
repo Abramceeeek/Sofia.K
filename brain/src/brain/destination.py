@@ -80,6 +80,7 @@ class SeasonNote:
     note: str
     source: str
     checked: str | None
+    experiences: tuple[str, ...] = ()   # the experience ids the note is about, named by the source, never matched by words
 
 
 @dataclass(frozen=True)
@@ -150,17 +151,13 @@ class Profile:
                 for a in self.areas for b in self.areas if a.key != b.key}
 
     def experiences_by_area(self) -> dict[str, Counter]:
-        """Each area's experiences by category: an experience counts for its own area where its record names one,
-        else for the nearest area centre (said as 'nearest')."""
+        """Each area's experiences by category, where the experience's own record names the area. The rest are under
+        "(no area)": never put in the nearest area, which can be across a river."""
         out: dict[str, Counter] = {a.key: Counter() for a in self.areas}
         names = {a.name: a.key for a in self.areas}
         for x in self.experiences:
             key = names.get(x.geo.area.value) if x.geo.area.known else None
-            if key is None:
-                near = self.nearest_area(Point(lat=x.geo.lat, lon=x.geo.lon))
-                key = near.key if near else None
-            if key is not None:
-                out[key][x.category] += 1
+            out.setdefault(key or "(no area)", Counter())[x.category] += 1
         return out
 
     def stays_by_area(self) -> dict[str, int]:
@@ -286,7 +283,10 @@ class FileProvider:
         if which == "experiences":
             return [_file_experience(k, v, dest) for k, v in d.get("experiences", {}).items()]
         if which == "seasons":
-            return [SeasonNote(tuple(s["months"]), s["note"], s["source"], s.get("checked")) for s in d.get("seasons", [])]
+            cc = dest.country.lower()
+            return [SeasonNote(tuple(s["months"]), s["note"], s["source"], s.get("checked"),
+                               tuple(f"xp:{cc}:{dest.key}:{k.replace('_', '-')}" for k in s.get("experiences", [])))
+                    for s in d.get("seasons", [])]
         if which == "holidays" and start and end:
             return [Holiday(date.fromisoformat(h["day"]), h["name"], h["source"]) for h in d.get("holidays", [])
                     if start <= date.fromisoformat(h["day"]) <= end]

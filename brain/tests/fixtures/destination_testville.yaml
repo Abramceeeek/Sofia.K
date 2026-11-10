@@ -56,7 +56,8 @@ experiences:
      type: evening_area, area: Station Quarter, point: {lat: 9.986, lon: 20.031}, minutes: [45, 90], price: 0,
      setting: outdoor, source: "synthetic test data", checked: "2026-11-10", features: {food: 1, local_novel: 2}}
 seasons:
-  - {months: [3, 4], note: "Blossom along the river path (synthetic)", source: "synthetic test data", checked: "2026-11-10"}
+  - {months: [3, 4], note: "Blossom along the river path (synthetic)", source: "synthetic test data", checked: "2026-11-10",
+     experiences: [riverside_walk]}
   - {months: [7, 8], note: "Hot and humid: outdoor stops best early (synthetic)", source: "synthetic test data", checked: "2026-11-10"}
 holidays:
   - {day: "2027-04-29", name: "Synthetic Spring Day", source: "synthetic test data"}
