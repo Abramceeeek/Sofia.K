@@ -7,6 +7,7 @@ destinations:
     name: London
     country: GB                    # ISO 3166-1 alpha-2
     region: England
+    region_code: GB-ENG           # ISO 3166-2 (m235)
     timezone: Europe/London        # IANA
     currency: GBP                  # ISO 4217
     languages: [en-GB]             # BCP 47

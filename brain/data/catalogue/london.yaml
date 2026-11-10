@@ -1,0 +1,59 @@
+# m235 (WS1, Global Destination Intelligence): what the London moment cards need to become structured experiences
+# (brain/src/brain/catalogue.py). The cards stay the source of their own facts (place, hours, price, the way in,
+# tags, checked dates); this file adds only what they don't say: a category and a type from ODYS's taxonomy
+# (catalogue.TAXONOMY), and an area where the card's own title or place name names one. Everything else is derived
+# from the card and said where it came from.
+#
+# Category and type: Claude's assignment (10 Nov 2026), for Abram to check. Area: only from the card's own words;
+# otherwise left out (unknown), never guessed from the coordinates.
+locality: london
+experiences:
+  a_covent_garden_soho:       {category: neighbourhood, type: area_walk, area: "Covent Garden"}
+  a_kings_cross_canal:        {category: neighbourhood, type: waterfront, area: "King's Cross"}
+  a_old_spitalfields_market:  {category: shopping, type: market, area: "Spitalfields"}
+  a_portobello_saturday:      {category: shopping, type: market, area: "Portobello Road"}
+  a_soho_chinatown_evening:   {category: neighbourhood, type: evening_area, area: "Soho"}
+  a_west_end_outdoor_dining:  {category: food_drink, type: food_street, area: "West End"}
+  m_alderman_stairs_sunset:   {category: views, type: riverside}
+  m_bank_of_england_gold:     {category: culture, type: museum}
+  m_beigel_bake_late:         {category: food_drink, type: bakery, area: "Brick Lane"}
+  m_bm_great_court:           {category: culture, type: museum}
+  m_borough_market_graze:     {category: food_drink, type: market, area: "Borough"}
+  m_burlington_arcade:        {category: shopping, type: arcade}
+  m_canary_wharf_towers:      {category: neighbourhood, type: architecture_walk, area: "Canary Wharf"}
+  m_chinatown_dim_sum:        {category: food_drink, type: restaurant, area: "Chinatown"}
+  m_city_towers_walk:         {category: neighbourhood, type: architecture_walk, area: "City of London"}
+  m_courtauld_gallery:        {category: culture, type: gallery}
+  m_evensong_st_pauls:        {category: culture, type: performance}
+  m_garden_at_120:            {category: views, type: roof_garden, area: "City of London"}
+  m_go_karting_canary_wharf:  {category: activity, type: karting, area: "Canary Wharf"}
+  m_greenwich_peninsula_walk: {category: nature, type: riverside_walk, area: "Greenwich Peninsula"}
+  m_greenwich_wolfe_view:     {category: views, type: viewpoint, area: "Greenwich"}
+  m_horizon_22:               {category: views, type: tower, area: "City of London"}
+  m_leadenhall_market:        {category: shopping, type: market_hall}
+  m_liberty_timber_galleries: {category: shopping, type: department_store}
+  m_london_fields_lido:       {category: activity, type: swimming, area: "London Fields"}
+  m_millennium_bridge_dome:   {category: views, type: bridge}
+  m_national_gallery:         {category: culture, type: gallery, area: "Trafalgar Square"}
+  m_national_portrait_gallery: {category: culture, type: gallery}
+  m_nhm_whale_hall:           {category: culture, type: museum}
+  m_open_kitchen_steakhouse:  {category: food_drink, type: restaurant}
+  m_park_bike_loop_hyde:      {category: activity, type: cycling, area: "Hyde Park"}
+  m_park_break_battersea:     {category: nature, type: park, area: "Battersea Park"}
+  m_park_break_embankment:    {category: nature, type: garden, area: "Victoria Embankment Gardens"}
+  m_park_break_holland_kyoto: {category: nature, type: garden, area: "Holland Park"}
+  m_park_break_hyde:          {category: nature, type: park, area: "Hyde Park"}
+  m_park_break_olympic:       {category: nature, type: park, area: "Queen Elizabeth Olympic Park"}
+  m_park_break_regents:       {category: nature, type: park, area: "Regent's Park"}
+  m_park_break_st_james:      {category: nature, type: park, area: "St James's Park"}
+  m_rfh_foyers_rest:          {category: culture, type: arts_centre}
+  m_richmond_park_view:       {category: nature, type: wild_park, area: "Richmond Park"}
+  m_soane_museum:             {category: culture, type: museum}
+  m_st_dunstan_garden:        {category: culture, type: historic_site, area: "City of London"}
+  m_st_martin_crypt_lunch:    {category: food_drink, type: cafe}
+  m_to_river_somerset:        {category: views, type: riverside}
+  m_to_river_villiers:        {category: views, type: riverside}
+  m_transport_museum:         {category: culture, type: museum}
+  m_uber_boat_west_day:       {category: transport_experience, type: river_bus}
+  m_uber_boat_west_night:     {category: transport_experience, type: river_bus}
+  m_waterloo_bridge_sunset:   {category: views, type: bridge}

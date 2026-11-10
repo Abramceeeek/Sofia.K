@@ -52,3 +52,14 @@ def test_the_proposal_is_not_served():
     assert not [p.name for p in src.glob("*.py") if "categories_global" in p.read_text(encoding="utf-8")]
     assert SERVED.want_prompt == "Would you like to try it in London?"          # the round's wording, unchanged
     assert yaml.safe_load((DATA_DIR / "onboarding.yaml").read_text())["places_mode"] == "named"
+
+
+def test_the_caption_names_the_example_photos_real_city():
+    """Abram's condition (m234): the caption names the city the example card is really in, from the catalogue, so a
+    London photo is never shown as somewhere else."""
+    from brain.catalogue import load_catalogue
+    where = {i: x.geo.locality_name for x in load_catalogue() for i in x.legacy_ids}
+    for key, it in G["items"].items():
+        city = where[it["example"]]
+        caption = G["example_note"].format(city=city, title=it["title"])
+        assert city == "London" and caption.startswith("For example, in London: "), key

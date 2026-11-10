@@ -25,6 +25,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 
+from .catalogue import ids_in_category
 from .dayplan import MATCH_GOOD, MATCH_STRONG
 from .features import Conditions, moment_features
 from .moments import Moment
@@ -33,9 +34,8 @@ from .population import PopulationModel
 
 MAX_DAYS = 14
 HISTORY_PER_DAY = 2   # D127: at most two history-and-culture stops a day
-# D116: the five shopping cards (their files say "a shopping moment"; the cards have no shopping tag of their own)
-SHOPPING = frozenset({"m_burlington_arcade", "m_leadenhall_market", "m_liberty_timber_galleries",
-                      "a_old_spitalfields_market", "a_portobello_saturday"})
+# D116, m235: the shopping cards, from the catalogue's category (data/catalogue/), no longer a list of ids here
+SHOPPING = ids_in_category("shopping")
 
 
 def chance_good(pop: PopulationModel, u: float) -> float:

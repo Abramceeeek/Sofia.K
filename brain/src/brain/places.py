@@ -27,7 +27,7 @@ import yaml
 from .moments import Moment, Point
 
 T = TypeVar("T")
-Trust = Literal["checked", "claimed", "unknown"]
+Trust = Literal["checked", "claimed", "estimated", "unknown"]   # m235: "estimated" is ODYS's own estimate
 
 
 @dataclass(frozen=True)
@@ -60,6 +60,7 @@ class Destination:
     coverage: Literal["checked", "none"]
     travel: str                     # "tfl" | "estimate"
     weather: str | None
+    region_code: str | None = None  # m235: ISO 3166-2 (GB-ENG)
 
     @property
     def zone(self) -> ZoneInfo:
@@ -76,7 +77,8 @@ def load_destinations(path: Path) -> dict[str, Destination]:
             raise ValueError(f"{key}: currency must be an ISO 4217 code")
         out[key] = Destination(key, v["name"], v["country"], v.get("region"), v["timezone"], v["currency"],
                                tuple(v.get("languages") or ()), Point(**v["centre"]), v.get("bank_holidays"),
-                               v.get("coverage", "none"), v.get("travel", "estimate"), v.get("weather"))
+                               v.get("coverage", "none"), v.get("travel", "estimate"), v.get("weather"),
+                               v.get("region_code"))
     return out
 
 
