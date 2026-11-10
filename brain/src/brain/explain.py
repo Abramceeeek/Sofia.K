@@ -282,7 +282,33 @@ def stay_for_trip(fit: dict, cost: dict, currency: str, refundable: bool | None,
         unknown.append("cancellation terms")
     for h in holidays:
         f.append(Factor("calendar", NEUTRAL, f"Your dates include a bank holiday: {h}.", h, "GOV.UK bank holidays"))
-    return _out(f, unknown)
+    return {**_out(f, unknown), "why": why_this_stay(fit, cost, refundable, holidays)}
+
+
+def why_this_stay(fit: dict, cost: dict, refundable: bool | None, holidays: list[str]) -> list[dict]:
+    """m241 (Abram, m234): why a stay suits the itinerary, not the score. At most three lines, in this order: how far
+    it is from the planned days, the whole cost, the terms. The last place goes to one trade-off when there is one:
+    the farthest day over 30 min away, then non-refundable terms. A bank holiday fills a spare place."""
+    fors: list[tuple[str, str]] = []
+    a, b = fit.get("to_first"), fit.get("back")
+    if a is not None or b is not None:
+        fors.append(("location", fit["line"].replace(" of this trip", "")))
+    else:
+        fors.append(("location", "Plan your days to see how far they are from here."))
+    fors.append(("price", cost["line"]))
+    if refundable:
+        fors.append(("terms", cost["cancel"]))
+    trade = None
+    far = [r for r in fit.get("days") or [] if max(r.get("to_first") or 0, r.get("back") or 0) > LONG_LEG]
+    if far:
+        r = max(far, key=lambda r: max(r.get("to_first") or 0, r.get("back") or 0))
+        trade = ("location", f"The trade-off: {r['text'][:1].lower() + r['text'][1:]}, the farthest of your days.")
+    elif refundable is False:
+        trade = ("terms", f"The trade-off: {cost['cancel'][:1].lower() + cost['cancel'][1:]}")
+    if holidays and len(fors) < WHY_MAX - (1 if trade else 0):
+        fors.append(("calendar", f"Your dates include a bank holiday: {holidays[0]}."))
+    keep = fors[:WHY_MAX - (1 if trade else 0)] + ([trade] if trade else [])
+    return [{"kind": k, "effect": AGAINST if (k, t) == trade else FOR, "text": t} for k, t in keep]
 
 
 # ---- a trip length ------------------------------------------------------------------------------------------------
@@ -313,4 +339,23 @@ def trip_length(r: dict) -> dict:
                                                          "." if yours >= need else ": fewer than they need."),
                         yours, "your trip's dates"))
     unknown = ["whether each day is feasible (travel, opening days): the day planner checks that when it plans them"]
-    return _out(f, unknown)
+    return {**_out(f, unknown), "why": why_this_length(r)}
+
+
+def why_this_length(r: dict) -> list[dict]:
+    """m241 (Abram, m234): what the suggested length rests on, what a shorter trip would leave out and what a longer
+    one would add, from triplength's own options, by name. At most three lines, no percentages."""
+    need, per_day = r["suggested_days"], r["places_per_day"]
+    plural = lambda n: f"{n} day{'s' if n != 1 else ''}"
+    lines = [{"kind": "coverage", "effect": FOR,
+              "text": (f"{r['strong_matches']} strong matches for you in {r['place']}: at {per_day} a day they take "
+                       f"{plural(need)}." if r["strong_matches"] >= per_day else
+                       f"Your best {r['best']} places in {r['place']} for now take {plural(need)} at {per_day} a day.")}]
+    opts = r.get("options") or []
+    shorter = max((o for o in opts if o["days"] < need), key=lambda o: o["days"], default=None)
+    longer = min((o for o in opts if o["days"] > need), key=lambda o: o["days"], default=None)
+    if shorter:
+        lines.append({"kind": "pace", "effect": AGAINST, "text": f"In {plural(shorter['days'])}: {shorter['line']}"})
+    if longer:
+        lines.append({"kind": "pace", "effect": FOR, "text": f"In {plural(longer['days'])}: {longer['line']}"})
+    return lines[:WHY_MAX]

@@ -119,3 +119,22 @@ Abram's decision 2 (m224): a collapsible "Why this stop?" on the stop card, at m
 - Screenshots: Android `10o-stopwhy` (tapped open in the test) and iPhone `stopwhy` (CI).
 
 **Not built:** the same for a stay and a trip length (their factors exist; where to show them is a design call). **Hours:** Claude ~2.5 h.
+
+
+## Why a stay, and why a trip length (m241, 10 Nov 2026; Brain only)
+
+Abram (m234): stays should be explained against the itinerary, not the recommendation score; trip lengths should say what extra days add and what shorter ones give up. Both use the same rule as "Why this stop?": **at most three lines, from the actual inputs, one trade-off when there is one, and no percentages.**
+
+**`why_this_stay`** (in `/v1/trips/stays/compare`'s `explain.why`):
+1. How far the stay is from the planned days ("About 14 min to your first place and 18 min back, on a typical day."). With no days planned yet, it says to plan them first.
+2. The whole cost, as the provider shows it.
+3. Free cancellation, if it has it.
+
+The trade-off goes in the last place: first the farthest day over 30 min away ("The trade-off: day 3: 38 min there, 35 back, the farthest of your days."), then non-refundable terms. A bank holiday on the dates fills a spare place.
+
+**`why_this_length`** (in `/v1/me/trips/length`'s `explain.why`), from triplength's own options, by name. A real answer for the test person (4 nights, 4 places a day):
+- "Your best 12 places in London for now take 3 days at 4 a day."
+- "In 1 day: Your 4 best, at about 4 places a day. You'd leave out 8: Deer, forest and the long view in Richmond Park, A ruined church garden hidden in the City, Through Somerset House to the river terrace and 5 more." (against)
+- "In 4 days: All 12 of your best, plus 4 more you'd likely enjoy, such as The whole of London from General Wolfe's hill, Greenwich Park, Level 58 and 2 more." (for)
+
+**Checks:** `test_explain.py`, 3 new tests: the order and trade-offs for a stay, a stay with no planned days, the two directions for a length, and the endpoint. **Not in the apps yet.** Both apps' `WhyThisStop` card can show these lines unchanged, in the stay comparison and on the trip-length screen (~2 h, both apps, after the visual review Abram asked for).

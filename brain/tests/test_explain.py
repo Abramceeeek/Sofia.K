@@ -185,3 +185,56 @@ def test_explanations_come_with_plans_stays_and_lengths_and_never_with_the_blind
     assert scores == sorted(scores, reverse=True)                          # "Best for your days" is its own sum
     t = client.post("/v1/me/trips/length", headers=h, json={"destination": "london", "nights": 4}).json()
     assert t["explain"]["factors"][0]["value"] == t["strong_matches"]
+
+
+def test_why_this_stay_is_about_the_itinerary_not_the_score():
+    """m241 (Abram, m234): where the stay is against the planned days first, then the whole cost, then the terms;
+    one trade-off when there is one; never a score or a percentage."""
+    fit = {"days": [{"index": 1, "to_first": 14, "back": 18, "text": "Day 2: 14 min there, 18 back"},
+                    {"index": 2, "to_first": 38, "back": 35, "text": "Day 3: 38 min there, 35 back"}],
+           "line": "About 14 min to your first place and 18 min back, on a typical day of this trip.",
+           "to_first": 14, "back": 18, "missing": []}
+    cost = {"whole": 840.0, "per_night": 210.0, "line": "£840 for 4 nights, taxes included, as the provider shows it.",
+            "cancel": "Non-refundable, as found.", "board": None, "sample": True}
+    why = explain.stay_for_trip(fit, cost, "GBP", False, [])["why"]
+    assert [w["text"] for w in why] == [
+        "About 14 min to your first place and 18 min back, on a typical day.",
+        "£840 for 4 nights, taxes included, as the provider shows it.",
+        "The trade-off: day 3: 38 min there, 35 back, the farthest of your days."]
+    near = {**fit, "days": fit["days"][:1]}
+    why = explain.stay_for_trip(near, cost, "GBP", False, ["Christmas Day"])["why"]
+    assert why[-1] == {"kind": "terms", "effect": "against", "text": "The trade-off: non-refundable, as found."}
+    assert len(why) == 3                                                # the trade-off takes the last place
+    unknown_terms = explain.stay_for_trip(near, cost, "GBP", None, ["Christmas Day"])["why"]
+    assert unknown_terms[-1]["text"] == "Your dates include a bank holiday: Christmas Day."   # a spare place
+    free = explain.stay_for_trip(near, {**cost, "cancel": "Free cancellation until 1 Dec, as found."}, "GBP", True, [])
+    assert [w["effect"] for w in free["why"]] == ["for", "for", "for"]
+    for w in why + free["why"]:
+        assert "%" not in w["text"]
+    none = explain.stay_for_trip({"days": [], "line": "", "to_first": None, "back": None, "missing": [0]}, cost,
+                                 "GBP", None, [])
+    assert none["why"][0]["text"] == "Plan your days to see how far they are from here."
+
+
+def test_why_this_length_says_what_more_days_add_and_fewer_leave_out():
+    r = {"place": "London", "strong_matches": 9, "good_matches": 14, "checked": 39, "best": 9, "capped": False,
+         "places_per_day": 3, "suggested_days": 3, "your_days": None, "spare_days": None,
+         "options": [{"days": 1, "line": "Your 3 best, at about 3 places a day. You'd leave out 6: A, B, C and 3 more."},
+                     {"days": 3, "line": "All 9 of your best, at about 3 places a day."},
+                     {"days": 5, "line": "All 9 of your best, plus 4 more you'd likely enjoy, such as D and E."}]}
+    why = explain.trip_length(r)["why"]
+    assert [w["text"] for w in why] == [
+        "9 strong matches for you in London: at 3 a day they take 3 days.",
+        "In 1 day: Your 3 best, at about 3 places a day. You'd leave out 6: A, B, C and 3 more.",
+        "In 5 days: All 9 of your best, plus 4 more you'd likely enjoy, such as D and E."]
+    assert [w["effect"] for w in why] == ["for", "against", "for"] and not any("%" in w["text"] for w in why)
+    weak = explain.trip_length({**r, "strong_matches": 1, "best": 6})["why"]
+    assert weak[0]["text"] == "Your best 6 places in London for now take 3 days at 3 a day."
+
+
+def test_the_trip_length_endpoint_carries_its_reasons(client):
+    h, _ = install(client)
+    d = client.post("/v1/me/trips/length", headers=h, json={"destination": "london", "nights": 4}).json()
+    why = d["explain"]["why"]
+    assert 1 <= len(why) <= explain.WHY_MAX and why[0]["text"].endswith(" a day.")
+    assert any(w["text"].startswith("In ") for w in why[1:]) and not any("%" in w["text"] for w in why)
