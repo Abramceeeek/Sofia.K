@@ -30,18 +30,40 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, timedelta
 
+from .config import DATA_DIR
+
 SECTIONS = ("itinerary", "stay", "travel", "emergency")   # Abram's order: the saved itinerary first
 CARD_CHECK_DAYS = 90       # GUESS: a card's facts (hours, prices) older than this say "check on the day"
 PLAN_STALE_DAYS = 7        # GUESS: a day planned this long before its date says travel times may have changed
 DISPOSABLE_AFTER_TRIP_DAYS = 30  # GUESS: a stored offline pack or cached content for a trip may go this long after it
 PACK_BUDGET_BYTES = 512 * 1024   # GUESS: the pack is text only; card photos are web images, not kept offline
 
-# The same lines as Help & safety in both apps (bundled there, so they work with no signal: m221 audit)
+# The same lines as Help & safety in both apps (bundled there, so they work with no signal: m221 audit). m236: they're
+# the UK's, and only shown for a trip in the UK; each country's own come from data/emergency.yaml (Abram, m234).
 EMERGENCY = [
     {"title": "Emergency", "lines": ["If you or someone else is in danger or hurt, call 999."]},
     {"title": "Urgent medical help that isn't an emergency", "lines": ["NHS 111, by phone or online."]},
     {"title": "If you need to talk", "lines": ["Samaritans, free, 24 hours: 116 123."]},
 ]
+
+
+def emergency_items(country: str | None, place: str) -> list[dict]:
+    """The trip's country's own emergency numbers, each with its official source and the date it was read. A country
+    ODYS hasn't checked says so, and never shows another country's numbers as if they applied (m234)."""
+    from .destination import load_emergency
+    e = load_emergency().get(country or "")
+    if e is None:
+        return [_item("Emergency numbers", [f"ODYS hasn't checked the emergency numbers for {place} yet."],
+                      "not checked", None, "check", action="Find the local emergency number before you go.")]
+    return [_item(x.title, [x.line], f"{x.source} (read {e.checked})", e.checked, "current") for x in e.lines]
+
+
+def _country(trip: dict) -> str | None:
+    """The trip's country, from the destination registry by city name ("London" -> GB)."""
+    from .places import load_destinations
+    city = (trip.get("city") or "").strip().lower()
+    return next((d.country for d in load_destinations(DATA_DIR / "destinations.yaml").values()
+                 if city in (d.key, d.name.lower())), trip.get("country"))
 
 
 def _d(s: str | None) -> date | None:
@@ -168,8 +190,8 @@ def build_pack(trip: dict, today: date, built_at: datetime) -> dict:
         {"name": "stay", "items": [_choice("stay", trip.get("stay"), trip, today)] if trip.get("needStay", True) else []},
         {"name": "travel", "items": [_choice("flight", trip.get("flight"), trip, today)] if trip.get("needFlight", True)
          else []},
-        {"name": "emergency", "items": [_item(e["title"], e["lines"], "bundled in the app", None, "current")
-                                        for e in EMERGENCY]},
+        {"name": "emergency", "country": _country(trip),
+         "items": emergency_items(_country(trip), trip.get("city") or "this place")},
     ]
     pack = {"built_at": built_at.isoformat(), "past": today > trip_end(trip),
             "keep_stored_copy": today <= disposable_after(trip), "disposable_after": disposable_after(trip).isoformat(),

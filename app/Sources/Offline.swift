@@ -50,7 +50,7 @@ enum OfflinePack {
                         items: trip.map { $0.needStay ? [choice("stay", $0.stay, $0, today)] : [] } ?? []),
          OfflineSection(id: "journey", title: "Your journey",
                         items: trip.map { $0.needFlight ? [choice("flight", $0.flight, $0, today)] : [] } ?? []),
-         OfflineSection(id: "emergency", title: "Emergency help", items: emergency)]
+         OfflineSection(id: "emergency", title: "Emergency help in the UK", items: emergency)]   // m236: the UK's numbers only (m234)
     }
 
     static func itinerary(_ plan: Plan?, _ today: Date) -> OfflineItem {

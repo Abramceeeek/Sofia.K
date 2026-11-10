@@ -77,7 +77,7 @@ object OfflinePack {
             if (trip != null && trip.needStay) listOf(choice("stay", trip.stay, trip, today)) else emptyList()),
         OfflineSection("journey", "Your journey",
             if (trip != null && trip.needFlight) listOf(choice("flight", trip.flight, trip, today)) else emptyList()),
-        OfflineSection("emergency", "Emergency help", emergency),
+        OfflineSection("emergency", "Emergency help in the UK", emergency),   // m236: the UK's numbers only (m234)
     )
 
     fun itinerary(plan: Plan?, today: LocalDate): OfflineItem {
