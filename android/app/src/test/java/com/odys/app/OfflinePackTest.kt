@@ -28,6 +28,7 @@ class OfflinePackTest {
         assertTrue(p[2].items[0].lines.contains("367 EUR, as found on Skyscanner"))   // its own currency, never £
         assertEquals("Times can change: check with the airline on the day.", p[2].items[0].action)
         assertTrue(p[3].items[0].lines[0].contains("call 999"))
+        assertEquals("Emergency help in the UK", p[3].title)   // m236: never presented as universal (Abram, m234)
     }
 
     @Test fun staleUnbookedPastAndExpiredAreSaid() {

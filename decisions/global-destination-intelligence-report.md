@@ -81,7 +81,7 @@ Abram's six workstreams and four smaller items (m234), built on the branch `clau
 
 ## 3. Files changed
 
-48 files, 11 commits (`9238fc0`..this report).
+49 files, 12 commits (`9238fc0`..`HEAD`).
 
 | Area | Files |
 |---|---|
@@ -91,7 +91,7 @@ Abram's six workstreams and four smaller items (m234), built on the branch `clau
 | Brain scripts and benchmarks | `compare_group.py` → `benchmarks/synthetic/group.txt`; `compare_food_interest.py` → `food_interest.txt` |
 | Brain tests | new: `test_catalogue.py`, `test_destination.py`, `test_multicity.py`, `test_discovery.py`, `test_group.py`, `test_photo_credits.py`, `fixtures/destination_testville.yaml`. Changed: `test_currency.py`, `test_explain.py`, `test_categories_global.py` |
 | iPhone | `Offline.swift` (the section title) |
-| Android | `Offline.kt` (the section title) |
+| Android | `Offline.kt` (the section title); `OfflinePackTest.kt` (checks it) |
 | Decisions | new: `global-experience-catalogue.md`, `destination-intelligence.md`, `experience-discovery.md`, `display-currency-and-price-providers.md`, `group-travel.md`, `food-interest-learning.md`, this report. Changed: `decision-log.md` (m234–m243), `multi-city-travel-architecture.md`, `explanations.md`, `offline-companion.md`, `foods-avoided-audit.md`, `after-9-nov.md` (#95–#97) |
 | Other | `CLAUDE.md` (the quality standard); `design/photo-credits.md` (the re-check) |
 
@@ -100,8 +100,8 @@ Abram's six workstreams and four smaller items (m234), built on the branch `clau
 | Suite | Result |
 |---|---|
 | Brain (`pytest`) | **396 passed**, 0 failed (one library deprecation warning). It was 348 at the last report |
-| Android (`testDebugUnitTest`, Robolectric) | **119 tests, 0 failures, 0 errors** |
-| iPhone (CI run #108, simulator, `upload: false`, commit `3a31957`) | Running when this report was first committed; the result is added here when it finishes. The only Swift change is the section title in `Offline.swift` |
+| Android (`testDebugUnitTest`, Robolectric) | **119 tests, 0 failures, 0 errors**. The offline test now also checks "Emergency help in the UK" (4 of 4 pass) |
+| iPhone (CI run #108, simulator, `upload: false`, commit `3a31957`) | **Passed**: the one Swift change (the section title in `Offline.swift`) compiles, and every screen was drawn. Signing, archive and upload were skipped, as they always are off `main`. **The title itself isn't in a screenshot:** the offline screenshots stop above the emergency section, on both apps. Android's offline test now checks the title. No iPhone test checks it |
 
 ## 5. Sources
 
