@@ -64,6 +64,36 @@ Thu 22 – Sat 31 Oct 2026; 9 nights; the clocks go back on Sun 25 Oct.
 
 Nights: London 3, Paris 3, Amsterdam 1, on board 1, Vienna 1. Currencies: GBP, then EUR. Only London's days get places today. The rest of the trip is still useful (journeys, stays, the shape of each day), and it says plainly what it doesn't plan.
 
+## The working prototype: London → Paris → Amsterdam → Brussels (m237, 10 Nov 2026)
+
+Abram's route as one continuous itinerary (`tests/test_multicity.py`, 7 tests). The journeys are **sample times, made up for testing, not timetables**.
+
+| Day | Date (2027) | Kind | Where | Currency | What the day says |
+|---|---|---|---|---|---|
+| 1 | Thu 25 Mar | arrival | London | GBP | Arrive (flight in) |
+| 2–3 | Fri 26 – Sat 27 Mar | full | London | GBP | Planned days (checked coverage) |
+| 4 | **Sun 28 Mar** | transfer | London → Paris | GBP | Leave London by train at 09:01 (London time). Arrive in Paris at 12:20 (Paris time), **after 2 h 19 min**. **"Paris is 1 hour ahead of London: your phone changes its clock."** The clocks go forward that morning in both countries, so the journey is counted from the two real instants |
+| 5 | Mon 29 Mar | full | Paris | EUR | No planned places yet (coverage none), said |
+| 6 | Tue 30 Mar | transfer | Paris → Amsterdam | EUR | Same clock: no note |
+| 7 | Wed 31 Mar | full | Amsterdam | EUR | |
+| 8 | Thu 1 Apr | transfer | Amsterdam → Brussels | EUR | |
+| 9 | Fri 2 Apr | full | Brussels | EUR | |
+| 10 | Sat 3 Apr | departure | Brussels | EUR | "London is 1 hour behind Brussels" on the way home |
+
+**The hard cases, now built** (`itinerary.py`):
+
+| Case | What happens | Tested |
+|---|---|---|
+| **Time zones and a clock change on the travel day** | Each journey is timed from its two real instants, and arriving where the clock differs adds one line saying so (`clock_note`) | Yes |
+| **A night bus or train** | A night on board, not a night in a bed; the next place starts the morning after | Yes |
+| **A missed connection, a later train the same day** (`missed_transfer`) | Only that journey's times change, and only its days are planned again. A booked ticket gets "ask whoever sold it about the next one" | Yes |
+| **A missed last train, the next one tomorrow** | A night more where you are ("You need a bed in Paris tonight: ask A Paris hotel for another night") and a night less at the next place ("Your first night at An Amsterdam flat won't be used: tell the stay"). The trip keeps its end | Yes |
+| **…when the next place has no night to give** | The rest of the trip moves a day, and every booked journey that moves is named with its old and new date | Yes |
+| **Changing one place's length** (`change_nights`) | Either the rest of the trip moves (the trip ends later, and every booked journey and stay on new dates is named), or `keep_end` has the next place give or take the nights. A place can't go below one night on a trip of several, said in words | Yes |
+| **Today's single-city trips** | Unchanged: the same days. Changing the nights moves the journey home | Yes |
+
+Nothing moves silently. Every change returns the new trip **and** the list of things the person must change elsewhere: bookings, stays and a bed for tonight. ODYS never changes a booking itself (calm technology: never with money).
+
 ## Moving the apps to it, without breaking saved trips
 
 1. The phone's `Trip` gets an optional `segments` list (Codable and kotlinx with defaults, as `personal` was added in m200). A trip saved without it is read as one segment from `destination`, `start`, `nights`, `stay` and the flight or train in and out. No migration runs: old trips simply open.

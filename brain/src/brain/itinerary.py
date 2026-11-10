@@ -154,14 +154,17 @@ def days(trip: Trip, dests: dict[str, Destination]) -> list[TripDay]:
                 if t_out.overnight:
                     add(d, "transfer", seg.destination, *notes, "You sleep on board tonight.", via=t_out)
                     on = t_out.arrive.date()
-                    add(on, "arrival", nxt.destination, _arrive_note(t_out, dests), via=t_out)
+                    add(on, "arrival", nxt.destination, _arrive_note(t_out, dests),
+                        *filter(None, [clock_note(t_out, dests)]), via=t_out)
                 else:
-                    add(d, "transfer", seg.destination, *notes, _arrive_note(t_out, dests), via=t_out)
+                    add(d, "transfer", seg.destination, *notes, _arrive_note(t_out, dests),
+                        *filter(None, [clock_note(t_out, dests)]), via=t_out)
                 continue
             if first:
                 add(d, "arrival", seg.destination, *([_arrive_note(t_in, dests)] if t_in else []), via=t_in)
             elif last:
-                add(d, "departure", seg.destination, *([_leave_note(t_out, dests)] if t_out else []), via=t_out)
+                add(d, "departure", seg.destination, *([_leave_note(t_out, dests)] if t_out else []),
+                    *filter(None, [clock_note(t_out, dests) if t_out else None]), via=t_out)
             else:
                 add(d, "full", seg.destination)
     return out
@@ -179,6 +182,23 @@ def _arrive_note(t: TransferSegment, dests: dict[str, Destination]) -> str:
     h, m = divmod(t.minutes(dests), 60)
     return (f"Arrive in {_name(t.to_dest, dests)} at {t.arrive:%H:%M} ({_name(t.to_dest, dests)} time), "
             f"after {h} h {m:02d} min.")
+
+
+def clock_note(t: TransferSegment, dests: dict[str, Destination]) -> str | None:
+    """m237: when the place you arrive in keeps a different clock from the one you left, at the moment you arrive
+    (so a clock change on the day counts): "Paris is 1 hour ahead of London: your phone changes its clock"."""
+    if t.from_dest == t.to_dest or t.from_dest not in dests or t.to_dest not in dests:
+        return None
+    _, arrive = t.instants(dests)
+    there = arrive.utcoffset()
+    here = arrive.astimezone(dests[t.from_dest].zone).utcoffset()
+    if there == here:
+        return None
+    hours = (there - here).total_seconds() / 3600
+    n = abs(hours)
+    amount = f"{n:g} hour{'s' if n != 1 else ''}"
+    return (f"{_name(t.to_dest, dests)} is {amount} {'ahead of' if hours > 0 else 'behind'} "
+            f"{_name(t.from_dest, dests)}: your phone changes its clock.")
 
 
 def segment_requests(trip: Trip, dests: dict[str, Destination], used: dict[str, list[str]] | None = None) -> list[dict]:
@@ -216,3 +236,145 @@ def affected_days(trip: Trip, dests: dict[str, Destination], changed: str) -> li
     either end are planned again; every other day is kept."""
     return [d.index for d in days(trip, dests) if d.destination == changed
             or any(changed in pair for pair in d.journeys)]
+
+
+
+# ---- m237 (WS3): changing a trip that's already planned ------------------------------------------------------------
+
+def _shift(t: TransferSegment | None, days_: int) -> TransferSegment | None:
+    if t is None or days_ == 0:
+        return t
+    dt = timedelta(days=days_)
+    return TransferSegment(t.from_dest, t.to_dest, t.mode, t.depart + dt, t.arrive + dt, t.booked)
+
+
+def _with_nights(seg: DestinationSegment, arrive: date, nights: int) -> DestinationSegment:
+    stay = seg.stay
+    if stay is not None:
+        stay = AccommodationStay(stay.name, arrive, arrive + timedelta(days=nights))
+    return DestinationSegment(seg.destination, arrive, nights, stay)
+
+
+def _moved(old: Trip, new: Trip, dests: dict[str, Destination]) -> list[str]:
+    """What the person has to change elsewhere: booked journeys on new dates, stays on new dates."""
+    notes = []
+    for a, b in zip(old.transfers + tuple(x for x in (old.outbound,) if x),
+                    new.transfers + tuple(x for x in (new.outbound,) if x)):
+        if a.depart != b.depart and a.booked:
+            notes.append(f"Your {a.mode} from {_name(a.from_dest, dests)} is booked for {a.depart:%a %-d %b}: "
+                         f"it needs changing to {b.depart:%a %-d %b} with whoever sold it.")
+    for a, b in zip(old.segments, new.segments):
+        if a.stay and b.stay and (a.stay.checkin, a.stay.checkout) != (b.stay.checkin, b.stay.checkout):
+            notes.append(f"The stay in {_name(a.destination, dests)} ({a.stay.name}) needs new dates: "
+                         f"{b.stay.checkin:%a %-d %b} to {b.stay.checkout:%a %-d %b}. Check them with the stay.")
+    return notes
+
+
+def change_nights(trip: Trip, dests: dict[str, Destination], key: str, nights: int,
+                  keep_end: bool = False) -> tuple[Trip, list[str]]:
+    """One place's nights change. Either the rest of the trip moves with it (the trip ends later or earlier), or, with
+    `keep_end`, the next place gives or takes the nights so the trip still ends on the same day. Returns the new trip
+    and, in the person's words, what has to change elsewhere (booked journeys, stays). Nothing is changed silently."""
+    i = next((k for k, s in enumerate(trip.segments) if s.destination == key), None)
+    if i is None:
+        raise TripError(f"{_name(key, dests)} isn't on this trip.")
+    if nights < (1 if len(trip.segments) > 1 else 0):
+        raise TripError(f"{_name(key, dests)} needs at least one night on a trip through several places.")
+    delta = nights - trip.segments[i].nights
+    segs = list(trip.segments)
+    segs[i] = _with_nights(segs[i], segs[i].arrive, nights)
+    transfers = list(trip.transfers)
+    outbound = trip.outbound
+    if keep_end:
+        j = i + 1 if i + 1 < len(segs) else i - 1
+        if j < 0 or j == i:
+            raise TripError("There's no other place to give or take the nights, so the trip's end has to move.")
+        if segs[j].nights - delta < 1:
+            raise TripError(f"{_name(segs[j].destination, dests)} would have no nights left. Keep fewer nights in "
+                            f"{_name(key, dests)}, or let the trip end later.")
+        if j > i:
+            segs[j] = _with_nights(segs[j], segs[j].arrive + timedelta(days=delta), segs[j].nights - delta)
+            k = next((n for n, t in enumerate(transfers) if t.from_dest == key and t.to_dest == segs[j].destination), None)
+            if k is not None:
+                transfers[k] = _shift(transfers[k], delta)
+        else:   # the last place changed: the place before it gives or takes, and this place's arrival moves
+            segs[j] = _with_nights(segs[j], segs[j].arrive, segs[j].nights - delta)
+            segs[i] = _with_nights(segs[i], segs[i].arrive - timedelta(days=delta), nights)
+            k = next((n for n, t in enumerate(transfers) if t.to_dest == key), None)
+            if k is not None:
+                transfers[k] = _shift(transfers[k], -delta)
+    else:
+        for j in range(i + 1, len(segs)):
+            segs[j] = _with_nights(segs[j], segs[j].arrive + timedelta(days=delta), segs[j].nights)
+        later = {s.destination for s in segs[i:]}
+        transfers = [_shift(t, delta) if t.from_dest in later else t for t in transfers]
+        outbound = _shift(outbound, delta)
+    new = Trip(trip.start, tuple(segs), tuple(transfers), trip.inbound, outbound)
+    problems = validate(new, dests)
+    if problems:
+        raise TripError(" ".join(problems))
+    notes = [f"{_name(key, dests)}: {nights} night{'s' if nights != 1 else ''}."]
+    if not keep_end and delta:
+        end = (new.segments[-1].arrive + timedelta(days=new.segments[-1].nights))
+        notes.append(f"The trip now ends on {end:%a %-d %b}.")
+    return new, notes + _moved(trip, new, dests)
+
+
+def missed_transfer(trip: Trip, dests: dict[str, Destination], from_key: str, depart: datetime, arrive: datetime,
+                    mode: Mode | None = None) -> tuple[Trip, list[str]]:
+    """The journey out of `from_key` is missed, and the next one leaves at `depart` and arrives at `arrive` (local
+    times at each end). A later one the same day changes only those times. One the next day means a night more where
+    you are and a night less at the next place (the trip keeps its end); if the next place has no night to give, the
+    rest of the trip moves a day. The notes say what that costs: a bed tonight, an unused night, a booking to change."""
+    i = next((k for k, s in enumerate(trip.segments) if s.destination == from_key), None)
+    k = next((n for n, t in enumerate(trip.transfers) if t.from_dest == from_key), None)
+    if i is None or k is None or i + 1 >= len(trip.segments):
+        raise TripError(f"There's no journey out of {_name(from_key, dests)} on this trip.")
+    old_t = trip.transfers[k]
+    new_t = TransferSegment(old_t.from_dest, old_t.to_dest, mode or old_t.mode, depart, arrive, booked=False)
+    if new_t.minutes(dests) <= 0:
+        raise TripError("The new journey arrives before it leaves: check the times (they're local at each end).")
+    extra_here = (depart.date() - old_t.depart.date()).days
+    late = (arrive.date() - old_t.arrive.date()).days
+    segs, transfers = list(trip.segments), list(trip.transfers)
+    transfers[k] = new_t
+    here, nxt = segs[i], segs[i + 1]
+    notes = []
+    if extra_here:
+        segs[i] = _with_nights(here, here.arrive, here.nights + extra_here)
+        notes.append(f"You need a bed in {_name(from_key, dests)} tonight"
+                     + (f": ask {here.stay.name} for another night, or find one." if here.stay else "."))
+    outbound = trip.outbound
+    if late:
+        if nxt.nights - late >= 1:
+            segs[i + 1] = _with_nights(nxt, nxt.arrive + timedelta(days=late), nxt.nights - late)
+            if nxt.stay:
+                notes.append(f"Your first night{'s' if late > 1 else ''} at {nxt.stay.name} in "
+                             f"{_name(nxt.destination, dests)} won't be used: tell the stay as soon as you can.")
+            else:
+                notes.append(f"{_name(nxt.destination, dests)} is {late} night{'s' if late > 1 else ''} shorter.")
+        else:   # no night to give: the rest of the trip moves
+            for j in range(i + 1, len(segs)):
+                segs[j] = _with_nights(segs[j], segs[j].arrive + timedelta(days=late), segs[j].nights)
+            later = {s.destination for s in segs[i + 1:]}
+            transfers = [_shift(t, late) if t.from_dest in later else t for t in transfers]
+            outbound = _shift(outbound, late)
+            notes.append(f"{_name(nxt.destination, dests)} had no night to give, so the rest of the trip moves "
+                         f"{late} day{'s' if late > 1 else ''} later.")
+    new = Trip(trip.start, tuple(segs), tuple(transfers), trip.inbound, outbound)
+    problems = validate(new, dests)
+    if problems:
+        raise TripError(" ".join(problems))
+    h, m = divmod(new_t.minutes(dests), 60)
+    notes.insert(0, f"New {new_t.mode}: leave {_name(from_key, dests)} at {depart:%a %H:%M}, arrive in "
+                    f"{_name(new_t.to_dest, dests)} at {arrive:%a %H:%M} (local times), after {h} h {m:02d} min.")
+    if old_t.booked:
+        notes.append(f"The missed {old_t.mode} was booked: ask whoever sold it about the next one.")
+    return new, notes + [n for n in _moved(trip, new, dests) if "booked for" in n]
+
+
+def summary(trip: Trip, dests: dict[str, Destination]) -> list[dict]:
+    """The whole trip, one line a day: where you are, the day's kind, its currency and its notes, in local times."""
+    return [{"date": d.day.isoformat(), "kind": d.kind, "where": _name(d.destination, dests) if d.destination else None,
+             "currency": dests[d.destination].currency if d.destination in dests else None, "notes": d.notes}
+            for d in days(trip, dests)]
