@@ -559,8 +559,8 @@ def _price_scale(keys: dict[str, tuple[int, float]]) -> Callable[[str], float]:
     return lambda i: norms[keys[i][0]](keys[i][1])
 
 
-def flight_pricing(flights: list[Flight], rates: fx.Rates | None = None) -> fx.Pricing:
-    return fx.pricing([x.currency for x in flights], rates)
+def flight_pricing(flights: list[Flight], rates: fx.Rates | None = None, display: str = fx.HOME) -> fx.Pricing:
+    return fx.pricing([x.currency for x in flights], rates, display=display)
 
 
 def best_scores(flights: list[Flight], px: fx.Pricing | None = None) -> dict[str, float]:
@@ -742,8 +742,8 @@ def add_distances(stays: list[Stay], lat: float, lon: float) -> list[Stay]:
     return stays
 
 
-def stay_pricing(stays: list[Stay], rates: fx.Rates | None = None) -> fx.Pricing:
-    return fx.pricing([x.currency for x in stays], rates)
+def stay_pricing(stays: list[Stay], rates: fx.Rates | None = None, display: str = fx.HOME) -> fx.Pricing:
+    return fx.pricing([x.currency for x in stays], rates, display=display)
 
 
 def recommended_scores(stays: list[Stay], px: fx.Pricing | None = None) -> dict[str, float]:

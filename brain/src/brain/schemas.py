@@ -243,6 +243,7 @@ class FlightSearchIn(BaseModel):
     children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
     cabin: Literal["economy", "premium_economy", "business", "first"] = "economy"
     filters: FlightFiltersIn = Field(default_factory=FlightFiltersIn)
+    display_currency: str = Field(default="GBP", pattern=r"^[A-Z]{3}$")   # m238: the person's currency (estimates only)
 
 
 class StayFiltersIn(BaseModel):
@@ -265,6 +266,7 @@ class StaySearchIn(BaseModel):
     children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
     rooms: int = Field(default=1, ge=1, le=5)
     filters: StayFiltersIn = Field(default_factory=StayFiltersIn)
+    display_currency: str = Field(default="GBP", pattern=r"^[A-Z]{3}$")   # m238: the person's currency (estimates only)
 
 
 class StayRefIn(BaseModel):

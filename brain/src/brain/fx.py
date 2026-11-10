@@ -108,23 +108,41 @@ class EcbRates:
         return held if held is not None and held.fresh(now.date()) else None
 
 
+# m238 (WS5): the person's display currency. Pounds unless they choose another the ECB publishes (or the euro).
+CURRENCY_NAMES = {"GBP": "pounds", "EUR": "euros", "USD": "US dollars"}
+
+
+def currency_name(code: str) -> str:
+    return CURRENCY_NAMES.get(code, code)
+
+
+def display_options(rates: Rates | None) -> list[str]:
+    """The display currencies on offer: every one the current rates cover, pounds first; pounds alone without rates."""
+    if rates is None:
+        return [HOME]
+    return sorted(rates.per_eur, key=lambda c: (c != HOME, c))
+
+
 @dataclass(frozen=True)
 class Pricing:
     """How the prices in one set of results compare. `mode`: "one" (a single currency), "converted" (several, all
-    converted to pounds with `rates`) or "grouped" (several, not comparable: grouped by currency, home first)."""
+    converted to the display currency with `rates`) or "grouped" (several, not comparable: grouped by currency,
+    the display currency first). m238: `display` is the person's chosen currency (pounds by default). The provider's
+    price always stays as it is; a conversion is only ever an estimate shown beside it."""
     mode: str
-    currencies: tuple[str, ...]        # in the order shown: pounds first, then by how many results, then by code
+    currencies: tuple[str, ...]        # in the order shown: the display currency first, then by count, then by code
     rates: Rates | None = None         # current rates, when there are any (estimates are shown in any mode)
+    display: str = HOME
 
     @property
     def unit(self) -> str:
-        """The currency facets and tabs are given in: pounds when converted, else the first group's."""
-        return HOME if self.mode == "converted" else (self.currencies[0] if self.currencies else HOME)
+        """The currency facets and tabs are given in: the display currency when converted, else the first group's."""
+        return self.display if self.mode == "converted" else (self.currencies[0] if self.currencies else self.display)
 
     def key(self, amount: float, currency: str) -> tuple[int, float]:
         """Sort key, lower is cheaper. Grouped: the currency's group first, so nothing ranks across currencies."""
         if self.mode == "converted":
-            return 0, self.rates.convert(amount, currency) or 0.0
+            return 0, self.rates.convert(amount, currency, self.display) or 0.0
         return (self.currencies.index(currency) if currency in self.currencies else len(self.currencies)), amount
 
     def in_unit(self, amount: float, currency: str) -> float | None:
@@ -136,22 +154,25 @@ class Pricing:
     def estimate(self, amount: float, currency: str) -> dict | None:
         """The converted figure shown beside a price in another currency, never in its place (whenever a current rate
         has that currency, in any mode)."""
-        if self.rates is None or currency == HOME or self.rates.rate(currency) is None:
+        d = self.display
+        if self.rates is None or currency == d or self.rates.rate(currency, d) is None:
             return None
-        return {"amount": self.rates.convert(amount, currency), "currency": HOME, "rate": round(self.rates.rate(currency), 6),
+        return {"amount": self.rates.convert(amount, currency, d), "currency": d,
+                "rate": round(self.rates.rate(currency, d), 6),
                 "source": self.rates.source, "as_of": self.rates.as_of.isoformat(), "line": self.rates.line()}
 
     def note(self, what: str) -> str | None:
         """What the person is told about the comparison, or None for one currency."""
+        d, dn = self.display, currency_name(self.display)
         if self.mode == "one":
-            only = self.currencies[0] if self.currencies else HOME
-            if only == HOME or self.rates is None or self.rates.rate(only) is None:
+            only = self.currencies[0] if self.currencies else d
+            if only == d or self.rates is None or self.rates.rate(only, d) is None:
                 return None
-            return (f"These {what} are priced in {only}. The pounds beside each are converted at the "
+            return (f"These {what} are priced in {only}. The {dn} beside each are converted at the "
                     f"{self.rates.line()}: an estimate. You pay the price in {only}.")
         names = _and(self.currencies)
         if self.mode == "converted":
-            return (f"These {what} are priced in {names}. To compare them, other currencies are converted to pounds at "
+            return (f"These {what} are priced in {names}. To compare them, other currencies are converted to {dn} at "
                     f"the {self.rates.line()}: an estimate. You pay the price in its own currency.")
         missing = [c for c in self.currencies if self.rates is None or self.rates.rate(c) is None]
         which = "" if self.rates is None else f" for {_and(missing)}"
@@ -165,12 +186,16 @@ def _and(words: Iterable[str]) -> str:
     return w[0] if len(w) == 1 else ", ".join(w[:-1]) + " and " + w[-1]
 
 
-def pricing(currencies: Iterable[str], rates: Rates | None, today: date | None = None) -> Pricing:
+def pricing(currencies: Iterable[str], rates: Rates | None, today: date | None = None,
+            display: str = HOME) -> Pricing:
+    """m238: `display` is the person's currency. Prices convert only with a current rate for every currency and for
+    the display currency itself; otherwise they're grouped, display currency first, and nothing ranks across them."""
+    display = (display or HOME).upper()
     counts = Counter(c.upper() for c in currencies if c)
-    order = tuple(sorted(counts, key=lambda c: (c != HOME, -counts[c], c)))
+    order = tuple(sorted(counts, key=lambda c: (c != display, -counts[c], c)))
     current = rates if rates is not None and rates.fresh(today or datetime.now(timezone.utc).date()) else None
     if len(order) <= 1:
-        return Pricing("one", order, current)
-    if current is not None and all(current.rate(c) for c in order):
-        return Pricing("converted", order, current)
-    return Pricing("grouped", order, current)
+        return Pricing("one", order, current, display)
+    if current is not None and current.rate(display) and all(current.rate(c, display) for c in order):
+        return Pricing("converted", order, current, display)
+    return Pricing("grouped", order, current, display)

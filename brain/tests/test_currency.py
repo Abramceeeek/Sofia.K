@@ -212,3 +212,51 @@ def test_the_trip_endpoints_say_how_prices_compare(client):
         assert d["results"][1]["estimate"] is None and d["facets"]["estimated"] is True
     finally:
         client.app.state.trips.flights, client.app.state.rates = real, None
+
+
+def test_a_traveller_can_plan_in_their_own_currency_and_the_fare_is_kept():
+    """m238 (WS5): a person who plans in US dollars sees estimates in dollars, crossed through the euro at the ECB
+    rate; the provider's price and currency never change."""
+    fl = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR", airline="Euro Air")]
+    px = trips.flight_pricing(fl, _rates(), display="USD")
+    assert px.mode == "converted" and px.unit == "USD" and px.currencies == ("EUR", "GBP")   # no USD fares: by count
+    # 400 EUR × 1.1165 = 446.60 USD; £389 ÷ 0.83415 × 1.1165 = 520.67 USD
+    assert px.estimate(400.0, "EUR") == {"amount": 446.6, "currency": "USD", "rate": 1.1165,
+                                         "source": fx.ECB_SOURCE, "as_of": "2026-11-06", "line": "ECB rate of 6 Nov 2026"}
+    assert px.estimate(389.0, "GBP")["amount"] == 520.67
+    assert [x.id for x in trips.filter_flights(fl, trips.FlightFilters(sort="cheapest"), px)] == ["e1", "g1"]
+    assert "converted to US dollars at the ECB rate of 6 Nov 2026" in px.note("flights")
+    assert (trips.flight_out(fl[1])["price"], trips.flight_out(fl[1])["currency"]) == (400.0, "EUR")
+    one = trips.flight_pricing([_flight("e1", 400.0, "EUR")], _rates(), display="EUR")
+    assert one.mode == "one" and one.estimate(400.0, "EUR") is None and one.note("flights") is None
+
+
+def test_a_display_currency_without_a_current_rate_falls_back_to_grouping():
+    fl = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR")]
+    unknown = trips.flight_pricing(fl, _rates(), display="UZS")          # not an ECB currency
+    assert unknown.mode == "grouped" and unknown.estimate(400.0, "EUR") is None
+    stale = trips.flight_pricing(fl, _rates(as_of=date(2026, 10, 20)), display="USD")
+    assert stale.mode == "grouped" and stale.rates is None              # over five days old: never used
+    assert fx.display_options(None) == ["GBP"]                           # without rates, pounds only
+    assert fx.display_options(_rates()) == ["GBP", "EUR", "USD"]
+
+
+def test_the_endpoints_take_the_display_currency(client):
+    h, _ = install(client)
+    soon = (date.today() + timedelta(days=30)).isoformat()
+    ts = client.app.state.trips
+    mixed = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR", airline="Euro Air")]
+    real, ts.flights = ts.flights, (lambda q, who: mixed)
+
+    class Fixed:
+        def get(self):
+            return fx.Rates(_rates().per_eur, date.today() - timedelta(days=1), FETCHED)
+    client.app.state.rates = Fixed()
+    try:
+        body = {"origin": "TAS", "depart_date": soon, "display_currency": "USD"}
+        d = client.post("/v1/trips/flights", headers=h, json=body).json()
+        est = {x["id"]: x["estimate"] for x in d["results"]}
+        assert est["e1"]["currency"] == "USD" and est["g1"]["currency"] == "USD" and d["facets"]["currency"] == "USD"
+        assert client.post("/v1/trips/flights", headers=h, json={**body, "display_currency": "usd"}).status_code == 422
+    finally:
+        ts.flights, client.app.state.rates = real, None

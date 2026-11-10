@@ -947,7 +947,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             max_stops=f.max_stops, stops=f.stops, out_times=f.out_times, in_times=f.in_times, out_depart=f.out_depart,
             in_depart=f.in_depart, max_leg_min=f.max_leg_min, airlines=f.airlines, max_price=f.max_price,
             checked_bag=f.checked_bag, refundable=f.refundable, sort=f.sort)
-        px = trips.flight_pricing(found, app.state.rates.get() if app.state.rates else None)   # m218
+        px = trips.flight_pricing(found, app.state.rates.get() if app.state.rates else None,   # m218
+                                  display=body.display_currency)                         # m238
         shown = trips.filter_flights(found, ff, px)
         tabs, tags = trips.flight_tops(found, ff, px)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
@@ -1064,7 +1065,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         sf = trips.StayFilters(
             max_night=f.max_night, min_night=f.min_night, min_stars=f.min_stars, min_rating=f.min_rating,
             kinds=f.kinds, refundable=f.refundable, breakfast=f.breakfast, max_km=f.max_km, sort=f.sort)
-        px = trips.stay_pricing(found, app.state.rates.get() if app.state.rates else None)   # m218
+        px = trips.stay_pricing(found, app.state.rates.get() if app.state.rates else None,   # m218
+                                display=body.display_currency)                         # m238
         shown = trips.filter_stays(found, sf, px)
         tabs, tags = trips.stay_tops(found, sf, px)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
