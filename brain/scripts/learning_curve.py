@@ -25,6 +25,12 @@ Which stops get rated:
   app would plan (it learns only about what it already recommends);
 - **random days**: four cards at random, for comparison (what trying things the model wouldn't pick would teach).
 
+**A proposed change, tested here (tables D and E):** the model lets each person swipe more or less positively
+(`swipe_level`, m135) but has no such term for ratings, so someone who calls every stop "Great" looks like someone
+who likes everything those stops have in common. Table D gives people a personal rating level (sd 1.0, a GUESS) and
+fits today's model; table E fits the same answers with a `rating_level` term added (1 on every rating, 0 elsewhere,
+prior sd 1.5 like `swipe_level`). Random days in both, so the two fits see exactly the same answers.
+
 `--idio τ`: a taste for each card that no tag describes (the same every time they'd rate it), with sd τ. τ = 0 is the
 model's own world. The second run uses τ = 0.75, the sd of one taste weight (a GUESS: nothing measures it yet; the
 first real ratings will).
@@ -34,9 +40,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -46,7 +54,8 @@ from brain.features import moment_features  # noqa: E402
 from brain.moments import load_moments  # noqa: E402
 from brain.popularity import load_onboarding  # noqa: E402
 from brain.population import load_population  # noqa: E402
-from brain.scoring import rating_observation, update_person  # noqa: E402
+from brain.personal import Observation  # noqa: E402
+from brain.scoring import update_person  # noqa: E402
 
 from compare_onboarding import P_BEEN_LONDONER, _ranks, _tasks, named  # noqa: E402
 
@@ -55,15 +64,34 @@ DAY = 4          # stops rated in one day
 TOP, BEST = 8, 4
 
 
-def _rate(pop, rng, m, x, b, extra: float):
-    """One 1-5 rating, as the model assumes, plus the person's own untagged taste for this card."""
+LEVEL = "rating_level"   # the proposed term: how generously this person rates, apart from what they like
+
+
+def _with_level():
+    """Today's population model plus the proposed personal rating level (not in data/priors.yaml: a trial only)."""
+    doc = yaml.safe_load((DATA_DIR / "priors.yaml").read_text(encoding="utf-8"))
+    doc["features"].append({"name": LEVEL, "label": "how generously they rate", "group": "response", "mean": 0.0,
+                            "delta_sd": 1.5, "personal": True})
+    with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+        yaml.safe_dump(doc, f)
+    return load_population(Path(f.name))
+
+
+def _rate(pop, rng, x, b, extra: float):
+    """One 1-5 rating, as the model assumes, plus whatever else moves this person's rating of this card (`extra`:
+    an untagged taste, a generous or harsh way of rating)."""
     u = pop.scales["rating"] * (float(x @ b) + extra) + rng.logistic()
     y = int(np.searchsorted(np.array(pop.cutpoints["rating"]), u))
-    return rating_observation(pop, m, y + 1, None, None)
+    seen = x.copy()
+    if LEVEL in pop.names:
+        seen[pop.names.index(LEVEL)] = 1.0
+    return Observation(x=seen, y=y, scale=pop.scales["rating"], cutpoints=pop.cutpoints["rating"])
 
 
-def run(people: int, days: int, idio: float, arm: str, seed: int = SEED) -> list[dict]:
-    pop = load_population(DATA_DIR / "priors.yaml")
+def run(people: int, days: int, idio: float, arm: str, seed: int = SEED, level_sd: float = 0.0,
+        fit_level: bool = False) -> list[dict]:
+    base_sd = load_population(DATA_DIR / "priors.yaml").delta_prior_sd
+    pop = _with_level() if fit_level else load_population(DATA_DIR / "priors.yaml")
     ob = load_onboarding(DATA_DIR, None)
     cards = [m for m in load_moments(DATA_DIR / "moments") if m.status == "ready"]
     X = np.array([pop.vector(moment_features(m)) for m in cards])
@@ -71,7 +99,9 @@ def run(people: int, days: int, idio: float, arm: str, seed: int = SEED) -> list
     rows = [dict(rated=d * DAY, rho=[], top=[], got=[], could=[]) for d in range(days + 1)]
     for person in range(people):
         # each person has their own streams, so every run meets the same people giving the same onboarding answers
-        b = pop.b_person(np.random.default_rng([seed, person, 1]).normal(0.0, pop.delta_prior_sd))
+        taste = np.random.default_rng([seed, person, 1]).normal(0.0, base_sd)
+        b = pop.b_person(np.append(taste, 0.0) if fit_level else taste)    # the truth has no level in its tastes
+        level = float(np.random.default_rng([seed, person, 4]).normal(0.0, level_sd)) if level_sd else 0.0
         own = (np.random.default_rng([seed, person, 2]).normal(0.0, idio, len(cards)) if idio
                else np.zeros(len(cards)))
         rng = np.random.default_rng([seed, person, 3])
@@ -93,7 +123,7 @@ def run(people: int, days: int, idio: float, arm: str, seed: int = SEED) -> list
                     else list(rng.choice(left, DAY, replace=False)))
             for i in pick:
                 done.add(int(i))
-                obs.append(_rate(pop, rng, cards[i], X[i], b, float(own[i])))
+                obs.append(_rate(pop, rng, X[i], b, float(own[i]) + level))
     boot = np.random.default_rng([seed, 9])
     out = []
     for r in rows:
@@ -134,7 +164,11 @@ def main(argv: list[str] | None = None) -> int:
              table("B. Random days (trying what the model wouldn't pick), same people",
                    run(a.people, a.days, 0.0, "random")),
              table(f"C. The app's own days, with a taste the tags can't describe (sd {a.idio}, a GUESS)",
-                   run(a.people, a.days, a.idio, "app"))]
+                   run(a.people, a.days, a.idio, "app")),
+             table("D. Random days, people who also rate more or less generously (sd 1.0, a GUESS): today's model",
+                   run(a.people, a.days, 0.0, "random", level_sd=1.0)),
+             table("E. The same people and answers as D, with a personal rating level added to the model (proposed)",
+                   run(a.people, a.days, 0.0, "random", level_sd=1.0, fit_level=True))]
     text = "\n\n".join(parts) + "\n"
     print(text)
     if a.out:

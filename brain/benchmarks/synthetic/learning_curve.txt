@@ -44,3 +44,31 @@ rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic fou
          32 |  0.602 ±0.010 |       3.83 of 8 |    58% ±2 | 89% / 11% of people
          36 |  0.620 ±0.010 |       3.88 of 8 |    60% ±2 | 89% / 11% of people
          40 |  0.638 ±0.010 |       3.86 of 8 |    60% ±2 | 90% / 10% of people
+
+D. Random days, people who also rate more or less generously (sd 1.0, a GUESS): today's model
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.427 ±0.017 |       2.79 of 8 |    28% ±3 | 68% / 31% of people
+          4 |  0.488 ±0.017 |       3.17 of 8 |    38% ±3 | 74% / 25% of people
+          8 |  0.547 ±0.015 |       3.46 of 8 |    46% ±2 | 76% / 23% of people
+         12 |  0.580 ±0.015 |       3.55 of 8 |    49% ±2 | 79% / 21% of people
+         16 |  0.609 ±0.014 |       3.76 of 8 |    53% ±2 | 80% / 19% of people
+         20 |  0.630 ±0.013 |       3.86 of 8 |    55% ±2 | 80% / 20% of people
+         24 |  0.650 ±0.013 |       3.95 of 8 |    59% ±2 | 83% / 17% of people
+         28 |  0.671 ±0.012 |       4.10 of 8 |    62% ±2 | 86% / 14% of people
+         32 |  0.688 ±0.012 |       4.28 of 8 |    65% ±2 | 86% / 14% of people
+         36 |  0.701 ±0.011 |       4.27 of 8 |    65% ±2 | 86% / 14% of people
+         40 |  0.714 ±0.011 |       4.44 of 8 |    68% ±2 | 86% / 14% of people
+
+E. The same people and answers as D, with a personal rating level added to the model (proposed)
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.427 ±0.017 |       2.79 of 8 |    28% ±3 | 68% / 31% of people
+          4 |  0.492 ±0.017 |       3.12 of 8 |    37% ±3 | 72% / 28% of people
+          8 |  0.552 ±0.015 |       3.48 of 8 |    46% ±3 | 79% / 21% of people
+         12 |  0.583 ±0.015 |       3.55 of 8 |    48% ±3 | 77% / 23% of people
+         16 |  0.613 ±0.014 |       3.77 of 8 |    53% ±2 | 79% / 20% of people
+         20 |  0.635 ±0.013 |       3.82 of 8 |    54% ±2 | 80% / 19% of people
+         24 |  0.656 ±0.013 |       4.05 of 8 |    59% ±2 | 81% / 19% of people
+         28 |  0.672 ±0.012 |       4.12 of 8 |    61% ±2 | 85% / 15% of people
+         32 |  0.691 ±0.011 |       4.29 of 8 |    66% ±2 | 86% / 13% of people
+         36 |  0.704 ±0.011 |       4.29 of 8 |    66% ±2 | 87% / 13% of people
+         40 |  0.720 ±0.011 |       4.44 of 8 |    68% ±2 | 87% / 13% of people
