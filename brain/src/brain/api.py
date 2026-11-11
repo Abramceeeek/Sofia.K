@@ -1,6 +1,6 @@
 """The brain's HTTP API, used by the SwiftUI app (the face) and by Abram's admin tools.
 
-Run locally:  uvicorn brain.api:app --app-dir src --reload     (docs at /docs)
+Run locally:  BRAIN_API_DOCS=1 uvicorn brain.api:app --app-dir src --reload     (docs at /docs)
 """
 
 from __future__ import annotations
@@ -94,6 +94,48 @@ def _plain(description: str) -> str:
     return re.sub(r"longest transfer (\d+) min", r"up to \1 min between stops", description)
 
 
+HERE_NAMES = {"where you are"}   # what the apps call the person's own position (AppModel: "where you are")
+
+
+def kept_stops(stops: list[dict], *, drop_start_pin: bool = False, hide: str | None = None,
+               shown_as: str = "your stay") -> list[dict]:
+    """The copy of a plan's stops that is kept in the database (audit SEC-06). What the person is sent is unchanged.
+
+    - `drop_start_pin`: the day started from the person's own position ("Start from where I am"), which the app and
+      the privacy notice say is "sent once, rounded to about 100 metres ... and it isn't kept". Lunch near the start
+      (and the person's own time placed at the start) carried that point as its map pin, so it was kept. Not now.
+    - `hide`: the name of the person's stay, which the notice says is never kept ("its location, never its name").
+      The first stop's "from …" and "Lunch near …" carried it. The kept copy says `shown_as` instead."""
+    def clean(v):
+        if isinstance(v, str):
+            return v.replace(hide, shown_as) if hide else v
+        if isinstance(v, list):
+            return [clean(x) for x in v]
+        if isinstance(v, dict):
+            return {k: clean(x) for k, x in v.items()}
+        return v
+
+    out = []
+    for st in stops:
+        st = clean(st) if hide else dict(st)
+        if drop_start_pin and str(st.get("moment_id", "")).endswith("@start"):
+            st["pin"] = None
+        out.append(st)
+    return out
+
+
+def _finite(v):
+    """A value JSON can carry: a number that isn't one (an infinity, a NaN) becomes null, at any depth. One such
+    number in one row used to make the whole admin export fail (audit SEC-04)."""
+    if isinstance(v, float):
+        return v if v == v and v not in (float("inf"), float("-inf")) else None
+    if isinstance(v, dict):
+        return {k: _finite(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_finite(x) for x in v]
+    return v
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
 
@@ -151,7 +193,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.travel.stop()
         engine.dispose()
 
-    app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan)
+    # audit SEC-07: /docs, /redoc and /openapi.json listed every route, the admin ones included, to anyone. They are
+    # for development: set BRAIN_API_DOCS=1 to have them (never in Render)
+    docs = settings.api_docs
+    app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan,
+                  docs_url="/docs" if docs else None, redoc_url="/redoc" if docs else None,
+                  openapi_url="/openapi.json" if docs else None)
     app.state.settings = settings
     app.state.oidc = GithubOIDC()   # Stage 1: lets the nightly backup job in without a shared secret (ghoidc.py)
     # Stage 1: the request log (no personal data), rate limits and error alerts (ops.py)
@@ -343,7 +390,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/swipes", status_code=204)
     def post_swipes(body: SwipesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
                     p: PopulationModel = Depends(pop)):
-        for it in body.items:
+        # audit SEC-02: the last answer for a place wins inside one request too (the same place sent 50,000 times
+        # in one request used to make 50,000 rows)
+        for it in {it.item: it for it in body.items}.values():
             if it.item not in app.state.swipe_items:
                 raise HTTPException(422, f"unknown swipe place {it.item}")
             # m176: one answer per place; answering again (onboarding's Back) replaces it, so it isn't counted twice
@@ -361,7 +410,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                         p: PopulationModel = Depends(pop)):
         """D116: a visitor's answers to the category cards."""
         cats = app.state.categories
-        for it in body.items:
+        for it in {it.key: it for it in body.items}.values():   # the last answer for a kind wins (as for swipes)
             if cats is None or it.key not in cats.items:
                 raise HTTPException(422, f"unknown category {it.key}")
             for old in [a for a in user.categories if a.key == it.key]:   # m176: one answer per kind of place
@@ -377,7 +426,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/conjoint", status_code=204)
     def post_choices(body: ChoicesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
                      p: PopulationModel = Depends(pop)):
-        for it in body.items:
+        for it in {it.task: it for it in body.items}.values():   # the last choice for a task wins (as for swipes)
             if it.task not in app.state.tasks:
                 raise HTTPException(422, f"unknown task {it.task}")
             for old in [c for c in user.choices if c.task == it.task]:   # m176: one choice per made-up day
@@ -391,7 +440,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/v1/me/answers", status_code=204)
     def post_answers(body: AnswersIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
-        for it in body.items:
+        for it in {it.question: it for it in body.items}.values():
             for old in [a for a in user.answers if a.question == it.question]:   # journey round 2: one per question
                 s.delete(old)
             s.add(db.Answer(user_id=user.id, question=it.question, text=it.text, input_mode=it.input_mode))
@@ -650,10 +699,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if outlook:   # kept with the plan, so the results can tell weather-shaped plans apart
             intent["weather"] = outlook.out()
             head["weather"] = outlook.out()
-        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
+        # audit SEC-06: a day that starts from the person's own position is planned with it, then kept without it
+        here = body.start_is_here or body.start_name.strip().lower() in HERE_NAMES
+        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent,
+                      stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
         s.add(row)
         s.commit()
-        return {**plan_out(row), **head}
+        return {**plan_out(row), "stops": out, **head}
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -1151,6 +1203,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(422, "a day needs at least an hour between its start and end")
         start = body.stay or Point(lat=dest.lat, lon=dest.lon)
         start_name = (body.stay_name or "").strip() or dest.centre_name
+        stay_named = (body.stay_name or "").strip() or None   # the person's own stay: never kept (audit SEC-06)
+        if stay_named and (len(stay_named) < 3 or stay_named == dest.centre_name):
+            stay_named = None   # too short to tell apart from ordinary words, or simply the public centre
         # D122: how the trip starts and ends; the older app sends only the flight times
         end_of = lambda e, t: (tripdays.End(e.mode, (e.place or "").upper() or None, e.time) if e
                                else tripdays.End("flight", None, t) if t else None)
@@ -1197,12 +1252,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
                 used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
-                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
+                # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
+                # location, never its name")
+                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
+                              stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
                               intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
                                       **({"weather": outlook.out()} if outlook else {})})
                 s.add(row)
                 s.flush()
-                return {**plan_out(row), **head}, stops
+                return {**plan_out(row), "stops": stops, **head}, stops
             return None
 
         for i in wanted:
@@ -1361,7 +1419,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def export(s: Session = Depends(session)):
         """Everything needed for the Phase 3 read-out, keyed by user id (no names are stored)."""
         def rows(model):
-            return [{c.name: (v.isoformat() if isinstance(v := getattr(r, c.name), datetime) else v)
+            return [{c.name: (v.isoformat() if isinstance(v := getattr(r, c.name), datetime) else _finite(v))
                      for c in model.__table__.columns if c.name != "token_hash"}
                     for r in s.scalars(select(model))]
         return {name: rows(model) for name, model in [

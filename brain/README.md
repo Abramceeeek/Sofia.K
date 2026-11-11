@@ -12,8 +12,8 @@ The Brain is the FastAPI backend. It holds the moment database, scores each mome
 cd brain
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev]"
 .venv/bin/python -m pytest -q                       # 92 tests
-BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --reload
-# API docs: http://127.0.0.1:8000/docs
+BRAIN_ADMIN_TOKEN=change-me BRAIN_API_DOCS=1 .venv/bin/uvicorn brain.api:app --app-dir src --reload
+# API docs: http://127.0.0.1:8000/docs (only with BRAIN_API_DOCS=1; never set it in Render: they list the admin routes)
 ```
 
 **Settings** (environment variables):
