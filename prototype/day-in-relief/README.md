@@ -28,5 +28,5 @@ and nothing here measures battery: only a phone can.
 
 **What it shows.** Both are quick and small. The relief view is about 14 times the work per drawing and tells the
 person nothing the flat view doesn't: a day's stops last 45 to 50 minutes each, so the columns are all but the same
-height, and tilting the ground makes the far stop (Greenwich, 8 km away) look nearer than it is. The verdict and what
+height, and tilting the ground makes the far stop (Greenwich, about 8 km from the stay) look nearer than it is. The verdict and what
 to do instead are in the decision document.
