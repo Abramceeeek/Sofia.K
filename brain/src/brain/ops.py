@@ -23,6 +23,7 @@ alerts to a person, and rate limits.
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
 import logging
 import secrets
@@ -188,9 +189,23 @@ def _address(request: Request) -> str:
     overall caps exist."""
     for name in ("cf-connecting-ip", "true-client-ip"):
         if (v := request.headers.get(name, "").strip()):
-            return v[:64]
+            return _network(v)
     fwd = request.headers.get("x-forwarded-for", "")
-    return (fwd.split(",")[0].strip() or (request.client.host if request.client else "?"))[:64]
+    return _network(fwd.split(",")[0].strip() or (request.client.host if request.client else "?"))
+
+
+def _network(address: str) -> str:
+    """What one subscriber holds: an IPv4 address as it is; an IPv6 address as its /64, since one home or phone is
+    given a whole /64 and could otherwise count as a new address on every request."""
+    try:
+        ip = ipaddress.ip_address(address[:64])
+    except ValueError:
+        return address[:64]
+    if ip.version == 6:
+        if ip.ipv4_mapped is not None:
+            return str(ip.ipv4_mapped)
+        return str(ipaddress.ip_network((int(ip) >> 64 << 64, 64)).network_address) + "/64"
+    return str(ip)
 
 
 def _route(request: Request) -> str:

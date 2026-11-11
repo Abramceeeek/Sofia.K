@@ -227,3 +227,10 @@ def test_sec04_a_refused_request_is_never_echoed_back(client):
     r = client.post("/v1/me/safety", headers=h, json={"message": "PRIVATE WORDS " * 400})
     assert r.status_code == 422 and "PRIVATE WORDS" not in r.text
     assert r.json()["detail"][0]["loc"] == ["body", "message"]
+
+
+def test_sec05_one_ipv6_subscriber_is_one_address_however_many_addresses_it_uses():
+    assert ops._network("2001:db8:1:2:aaaa::1") == ops._network("2001:db8:1:2:bbbb::9") == "2001:db8:1:2::/64"
+    assert ops._network("2001:db8:1:3::1") != ops._network("2001:db8:1:2::1")
+    assert ops._network("203.0.113.7") == "203.0.113.7" and ops._network("::ffff:203.0.113.7") == "203.0.113.7"
+    assert ops._network("not an address") == "not an address"
