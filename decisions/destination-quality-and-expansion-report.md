@@ -255,7 +255,7 @@ None of these is a runtime dependency, and none costs money.
 |---|---|
 | Brain (`pytest`) | **418 passed**, 0 failed (one library deprecation warning). It was 396 at the last report |
 | Android (`testDebugUnitTest`) | **119 tests, 0 failures, 0 errors** (the photo credits changed) |
-| iPhone (CI run #109, `upload: false`, commit `04bf623`) | Running when this report was committed; its result is added here when it finishes. The only app change is one author name in the bundled credits file |
+| iPhone (CI run #109, `upload: false`, commit `04bf623`) | **Passed**: the app builds with the corrected credits file (one author name), and every screen was drawn. Signing, archive and upload were skipped, as always off `main` |
 
 **New tests:**
 - `test_paris_dev.py` (5);
