@@ -556,7 +556,8 @@ def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPl
     def could_fit(m: Moment) -> bool:
         return (m.plannable() and m.open_on(brief.weekday) and not (rain and m.best_time.weather == ["dry"])
                 and fits_day(candidate_for(m, 0.0), day_start, day_end)
-                and (brief.budget_gbp is None or (m.cost_gbp or 0) <= brief.budget_gbp))
+                and (brief.budget_gbp is None or (m.cost_gbp is not None and m.cost_gbp <= brief.budget_gbp)))
+    # m255: an unknown price can't be checked against a budget, so it never passes as free
 
     # judge the place by its card that could fit the day, if any (the day boat, not the night boat)
     m = max((ready[i] for i in have), key=lambda m: (could_fit(m), cands[m.id].utility if m.id in cands else -99))
@@ -569,7 +570,9 @@ def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPl
     elif not fits_day(candidate_for(m, 0.0), day_start, day_end):
         hours = ", ".join(f"{hhmm(a)}–{hhmm(b)}" for a, b in m.windows())
         why = f"its hours ({hours}) don't fit {brief.start_time}–{brief.end_time}"
-    elif brief.budget_gbp is not None and (m.cost_gbp or 0) > brief.budget_gbp:
+    elif brief.budget_gbp is not None and m.cost_gbp is None:
+        why = "its price isn't known, so it can't be checked against your budget"
+    elif brief.budget_gbp is not None and m.cost_gbp > brief.budget_gbp:
         why = f"it costs {_money(m.cost_gbp)}, over the {_money(brief.budget_gbp)} budget"
     elif familiar and favourite:
         why = f"only one familiar favourite per plan, and {_lower_article(ready[favourite].title)} fitted the day better"
@@ -619,8 +622,9 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
                                                              min(day_end, st.arrive_min + 30 + c.duration_min))
             if not fits_day(c, lo, hi):
                 continue
-            if brief.budget_gbp is not None and spend - stop["cost_gbp"] + (m.cost_gbp or 0) > brief.budget_gbp:
-                continue
+            if brief.budget_gbp is not None and (m.cost_gbp is None or
+                                                 spend - stop["cost_gbp"] + m.cost_gbp > brief.budget_gbp):
+                continue                                   # m255: an unknown price never fits a budget as free
             t = travel.minutes(here, m.start())
             if t > limit:
                 continue
@@ -710,15 +714,19 @@ def _money(c: float) -> str:
     return f"£{c:,.0f}" if float(c).is_integer() else f"£{c:,.2f}"
 
 
-def _cost(c: float) -> str:
+def _cost(c: float | None) -> str:
+    if c is None:                                  # m255: unknown is never shown as free
+        return "price not known"
     return "free" if not c else _money(c)
 
 
 def _cost_line(s: dict) -> str:
     """Never call food "entry" (D100)."""
-    c = s.get("cost_gbp") or 0.0
+    c = s.get("cost_gbp")
     if s.get("mine"):   # m200: the person's own time: what it costs is theirs to know
         return ""
+    if c is None:       # m255: unknown is never "free"
+        return "Price not known"
     if not c:
         return "Cost: free"
     return {"food": f"Food: about {_money(c)}", "ticket": f"Ticket: {_money(c)}",

@@ -125,3 +125,62 @@ def test_when_nothing_suits_a_member_it_is_said():
     ms = [Member("Member A", Scorer(pop, d)), Member("Member B", Scorer(pop, None))]
     gp = plan(ms, _london(), 1, 3)
     assert any("Nothing here is a strong match for Member A" in n for n in gp.notes)
+
+
+# ---- m256: Abram's regression cases (m252) -------------------------------------------------------------------------
+
+def _members(n, per=None, seed=5):
+    import numpy as np
+    from brain.config import DATA_DIR
+    from brain.discovery import Scorer
+    from brain.group import Member
+    from brain.population import load_population
+    pop = load_population(DATA_DIR / "priors.yaml")
+    rng = np.random.default_rng(seed)
+    return [Member(f"Member {'ABCDEFGHIJ'[i]}", Scorer(pop, rng.normal(0, pop.delta_prior_sd)), **(per or {}).get(i, {}))
+            for i in range(n)]
+
+
+def test_arriving_late_or_leaving_early_counts_only_the_days_there():
+    from brain.group import plan
+    ms = _members(3, {0: dict(days_present=(2, 3)), 1: dict(days_present=(1,))})
+    gp = plan(ms, _london(), 3, 2)
+    a, b = ms[0].scorer, ms[1].scorer
+    days23 = gp.days[1] + gp.days[2]
+    assert abs(gp.satisfaction["Member A"] - sum(a.p_good(x) for x in days23) / len(days23)) < 1e-9
+    assert abs(gp.satisfaction["Member B"] - sum(b.p_good(x) for x in gp.days[0]) / len(gp.days[0])) < 1e-9
+    assert gp.highlights[0].startswith("Day 1 leads with Member B")       # B is only there on day 1
+
+
+def test_joining_part_of_a_day_counts_only_those_stops():
+    from brain.group import plan
+    ms = _members(2, {0: dict(joins_first={1: 1})})
+    gp = plan(ms, _london(), 1, 3)
+    assert abs(gp.satisfaction["Member A"] - ms[0].scorer.p_good(gp.days[0][0])) < 1e-9
+
+
+def test_different_daily_budgets_keep_every_day_within_the_smallest():
+    from brain.group import plan
+    ms = _members(3, {0: dict(budget_per_day=15.0), 1: dict(budget_per_day=60.0)})
+    gp = plan(ms, _london(), 2, 3)
+    for i, d in enumerate(gp.days, 1):
+        cost = sum(x.price.value.amount for x in d)
+        assert cost <= 15.0 + 1e-9 or any(n.startswith(f"Day {i} costs") for n in gp.notes)
+
+
+def test_different_access_needs_strict_excludes_unverified_and_says_why():
+    from brain.group import plan
+    xs = _london()
+    loose = plan(_members(3, {0: dict(needs_step_free=True)}), xs, 2, 3)
+    strict = plan(_members(3, {0: dict(needs_step_free=True), 1: dict(needs_step_free=True, strict_access=True)}), xs, 2, 3)
+    assert all(x.accessibility.step_free.known and x.accessibility.step_free.value != "no" for x in strict.stops)
+    assert any("no source confirms they're step-free" in n for n in strict.notes)  # why, by name
+    assert not [x for x in loose.stops if x.accessibility.step_free.known and x.accessibility.step_free.value == "no"]
+
+
+def test_a_large_group_is_told_the_trade_off_and_the_alternatives():
+    from brain.group import plan
+    gp = plan(_members(10, seed=3), _london(), 2, 3)
+    if not all(gp.proportional.values()):
+        note = next(n for n in gp.notes if "none of their favourite places" in n)
+        assert "add a day" in note and "split up" in note

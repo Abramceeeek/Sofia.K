@@ -199,3 +199,32 @@ def pricing(currencies: Iterable[str], rates: Rates | None, today: date | None =
     if current is not None and current.rate(display) and all(current.rate(c, display) for c in order):
         return Pricing("converted", order, current, display)
     return Pricing("grouped", order, current, display)
+
+
+# ---- m255: what a price is, said plainly (Abram, m252) ----------------------------------------------------------------
+PRICE_STATES = ("free", "paid", "unknown", "unavailable", "currency_unavailable", "converted_estimate")
+
+
+def price_status(amount: float | None, currency: str | None, *, display: str = HOME, rates: Rates | None = None,
+                 unavailable: bool = False, today: date | None = None) -> dict:
+    """Classify one price without ever changing it. `free` only for a confirmed zero; a missing amount is `unknown`
+    (or `unavailable` when the provider said it has none); an amount with no recognisable ISO 4217 code is
+    `currency_unavailable` (never treated as pounds or as free); a price in another currency is `paid` in its own
+    currency, with a `converted_estimate` beside it only when a current rate covers both. The provider's amount and
+    currency are always returned unchanged; the estimate is never the payable amount."""
+    out = {"amount": amount, "currency": currency, "status": None, "estimate": None}
+    if unavailable:
+        out["status"] = "unavailable"
+    elif amount is None:
+        out["status"] = "unknown"
+    elif not currency or len(currency) != 3 or not currency.isalpha() or not currency.isupper():
+        out["status"] = "currency_unavailable"
+    elif amount == 0:
+        out["status"] = "free"
+    else:
+        out["status"] = "paid"
+        if currency != display and rates is not None and rates.fresh(today or date.today()) and \
+                currency in rates.per_eur and display in rates.per_eur:
+            out["estimate"] = {"amount": round(amount / rates.per_eur[currency] * rates.per_eur[display], 2),
+                               "currency": display, "kind": "converted_estimate", "as_of": rates.as_of.isoformat()}
+    return out
