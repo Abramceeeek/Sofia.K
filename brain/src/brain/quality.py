@@ -48,10 +48,17 @@ class Assessment:
     def recommendable(self) -> bool:
         return "poor" not in self.levels()
 
-    def rank_key(self) -> tuple:
-        """Lower sorts first: nothing poor, then fewer fairs, then the most relevant."""
+    def rank_key(self, doubt_cost: float | None = None) -> tuple:
+        """Lower sorts first: nothing poor, then fewer fairs, then the most relevant.
+
+        m249: with `doubt_cost`, each doubt (a fair or unknown practicality, money or trust) costs that much chance of
+        "Good" instead of coming first, so a strong match with one open question can outrank a weak match with none.
+        The benchmark (scripts/benchmark_profiles.py) compares the two; Abram chooses."""
         lv = self.levels()
-        return ("poor" in lv, lv.count("fair") + lv.count("unknown"), -(self.p_good or 0.0))
+        if doubt_cost is None:
+            return ("poor" in lv, lv.count("fair") + lv.count("unknown"), -(self.p_good or 0.0))
+        doubts = sum(1 for v in lv[1:] if v in ("fair", "unknown"))
+        return ("poor" in lv, -((self.p_good or 0.0) - doubt_cost * doubts))
 
     def out(self) -> dict:
         return {k: {"level": v.level, "reason": v.reason} for k, v in
@@ -69,16 +76,35 @@ def relevance(p_good: float | None) -> Perspective:
     return Perspective("fair", "Worth a try, but not one of your strongest matches.")
 
 
-def practicality(x: Experience, day: date | None, minutes_free: float | None, travel_min: float | None) -> Perspective:
+def practicality(x: Experience, day: date | None, minutes_free: float | None, travel_min: float | None,
+                 needs_step_free: bool = False) -> Perspective:
+    if needs_step_free:                       # m249: a stated need is a rule; unknown access is never read as "no"
+        sf = x.accessibility.step_free
+        if sf.known and sf.value == "no":
+            return Perspective("poor", "Not step-free" + (f": {x.accessibility.note}" if x.accessibility.note else "."))
     if day is not None:
         wd = WEEKDAYS[day.weekday()]
         if x.hours.open_on(wd) is False:
             return Perspective("poor", f"Closed on {day:%A}s.")
+        for n in x.notices_on(day.isoformat()):   # m245: a dated closure or change, from the source
+            if n.what.lower().startswith("closed"):
+                return Perspective("poor", f"{n.what} that day.")
+        notice = next(iter(x.notices_on(day.isoformat())), None)
+    else:
+        notice = None
     need = (x.duration.max_minutes if x.duration else 0) + (travel_min or 0)
     if minutes_free is not None and need > minutes_free:
         return Perspective("poor", f"Needs about {round(need)} min, and you have {round(minutes_free)}.")
     if travel_min is not None and travel_min > LONG_TRIP_MIN:
         return Perspective("fair", f"{round(travel_min)} min to get there.")
+    if needs_step_free and not x.accessibility.step_free.known:
+        return Perspective("fair", "Step-free access isn't known: check before you go.")
+    if needs_step_free and x.accessibility.step_free.value == "partial":
+        return Perspective("fair", "Partly step-free" + (f": {x.accessibility.note}" if x.accessibility.note else "."))
+    if notice is not None:
+        return Perspective("fair", f"That day: {notice.what}.")
+    if getattr(x.facet, "event_based", False):
+        return Perspective("fair", "Sessions are listed per event: check the calendar.")
     if x.hours.weekly is None and x.hours.trust != "unknown":
         return Perspective("fair", "Its hours vary, so check them on the day.")
     if x.hours.trust == "unknown":
@@ -121,12 +147,12 @@ def trust(x: Experience, today: date) -> Perspective:
 
 def assess(x: Experience, *, p_good: float | None, today: date, day: date | None = None,
            minutes_free: float | None = None, travel_min: float | None = None, budget_left: float | None = None,
-           currency: str | None = None) -> Assessment:
-    return Assessment(relevance(p_good), practicality(x, day, minutes_free, travel_min),
+           currency: str | None = None, needs_step_free: bool = False) -> Assessment:
+    return Assessment(relevance(p_good), practicality(x, day, minutes_free, travel_min, needs_step_free),
                       money(x, budget_left, currency), trust(x, today), p_good)
 
 
-def rank(items: list[tuple[object, Assessment]]) -> list[tuple[object, Assessment]]:
+def rank(items: list[tuple[object, Assessment]], doubt_cost: float | None = None) -> list[tuple[object, Assessment]]:
     """The quality rule: nothing with a poor perspective above anything without one, then fewer doubts, then the
-    strongest match."""
-    return sorted(items, key=lambda t: t[1].rank_key())
+    strongest match (or, with `doubt_cost`, the match less a cost per doubt: m249)."""
+    return sorted(items, key=lambda t: t[1].rank_key(doubt_cost))

@@ -46,11 +46,25 @@ class Suggestion:
     assessment: quality.Assessment | None
 
 
-def _moment(x: Experience) -> Moment:
+def cost_gbp(x: Experience, rates=None) -> float | None:
+    """m249: the price in pounds for the model's cost term (it is per £10). Another currency is converted only with
+    a rate (fx.Rates); without one the cost is unknown. Before m249 it was dropped, so every price outside the UK
+    scored as free."""
+    if not x.price.known:
+        return None
+    m = x.price.value
+    if m.currency == "GBP":
+        return m.amount
+    if rates is not None and m.currency in rates.per_eur and "GBP" in rates.per_eur:
+        return round(m.amount / rates.per_eur[m.currency] * rates.per_eur["GBP"], 2)
+    return None
+
+
+def _moment(x: Experience, rates=None) -> Moment:
     """The catalogue's features as a pseudo-moment, so the model scores any experience the same way."""
     place = {k: v for k, v in x.features.items() if k in PLACE_TAGS}
     mom = {k: v for k, v in x.features.items() if k in MOMENT_TAGS}
-    cost = x.price.value.amount if x.price.known and x.price.value.currency == "GBP" else None
+    cost = cost_gbp(x, rates)
     return Moment.model_validate({"id": x.id, "title": x.title, "place": {"name": x.name, "lat": x.geo.lat,
                                   "lon": x.geo.lon}, "features": {"place": place, "moment": mom},
                                   "cost_gbp": cost, "source": "catalogue"})
@@ -59,18 +73,18 @@ def _moment(x: Experience) -> Moment:
 class Scorer:
     """One person's taste over experiences: utility, the chance of "Good" or better, and the taste terms behind it."""
 
-    def __init__(self, pop: PopulationModel, delta: np.ndarray | None):
-        self.pop, self.b = pop, pop.b_person(delta)
+    def __init__(self, pop: PopulationModel, delta: np.ndarray | None, rates=None):
+        self.pop, self.b, self.rates = pop, pop.b_person(delta), rates
         self.taste = {n for n in pop.names if pop.spec(n).group in TASTE_GROUPS}
 
     def utility(self, x: Experience) -> float:
-        return float(self.pop.vector(moment_features(_moment(x))) @ self.b)
+        return float(self.pop.vector(moment_features(_moment(x, self.rates))) @ self.b)
 
     def p_good(self, x: Experience) -> float:
         return _p_good(self.pop.scales["rating"], self.pop.cutpoints["rating"][1], self.utility(x))
 
     def likes(self, x: Experience, n: int = 2) -> list[str]:
-        terms = contributions(self.pop, self.b, moment_features(_moment(x)), top=6)
+        terms = contributions(self.pop, self.b, moment_features(_moment(x, self.rates)), top=6)
         return [t["label"] for t in terms if t["feature"] in self.taste and t["contribution"] >= 0.05][:n]
 
 
