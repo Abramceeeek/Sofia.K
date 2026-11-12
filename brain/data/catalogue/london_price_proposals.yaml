@@ -1,0 +1,31 @@
+# m253 (Abram, m252: "investigate before changing anything"): the London cards whose planned price differs from the
+# official page. PROPOSALS ONLY: no card, catalogue price or plan changes until Abram approves each one
+# (tests/test_price_proposals.py holds the cards at their current values).
+checked: "2026-11-12"
+proposals:
+  m_courtauld_gallery:
+    card: {amount: 12, currency: GBP, basis: "weekend tickets from £12 (weekday from £10), read 27 Sep 2026"}
+    official: {amounts: [16, 14], currency: GBP, basis: "two adult (19+) rows, unlabelled; 'Gallery Entry from £14'",
+               sources: ["https://courtauld.ac.uk/gallery/plan-your-visit/", "https://courtauld.ac.uk/whats-on/permanent-collection-display/"]}
+    category: "adult (19+) permanent-collection entry; under-18s, members and some concessions free; temporary exhibitions extra"
+    conditions: "no day or channel difference stated; no booking fee stated; cashless"
+    proposal: "Plan £16 (the higher adult price, so no one is under-budgeted) and show 'from £14', until the page labels its two prices"
+    confidence: medium      # the amounts are official; which one a visitor pays isn't stated
+  m_uber_boat_west_day:
+    card: {amount: 22.90, currency: GBP, basis: "matches 'All Zones, Peak Adult' Oyster/contactless"}
+    official: {amounts: [20.50, 23.50, 19.30, 22.90], currency: GBP,
+               basis: "All Zones single: £20.50 online/app, £23.50 at the pier; Oyster/contactless £19.30 off-peak, £22.90 peak (stated as valid until 31 Oct 2026)",
+               sources: ["https://www.thamesclippers.com/plan-your-journey/ticket-information"]}
+    category: "adult single, zone-based; peak all day at weekends and on bank holidays"
+    conditions: "the pages don't say which zone Greenwich or Battersea Power Station pier is in, so 'All Zones' is an assumption; Oyster fares were due to be revised after 31 Oct"
+    proposal: "Hold. Confirm the two piers' zones (a person reading the route map, or Thames Clippers), then plan the at-the-pier price (£23.50 if All Zones) as the safe ceiling"
+    confidence: low
+  m_uber_boat_west_night:
+    card: {amount: 13.70, currency: GBP, basis: "read 27 Sep 2026"}
+    official: {amounts: [12.20, 16.00, 11.40, 12.40], currency: GBP,
+               basis: "Central and East single: £12.20 online/app, £16.00 at the pier; Oyster £11.40 off-peak, £12.40 peak (until 31 Oct)",
+               sources: ["https://www.thamesclippers.com/plan-your-journey/ticket-information"]}
+    category: "adult single, zone-based"
+    conditions: "Westminster pier's zone isn't stated, so 'Central and East' is an assumption; evening timetable not read"
+    proposal: "Hold, as above; if Central and East is confirmed, plan £16.00 (at the pier) as the ceiling"
+    confidence: low

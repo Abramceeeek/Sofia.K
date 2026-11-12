@@ -489,7 +489,8 @@ _YES_NO = {True: "yes", False: "no"}          # YAML reads a bare yes/no as a bo
 
 
 def _access(sf: dict, day: str) -> Accessibility:
-    return Accessibility(Fact(_YES_NO.get(sf["value"], sf["value"]), "checked", sf["source"], day), sf.get("quote"))
+    return Accessibility(Fact(_YES_NO.get(sf["value"], sf["value"]), "checked", sf["source"], sf.get("checked", day)),
+                         sf.get("quote"))
 
 
 def _hours(h: dict, day: str) -> OpeningHours:
@@ -497,7 +498,7 @@ def _hours(h: dict, day: str) -> OpeningHours:
     text (Abram, m244: "Preserve uncertain opening-hour text rather than forcing it into a schedule")."""
     weekly = parse_hours(h.get("parse", h["text"])) if h.get("status", "verified") == "verified" else None   # `parse`:
     # the plain weekly part of the page's own wording (a substring of `text`, tested), when the rest is detail
-    return OpeningHours(h["text"], weekly, "checked", h["source"], day)
+    return OpeningHours(h["text"], weekly, "checked", h["source"], h.get("checked", day))
 
 
 def _money(p: dict, currency: str, day: str) -> Fact:
@@ -512,7 +513,11 @@ def _notices(items) -> tuple[Notice, ...]:
 
 def apply_checked(x: Experience, c: dict, day: str, currency: str) -> Experience:
     """One card's record with the facts an official page gave (data/catalogue/<locality>_checked.yaml) on top."""
-    geo = replace(x.geo, area=Fact(c["area"]["value"], "checked", c["area"]["source"], day)) if "area" in c else x.geo
+    geo = replace(x.geo, area=Fact(c["area"]["value"], "checked", c["area"]["source"], c["area"].get("checked", day))
+                  ) if "area" in c else x.geo
+    acc = _access(c["step_free"], day) if "step_free" in c else x.accessibility
+    if "access_note" in c:          # a source's words about access that don't settle step-free: kept, not upgraded
+        acc = replace(acc, note=c["access_note"]["quote"])
     facet = x.facet
     if "age" in c and isinstance(facet, ActivityFacet):
         facet = replace(facet, age_limit=Fact(c["age"]["quote"], "checked", c["age"]["source"], day))
@@ -521,8 +526,7 @@ def apply_checked(x: Experience, c: dict, day: str, currency: str) -> Experience
     return replace(x, geo=geo, facet=facet,
                    hours=_hours(c["hours"], day) if "hours" in c else x.hours,
                    price=_money(c["price"], currency, day) if "price" in c else x.price,
-                   accessibility=_access(c["step_free"], day) if "step_free" in c else x.accessibility,
-                   notices=x.notices + _notices(c.get("notices")))
+                   accessibility=acc, notices=x.notices + _notices(c.get("notices")))
 
 
 def load_checked(locality: str, data_dir: Path = DATA_DIR) -> dict:

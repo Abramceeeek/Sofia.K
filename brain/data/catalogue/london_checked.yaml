@@ -41,7 +41,7 @@ cards:
       - {what: "Closes at 15:00 (last entry 14:00)", from: "2026-12-31", to: "2026-12-31", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
       - {what: "Opens at 12:00", from: "2027-01-01", to: "2027-01-01", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
     price: {amount: 16, kind: entry, quote: "adult (19+): £16 and £14 listed, not labelled which includes a donation; under-18s free", source: "https://courtauld.ac.uk/gallery/plan-your-visit/", status: unclear}
-    card_differs: "The card plans £12 (weekend tickets from £12, read 27 Sep); the official page now lists £14 and £16"
+    card_differs: "The card plans £12 (read 27 Sep). On 12 Nov the plan-your-visit page lists two unlabelled adult (19+) prices, £16 and £14, and the collection page says 'Gallery Entry from £14'. No day or channel difference, no booking fee"
   m_national_gallery:
     step_free: {value: yes, quote: "The Sainsbury Wing is the main entrance for everyone ... It has step-free access. Lifts throughout", source: "https://www.nationalgallery.org.uk/visiting/access"}
     hours: {text: "Daily 10:00-18:00, Friday until 21:00; closed 24-26 December and 1 January", parse: "Daily 10:00-18:00, Fri to 21:00; closed 24-26 December and 1 January", source: "https://www.nationalgallery.org.uk/visiting/plan-your-visit"}
@@ -61,6 +61,10 @@ cards:
     hours: {text: "Mon-Fri 10:00-18:00, Sat 10:00-17:00, Sun 10:00-16:00", source: "https://www.horizon22.co.uk/"}
     price: {amount: 0, kind: free, quote: "Visiting Horizon 22 is free", source: "https://www.horizon22.co.uk/visit"}
   m_evensong_st_pauls:
+    hours: {text: "Choral Evensong 15-29 Nov 2026: 17:00 Monday to Saturday, 15:00 on Sundays; none listed on Wed 18 or Sat 28 Nov", source: "https://www.stpauls.co.uk/resources/our-service-schedule", checked: "2026-11-12", status: general}
+    notices:
+      - {what: "No Choral Evensong listed", from: "2026-11-18", to: "2026-11-18", source: "https://www.stpauls.co.uk/resources/our-service-schedule"}
+      - {what: "No Choral Evensong listed", from: "2026-11-28", to: "2026-11-28", source: "https://www.stpauls.co.uk/resources/our-service-schedule"}
     step_free: {value: partial, quote: "North Transept entrance has ramped access ... Other parts of the Cathedral are step-access only; the Crypt and Quire are step-free", source: "https://www.stpauls.co.uk/accessibility-cathedral"}
   m_borough_market_graze:
     step_free: {value: yes, quote: "public spaces are laid out on a single ground-floor level, so have no need for lifts or stairs; some cobbles", source: "https://www.boroughmarket.org.uk/visit-us/"}
@@ -98,6 +102,14 @@ cards:
     hours: {text: "Pedestrian gates 07:30-20:00; during the deer cull, locked nightly 20:00-07:30 except Friday and Saturday nights", source: "https://www.royalparks.org.uk/visit/parks/richmond-park", status: seasonal}
     notices:
       - {what: "Deer cull for six weeks: pedestrian gates locked 20:00-07:30 except Friday and Saturday nights", from: "2026-11-02", to: "2026-12-13", source: "https://www.royalparks.org.uk/visit/parks/richmond-park"}
+  m_park_break_embankment:
+    area: {value: Victoria Embankment, quote: "part of the chain of open spaces along Victoria Embankment", source: "https://www.westminster.gov.uk/parks-and-open-spaces/victoria-embankment-gardens", checked: "2026-11-12"}
+    hours: {text: "Open every day from 08:00; closing times vary by the time of year", source: "https://www.westminster.gov.uk/parks-and-open-spaces/victoria-embankment-gardens", checked: "2026-11-12", status: seasonal}
+    access_note: {quote: "This park has disabled access (no step-free statement, so step-free stays unknown)", source: "https://www.westminster.gov.uk/parks-and-open-spaces/victoria-embankment-gardens"}
+  m_park_break_battersea:
+    hours: {text: "08:00 until dusk; park gates 06:30-22:30 for the facilities", source: "https://www.wandsworth.gov.uk/battersea-park", checked: "2026-11-12", status: seasonal}
+    notices:
+      - {what: "The Cascades waterfall is being restored", from: null, to: null, source: "https://www.wandsworth.gov.uk/battersea-park"}
   m_park_break_holland_kyoto:
     area: {value: Holland Park, quote: "Holland Park and Kensington High Street", source: "https://www.rbkc.gov.uk/parks-leisure-and-culture/parks/your-local-park"}
     step_free: {value: partial, quote: "Level access ... at North Abbotsbury Road, Ilchester Place, Duchess of Bedford Walk and High Street Kensington; two entrances on a steep incline", source: "https://www.rbkc.gov.uk/parks-leisure-and-culture/parks/your-local-park/holland-park"}
@@ -132,11 +144,12 @@ cards:
   m_uber_boat_west_day:
     step_free: {value: yes, quote: "All our piers are step-free and wheelchair accessible except for Cadogan, London Bridge City and Wandsworth Riverside Quarter; all our boats are wheelchair accessible by ramp", source: "https://thamesclippers.com/"}
     hours: {text: "Daily except Christmas Day and Boxing Day, every 10-20 minutes (winter timetable from 9 Nov 2026)", source: "https://www.thamesclippers.com/plan-your-journey/ticket-information", status: general}
-    card_differs: "Fares read: East or West £6.50 online, Central £10.60, Central and East £12.20; which fare covers Greenwich to Battersea Power Station isn't stated on the page read, so the card's £22.90 is unconfirmed"
+    card_differs: "The card plans £22.90, which matches the 'All Zones, Peak Adult' Oyster/contactless single; the page says those fares were effective until 31 Oct 2026 and revised fares would follow. Neither the ticket page nor the route map says which zone Greenwich or Battersea Power Station pier is in, so the fare for this journey is unconfirmed (12 Nov)"
   m_uber_boat_west_night:
     step_free: {value: yes, quote: "All our piers are step-free ... except Cadogan, London Bridge City and Wandsworth Riverside Quarter; all our boats ... accessible by ramp", source: "https://thamesclippers.com/"}
     hours: {text: "Daily except Christmas Day and Boxing Day (evening sailings not shown on the page read)", source: "https://www.thamesclippers.com/plan-your-journey/timetable", status: general}
-not_read:
+    card_differs: "The card plans £13.70, which matches no fare on the page read on 12 Nov (Central and East: £12.20 online, £16.00 at the pier, £11.40/£12.40 off-peak/peak Oyster until 31 Oct); Westminster pier's zone isn't stated, so the fare is unconfirmed"
+not_read:   # each tried again on 12 Nov at another official address (m252); still unread
   - {card: m_bm_great_court, url: "https://www.britishmuseum.org", why: "403"}
   - {card: m_national_portrait_gallery, url: "https://www.npg.org.uk", why: "403"}
   - {card: m_liberty_timber_galleries, url: "https://www.libertylondon.com", why: "header overflow"}
@@ -144,9 +157,6 @@ not_read:
   - {card: m_rfh_foyers_rest, url: "https://www.southbankcentre.co.uk", why: "403"}
   - {card: a_kings_cross_canal, url: "https://www.kingscross.co.uk", why: "403"}
   - {card: m_canary_wharf_towers, url: "https://www.canarywharf.com/", why: "empty page"}
-  - {card: m_park_break_embankment, url: "https://www.westminster.gov.uk", why: "403 on the gardens' pages; the index names them only in a caption"}
-  - {card: m_horizon_22, url: "https://www.horizon22.co.uk/faq", why: "the disabled-access answer is collapsed and wasn't in the page text"}
-  - {card: m_evensong_st_pauls, url: "https://www.stpauls.co.uk/resources/our-service-schedule", why: "the service schedule is a PDF that couldn't be read"}
-  - {card: m_park_break_battersea, url: "https://batterseapark.org/", why: "no opening hours or access statement on the pages read"}
+  - {card: m_horizon_22, url: "https://www.horizon22.co.uk/faq", why: "the disabled-access answer is collapsed and wasn't in the page text; /accessibility returned 404 (12 Nov)"}
   - {card: m_st_dunstan_garden, url: "https://www.cityoflondon.gov.uk/things-to-do/city-gardens/find-a-garden/st-dunstan-in-the-east-church-garden", why: "the official page states no hours or access"}
   - {card: m_millennium_bridge_dome, url: "https://www.cityoflondon.gov.uk/", why: "no visitor page for the bridge found"}

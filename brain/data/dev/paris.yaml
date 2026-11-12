@@ -39,7 +39,11 @@ not_read:
   - {what: "Metro and bus accessibility", url: "https://www.ratp.fr/accessibilite", why: "403"}
   - {what: "Île-de-France Mobilités", url: "https://www.iledefrance-mobilites.fr/", why: "403"}
   - {what: "Paris tourist office (neighbourhoods, accessibility)", url: "https://www.parisjetaime.com/", why: "403"}
-  - {what: "Jardin du Luxembourg opening hours", url: "https://jardin.senat.fr/infos-pratiques/horaires-douverture.html", why: "503"}
+  - {what: "Palais Garnier visiting hours", url: "https://www.operadeparis.fr/en/visits/palais-garnier", why: "the hours widget shows no times (12 Nov)"}
+  - {what: "Musée de l'Orangerie", url: "https://www.musee-orangerie.fr/en/plan-your-visit", why: "404 (12 Nov; the French page 403 on 11 Nov)"}
+  - {what: "Musée des Arts Forains", url: "https://www.arts-forains.com/", why: "503 on 11 and 12 Nov"}
+  - {what: "La Grande Épicerie de Paris", url: "https://www.lagrandeepicerie.com/fr/magasins/rive-gauche", why: "403 on 11 and 12 Nov"}
+  - {what: "The Marais walk (City of Paris page)", url: "https://www.paris.fr/pages/le-marais-2479", why: "404 (12 Nov)"}
 experiences:
   rodin:
     name: Musée Rodin
@@ -204,8 +208,9 @@ experiences:
     title: "The Senate's garden, its fountains and chairs"
     category: nature
     type: garden
-    status: draft                # the hours page returned 503: never assumed open
+    status: ready                # m252: its hours page answered on 12 Nov (it returned 503 on 11 Nov)
     point: {lat: 48.84694, lon: 2.33722, source: "wikidata:Q309458"}
+    hours: {text: "Opening and closing change every fortnight with sunrise and sunset (e.g. 16-31 Dec 08:15-16:30; 1-15 Jun 07:30-21:15)", source: "https://jardin.senat.fr/infos-pratiques/horaires-douverture.html", checked: "2026-11-12", status: seasonal}
     district: {value: "6e", trust: estimated, source: "Paris Cedex 06 on the official page"}
     price: {amount: 0, kind: free, quote: "entrée libre", source: "https://jardin.senat.fr/infos-pratiques.html"}
     minutes: [45, 90]
@@ -366,7 +371,8 @@ experiences:
     title: "The hop-on river shuttle along the Seine"
     category: transport_experience
     type: river_bus
-    status: draft                # the site's traffic panel lists every stop as "Escale fermée", undated
+    status: draft                # the home page's traffic panel lists every stop "Escale fermée", undated; the route page
+                                 # (12 Nov) shows nine stations and no closure: the two pages can't be reconciled
     point: {lat: 48.8583, lon: 2.29448, source: "wikidata:Q243 (the Eiffel Tower: the Tour Eiffel stop is beside it; no verified pier address on the site)"}
     hours: {text: "2 Nov 2026-31 Mar 2027: Mon-Thu 10:00-17:00, Fri-Sun 10:00-19:00 (first and last departures from Tour Eiffel; subject to change)", source: "https://www.batobus.com/", status: seasonal}
     price: {amount: 23, kind: ticket, quote: "Pass 24 heures adult 23 €", source: "https://www.batobus.com/"}
