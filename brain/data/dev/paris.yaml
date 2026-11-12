@@ -1,0 +1,377 @@
+# m246 (WS2): Paris, ODYS's second controlled destination (Abram, m244). DEVELOPMENT ONLY: this file is not in
+# data/destinations.yaml, so no route, trip or plan can offer Paris (tested). Paris isn't "supported" until its
+# readiness checklist passes and Abram reviews the coverage (decisions/destination-readiness.md).
+#
+# Every fact was read on 11 Nov 2026 from the place's OFFICIAL site (or paris.fr for city-run places), by Claude
+# (web fetch). Each says where it came from. Nothing is filled from memory:
+# - status ready: a checked location, address and hours. A missing price or access stays unknown and is said.
+# - status draft: something essential (hours, an unclear closure) couldn't be read; never recommended.
+# - point: coordinates from Wikidata (CC0), or OpenStreetMap (ODbL) for Chartier, against the official address.
+# - district: the arrondissement as the official page prints it ("Paris 3e"), else from the printed postcode
+#   (75003 is the 3rd), marked estimated.
+# - Prices that differ by nationality or residence (EEA and non-EEA) are recorded as a range. ODYS never asks
+#   nationality (CLAUDE.md), so it budgets with the higher price and shows the range.
+# - minutes, setting and features (the recommendation tags) are Claude's judgement (GUESS), as for London (D91).
+# - No photos: none is added until each is checked one by one (Abram, m244). The cards show the map instead.
+#
+# Not included (official site unreadable on 11 Nov; never filled from elsewhere): Musée de l'Orangerie (403), Musée
+# des Arts Forains (503), La Grande Épicerie de Paris (403), Le Marais and Île Saint-Louis walks (the tourist
+# office, parisjetaime.com, 403).
+checked: "2026-11-11"
+destination:
+  name: Paris
+  country: FR
+  region: Île-de-France
+  region_code: null            # the ISO 3166-2 code wasn't checked from an official source
+  timezone: Europe/Paris
+  currency: EUR
+  languages: [fr]
+  centre: {lat: 48.85667, lon: 2.35222, source: "wikidata:Q90"}
+holidays:                      # service-public.gouv.fr A18558 (2026) and A19019 (2027), read 11 Nov 2026
+  source_2026: "https://www.service-public.gouv.fr/particuliers/actualites/A18558"
+  source_2027: "https://www.service-public.gouv.fr/particuliers/actualites/A19019"
+  days: ["2026-01-01", "2026-04-06", "2026-05-01", "2026-05-08", "2026-05-14", "2026-05-25", "2026-07-14", "2026-08-15",
+         "2026-11-01", "2026-11-11", "2026-12-25", "2027-01-01", "2027-03-29", "2027-05-01", "2027-05-06", "2027-05-08",
+         "2027-05-17", "2027-07-14", "2027-08-15", "2027-11-01", "2027-11-11", "2027-12-25"]
+  note: "Good Friday and 26 December are holidays only in Alsace-Moselle, not Paris (the same pages)"
+school_holidays: "france_zone_c"   # Paris is zone C: data/calendar/school_holidays.yaml (m225, already checked)
+not_read:
+  - {what: "Metro and bus accessibility", url: "https://www.ratp.fr/accessibilite", why: "403"}
+  - {what: "Île-de-France Mobilités", url: "https://www.iledefrance-mobilites.fr/", why: "403"}
+  - {what: "Paris tourist office (neighbourhoods, accessibility)", url: "https://www.parisjetaime.com/", why: "403"}
+  - {what: "Jardin du Luxembourg opening hours", url: "https://jardin.senat.fr/infos-pratiques/horaires-douverture.html", why: "503"}
+experiences:
+  rodin:
+    name: Musée Rodin
+    title: "Rodin's sculptures in his house and its rose garden"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 48.85536, lon: 2.31582, source: "wikidata:Q650519"}
+    district: {value: "7e", trust: estimated, source: "postcode 75007 on the official page"}
+    hours: {text: "Tue-Sun 10:00-18:30, last entry 17:45; closed Mondays, 1 Jan, 1 May and 25 Dec; 24 and 31 Dec close 17:30; the garden follows dusk from October to February", parse: "Tue-Sun 10:00-18:30", source: "https://www.musee-rodin.fr/preparer-sa-visite/informations-pratiques"}
+    price: {amount: 14, kind: entry, quote: "Tarif plein 14 €; free on the first Sunday of the month, October to March", source: "https://www.musee-rodin.fr/preparer-sa-visite/informations-pratiques"}
+    minutes: [75, 120]
+    setting: mixed
+    features: {history_culture: 2, green_nature: 1, photo_potential: 1, crowds: 1, absorption: 1, awe: 1, iconic: 1}
+  chasse_nature:
+    name: Musée de la Chasse et de la Nature
+    title: "A strange, beautiful museum of animals and art in a Marais mansion"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 48.86111, lon: 2.35861, source: "wikidata:Q1128657"}
+    district: {value: "3e", trust: estimated, source: "postcode 75003 on the official page"}
+    hours: {text: "Tue-Sun 11:00-18:00; Wednesday late opening 18:00-21:30 (not in July and August); closed Mondays and public holidays; 24 and 31 Dec close 17:00", parse: "Tue-Sun 11:00-18:00", source: "https://www.chassenature.org/acces-horaires"}
+    step_free: {value: yes, quote: "Le musée est accessible aux personnes à mobilité réduite", source: "https://www.chassenature.org/acces-horaires"}
+    minutes: [60, 90]
+    setting: indoor
+    features: {history_culture: 2, local_novel: 2, absorption: 1, crowds: 0, photo_potential: 1}
+  sainte_chapelle:
+    name: Sainte-Chapelle
+    title: "The upper chapel's walls of stained glass"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 48.85537, lon: 2.34503, source: "wikidata:Q193193"}
+    district: {value: "1er", trust: estimated, source: "postcode 75001 on the official page"}
+    hours: {text: "1 Apr-30 Sep 09:00-19:00; 1 Oct-31 Mar 09:00-17:00; last entry 30 minutes before closing; closed 1 Jan, 1 May and 25 Dec", source: "https://www.sainte-chapelle.fr/visiter/informations-pratiques", status: seasonal}
+    price: {amount: 22, kind: entry, quote: "22 € (outside the EEA) or 16 € (EEA nationals and residents); ODYS budgets the higher and never asks nationality", source: "https://www.sainte-chapelle.fr/visiter/informations-pratiques"}
+    step_free: {value: yes, quote: "Le circuit de la visite de la Sainte-Chapelle est accessible aux personnes à mobilité réduite", source: "https://www.sainte-chapelle.fr/visiter/informations-pratiques"}
+    facet: {booking: {value: "a timed slot, booked online", source: "https://www.sainte-chapelle.fr/visiter/informations-pratiques"}}
+    minutes: [30, 60]
+    setting: indoor
+    features: {history_culture: 2, awe: 2, iconic: 2, photo_potential: 2, crowds: 2, contrast_reveal: 2}
+  pantheon:
+    name: Panthéon
+    title: "Under the Panthéon's dome, with Foucault's pendulum"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 48.8462, lon: 2.34611, source: "wikidata:Q188856"}
+    district: {value: "5e", trust: estimated, source: "postcode 75005 on the official page"}
+    hours: {text: "1 Oct-31 Mar 10:00-18:00; 1 Apr-30 Sep 10:00-18:30; last entry 45 minutes before closing; first working Monday of the month opens 12:00; closed 1 Jan, 1 May and 25 Dec", source: "https://www.paris-pantheon.fr/visiter/informations-pratiques", status: seasonal}
+    price: {amount: 13, kind: entry, quote: "13 € (1 Oct-31 Mar), 16 € (1 Apr-30 Sep)", source: "https://www.paris-pantheon.fr/visiter/informations-pratiques"}
+    step_free: {value: yes, quote: "Accès rampe PMR extérieure, et élévateur intérieur donnant accès à l'intégralité de la nef", source: "https://www.paris-pantheon.fr/visiter/informations-pratiques"}
+    minutes: [45, 75]
+    setting: indoor
+    features: {history_culture: 2, awe: 2, iconic: 1, photo_potential: 1, crowds: 1}
+  palais_garnier:
+    name: Palais Garnier
+    title: "The opera house's grand staircase and foyers"
+    category: culture
+    type: historic_site
+    status: draft                # the visiting hours were blank on the page read: never assumed open
+    point: {lat: 48.87194, lon: 2.33167, source: "wikidata:Q187840"}
+    district: {value: "9e", trust: estimated, source: "postcode 75009 on the official page"}
+    price: {amount: 25, kind: ticket, quote: "self-guided visit 25 € (outside the EEA) or 15 € (France/EEA); online booking compulsory, no tickets on site", source: "https://www.operadeparis.fr/visites/palais-garnier"}
+    step_free: {value: partial, quote: "un ascenseur PMR permet de rejoindre les espaces de visite; temporary exhibitions and the shop not accessible", source: "https://www.operadeparis.fr/visites/palais-garnier"}
+    notices:
+      - {what: "Rehearsals often close the auditorium without notice; no ticket guarantees seeing it", from: null, to: null, source: "https://www.operadeparis.fr/visites/palais-garnier"}
+    minutes: [60, 90]
+    setting: indoor
+    features: {history_culture: 2, awe: 2, iconic: 2, photo_potential: 2, contrast_reveal: 1}
+  catacombes:
+    name: Catacombes de Paris
+    title: "Down 131 steps into the ossuary under Paris"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 48.83397, lon: 2.33245, source: "wikidata:Q28924"}
+    district: {value: "14e", trust: estimated, source: "postcode 75014 on the official page"}
+    hours: {text: "Tue-Sun 09:45-20:30, last entry 19:30; closed Mondays, 1 Jan, 1 May and 25 Dec", source: "https://catacombes.paris.fr/visiter/informations-pratiques"}
+    price: {amount: 31, kind: ticket, quote: "Tarif plein 31 € (audioguide inclus); booking strongly recommended", source: "https://catacombes.paris.fr/"}
+    step_free: {value: no, quote: "Site non accessible aux personnes en fauteuil roulant ... 131 marches à descendre, et 112 à remonter", source: "https://catacombes.paris.fr/visiter/informations-pratiques"}
+    facet: {booking: {value: "strongly recommended", source: "https://catacombes.paris.fr/"}}
+    minutes: [60, 75]
+    setting: indoor
+    features: {history_culture: 2, local_novel: 2, contrast_reveal: 2, absorption: 1, walking_effort: 1, crowds: 1, awe: 1}
+  carnavalet:
+    name: Musée Carnavalet – Histoire de Paris
+    title: "The history of Paris, free, in two Marais mansions"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 48.85737, lon: 2.36274, source: "wikidata:Q640447"}
+    district: {value: "3e", trust: estimated, source: "postcode 75003 on the official page"}
+    hours: {text: "Tue-Sun 10:00-18:00; ticket office closes 17:15; closed 1 Jan, 1 May and 25 Dec", parse: "Tue-Sun 10:00-18:00", source: "https://www.carnavalet.paris.fr/en/visit/pratical-information"}
+    price: {amount: 0, kind: free, quote: "permanent collections are free of charge and can be accessed without booking", source: "https://www.carnavalet.paris.fr/en/visit/pratical-information"}
+    minutes: [60, 120]
+    setting: indoor
+    features: {history_culture: 2, local_novel: 1, absorption: 1, crowds: 1}
+  egouts:
+    name: Musée des Égouts de Paris
+    title: "Walking the real sewers under the Left Bank"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 48.86261, lon: 2.30253, source: "wikidata:Q2654419"}
+    district: {value: "7e", source: "https://www.paris.fr/lieux/musee-des-egouts-de-paris-5059"}
+    area: {value: Pont de l'Alma, quote: "Pont de l'Alma, Paris 7e", source: "https://www.paris.fr/lieux/musee-des-egouts-de-paris-5059"}
+    hours: {text: "Tue-Sun 10:00-17:00; closed Monday; closed 25 Dec 2026 and 1 Jan 2027", parse: "Tue-Sun 10:00-17:00; closed Monday", source: "https://www.paris.fr/lieux/musee-des-egouts-de-paris-5059"}
+    step_free: {value: yes, quote: "Accessible aux personnes à mobilité réduite", source: "https://www.paris.fr/lieux/musee-des-egouts-de-paris-5059"}
+    minutes: [45, 75]
+    setting: indoor
+    features: {local_novel: 2, history_culture: 1, contrast_reveal: 1, absorption: 1, crowds: 0}
+  buttes_chaumont:
+    name: Parc des Buttes-Chaumont
+    title: "Cliffs, a lake and a hilltop temple in a hilly park"
+    category: nature
+    type: park
+    status: ready
+    point: {lat: 48.88028, lon: 2.38278, source: "wikidata:Q532113"}
+    district: {value: "19e", source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757"}
+    area: {value: Amérique, quote: "quartier Amérique", source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757"}
+    hours: {text: "25 Oct 2026-28 Feb 2027 daily 07:00-20:00; later closing in other seasons", source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757", status: seasonal}
+    price: {amount: 0, kind: free, quote: "no entry charge stated; restaurants and the Guignol theatres are paid", source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757", status: claimed}
+    step_free: {value: partial, quote: "L'accessibilité est limitée à certaines zones pour les personnes à mobilité réduite", source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757"}
+    facet: {terrain: {value: "hilly, with cliffs; access limited to some areas", source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757"}}
+    notices:
+      - {what: "The central part, including the Temple de la Sibylle, the island and both cascades, is closed for a multi-year renovation; part of the lake loop is closed", from: null, to: null, source: "https://www.paris.fr/lieux/parc-des-buttes-chaumont-1757"}
+    minutes: [45, 90]
+    setting: outdoor
+    features: {green_nature: 2, walking_effort: 2, active: 1, photo_potential: 1, local_novel: 1, outdoor_exposure: 2}
+  coulee_verte:
+    name: Coulée verte René-Dumont
+    title: "A garden walk on an old railway viaduct, from Bastille east"
+    category: nature
+    type: garden
+    status: ready
+    point: {lat: 48.84957, lon: 2.3711, source: "wikidata:Q2060889"}
+    district: {value: "12e", source: "https://www.paris.fr/lieux/coulee-verte-rene-dumont-1772"}
+    hours: {text: "25 Oct 2026-28 Feb 2027: Mon-Fri 08:00-17:45, Sat-Sun 09:00-17:45; later in other seasons", source: "https://www.paris.fr/lieux/coulee-verte-rene-dumont-1772", status: seasonal}
+    price: {amount: 0, kind: free, quote: "no charge stated", source: "https://www.paris.fr/lieux/coulee-verte-rene-dumont-1772", status: claimed}
+    step_free: {value: partial, quote: "lift at rue Hector Malot in service; lifts at 34 rue de Lyon and the Leroy Merlin shop out of service", source: "https://www.paris.fr/lieux/coulee-verte-rene-dumont-1772"}
+    minutes: [45, 90]
+    setting: outdoor
+    features: {green_nature: 2, walking_effort: 1, local_novel: 2, contrast_reveal: 1, crowds: 0, outdoor_exposure: 2}
+  parc_belleville:
+    name: Parc de Belleville
+    title: "The view over all Paris from the Belleville belvedere"
+    category: views
+    type: viewpoint
+    status: ready
+    point: {lat: 48.87083, lon: 2.38472, source: "wikidata:Q950446"}
+    district: {value: "20e", source: "https://www.paris.fr/lieux/parc-de-belleville-1777"}
+    hours: {text: "25 Oct 2026-28 Feb 2027: Mon-Fri 08:00-17:45, Sat-Sun 09:00-17:45; later in other seasons", source: "https://www.paris.fr/lieux/parc-de-belleville-1777", status: seasonal}
+    price: {amount: 0, kind: free, quote: "no charge stated", source: "https://www.paris.fr/lieux/parc-de-belleville-1777", status: claimed}
+    step_free: {value: yes, quote: "Accessible aux personnes à mobilité réduite (the photos also show stairs)", source: "https://www.paris.fr/lieux/parc-de-belleville-1777"}
+    minutes: [30, 60]
+    setting: outdoor
+    features: {movement_views: 2, photo_potential: 2, green_nature: 1, local_novel: 2, crowds: 0, awe: 1, walking_effort: 1, outdoor_exposure: 2}
+  luxembourg:
+    name: Jardin du Luxembourg
+    title: "The Senate's garden, its fountains and chairs"
+    category: nature
+    type: garden
+    status: draft                # the hours page returned 503: never assumed open
+    point: {lat: 48.84694, lon: 2.33722, source: "wikidata:Q309458"}
+    district: {value: "6e", trust: estimated, source: "Paris Cedex 06 on the official page"}
+    price: {amount: 0, kind: free, quote: "entrée libre", source: "https://jardin.senat.fr/infos-pratiques.html"}
+    minutes: [45, 90]
+    setting: outdoor
+    features: {green_nature: 2, iconic: 1, photo_potential: 1, crowds: 1, outdoor_exposure: 2}
+  petite_ceinture:
+    name: Petite Ceinture du 15e
+    title: "An old circular railway turned into a 2 km wild walk"
+    category: nature
+    type: wild_park
+    status: draft                # paris.fr gives no opening hours for it: never assumed open
+    point: {lat: 48.8333, lon: 2.2904, source: "wikidata:Q14912114"}
+    district: {value: "15e", trust: estimated, source: "postcode 75015 on the official page"}
+    notices:
+      - {what: "The 300 m tunnel opened in early August 2026: a continuous 2 km walk from parc Georges-Brassens to place Balard", from: "2026-08-01", to: null, source: "https://www.paris.fr/pages/un-nouveau-troncon-de-la-petite-ceinture-ouvre-dans-le-15e-36094"}
+    minutes: [40, 70]
+    setting: outdoor
+    features: {green_nature: 2, local_novel: 2, walking_effort: 1, crowds: 0, contrast_reveal: 1, outdoor_exposure: 2}
+  sacre_coeur:
+    name: Basilique du Sacré-Cœur de Montmartre
+    title: "Up to the Sacré-Cœur, and its dome, above Paris"
+    category: culture
+    type: religious_site
+    status: ready
+    point: {lat: 48.88665, lon: 2.34295, source: "wikidata:Q28785"}
+    district: {value: "18e", trust: estimated, source: "postcode 75018 on the official site's summary (not verbatim)"}
+    hours: {text: "Daily 06:30-22:30; closes at midnight on the first Thursday of each month; the dome, on 11 Nov 2026, 10:15-17:00", parse: "Daily 06:30-22:30", source: "https://www.sacre-coeur-montmartre.com/"}
+    price: {amount: 0, kind: free, quote: "L'accès à la basilique est gratuit (the dome's price wasn't read)", source: "https://www.sacre-coeur-montmartre.com/"}
+    notices:
+      - {what: "The great organ is being restored; services use the choir organ", from: null, to: "2027-05-31", source: "https://www.sacre-coeur-montmartre.com/"}
+    minutes: [30, 75]
+    setting: mixed
+    features: {iconic: 2, movement_views: 2, awe: 1, photo_potential: 2, crowds: 2, walking_effort: 2, history_culture: 1}
+  canal_saint_martin:
+    name: Canal Saint-Martin
+    title: "Along the canal's locks and swing bridges"
+    category: neighbourhood
+    type: waterfront
+    status: ready
+    point: {lat: 48.84722, lon: 2.36667, source: "wikidata:Q860172 (the canal's point, at its Arsenal end)"}
+    district: {value: "10e", source: "https://www.paris.fr/pages/tmp-canaux-7834"}
+    hours: {text: "Public canal banks; paris.fr gives no hours", source: "https://www.paris.fr/pages/tmp-canaux-7834", status: general}
+    price: {amount: 0, kind: free, quote: "public banks (no charge stated)", source: "https://www.paris.fr/pages/tmp-canaux-7834", status: claimed}
+    facet: {}
+    notices:
+      - {what: "4.5 km long, 2 km of it underground; nine locks and two swing bridges (the walk is the open part)", from: null, to: null, source: "https://www.paris.fr/pages/tmp-canaux-7834"}
+    minutes: [45, 90]
+    setting: outdoor
+    features: {local_novel: 2, movement_views: 1, walking_effort: 1, photo_potential: 1, green_nature: 1, social_pull: 1, outdoor_exposure: 2}
+  enfants_rouges:
+    name: Marché couvert des Enfants Rouges
+    title: "Lunch at the stalls of Paris's oldest covered market"
+    category: food_drink
+    type: market
+    status: ready
+    point: {lat: 48.86281, lon: 2.362, source: "wikidata:Q3289922"}
+    district: {value: "3e", source: "https://www.paris.fr/lieux/marche-couvert-des-enfants-rouges-5461"}
+    hours: {text: "Tue-Sat 08:30-20:30; Sun 08:30-17:00; closed Monday", source: "https://www.paris.fr/lieux/marche-couvert-des-enfants-rouges-5461"}
+    step_free: {value: yes, quote: "Accessible aux personnes à mobilité réduite", source: "https://www.paris.fr/lieux/marche-couvert-des-enfants-rouges-5461"}
+    notices:
+      - {what: "Food traders are now in front of the market at 39 rue de Bretagne", from: null, to: null, source: "https://www.paris.fr/lieux/marche-couvert-des-enfants-rouges-5461"}
+    minutes: [45, 75]
+    setting: mixed
+    features: {food: 2, local_novel: 1, crowds: 2, social_pull: 2}
+  aligre:
+    name: Marché d'Aligre
+    title: "The Aligre street market and the Beauvau covered hall"
+    category: food_drink
+    type: market
+    status: ready
+    point: {lat: 48.84889, lon: 2.37833, source: "wikidata:Q3289864"}
+    district: {value: "12e", source: "https://www.paris.fr/lieux/marche-d-aligre-5481"}
+    hours: {text: "Street market Tue-Fri 07:30-13:30, Sat-Sun 07:30-14:30, closed Monday; the covered hall also opens Tue-Fri 16:00-19:30 and Saturday until 19:30", parse: "Tue-Fri 07:30-13:30, Sat-Sun 07:30-14:30, closed Monday", source: "https://www.paris.fr/lieux/marche-d-aligre-5481"}
+    step_free: {value: yes, quote: "Accessible aux personnes à mobilité réduite", source: "https://www.paris.fr/lieux/marche-d-aligre-5481"}
+    notices:
+      - {what: "Covered hall: exceptional hours 08:00-13:30 on 11 November", from: "2026-11-11", to: "2026-11-11", source: "https://www.paris.fr/lieux/marche-couvert-beauvau-5480"}
+    minutes: [40, 75]
+    setting: mixed
+    features: {food: 2, local_novel: 2, crowds: 1, social_pull: 1}
+  chartier:
+    name: Bouillon Chartier Grands Boulevards
+    title: "A cheap traditional French meal in a 19th-century dining hall"
+    category: food_drink
+    type: restaurant
+    status: ready
+    point: {lat: 48.87194, lon: 2.34301, source: "osm (Nominatim, the official address 7 rue du Faubourg Montmartre)"}
+    district: {value: "9e", trust: estimated, source: "postcode 75009 on the official page"}
+    hours: {text: "Daily 11:30 to midnight, without a break and without reservations", source: "https://www.bouillon-chartier.com/bouillon-chartier-grands-boulevards/"}
+    price: {amount: 20, kind: food, quote: "starters from 1 €, mains 7 €, desserts from 2 €; 'pour moins de 20 €' a meal (the venue's own claim)", source: "https://www.bouillon-chartier.com/", status: claimed}
+    facet:
+      cuisine: {value: "traditional French (une cuisine française de tradition)", source: "https://www.bouillon-chartier.com/"}
+      reservations: {value: "not taken", source: "https://www.bouillon-chartier.com/bouillon-chartier-grands-boulevards/"}
+    minutes: [45, 75]
+    setting: indoor
+    features: {food: 2, history_culture: 1, local_novel: 1, crowds: 2, social_pull: 2, iconic: 1}
+  galerie_vivienne:
+    name: Galerie Vivienne
+    title: "A glass-roofed 1820s shopping passage"
+    category: shopping
+    type: arcade
+    status: ready
+    point: {lat: 48.86667, lon: 2.33972, source: "wikidata:Q1314020"}
+    district: {value: "2e", source: "https://www.galerie-vivienne.com/"}
+    hours: {text: "Mon-Sun 08:30-20:00 (shops and restaurants keep their own hours)", parse: "Mon-Sun 08:30-20:00", source: "https://www.galerie-vivienne.com/"}
+    price: {amount: 0, kind: free, quote: "Entrée : Gratuite", source: "https://www.galerie-vivienne.com/"}
+    facet: {covered: true}
+    minutes: [20, 45]
+    setting: indoor
+    features: {history_culture: 1, photo_potential: 2, local_novel: 1, crowds: 0, contrast_reveal: 1}
+  shakespeare_co:
+    name: Shakespeare and Company
+    title: "The riverside English bookshop facing Notre-Dame"
+    category: shopping
+    type: bookshop
+    status: ready
+    point: {lat: 48.8525, lon: 2.34694, source: "wikidata:Q1503157"}
+    district: {value: "5e", trust: estimated, source: "postcode 75005 on the official page"}
+    hours: {text: "Bookshop Mon-Wed 10:00-20:00, Thu-Sat 10:00-21:00, Sun 12:00-19:00 (the home page says Mon-Sat 10:00-20:00: the official pages differ on Thursday to Saturday)", source: "https://www.shakespeareandcompany.com/prepare-your-visit", status: conflicting}
+    price: {amount: 0, kind: free, quote: "a shop: no admission fee stated", source: "https://www.shakespeareandcompany.com/prepare-your-visit", status: estimated}
+    step_free: {value: partial, quote: "The majority of the ground floor is wheelchair accessible. As are the Antiquarian bookshop and Café", source: "https://www.shakespeareandcompany.com/prepare-your-visit"}
+    minutes: [30, 60]
+    setting: indoor
+    features: {history_culture: 1, iconic: 1, local_novel: 1, crowds: 2, photo_potential: 1}
+  philharmonie:
+    name: Philharmonie de Paris
+    title: "An evening concert in the Philharmonie's great hall"
+    category: entertainment
+    type: live_music
+    status: ready
+    point: {lat: 48.89157, lon: 2.39407, source: "wikidata:Q3378907"}
+    district: {value: "19e", trust: estimated, source: "postcode 75019 on the official page"}
+    facet:
+      sessions: {value: "listed per concert on the official calendar (e.g. 14 Nov 20:00, Grande salle Pierre Boulez)", source: "https://www.philharmoniedeparis.fr/"}
+      tickets: {value: "per concert; ticket office 01 44 84 44 84", source: "https://www.philharmoniedeparis.fr/"}
+    notices:
+      - {what: "Front-of-house staff can't give physical assistance; contact the venue 48 hours ahead", from: null, to: null, source: "https://www.philharmoniedeparis.fr/fr/accessibilite"}
+    minutes: [90, 150]
+    setting: indoor
+    features: {absorption: 2, awe: 2, history_culture: 1, social_pull: 1, crowds: 1}
+  grand_rex:
+    name: Le Grand Rex
+    title: "A film in Europe's biggest cinema hall, under its starry ceiling"
+    category: entertainment
+    type: cinema
+    status: ready
+    point: {lat: 48.8705, lon: 2.34773, source: "wikidata:Q1809902"}
+    district: {value: "2e", trust: estimated, source: "postcode 75002 on the official page"}
+    price: {amount: 14, kind: ticket, quote: "Grande salle 2D: plein 14.00 €, réduit 11.50 €, matin 7.00 €", source: "https://www.legrandrex.com/infos-pratiques/"}
+    step_free: {value: partial, quote: "Seules la salle Rex 5 et la salle Grand Rex sont accessibles aux Personnes à Mobilité Réduite", source: "https://www.legrandrex.com/infos-pratiques/"}
+    facet:
+      sessions: {value: "listed per film and screen on the calendar", source: "https://www.legrandrex.com/calendrier/"}
+      tickets: {value: "online, at the box office or kiosks; no phone booking", source: "https://www.legrandrex.com/infos-pratiques/"}
+    minutes: [120, 180]
+    setting: indoor
+    features: {absorption: 2, iconic: 1, history_culture: 1, social_pull: 1, local_novel: 1}
+  batobus:
+    name: Batobus
+    title: "The hop-on river shuttle along the Seine"
+    category: transport_experience
+    type: river_bus
+    status: draft                # the site's traffic panel lists every stop as "Escale fermée", undated
+    point: {lat: 48.8583, lon: 2.29448, source: "wikidata:Q243 (the Eiffel Tower: the Tour Eiffel stop is beside it; no verified pier address on the site)"}
+    hours: {text: "2 Nov 2026-31 Mar 2027: Mon-Thu 10:00-17:00, Fri-Sun 10:00-19:00 (first and last departures from Tour Eiffel; subject to change)", source: "https://www.batobus.com/", status: seasonal}
+    price: {amount: 23, kind: ticket, quote: "Pass 24 heures adult 23 €", source: "https://www.batobus.com/"}
+    notices:
+      - {what: "The site's traffic panel lists every stop as closed, with no date", from: null, to: null, source: "https://www.batobus.com/"}
+    minutes: [60, 120]
+    setting: mixed
+    features: {movement_views: 2, iconic: 2, photo_potential: 2, crowds: 1, outdoor_exposure: 1}

@@ -1,0 +1,199 @@
+# m245: London card coordinates against Wikidata (CC0), checked 2026-11-11 by scripts/verify_locations.py.
+# A match: an item whose English label's words all appear in the card's place name or title, within 400 m.
+# Unmatched cards keep their coordinates and are listed as unconfirmed; nothing is moved.
+cards:
+  a_covent_garden_soho:
+    label: Covent Garden
+    metres: 72
+    wikidata: Q55019
+  a_kings_cross_canal:
+    label: Granary Square
+    metres: 4
+    wikidata: Q5594142
+  a_old_spitalfields_market:
+    label: Old Spitalfields Market
+    metres: 18
+    wikidata: Q43470
+  a_portobello_saturday:
+    label: Portobello Road
+    metres: 222
+    wikidata: Q1813941
+  a_soho_chinatown_evening:
+    label: Chinatown
+    metres: 68
+    wikidata: Q1988417
+  a_west_end_outdoor_dining:
+    label: Oxford Street
+    metres: 25
+    wikidata: Q209714
+  m_alderman_stairs_sunset:
+    label: St Katharine's Way
+    metres: 85
+    wikidata: Q98526754
+  m_bank_of_england_gold:
+    label: Bank of England Museum
+    metres: 4
+    wikidata: Q1893754
+  m_beigel_bake_late:
+    label: Beigel Bake
+    metres: 0
+    wikidata: Q4881063
+  m_bm_great_court:
+    label: British Museum
+    metres: 22
+    wikidata: Q6373
+  m_borough_market_graze:
+    label: Borough Market
+    metres: 1
+    wikidata: Q894072
+  m_burlington_arcade:
+    label: 6 Burlington Gardens
+    metres: 77
+    wikidata: Q4642494
+  m_canary_wharf_towers:
+    label: 8 Canada Square
+    metres: 68
+    wikidata: Q572887
+  m_chinatown_dim_sum:
+    label: Gerrard Street
+    metres: 0
+    wikidata: Q16964515
+  m_city_towers_walk:
+    note: no item with a matching name within 400 m
+    wikidata: null
+  m_courtauld_gallery:
+    label: Somerset House
+    metres: 73
+    wikidata: Q1344889
+  m_evensong_st_pauls:
+    label: St Paul's Cathedral
+    metres: 3
+    wikidata: Q173882
+  m_garden_at_120:
+    label: Fen Court
+    metres: 0
+    wikidata: Q63987075
+  m_go_karting_canary_wharf:
+    label: Canary Wharf
+    metres: 2
+    wikidata: Q1032811
+  m_greenwich_peninsula_walk:
+    note: no item with a matching name within 400 m
+    wikidata: null
+  m_greenwich_wolfe_view:
+    label: Greenwich Park
+    metres: 67
+    wikidata: Q929586
+  m_horizon_22:
+    label: 22 Bishopsgate
+    metres: 0
+    wikidata: Q18602
+  m_leadenhall_market:
+    label: Leadenhall Market
+    metres: 8
+    wikidata: Q961148
+  m_liberty_timber_galleries:
+    label: Liberty
+    metres: 8
+    wikidata: Q3237793
+  m_london_fields_lido:
+    label: London Fields
+    metres: 360
+    wikidata: Q2911106
+  m_millennium_bridge_dome:
+    label: Millennium Bridge
+    metres: 0
+    wikidata: Q44057
+  m_national_gallery:
+    label: National Gallery
+    metres: 52
+    wikidata: Q180788
+  m_national_portrait_gallery:
+    label: National Portrait Gallery
+    metres: 28
+    wikidata: Q238587
+  m_nhm_whale_hall:
+    label: Natural History Museum
+    metres: 45
+    wikidata: Q309388
+  m_open_kitchen_steakhouse:
+    label: Craven Road
+    metres: 122
+    wikidata: Q70688315
+  m_park_bike_loop_hyde:
+    label: Serpentine
+    metres: 0
+    wikidata: Q1471930
+  m_park_break_battersea:
+    label: Battersea Park
+    metres: 0
+    wikidata: Q810947
+  m_park_break_embankment:
+    label: Victoria Embankment
+    metres: 72
+    wikidata: Q1070409
+  m_park_break_holland_kyoto:
+    label: Kyoto Garden
+    metres: 61
+    wikidata: Q124450286
+  m_park_break_hyde:
+    label: Serpentine
+    metres: 0
+    wikidata: Q1471930
+  m_park_break_olympic:
+    label: Queen Elizabeth Olympic Park
+    metres: 230
+    wikidata: Q525481
+  m_park_break_regents:
+    label: Regent's Park
+    metres: 0
+    wikidata: Q739341
+  m_park_break_st_james:
+    label: St. James's Park Lake
+    metres: 28
+    wikidata: Q21333980
+  m_rfh_foyers_rest:
+    label: Royal Festival Hall
+    metres: 8
+    wikidata: Q647390
+  m_richmond_park_view:
+    label: Pembroke Lodge
+    metres: 270
+    wikidata: Q3898995
+  m_soane_museum:
+    label: 6, 7 and 8 Lincoln's Inn Fields
+    metres: 8
+    wikidata: Q27086719
+  m_st_dunstan_garden:
+    label: St Dunstan-in-the-East
+    metres: 0
+    wikidata: Q12408518
+  m_st_martin_crypt_lunch:
+    label: St Martin-in-the-Fields
+    metres: 35
+    wikidata: Q1335201
+  m_to_river_somerset:
+    label: Somerset House
+    metres: 2
+    wikidata: Q1344889
+  m_to_river_villiers:
+    label: Golden Jubilee Bridges
+    metres: 0
+    wikidata: Q110713252
+  m_transport_museum:
+    label: London Transport Museum
+    metres: 37
+    wikidata: Q1541098
+  m_uber_boat_west_day:
+    label: Greenwich Pier
+    metres: 4
+    wikidata: Q5604868
+  m_uber_boat_west_night:
+    label: Greenwich Pier
+    metres: 4
+    wikidata: Q5604868
+  m_waterloo_bridge_sunset:
+    label: Waterloo Bridge
+    metres: 0
+    wikidata: Q501003
+checked: '2026-11-11'
