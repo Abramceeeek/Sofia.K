@@ -1,6 +1,6 @@
 # The Brain: how good are the recommendations, and is it ready for the world? (independent review, 11 Nov 2026)
 
-**Decision.** The engine is well built and unusually honest about itself: a small, sound statistical model, a planner that keeps hard rules, and explanations taken from its real inputs. **What it can't yet do is know a person.** Every population number in it is a guess, the short onboarding moves a plan only a little, and by a new benchmark it takes about **20 rated stops (five days out)** before its picks are reliably the person's own, in a best case that real people won't match. That is a fact about data, not a fault in the code. It is **not ready for any city but London**, and what blocks it is not the model: it is cards, travel times and a dozen places where London is assumed.
+**Decision.** The engine is well built and unusually honest about itself: a small, sound statistical model, a planner that keeps hard rules, and explanations taken from its real inputs. **What it can't yet do is know a person.** Every population number in it is a guess, the short onboarding moves a plan only a little, and by a new benchmark it takes about **20 rated stops (five days out)** before its picks are reliably the person's own, in a best case that real people won't match. That is a fact about data, not a fault in the code. It is **not ready for any city but London**, and London itself is only "preview" on the dev branch's new readiness scale (m248, m259); Paris is in development with 19 ready places (m246). What blocks it is not the model: it is cards, travel times and a dozen places where London is assumed.
 
 Everything measured here is on **synthetic people** with a fixed seed, and says so. Nothing was tuned to it, no real answer was read, and the frozen Test B was not touched.
 
@@ -59,8 +59,8 @@ The project already calls Test B "formative" and knows the 17% (D127). The new p
 | **Feasibility** | The project's benchmark: 0 of 1,188 plans broke a hard rule (hours, open days, budget, own time), checked from outside the solver | **Strong.** This is the real edge over a chatbot |
 | **Explanations** | Built from the planner's inputs (m219), "unknown" said as unknown | **Strong**, and rare |
 | **Telling kinds of traveller apart after onboarding** | The project's table: a nature lover keeps 69% of the possible gain; museums 24%; food 11%; active 13%; family 0%; **relaxed, budget, dietary and accessibility travellers get plans worse than no answers at all** | **Weak.** Four of the six onboarding places are green spaces or views, so nature is the one taste learned |
-| **"A strong match for you"** | A 75% chance of rating it Good or better, from cutpoints that are a guess | **Unvalidated.** The label is a probability claim with nothing behind the scale yet. Check it against the first 100 real ratings: of stops called strong matches, did about 75% get Good or better? (~2 h for a script) |
-| **Dietary needs and accessibility** | Step-free access is unknown for 82% of planned places; no card says whether food is halal, vegetarian or kosher | **Not served.** These are not tastes to be weighed; they are rules, and the data to apply them doesn't exist. The project already declines to claim them, which is right |
+| **"A strong match for you"** | A 75% chance of rating it Good or better, from cutpoints that are a guess | **Unvalidated.** The label is a probability claim with nothing behind the scale yet. The dev branch's new `evaluation.py` (m260) measures exactly this calibration once ratings exist. Check it against the first 100 real ratings: of stops called strong matches, did about 75% get Good or better? (~2 h for a script) |
+| **Dietary needs and accessibility** | Step-free access was unknown for 82% of the places the planner benchmark chose (m206); after the dev branch's sprint it is known for 17 of 49 London cards (m245); no card says whether food is halal, vegetarian or kosher | **Not served.** These are not tastes to be weighed; they are rules, and the data to apply them doesn't exist. The project already declines to claim them, which is right |
 | **Variety** | One card (the Garden at 120) is in 39% of the benchmark's personal plans | A small catalogue, not a model fault |
 | **Search quality** | A day takes 4.7 s on this machine (several solves at the 1 s limit each); on days with own time the 1 s search loses to a simple greedy plan on 5 of 33 days (m206) | Adequate. Start the solver from the greedy plan, as m206 already recommends (~2 h) |
 | **Numerical safety** | Two overflow warnings in about 40,000 fits (a line-search step on the log-scale cost that the search then backs away from); no fit returned a non-number | Fine. Worth a guard so a non-finite result is never stored (~0.5 h) |
@@ -94,7 +94,7 @@ The brief's ten kinds, against what exists:
 | Family | No: nothing knows a child's age, a buggy or a child price | No: 0% | Data, and it is a set of rules as much as a taste |
 | Budget | Yes (cost weight) | No: worse than no answers. Two of five choices carry cost | A direct budget question does more than inference; one exists |
 | Dietary needs | **By design not a taste.** A filter the person sets, never inferred, never a proxy for belief | n/a | Certified venue data (none licensed), consent, the DPIA (drafted, unsigned) |
-| Accessibility | **A rule, not a taste** | n/a | Step-free and access data for 82% of places |
+| Accessibility | **A rule, not a taste** (a stated step-free need is now a hard rule: m249) | n/a | Step-free and access data for 32 of 49 London cards |
 
 So: three of ten are distinguished today, in London, after onboarding. The rest need either a direct question (cheap), more varied places to react to (cheap), or data that doesn't exist (dear). No sensitive characteristic is inferred anywhere in the code, and the food design keeps diet apart from religion (`food.py`, `food-preferences-and-privacy.md`).
 
@@ -110,13 +110,13 @@ In order of how much each costs.
 6. **Language.** The Brain writes its sentences in English (`dayplan.py`, `explain.py`, `reasons.py`), and neither app has any translation files. See the quality audit.
 7. **The population model.** Priors from Londoners' guesses can't be assumed for visitors from elsewhere. With real ratings, fit `b_population` and σ properly, by where people are based (never nationality); until then say less, not more.
 
-**What is ready:** the destination registry (m207), the catalogue's structure (m235), the kinds-of-places questions worded neutrally (m229), bank and school holidays kept apart by place (m204, m211), currencies never ranked against each other without a rate (m218). The scaffolding is ahead of the content.
+**What is ready:** the destination registry (m207), the catalogue's structure (m235), the kinds-of-places questions worded neutrally (m229), bank and school holidays kept apart by place (m204, m211), currencies never ranked against each other without a rate (m218), readiness levels with per-feature claims (m248, m259), and an international benchmark that has already caught one London assumption (euro prices scored as free, fixed in m249). The scaffolding is ahead of the content.
 
 ## What to do
 
 | When | What | Hours |
 |---|---|---|
-| With the first real ratings | Check "strong match" against what people rated; fit the rating cutpoints and the three scales | 4 |
+| With the first real ratings | Check "strong match" against what people rated (with `evaluation.py`, m260); fit the rating cutpoints and the three scales | 3 |
 | After the round | Re-choose the onboarding places and choices so they split food, active and budget travellers, measured on the project's benchmark (already its own recommendation) | 4 |
 | After the round | Start the solver from the greedy plan | 2 |
 | At 200 or more rated stops across 30 or more people | The first real hierarchical fit of `b_population` and σ (PyMC, which is why Python is pinned at 3.12) | 10 |
