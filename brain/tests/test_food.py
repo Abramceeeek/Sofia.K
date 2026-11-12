@@ -120,3 +120,18 @@ def test_food_needs_are_never_stored_until_their_dpia(client):
     risky = ("diet", "halal", "kosher", "allerg", "religio", "vegan", "vegetarian")
     assert not [f for f in ProfileIn.model_fields if any(w in f for w in risky)]
     assert not [c for c in db.User.__table__.columns.keys() if any(w in c for w in risky + ("food",))]
+
+
+def test_an_old_app_sending_the_retired_field_is_noticed_and_its_value_never_logged(client, caplog):
+    """m251 (Abram, m244: "Check that old application versions cannot reintroduce the values unnoticed"): build 91 and
+    Android 21 still send `foodsAvoided` with a profile save. The branch Brain drops it, and logs that it happened
+    (a count in the logs), never the value."""
+    import logging
+    from test_api import install
+    h, _ = install(client)
+    with caplog.at_level(logging.INFO):
+        client.put("/v1/me/profile", headers=h, json={"based": "london", "foods_avoided": "no pork, peanuts"})
+        client.put("/v1/me/profile", headers=h, json={"based": "london"})
+    lines = [r.getMessage() for r in caplog.records if "foods_avoided" in r.getMessage()]
+    assert len(lines) == 1 and "retired foods_avoided field" in lines[0]
+    assert "pork" not in caplog.text and "peanuts" not in caplog.text

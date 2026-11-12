@@ -405,6 +405,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if amap is not None and (bad := [f for f in body.fields if f not in amap.fields]):
             raise HTTPException(422, f"unknown fields {bad}")
         new = body.model_dump(exclude_none=True, exclude={"foods_avoided"})   # m223: never stored (schemas.py)
+        if body.foods_avoided is not None:   # m251: an old app sent the retired field. Counted so it's noticed; the
+            ops.log.info("profile save carried the retired foods_avoided field (an old app); dropped, not stored")
+            # value itself is never logged, stored or returned (Abram, m234, m244)
         for key in ("based", "home_city"):   # D116: a later save without them keeps them (the Test B cohort)
             if key not in new and key in (user.profile or {}):
                 new[key] = user.profile[key]

@@ -69,3 +69,59 @@ def test_least_misery_is_kept_for_comparison_and_can_leave_everyone_lukewarm():
     nash = group.plan(members(), CANDS, days=2, per_day=3, method="nash")
     assert lm.fairness()["gap"] <= nash.fairness()["gap"] + 1e-9
     assert lm.method == "least_misery" and len(lm.stops) == 6
+
+
+# ---- m250: Abram's further cases (m244): access, limited time, nothing that suits someone --------------------------
+
+def _london():
+    from brain.catalogue import load_catalogue
+    return [x for x in load_catalogue() if x.status == "ready"]
+
+
+def test_a_step_free_need_removes_places_a_source_says_have_steps_and_flags_unknowns():
+    import numpy as np
+    from brain.config import DATA_DIR
+    from brain.discovery import Scorer
+    from brain.group import Member, plan
+    from brain.population import load_population
+    pop = load_population(DATA_DIR / "priors.yaml")
+    xs = _london()
+    rng = np.random.default_rng(7)
+    ms = [Member(f"Member {c}", Scorer(pop, rng.normal(0, pop.delta_prior_sd)), needs_step_free=(c == "A")) for c in "ABC"]
+    gp = plan(ms, xs, 2, 3)
+    assert not [x for x in gp.stops if x.accessibility.step_free.known and x.accessibility.step_free.value == "no"]
+    unknown = [x for x in gp.stops if not x.accessibility.step_free.known]
+    assert not unknown or any("isn't known" in n for n in gp.notes)       # said, never read as "no"
+    strict = plan(ms, xs, 2, 3, unknown_access="exclude")
+    assert all(x.accessibility.step_free.known for x in strict.stops)
+
+
+def test_someone_there_one_day_leads_that_day_and_is_judged_on_it():
+    import numpy as np
+    from brain.config import DATA_DIR
+    from brain.discovery import Scorer
+    from brain.group import Member, plan
+    from brain.population import load_population
+    pop = load_population(DATA_DIR / "priors.yaml")
+    rng = np.random.default_rng(11)
+    ms = [Member("Member A", Scorer(pop, rng.normal(0, pop.delta_prior_sd)), days_present=(2,))] + [
+        Member(f"Member {c}", Scorer(pop, rng.normal(0, pop.delta_prior_sd))) for c in "BC"]
+    gp = plan(ms, _london(), 3, 3)
+    assert gp.highlights[1].startswith("Day 2 leads with Member A's pick")
+    a = ms[0].scorer
+    assert abs(gp.satisfaction["Member A"] - sum(a.p_good(x) for x in gp.days[1]) / len(gp.days[1])) < 1e-9
+
+
+def test_when_nothing_suits_a_member_it_is_said():
+    import numpy as np
+    from brain.config import DATA_DIR
+    from brain.discovery import Scorer
+    from brain.group import Member, plan
+    from brain.population import load_population
+    pop = load_population(DATA_DIR / "priors.yaml")
+    sd = np.asarray(pop.delta_prior_sd, dtype=float)
+    d = -3 * sd
+    d[[i for i, k in enumerate(pop.names[:len(sd)]) if k.startswith("cost")]] = 0
+    ms = [Member("Member A", Scorer(pop, d)), Member("Member B", Scorer(pop, None))]
+    gp = plan(ms, _london(), 1, 3)
+    assert any("Nothing here is a strong match for Member A" in n for n in gp.notes)

@@ -1,0 +1,51 @@
+SYNTHETIC PEOPLE ONLY. Group plans on London's ready experiences: Nash welfare, least misery, plain average.
+60 groups per scenario, seed 20261112; 2 days × 3 stops unless said.
+
+scenario                                            method         least happy   gap  everyone a favourite rule breaks
+size 2                                              nash                 0.701 0.137                   90%           0
+size 2                                              least_misery         0.716 0.071                   77%           0
+size 2                                              average              0.662 0.201                   93%           0
+size 3                                              nash                 0.581 0.258                   78%           0
+size 3                                              least_misery         0.617 0.170                   63%           0
+size 3                                              average              0.527 0.340                   90%           0
+size 4                                              nash                 0.524 0.351                   68%           0
+size 4                                              least_misery         0.567 0.270                   40%           0
+size 4                                              average              0.451 0.460                   80%           0
+size 6                                              nash                 0.426 0.464                   45%           0
+size 6                                              least_misery         0.488 0.359                   23%           0
+size 6                                              average              0.341 0.582                   53%           0
+size 8                                              nash                 0.364 0.527                   33%           0
+size 8                                              least_misery         0.442 0.407                   12%           0
+size 8                                              average              0.280 0.650                   42%           0
+size 10                                             nash                 0.338 0.566                   45%           0
+size 10                                             least_misery         0.418 0.447                   20%           0
+size 10                                             average              0.250 0.687                   27%           0
+very different tastes (4)                           nash                 0.437 0.456                   67%           0
+very different tastes (4)                           least_misery         0.480 0.349                   43%           0
+very different tastes (4)                           average              0.332 0.603                   73%           0
+one demanding member (4)                            nash                 0.522 0.383                   70%           0
+one demanding member (4)                            least_misery         0.566 0.280                   38%           0
+one demanding member (4)                            average              0.390 0.562                   57%           0
+similar tastes (4)                                  nash                 0.759 0.078                  100%           0
+similar tastes (4)                                  least_misery         0.763 0.067                  100%           0
+similar tastes (4)                                  average              0.758 0.079                  100%           0
+conflicting budgets (4: £15, £40, £80, none a day)  nash                 0.534 0.339                   73%           0
+conflicting budgets (4: £15, £40, £80, none a day)  least_misery         0.582 0.245                   60%           0
+conflicting budgets (4: £15, £40, £80, none a day)  average              0.467 0.438                   77%           0
+several rejections each (4 × 6)                     nash                 0.473 0.376                   68%           0
+several rejections each (4 × 6)                     least_misery         0.513 0.284                   60%           0
+several rejections each (4 × 6)                     average              0.414 0.475                   67%           0
+one member needs step-free access (4)               nash                 0.518 0.338                   68%           0
+one member needs step-free access (4)               least_misery         0.556 0.246                   57%           0
+one member needs step-free access (4)               average              0.451 0.439                   77%           0
+one member there on day 1 only (4, 3 days)          nash                 0.471 0.394                   85%           0
+one member there on day 1 only (4, 3 days)          least_misery         0.518 0.307                   62%           0
+one member there on day 1 only (4, 3 days)          average              0.416 0.471                   88%           0
+one member with no good match (4)                   nash                 0.009 0.812                   67%           0
+one member with no good match (4)                   least_misery         0.011 0.716                   35%           0
+one member with no good match (4)                   average              0.009 0.815                   72%           0
+
+One demanding member: share of stops from their own top 20%, against each other member's:
+  nash          49% against 43%
+  least_misery  44% against 41%
+  average       77% against 39%
