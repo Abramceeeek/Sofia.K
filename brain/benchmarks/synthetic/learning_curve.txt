@@ -1,0 +1,74 @@
+SYNTHETIC PEOPLE ONLY (the model's own prior). What the model knows about a person after the short
+onboarding (6 named places as a Londoner, 5 this-or-that days) and then after each day of 4 rated stops.
+300 people, seed 20261111, the ready cards. A ceiling: real people are noisier. See the script's notes.
+
+
+A. The app's own days, tastes fully described by the tags
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.427 ±0.017 |       2.79 of 8 |    28% ±3 | 68% / 31% of people
+          4 |  0.489 ±0.016 |       3.03 of 8 |    42% ±3 | 73% / 26% of people
+          8 |  0.535 ±0.015 |       3.40 of 8 |    50% ±3 | 81% / 18% of people
+         12 |  0.577 ±0.013 |       3.65 of 8 |    55% ±2 | 82% / 17% of people
+         16 |  0.618 ±0.013 |       3.92 of 8 |    59% ±2 | 85% / 14% of people
+         20 |  0.642 ±0.012 |       4.14 of 8 |    64% ±2 | 86% / 13% of people
+         24 |  0.670 ±0.012 |       4.35 of 8 |    66% ±2 | 86% / 13% of people
+         28 |  0.690 ±0.011 |       4.52 of 8 |    68% ±2 | 86% / 13% of people
+         32 |  0.711 ±0.010 |       4.65 of 8 |    69% ±2 | 88% / 12% of people
+         36 |  0.730 ±0.010 |       4.63 of 8 |    69% ±2 | 87% / 12% of people
+         40 |  0.744 ±0.009 |       4.70 of 8 |    71% ±2 | 88% / 11% of people
+
+B. Random days (trying what the model wouldn't pick), same people
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.427 ±0.017 |       2.79 of 8 |    28% ±3 | 68% / 31% of people
+          4 |  0.495 ±0.017 |       3.14 of 8 |    39% ±3 | 74% / 25% of people
+          8 |  0.554 ±0.015 |       3.41 of 8 |    47% ±2 | 77% / 21% of people
+         12 |  0.600 ±0.014 |       3.56 of 8 |    50% ±2 | 78% / 22% of people
+         16 |  0.629 ±0.014 |       3.82 of 8 |    55% ±2 | 80% / 20% of people
+         20 |  0.651 ±0.012 |       3.91 of 8 |    57% ±2 | 80% / 19% of people
+         24 |  0.669 ±0.012 |       4.05 of 8 |    61% ±2 | 81% / 18% of people
+         28 |  0.690 ±0.011 |       4.07 of 8 |    63% ±2 | 83% / 17% of people
+         32 |  0.708 ±0.010 |       4.24 of 8 |    66% ±2 | 84% / 15% of people
+         36 |  0.723 ±0.010 |       4.31 of 8 |    68% ±2 | 85% / 14% of people
+         40 |  0.738 ±0.010 |       4.48 of 8 |    70% ±2 | 88% / 12% of people
+
+C. The app's own days, with a taste the tags can't describe (sd 0.75, a GUESS)
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.345 ±0.015 |       2.46 of 8 |    21% ±2 | 65% / 35% of people
+          4 |  0.403 ±0.014 |       2.69 of 8 |    33% ±3 | 74% / 25% of people
+          8 |  0.441 ±0.013 |       2.95 of 8 |    43% ±2 | 79% / 20% of people
+         12 |  0.476 ±0.012 |       3.25 of 8 |    49% ±2 | 83% / 17% of people
+         16 |  0.510 ±0.012 |       3.47 of 8 |    52% ±2 | 83% / 16% of people
+         20 |  0.540 ±0.011 |       3.65 of 8 |    54% ±2 | 86% / 13% of people
+         24 |  0.559 ±0.011 |       3.76 of 8 |    56% ±2 | 87% / 12% of people
+         28 |  0.584 ±0.011 |       3.85 of 8 |    55% ±2 | 89% / 11% of people
+         32 |  0.602 ±0.010 |       3.83 of 8 |    58% ±2 | 89% / 11% of people
+         36 |  0.620 ±0.010 |       3.88 of 8 |    60% ±2 | 89% / 11% of people
+         40 |  0.638 ±0.010 |       3.86 of 8 |    60% ±2 | 90% / 10% of people
+
+D. Random days, people who also rate more or less generously (sd 1.0, a GUESS): today's model
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.427 ±0.017 |       2.79 of 8 |    28% ±3 | 68% / 31% of people
+          4 |  0.488 ±0.017 |       3.17 of 8 |    38% ±3 | 74% / 25% of people
+          8 |  0.547 ±0.015 |       3.46 of 8 |    46% ±2 | 76% / 23% of people
+         12 |  0.580 ±0.015 |       3.55 of 8 |    49% ±2 | 79% / 21% of people
+         16 |  0.609 ±0.014 |       3.76 of 8 |    53% ±2 | 80% / 19% of people
+         20 |  0.630 ±0.013 |       3.86 of 8 |    55% ±2 | 80% / 20% of people
+         24 |  0.650 ±0.013 |       3.95 of 8 |    59% ±2 | 83% / 17% of people
+         28 |  0.671 ±0.012 |       4.10 of 8 |    62% ±2 | 86% / 14% of people
+         32 |  0.688 ±0.012 |       4.28 of 8 |    65% ±2 | 86% / 14% of people
+         36 |  0.701 ±0.011 |       4.27 of 8 |    65% ±2 | 86% / 14% of people
+         40 |  0.714 ±0.011 |       4.44 of 8 |    68% ±2 | 86% / 14% of people
+
+E. The same people and answers as D, with a personal rating level added to the model (proposed)
+rated stops | rank rho (± se) | true top 8 found | gain kept vs the generic four (± se) | their four beat / lose to the generic four
+          0 |  0.427 ±0.017 |       2.79 of 8 |    28% ±3 | 68% / 31% of people
+          4 |  0.492 ±0.017 |       3.12 of 8 |    37% ±3 | 72% / 28% of people
+          8 |  0.552 ±0.015 |       3.48 of 8 |    46% ±3 | 79% / 21% of people
+         12 |  0.583 ±0.015 |       3.55 of 8 |    48% ±3 | 77% / 23% of people
+         16 |  0.613 ±0.014 |       3.77 of 8 |    53% ±2 | 79% / 20% of people
+         20 |  0.635 ±0.013 |       3.82 of 8 |    54% ±2 | 80% / 19% of people
+         24 |  0.656 ±0.013 |       4.05 of 8 |    59% ±2 | 81% / 19% of people
+         28 |  0.672 ±0.012 |       4.12 of 8 |    61% ±2 | 85% / 15% of people
+         32 |  0.691 ±0.011 |       4.29 of 8 |    66% ±2 | 86% / 13% of people
+         36 |  0.704 ±0.011 |       4.29 of 8 |    66% ±2 | 87% / 13% of people
+         40 |  0.720 ±0.011 |       4.44 of 8 |    68% ±2 | 87% / 13% of people

@@ -2,6 +2,19 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-12 — The independent audit: security fixes, payments, business, 3D, strategy (branch `claude/pensive-euler-fftd63`)
+
+Report: `decisions/comprehensive-audit-2026-11.md`, with eight supporting documents. Draft pull request into the development branch (never `main`). Minor decisions made under D69; the rest wait for Abram (the last row).
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m261 | **The Brain's eight security fixes** (`security-audit.md`, SEC-01 to SEC-08; `brain/tests/test_hardening.py`, 33 tests). The limits are GUESSES set well above what the apps send: request bodies at most 128 KB; lists sized (64 swipes, 20 answers, and so on); `intent` and event `props` at most 2,000 bytes; 900 requests a minute per network address for anything carrying a token; at most 20,000 rate counters held. The kept copy of a plan no longer holds a "where I am" start point or the stay's name; what the person is sent is unchanged. A refused request is no longer echoed back. | The old limiter (`ops.py`), the unbounded schemas | Each was reproduced on a throwaway local database: made-up tokens bypassed every limit, one install could fill the database, one rating with an infinity broke the admin export, and two things were kept that the app and the privacy notice say aren't. |
+| m262 | **`/docs`, `/redoc` and `/openapi.json` are off** unless `BRAIN_API_DOCS=1`, which is for a developer's own machine and never set in Render. | Always on | They listed every admin route to anyone. |
+| m263 | **A personal rating level was tested and not adopted** (`brain/scripts/learning_curve.py`, tables D and E). | — | No gain worth having on the benchmark; revisit with real ratings. Recorded so it isn't tried twice. |
+| m264 | **Two prototypes live outside the Brain and the apps:** `prototype/payments/` (a payment lifecycle on made-up data, 24 tests) and `prototype/day-in-relief/` (one 3D experiment, measured). Neither is run by CI or reachable by anyone. | — | To settle the rules and the question before anything is built for real. |
+| m265 | **The report's file name carries no model name** (`comprehensive-audit-2026-11.md`). | The brief's suggested name | Files in the repository don't name the tool that wrote them. |
+| — | **For Abram (not decided here):** merge this branch; the database before 6 Dec (money); push the `friends-round-1` tag; one option for the safety contact in the alert channel (SEC-09; recommended: leave the contact out of the alert); whether to clean the start pins already stored (SEC-06); the Android release key and how Android testers get the app (SEC-12); the privacy manifest's answers (SEC-14); whether flight search stays, and booking-first providers against affiliate feeds; days out or trips as the main product, at Checkpoint 3; how many testers Test B needs (about 46 for a decisive read even at the model's ceiling); Test D and Test E before more building. Full register: the main report's last section. | — | Each changes scope, costs money, or touches privacy or safety (rule 8). |
+
 ## 2026-11-12 — Abram's decisions on the destination quality report: trust before reach (branch only)
 
 Report: `decisions/destination-quality-and-expansion-report.md`, "Abram's decisions of 12 Nov".

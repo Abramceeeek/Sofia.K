@@ -18,6 +18,10 @@ on:
       - "render.yaml"
       - ".github/workflows/brain-tests.yml"
 
+# Audit, 11 Nov 2026 (decisions/security-audit.md, SEC-17): this job only reads the code, so its token can only read.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
