@@ -52,3 +52,49 @@ def test_the_weighted_rule_lets_a_strong_match_with_one_doubt_win():
     assert [x for x, _ in quality.rank([("a", a), ("b", b)], doubt_cost=0.10)] == ["a", "b"]
     poor = replace(a, practicality=quality.Perspective("poor", ""))
     assert [x for x, _ in quality.rank([("p", poor), ("b", b)], doubt_cost=0.10)] == ["b", "p"]   # poor still last
+
+
+# ---- m254: calibrated uncertainty (Abram, m252) -----------------------------------------------------------------
+
+def _a(x, p, day=None, **kw):
+    return quality.assess(x, p_good=p, today=date(2026, 11, 12), day=day, **kw)
+
+
+def test_each_gap_costs_what_it_risks_for_this_use():
+    from brain.catalogue import OpeningHours
+    rodin = PARIS["rodin"]
+    day = date(2026, 11, 24)
+    no_hours = replace(rodin, hours=OpeningHours(None, None, "unknown", None, None))
+    text_hours = replace(rodin, hours=OpeningHours("Varies by season", None, "checked", "x", "2026-11-11"))
+    r = lambda x, **kw: {k.field: k.p for k in _a(x, 0.8, day, **kw).risks}
+    assert r(no_hours)["hours"] == quality.RISK["hours_unknown_on_day"] > r(text_hours)["hours"] == quality.RISK["hours_text_on_day"]
+    assert "access" not in r(rodin)                                    # no stated need: unknown access costs nothing
+    assert r(rodin, needs_step_free=True)["access"] == quality.RISK["access_unknown_need"]
+    assert "area" not in r(rodin)                                      # its arrondissement is known
+    bank = LONDON["m_bank_of_england_gold"]                            # no area or district named by a source
+    assert 0 < r(bank)["area"] < 0.05                                  # a small confidence cost
+    assert all(k.dimension in ("practicality", "money", "trust") for k in _a(no_hours, 0.8, day).risks)
+
+
+def test_unknown_access_is_never_step_free_and_strict_needs_are_verified():
+    rodin = PARIS["rodin"]                                             # access unknown
+    day = date(2026, 11, 24)
+    a = _a(rodin, 0.9, day, needs_step_free=True)
+    assert a.practicality.level == "fair" and "isn't known" in a.practicality.reason
+    strict = _a(rodin, 0.9, day, needs_step_free=True, strict_access=True)
+    assert strict.practicality.level == "poor" and "isn't verified" in strict.practicality.reason
+
+
+def test_a_strong_match_with_seasonal_hours_beats_a_complete_poor_match_only_when_calibrated():
+    day = date(2026, 11, 24)
+    park = _a(PARIS["buttes-chaumont"], 0.85, day)                     # hours as seasonal text
+    arcade = _a(PARIS["galerie-vivienne"], 0.55, day)                  # complete data, a weaker match
+    items = [("park", park), ("arcade", arcade)]
+    assert [k for k, _ in quality.rank(items)] == ["arcade", "park"]    # today's rule (unchanged): any doubt first
+    assert [k for k, _ in quality.rank(items, calibrated=True)] == ["park", "arcade"]
+
+
+def test_the_default_ranking_is_unchanged():
+    import inspect
+    sig = inspect.signature(quality.rank)
+    assert sig.parameters["doubt_cost"].default is None and sig.parameters["calibrated"].default is False

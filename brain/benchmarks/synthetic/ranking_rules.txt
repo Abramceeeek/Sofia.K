@@ -1,0 +1,49 @@
+SYNTHETIC PEOPLE ONLY. Three ranking rules compared on 11 travellers (scripts/benchmark_profiles.py), London
+(49) and Paris (20 ready, development only). Top 5, a Tuesday and a Saturday.
+The calibrated rule's risks are GUESSES (quality.RISK), to be calibrated on real outcomes.
+
+Relevance, and how well suited the top 5 are:
+rule            city     p(Good) own kind  below own median
+today           London      0.76      46%                2%
+0.10 a doubt    London      0.80      51%                2%
+calibrated      London      0.80      51%                0%
+calib. price.03 London      0.80      51%                0%
+today           Paris       0.70      37%               22%
+0.10 a doubt    Paris       0.76      49%                5%
+calibrated      Paris       0.78      54%                2%
+calib. price.03 Paris       0.78      51%                0%
+
+Practicality, money and trust, each on its own (share of the top 5):
+rule            city     practical good hours unknown closed money good price unknown trust good
+today           London              96%            0%      0       100%            0%       100%
+0.10 a doubt    London              75%            0%      0        98%            0%       100%
+calibrated      London              56%            0%      0        95%            0%       100%
+calib. price.03 London              56%            0%      0        95%            0%       100%
+today           Paris               62%            0%      0       100%            0%       100%
+0.10 a doubt    Paris               44%            0%      0        95%            5%        93%
+calibrated      Paris               42%            0%      0        78%           22%        69%
+calib. price.03 Paris               47%            0%      0        67%           33%        60%
+
+Step-free traveller (a stated need): places a source says aren't step-free in the top 5 (must be 0),
+and places whose access isn't verified (shown as unverified, never as step-free):
+rule            city     not step-free unverified
+today           London               0        20%
+0.10 a doubt    London               0        20%
+calibrated      London               0         0%
+calib. price.03 London               0         0%
+today           Paris                0        40%
+0.10 a doubt    Paris                0        40%
+calibrated      Paris                0         0%
+calib. price.03 Paris                0         0%
+
+Stress cases, over 11 travellers × 2 days:
+rule            city      best match, hours unknown  best match, hours as text  worst verified match
+                               (still in the top 5)       (still in the top 5)   (reaches the top 5)
+today           London                           0%                         9%                    0%
+0.10 a doubt    London                           0%                        36%                    0%
+calibrated      London                           0%                        45%                    0%
+calib. price.03 London                           0%                        45%                    0%
+today           Paris                            0%                        36%                   36%
+0.10 a doubt    Paris                           27%                        36%                    0%
+calibrated      Paris                            9%                        64%                    0%
+calib. price.03 Paris                            9%                        64%                    0%
