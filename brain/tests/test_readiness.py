@@ -4,7 +4,7 @@ import yaml
 from brain.catalogue import load_catalogue, load_dev
 from brain.config import DATA_DIR
 from brain.destination import load_emergency
-from brain.readiness import Inputs, checklist, level
+from brain.readiness import Inputs, checklist, claims, level
 from brain.traveltiming import load_bank_holidays
 
 EM = load_emergency()
@@ -53,3 +53,14 @@ def test_a_destination_with_cards_but_no_emergency_numbers_is_never_ready():
 def test_formats_come_from_cldr():
     f = yaml.safe_load((DATA_DIR / "formats.yaml").read_text(encoding="utf-8"))
     assert f["locales"]["fr-FR"]["number"] == "1 234,5" or f["locales"]["fr-FR"]["number"].replace(" ", " ") == "1 234,5"
+
+
+def test_claims_follow_each_feature_not_the_level():                     # m259 (Abram, m252)
+    items = checklist(london_inputs(), [x for x in load_catalogue() if x.status == "ready"], TODAY, 2027)
+    c = claims(items)
+    assert "never as step-free" in c["accessibility"] and "every place" not in c["accessibility"]
+    assert c["transport"].startswith("journey times from an official")      # TfL
+    dest, xs, raw = load_dev("paris")
+    p = claims(checklist(paris_inputs(raw), [x for x in xs if x.status == "ready"], TODAY, 2027))
+    assert "not official transport information" in p["transport"]          # RATP and IDFM unread
+    assert level(items) == "preview"                                        # London stays a preview (Abram, m252)

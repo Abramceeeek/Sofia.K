@@ -316,3 +316,306 @@ None of these is a runtime dependency, and none costs money.
 | Food notice | ~0.3 |
 | Report | ~1 |
 | **Total** | **about 19 h** |
+
+---
+
+# Abram's decisions of 12 Nov, and what was done (m252–m260)
+
+The work for Abram's next round of decisions (m252), on the same branch. Each item says whether it was **implemented** (code and tests), **only researched**, or **blocked**.
+
+**The release rules held:**
+- `main` is unchanged at `80a0da3`, and the live Brain answers `80a0da3`.
+- Nothing was deployed or uploaded, no APK was published, and no paid API was called.
+- No live price changed, no food data was collected, and no database table was added.
+- The `friends-round-1` tag was **not** created.
+
+**The branch, checked 12 Nov:**
+- The working tree was clean at `023228a`, one commit after the `58dd7f2` that Abram quoted. That commit only added the iPhone result to this report.
+
+## A. The friends' round, checked before anything starts (research only; nothing created)
+
+| Check | Found |
+|---|---|
+| `main` | `80a0da3` ("The friends' round's fixed version") |
+| The live Brain | `"version":"80a0da3"` |
+| TestFlight build 91 | iOS run 91 on `main` at `80a0da3` (6 Nov): signed archive and TestFlight upload both succeeded |
+| Android build 21 | Android run 21 on `main` at `80a0da3` (6 Nov). The `android-latest` release points at `80a0da3`, with `ODYS-android-21.apk` |
+| The manifest (`validation/friends-round.md`) | It names the same three (`80a0da3`, TestFlight 91, Android 21), so they agree |
+| The tag `friends-round-1` | **Doesn't exist on GitHub.** The manifest's command would tag `80a0da3` |
+| Nightly sealed backups (`ops.yml`) | Running. The latest backup artifacts are from 11 Nov 09:38 and 12 Nov 09:59 UTC (only Abram's key opens them) |
+
+**For Abram's approval:**
+- Push the tag on `80a0da3` with the manifest's command, then run the rehearsal.
+- Nothing about the frozen experiment needs to change.
+- **Its deadline is unchanged:** the round's final export is due by 29 Nov, before the free database expires on 6 Dec.
+
+## B. Uncertainty-aware ranking (implemented; **not enabled**)
+
+**The rule** (`quality.uncertainties`, `RISK`):
+- Each missing fact carries the chance (a GUESS, in one table, to be calibrated from real outcomes) that it spoils the visit for **this use**.
+- The risk sits on the dimension it affects:
+
+| Missing fact | Dimension | Risk |
+|---|---|---|
+| Hours, for a planned day | practicality | **0.30** |
+| Hours only as text (seasonal, "dusk"), for a day | practicality | 0.08 |
+| No seasonal information, for an outdoor place in November to March | practicality | 0.10 |
+| Price | money | 0.10, or 0.15 with a budget |
+| An estimated price | money | 0.02 |
+| Step-free access, only when someone needs it | practicality | 0.50 |
+| A named area | trust | 0.01 |
+| Facts 180 to 365 days old | trust | 0.10 |
+| A missing description | — | nothing |
+
+- **The score** is the expected chance of a good visit that happens as planned: the match times the chance nothing fails. Hard failures still rank last: closed that day, over budget, not step-free when needed, or not verified when the need is strict.
+- **Unknown access** is never shown or counted as step-free.
+- **Today's rule stays the default** (tested).
+
+**The benchmark** (`brain/benchmarks/synthetic/ranking_rules.txt`; 11 synthetic travellers; London 49 and Paris 20 ready; top 5 on a Tuesday and a Saturday; **synthetic people, not real-user validation**):
+
+| Rule | City | Chance of "Good" | Own kind | Below their own median match | Practical good | Money good | Price unknown | Trust good | Step-free traveller: unverified |
+|---|---|---|---|---|---|---|---|---|---|
+| Today | London | 0.76 | 46% | 2% | 96% | 100% | 0% | 100% | 20% |
+| Today | Paris | 0.70 | 37% | **22%** | 62% | 100% | 0% | 100% | 40% |
+| 0.10 a doubt | London | 0.80 | 51% | 2% | 75% | 98% | 0% | 100% | 20% |
+| 0.10 a doubt | Paris | 0.76 | 49% | 5% | 44% | 95% | 5% | 93% | 40% |
+| **Calibrated** | London | **0.80** | **51%** | **0%** | 56% | 95% | 0% | 100% | **0%** |
+| **Calibrated** | Paris | **0.78** | **54%** | **2%** | 42% | 78% | 22% | 69% | **0%** |
+
+**Stress cases** (11 travellers × 2 days):
+
+| Rule | City | Best match, with its hours made unknown, still in the top 5 | Best match, hours as text only, still in the top 5 | Worst-matching fully verified place reaches the top 5 |
+|---|---|---|---|---|
+| Today | London | 0% | 9% | 0% |
+| Today | Paris | 0% | 36% | **36%** |
+| Calibrated | London | 0% | **45%** | 0% |
+| Calibrated | Paris | 9% | **64%** | **0%** |
+
+**The trade-offs, plainly:**
+- **Better:** relevance, suitability, and no unverified places for the step-free traveller.
+- **Worse:**
+  - more of the top 5 carry an open question: places judged "practical: good" fall (96% to 56% in London), almost all because their hours change with the season, and that is said on each stop;
+  - in Paris, 22% of the top 5 have an unknown price.
+- **Unknown hours on a planned day still knock a place out of the top 5**, as Abram asked: "significant practicality penalty".
+- **The price risk was tuned once, on this benchmark:** at 0.03, a third of Paris's top 5 had no price. At 0.10 it's 22%, with relevance unchanged. Both runs are in the file.
+
+**Hours:** Claude ~3 h.
+
+## C. Manual verification of the 18 pages (implemented where pages answered; the rest documented)
+
+Each page was tried again on 12 Nov at another official address. No search snippet or third-party description was used.
+
+| Page | Result |
+|---|---|
+| **Victoria Embankment Gardens** (Westminster Council page, updated 11 Aug 2026) | "Open everyday, from 8am"; closing varies by season (kept as text); area "Victoria Embankment". "This park has disabled access", recorded as a note: step-free stays **unknown**, because the page doesn't say step-free |
+| **Battersea Park** (Wandsworth Council page) | "8am until dusk"; gates 06:30–22:30 for the facilities; the Cascades are being restored. Access is not stated |
+| **St Paul's Evensong** (the official 15–29 Nov schedule, the PDF read directly) | 17:00 Monday to Saturday, 15:00 on Sundays; none listed on 18 or 28 Nov (recorded as notices) |
+| **The Jardin du Luxembourg** (the Senate's hours page, which answered on 12 Nov) | Hours change every fortnight with sunrise and sunset, so kept as text. **It is now ready** (Paris: 20 ready). That was not done to reach 20: the page answered, and nothing else about the place was weak |
+| **Still unread** (403, 404, an empty page, a header error or collapsed text), so their facts stay **unknown** | the British Museum; the National Portrait Gallery; Liberty; St Martin-in-the-Fields; the Southbank Centre; King's Cross; Canary Wharf; Horizon 22's access answer; the Millennium Bridge. In Paris: the Orangerie, the Arts Forains, La Grande Épicerie, the Marais walk |
+| St Dunstan-in-the-East | Its official page states no hours or access, so those are genuinely unknown |
+| The Palais Garnier | The hours widget shows no times, so it stays a draft |
+| The Batobus | The route page shows no closure, but the home page's panel listed every stop as closed, undated. The two can't be reconciled, so it stays a draft |
+
+**Coverage change (`destination_coverage.md`):**
+
+| Measure | London, 11 Nov | London, 12 Nov | Paris, 11 Nov | Paris, 12 Nov |
+|---|---|---|---|---|
+| Hours read on an official page in the last 90 days | 28 | **31** of 49 | 17 of 19 ready | **18** of 20 |
+| Areas named by an official page | 12 | **13** | — | — |
+| Ready places | — | — | 19 | **20** |
+
+**Readiness** (`readiness.py`, implemented; Abram's levels):
+- **The levels:** development → **preview** → **limited support** (fresh hours and areas pass, plus Abram's review) → **supported**.
+- **What may be claimed is per feature** (`claims`):
+  - accessibility is "per place where a source gives it; unknown shown as unknown", never "comprehensive" unless every place is known;
+  - transport is "official" only with an official journey planner. In Paris it is "estimated, not official transport information".
+- **London: preview. Paris: development** (transport unverified), even with 20 ready.
+
+**Hours:** Claude ~1.5 h.
+
+## D. London price discrepancies (researched only; no price changed)
+
+`brain/data/catalogue/london_price_proposals.yaml`. A test holds the cards at their current values until Abram approves.
+
+| | The Courtauld | Uber Boat, Greenwich to Battersea Power Station (day card) | Uber Boat, Greenwich to Westminster (night card) |
+|---|---|---|---|
+| Card value | £12 | £22.90 | £13.70 |
+| Official values | £16 and £14, both "Adult (19+)", **unlabelled**; "Gallery Entry from £14" | All Zones single: £20.50 online/app, £23.50 at the pier; Oyster/contactless £19.30 off-peak, £22.90 peak | Central and East single: £12.20 online, £16.00 at the pier; Oyster £11.40/£12.40 |
+| Source | courtauld.ac.uk plan-your-visit and permanent-collection pages | thamesclippers.com ticket information and route map | the same |
+| Checked | 12 Nov 2026 | 12 Nov 2026 | 12 Nov 2026 |
+| Category | Adult (19+) permanent-collection entry. Under-18s, members and some concessions free; temporary exhibitions extra | Adult single, zone-based; peak all day at weekends | Adult single, zone-based |
+| Conditions | No day or channel difference; no booking fee; cashless | **The pages don't say which zone either pier is in.** The Oyster fares were "effective until 31 October 2026", to be revised | Westminster's zone isn't stated |
+| **Proposal** | Plan **£16** (the higher, so nobody is under-budgeted) and show "from £14" | **Hold**: confirm the zones first. Then plan the at-the-pier price, £23.50 if All Zones | **Hold**, as for the day card; then £16.00 if Central and East |
+
+## E. Restricted share cards (implemented in both apps)
+
+**Each photo is decided one by one** (`photo-credits.json`, a `share` flag on every entry; tested against `photo_checks.yaml`).
+- **11 of 45 are cleared**, under all of these conditions:
+  - CC0 or CC BY (no ShareAlike);
+  - the credit matches its page;
+  - the licence is stated one way;
+  - no notice on its page limits use.
+- **Excluded:**
+  - all 33 **CC BY-SA** photos: whether a cropped card with text over it is an adaptation is the solicitor's question;
+  - the two photos whose pages **exclude social media**;
+  - Richmond's photo, whose page states its licence **two ways**.
+- An excluded photo leaves the card on its field of colour. Nothing is uncertain.
+
+**Every cleared photo carries:**
+- its title, photographer, licence name and version, and its licence URL;
+- the source page;
+- commercial use and adaptation are both permitted (the legal code, read 11 Nov). **Cropping:**
+  - CC BY: a permitted adaptation, disclosed as "(cropped)";
+  - CC0: needs nothing.
+
+**On the card:** "Photo: “title” by photographer, licence, Wikimedia Commons (cropped)".
+
+**In the share message**, where links are clickable: the licence link and the photo's page.
+
+**Checks:**
+- Android draws the credit's footer at the height its lines need (screenshot checked).
+- Both apps' share cards only ever ask for a cleared photo (tested).
+- **The solicitor still reviews the sharing approach before any public release.**
+
+**Hours:** Claude ~2 h.
+
+## F. Group travel (implemented)
+
+Nash stays the preferred prototype, not a validated preference. No accounts were added.
+
+**New, with regression tests:**
+- **Step-free needs:**
+  - a place a source says has steps is excluded, and named;
+  - a member can make their need **strict**, which leaves out places nobody has verified, said as "no source confirms they're step-free (not because they're known to have steps)";
+  - otherwise unknown access is flagged.
+- **Arriving late or leaving early** (days present), and **joining part of a day** (the first stops of a day): each member is counted only for the stops they're there for.
+- **Different daily budgets:** every day stays within the smallest budget, or the note says by how much it doesn't.
+- **Larger groups:** when someone gets none of their favourites, the plan says so, by member, and offers what would change it: "add a day or a stop, split up for one stop, or let them choose one stop".
+- **Budgets in their own currency:** a price that can't be confirmed in that currency is left out and named.
+
+**Hours:** Claude ~1.5 h.
+
+## G. Currency and pricing audit (implemented for what was found; the rest checked)
+
+**Checked:** experiences, restaurants (food cards), accommodation and flights (`fx.pricing`, already currency-aware), the whole-trip budget (`tripbudget.py`: unknown lines are listed as missing, unconverted currencies kept apart: correct), the day budget, group budgets, and the model's cost term.
+
+| Where | Found | Fixed? |
+|---|---|---|
+| Discovery's cost term | Euro prices scored as free (m249) | Fixed then; tested again |
+| Day plans: the budget filter and swaps | An unknown price passed any budget as £0 (latent: every ready London card is priced, tested) | **Fixed:** an unknown price never fits a budget, and the reason says so |
+| Day plans: the cost line | An unknown price would read "Cost: free" | **Fixed:** "Price not known" |
+| Group budgets | An unknown price counted as 0, and currencies were ignored | **Fixed:** the budget's own currency; an unconfirmable price is left out and named |
+| The model's cost term (`features.py`) | An unknown price adds nothing (neither cheap nor dear). It's never shown as free, and the calibrated rule carries it as a money risk | **Not changed:** it's the onboarding model's input. A decision for Abram (section I) |
+
+**New:** `fx.price_status` names every price:
+- `free` (a confirmed zero);
+- `paid`;
+- `unknown`;
+- `unavailable`;
+- `currency_unavailable`;
+- `converted_estimate`, which sits beside the provider's price, never replaces it, and is only made with a rate under five days old.
+
+**Regression tests:** GBP, EUR, USD and XTS (`test_currency_audit.py`, 15 tests).
+
+**Hours:** Claude ~1.5 h.
+
+## H. The old food field in the live database (**blocked**: Abram's to run)
+
+| Step | Status |
+|---|---|
+| 1. A clean replacement backup | Nightly sealed backups run on `main` (the latest is from 12 Nov). But a backup is only **clean** after the delete, and main's backups don't strip the field. So after Abram's delete, the next nightly backup is the clean one |
+| 2–5. The count, the key-only delete, and the zero re-count | **Not run. This session has no access to the live database and must not use the admin token** (Abram, earlier: it stays in his PowerShell window). The count-only SQL and the one-transaction delete are in `foods-avoided-audit.md`. I stopped here rather than improvise |
+| 6. Backup restoration | Tested: restoring an older backup strips the field (m233) |
+| 7. Old app versions | Build 91 and Android 21 still send it. On `main` it is stored again, so **the weekly re-count stays** until the branch Brain is live. On the branch it is dropped, and now counted only as **an aggregate number in the admin audit** (`old_app_saves_dropped_since_start`): no log line, no user, no value (m257, tested) |
+
+## I. Recommendation evaluation framework (research and a prototype)
+
+`brain/src/brain/evaluation.py`, 4 tests.
+
+**It keeps predictions and observations apart:**
+- **Before a visit:** the predicted chance of "Good", from the utility already stored with every planned stop, and the match words shown.
+- **After a visit:** the 1–5 rating, "Would you bring someone here?", and the day's "worth it" and "do again".
+- **Already collected, so nothing new is asked.**
+
+**What it measures:**
+- calibration (Brier score against the base rate, and predicted against observed by band);
+- discrimination (AUC);
+- whether each match word holds up;
+- the share of planned stops rated, where unrated stops are counted and never guessed;
+- the day-level answers.
+
+**What stays separate:** synthetic results are labelled "SYNTHETIC: not real-user validation".
+
+**Not collected, and needing Abram's approval** (never in the frozen round): "Did it match what you expected?" and "Would you recommend it?". Storing each stop's quality perspectives and data confidence with the plan is also a later step.
+
+## J. Tests run (12 Nov)
+
+| Suite | Result |
+|---|---|
+| Brain (`pytest`) | **450 passed**, 0 failed (one library deprecation warning); 418 at the last report |
+| Android (`testDebugUnitTest`) | **119 tests, 0 failures** (after the share-card change) |
+| iPhone (CI run #110, `upload: false`, commit `096afee`) | Running when this section was committed; its result is added when it finishes (the share-card change is the only Swift change) |
+
+New tests:
+- ranking (4);
+- currency audit (15);
+- price proposals (2);
+- group cases (5);
+- readiness claims (1);
+- share clearance (1);
+- evaluation (4);
+- the food counter (1, replacing the log check).
+
+## K. Failures and limitations
+
+- **The risk values are GUESSES**, calibrated only against synthetic travellers. Real ratings (section I) are what should set them.
+- **10 London and 4 Paris pages still can't be read.** Their facts stay unknown; they need a person, or the venue.
+- **Paris transport is unverified** (RATP and IDFM refuse automated reading), so Paris can't pass preview.
+- **The live food-field audit is blocked:** it needs Abram's database access.
+- **Groups of 8 to 10 can't all get a favourite in 6 stops.** It is now said, with the alternatives.
+
+## L. Files changed, and commits
+
+**Commits:**
+- `faa44f0` (ranking);
+- `64dc151` (manual verification, price proposals);
+- `d501121` (currency, groups, food counter);
+- `096afee` (share cards, both apps);
+- the commit holding this section (readiness levels and claims, evaluation, documents).
+
+| Area | Files |
+|---|---|
+| Brain | `quality.py`, `catalogue.py`, `fx.py`, `dayplan.py`, `group.py`, `api.py`, `readiness.py`, `evaluation.py` (new) |
+| Data | `london_checked.yaml`, `dev/paris.yaml`, `london_price_proposals.yaml` (new), `photo-credits.json` (both apps) |
+| Scripts and benchmarks | `benchmark_ranking.py` (new) and `ranking_rules.txt`; `destination_coverage.md` |
+| Apps | `CardPhotos.swift`, `ShareCard.swift`, `AppModel.swift`; Android `Store.kt`, `ShareCard.kt` |
+| Tests | `test_currency_audit.py`, `test_price_proposals.py`, `test_evaluation.py` (new); `test_recommend_international.py`, `test_group.py`, `test_readiness.py`, `test_photo_credits.py`, `test_food.py`, `test_foods_avoided_audit.py` |
+
+## M. Decisions still needing Abram
+
+| # | Decision | Recommendation | Hours |
+|---|---|---|---|
+| 1 | **Enable the calibrated ranking?** (section B) | Yes, in discovery first, with each stop's open questions shown, after the planner benchmark confirms no regression. Calibrate the risks on real ratings once the round has some | Claude ~2 h |
+| 2 | **The Courtauld at £16** (with "from £14"); **hold both boat fares** until the zones are confirmed | As in section D | Claude ~0.5 h, after a yes |
+| 3 | **Push `friends-round-1` on `80a0da3` and run the rehearsal** | Everything checked agrees (section A) | Abram ~45 min |
+| 4 | **The live food audit**: the count, and the delete if needed, by Abram | `foods-avoided-audit.md`; Claude reads the counts he reports | Abram ~10 min |
+| 5 | **The model's cost term for an unknown price:** zero (today), or the destination's median for that kind of place | Median, with the price still shown as unknown. It changes discovery's order only where prices are missing (Paris: 5 places) | Claude ~1 h |
+| 6 | **Two questions after the round, for evaluation:** "Did it match what you expected?" and "Would you recommend it?" | Only after Test B, and only if the existing ratings prove too thin | a decision |
+| 7 | **Limited support's bar** (fresh hours and areas, plus review) | Accept, or add access for features that make access claims | a decision |
+| 8 | **Unchanged:** the solicitor (the DPIA and the share card's BY-SA question); the four councils; the 14 unread pages by hand | — | as before |
+
+**Hours this round (Claude, approximate):**
+
+| Work | Hours |
+|---|---|
+| Checks | ~0.5 |
+| Ranking and benchmark | ~3 |
+| Manual verification | ~1.5 |
+| Prices | ~0.5 |
+| Share cards | ~2 |
+| Groups | ~1.5 |
+| Currency | ~1.5 |
+| Readiness | ~0.5 |
+| Evaluation | ~1 |
+| Report | ~1 |
+| **Total** | **about 13 h** |

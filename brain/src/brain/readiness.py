@@ -1,10 +1,16 @@
 """m248 (WS5): what ODYS must know before it can say it supports a destination (Abram, m244: "A destination should
 not become fully supported simply because a few places have been entered into the database").
 
-Three levels:
-- **development**: data is being gathered; nothing is offered to anyone.
-- **preview**: every *essential* item passes. Abram could let testers try it, labelled as a preview.
-- **supported**: preview, plus every *quality* item passes, plus Abram's own review of the coverage.
+Before any level, **development**: data is being gathered; nothing is offered to anyone. Then Abram's three levels
+(m252, m259):
+1. **Preview**: every *essential* item passes. For internal development and evaluation; never presented as reliable
+   coverage.
+2. **Limited support**: preview, plus fresh hours and named areas pass, and Abram has reviewed it. Offered for the
+   features that pass, with the limits said.
+3. **Supported**: every item passes, and Abram has reviewed it.
+
+**What may be claimed depends on each feature, not on the level** (`claims`): accessibility is never "comprehensive"
+because half of the places are known; transport is "official" only when an official source is behind it.
 
 Each item is pass, partial, fail or unknown, with the evidence counted from the data. The thresholds are Claude's
 proposal (GUESS) for Abram to set; they're constants here so a change is one line and a test.
@@ -109,13 +115,39 @@ def checklist(inp: Inputs, ready: list[Experience], today: str, trip_year: int) 
     ]
 
 
+LIMITED = ("hours", "areas")      # the quality items limited support needs (GUESS, for Abram)
+
+
 def level(items: list[Item], reviewed_by_abram: bool = False) -> str:
-    """development → preview (all essentials pass) → supported (everything passes, and Abram reviewed it)."""
+    """development → preview (all essentials pass) → limited support (and fresh hours and areas, reviewed) →
+    supported (everything passes, reviewed)."""
     if not all(i.status == "pass" for i in items if i.essential):
         return "development"
+    by = {i.key: i for i in items}
     if reviewed_by_abram and all(i.status == "pass" for i in items):
         return "supported"
+    if reviewed_by_abram and all(by[k].status == "pass" for k in LIMITED):
+        return "limited support"
     return "preview"
+
+
+def claims(items: list[Item]) -> dict[str, str]:
+    """m259: what ODYS may say about each feature in this destination, from the evidence, whatever the level."""
+    by = {i.key: i for i in items}
+    access = by["access"]
+    known, total = (access.evidence.split(" of ") + ["0"])[:2] if " of " in access.evidence else ("0", "0")
+    return {
+        "accessibility": ("verified step-free status for every place" if known == total and total != "0" else
+                          f"step-free status per place where a source gives it ({access.evidence}); "
+                          "unknown is shown as unknown, never as step-free"),
+        "transport": {"pass": "journey times from an official journey planner",
+                      "partial": "estimated journey times, labelled as estimates; not official transport information"
+                      }.get(by["transport"].status, "no journey times"),
+        "opening_hours": f"hours read on an official page for {by['hours'].evidence}; others said as unknown or varying",
+        "emergency": "official emergency numbers" if by["emergency"].status == "pass" else "none: not offered",
+        "seasons": f"seasonal information for {by['seasons'].evidence} outdoor places",
+        "photos": "licences checked one by one" if by["photos"].status == "pass" else "photos not checked: none shown",
+    }
 
 
 def _days_before(day: str, n: int) -> str:
@@ -123,4 +155,4 @@ def _days_before(day: str, n: int) -> str:
     return (date.fromisoformat(day) - timedelta(days=n)).isoformat()
 
 
-__all__ = ["Item", "Inputs", "checklist", "level", "MIN_READY", "MIN_CATEGORIES"]
+__all__ = ["Item", "Inputs", "checklist", "level", "claims", "MIN_READY", "MIN_CATEGORIES"]
