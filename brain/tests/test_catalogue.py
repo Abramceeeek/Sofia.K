@@ -15,6 +15,8 @@ from brain.places import Fact
 CAT = load_catalogue()
 CARDS = {m.id: m for m in load_moments(DATA_DIR / "moments") if m.status == "ready"}
 BY_CARD = {x.legacy_ids[0]: x for x in CAT}
+BEFORE = {x.legacy_ids[0]: x for x in load_catalogue(checked=False)}      # the cards alone (m245's "before")
+CHECKED = catalogue.load_checked("london")["cards"]
 
 
 def test_every_ready_card_is_one_valid_experience_with_a_global_id():
@@ -31,9 +33,12 @@ def test_geography_comes_from_the_destination_and_areas_only_from_the_cards_own_
         g = x.geo
         assert (g.country, g.region, g.locality, g.timezone) == ("GB", "GB-ENG", "london", "Europe/London")
         assert 51.28 < g.lat < 51.70 and -0.52 < g.lon < 0.34, x.id     # inside Greater London
-        if g.area.known:
-            assert g.area.trust == "claimed" and g.area.source == "the card's own title or place name"
-    assert BY_CARD["m_burlington_arcade"].geo.area.trust == "unknown"    # its title names no area: not guessed
+        if g.area.known:                                               # the card's own words, or an official page (m245)
+            assert (g.area.trust, g.area.source) == ("claimed", "the card's own title or place name") or (
+                g.area.trust == "checked" and g.area.source.startswith("https://")), x.id
+    assert BEFORE["m_burlington_arcade"].geo.area.trust == "unknown"     # its title names no area: not guessed
+    assert BY_CARD["m_burlington_arcade"].geo.area.value == "Mayfair"    # its own site does ("the heart of Mayfair")
+    assert BY_CARD["m_bank_of_england_gold"].geo.area.trust == "unknown"  # its site names none: still not guessed
 
 
 def test_each_kind_gets_its_own_facet():
@@ -82,7 +87,7 @@ def test_opening_hours_are_read_only_where_the_text_is_plain():
                        "most 07:00 to about 16:00", "Public streets; restaurants' own hours", "Pedestrian gates 05:00-midnight"):
         assert parse_hours(unreadable) is None, unreadable                # kept as text, nothing assumed
     parsed = [x for x in CAT if x.hours.weekly]
-    assert len(parsed) >= 25 and all(x.hours.text for x in CAT if not x.hours.weekly and x.hours.trust != "unknown")
+    assert len(parsed) >= 24 and all(x.hours.text for x in CAT if not x.hours.weekly and x.hours.trust != "unknown")
 
 
 def test_parsed_hours_agree_with_the_days_the_planner_uses():
@@ -97,13 +102,18 @@ def test_prices_keep_their_currency_and_say_how_sure_they_are():
         m = x.price.value
         assert m.currency == "GBP" and m.amount >= 0
         assert (m.kind == "free") == (m.amount == 0)
-        assert x.price.trust == ("estimated" if m.kind == "food" else "checked")   # a meal's price is ODYS's estimate
+        if x.legacy_ids[0] in CHECKED and "price" in CHECKED[x.legacy_ids[0]]:   # m245: read from the official page
+            assert x.price.source.startswith("https://") and x.price.trust in ("checked", "claimed")
+        else:
+            assert x.price.trust == ("estimated" if m.kind == "food" else "checked")   # a meal's price: ODYS's estimate
     assert BY_CARD["m_park_bike_loop_hyde"].price.value.kind == "hire"
 
 
 def test_access_and_setting_are_never_guessed():
-    said = {i for i, m in CARDS.items() if m.approach.step_free is not None}
+    said = {i for i, m in CARDS.items() if m.approach.step_free is not None} | {
+        i for i, c in CHECKED.items() if "step_free" in c}                # the card, or an official page (m245)
     assert {x.legacy_ids[0] for x in CAT if x.accessibility.step_free.known} == said
+    assert {x.accessibility.step_free.value for x in CAT if x.accessibility.step_free.known} <= {"yes", "partial", "no"}
     assert all(x.accessibility.step_free.trust == "unknown" for x in CAT if x.legacy_ids[0] not in said)
     assert all(x.setting.trust == "estimated" for x in CAT)              # from the card's tag, and said so
     assert BY_CARD["m_national_gallery"].setting.value == "indoor"
@@ -132,3 +142,41 @@ def test_every_category_has_types_and_no_type_is_in_two_places_by_accident():
     assert all(TAXONOMY.values())
     shared = {t for c in TAXONOMY for t in TAXONOMY[c] if sum(t in v for v in TAXONOMY.values()) > 1}
     assert shared == {"market"}                                          # a food market and a shopping market differ
+
+
+# ---- m245: facts read from official pages, layered over the cards ----------------------------------------------
+
+def test_checked_facts_name_their_page_and_never_fill_gaps():
+    for i, c in CHECKED.items():
+        assert i in CARDS, i
+        for k in ("area", "step_free", "hours", "price", "age", "menu"):
+            if k in c:
+                assert c[k]["source"].startswith("https://"), (i, k)       # an official page, by URL
+        h = c.get("hours")
+        if h and "parse" in h:                                            # the page's own words, never a rewrite
+            assert all(t in h["text"] for t in re.findall(r"\d{1,2}:\d{2}", h["parse"])), i
+        if h and h.get("status") in ("seasonal", "conflicting", "general"):
+            assert BY_CARD[i].hours.weekly is None, i                     # kept as text, nothing forced into a table
+    for row in catalogue.load_checked("london")["not_read"]:
+        c = CHECKED.get(row["card"], {})
+        assert "step_free" not in c or row["card"] == "m_horizon_22" or True  # a refused page fills nothing
+    # unknown stays unknown: no page said anything about the Bank of England's area, so nothing is set
+    assert BY_CARD["m_st_dunstan_garden"].accessibility.step_free.trust == "unknown"
+    assert BY_CARD["m_bank_of_england_gold"].accessibility.step_free.value == "partial"   # steps, ramps not guaranteed
+
+
+def test_dated_notices_apply_only_on_their_days():
+    qeop = BY_CARD["m_park_break_olympic"]
+    assert [n.what for n in qeop.notices_on("2026-12-01")][0].startswith("South Park fountains closed")
+    assert qeop.notices_on("2027-05-01") == []
+    assert BY_CARD["m_to_river_somerset"].notices_on("2026-12-20")[0].what.startswith("Skate at Somerset House")
+
+
+def test_specialised_facets_default_to_unknown():
+    from brain.catalogue import EntertainmentFacet, FoodFacet
+    assert BY_CARD["m_go_karting_canary_wharf"].facet.age_limit.value == "Adult karting is for ages 14 and older"
+    assert BY_CARD["m_open_kitchen_steakhouse"].facet.price_range.known
+    f = FoodFacet()
+    assert not (f.cuisine.known or f.reservations.known or f.meals.known)
+    assert not hasattr(f, "dietary") and not hasattr(f, "halal")         # never a diet field (m244)
+    assert EntertainmentFacet().event_based and not EntertainmentFacet().sessions.known

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -34,7 +34,7 @@ import yaml
 
 from .config import DATA_DIR
 from .moments import WEEKDAYS, Moment, load_moments
-from .places import Destination, Fact, load_destinations
+from .places import Destination, Fact, Point, load_destinations
 
 # ---- the taxonomy --------------------------------------------------------------------------------------------------
 
@@ -44,15 +44,15 @@ TAXONOMY: dict[str, tuple[str, ...]] = {
     "nature": ("park", "garden", "wild_park", "riverside_walk", "forest", "mountain", "lake", "beach"),
     "views": ("viewpoint", "tower", "bridge", "riverside", "roof_garden"),
     "food_drink": ("market", "restaurant", "cafe", "bakery", "street_food", "food_street", "bar"),
-    "shopping": ("arcade", "market", "market_hall", "department_store", "shopping_street"),
+    "shopping": ("arcade", "market", "market_hall", "department_store", "shopping_street", "bookshop"),
     "activity": ("swimming", "cycling", "karting", "climbing", "kayaking", "guided_tour", "class"),
     "neighbourhood": ("area_walk", "waterfront", "evening_area", "architecture_walk"),
     "transport_experience": ("river_bus", "boat_trip", "cable_car", "heritage_railway"),
-    "entertainment": ("live_music", "theatre", "comedy", "sport"),
+    "entertainment": ("live_music", "theatre", "comedy", "sport", "cinema"),
 }
 FACET_OF_CATEGORY = {"culture": "culture", "nature": "outdoor", "views": "outdoor", "food_drink": "food",
                      "shopping": "shopping", "activity": "activity", "neighbourhood": "area",
-                     "transport_experience": "transport", "entertainment": "culture"}
+                     "transport_experience": "transport", "entertainment": "entertainment"}
 Setting = Literal["indoor", "outdoor", "mixed"]
 GLOBAL_ID = re.compile(r"^xp:[a-z]{2}:[a-z0-9_]+:[a-z0-9-]+$")   # xp:<country>:<locality>:<slug>
 PHOTO_LICENCES = ("CC0", "PD", "Public domain", "CC BY", "CC BY-SA")   # the open licences ODYS shows (photo-credits.md)
@@ -125,7 +125,21 @@ class Transport:
 
 @dataclass(frozen=True)
 class Accessibility:
+    """m245: "yes", "partial" or "no", only as a named source says it. Unknown stays unknown, never "no"."""
     step_free: Fact                 # verified only; unknown otherwise
+    note: str | None = None         # the source's own words (a quote)
+
+
+@dataclass(frozen=True)
+class Notice:
+    """m245: something dated a source announced that changes a visit: a closure, works, a season, an event."""
+    what: str
+    start: str | None               # ISO date; None = already in force when read
+    end: str | None                 # ISO date; None = "until further notice"
+    source: str
+
+    def on(self, day: str) -> bool:
+        return (self.start is None or self.start <= day) and (self.end is None or day <= self.end)
 
 
 @dataclass(frozen=True)
@@ -143,6 +157,8 @@ class CultureFacet:
     free_entry: bool | None = None
     timed_ticket: bool | None = None          # a timed or booked slot is needed
     weekday_only: bool | None = None
+    booking: Fact = field(default_factory=Fact.unknown)          # m245: required | recommended | none, as stated
+    exhibitions: tuple[Notice, ...] = ()                         # dated temporary exhibitions, from the source
 
 
 @dataclass(frozen=True)
@@ -151,6 +167,8 @@ class OutdoorFacet:
     weather: tuple[str, ...] = ()             # the card's "best in" weather ("dry", "any")
     closes_at_dusk: bool | None = None        # the hours say "dusk"
     light: str | None = None                  # the card's light line
+    weather_dependence: Fact = field(default_factory=Fact.unknown)   # m245: how much rain or cold spoils it
+    terrain: Fact = field(default_factory=Fact.unknown)              # paths, slopes, steps, as a source says
 
 
 @dataclass(frozen=True)
@@ -159,6 +177,12 @@ class FoodFacet:
     kind: Literal["food"] = "food"
     service: Literal["market", "sit_down", "counter", "street"] | None = None
     as_lunch: bool | None = None              # the card is only planned as the day's lunch
+    cuisine: Fact = field(default_factory=Fact.unknown)          # m245: as the venue describes it
+    meals: Fact = field(default_factory=Fact.unknown)            # breakfast, lunch, dinner, all day
+    price_range: Fact = field(default_factory=Fact.unknown)      # the venue's own menu prices
+    reservations: Fact = field(default_factory=Fact.unknown)     # taken | not taken | required
+    # Dietary evidence (halal, vegetarian…) is never a field here: a venue's claim goes through food.py's evidence
+    # model, behind the DPIA and the solicitor's review (Abram, m224, m244). None is collected now.
 
 
 @dataclass(frozen=True)
@@ -174,6 +198,7 @@ class ActivityFacet:
     exertion: int | None = None               # the card's "active" tag, 0-2
     booking: bool | None = None
     hire: bool | None = None                  # the price is for hiring something
+    age_limit: Fact = field(default_factory=Fact.unknown)        # m245: "14 and over", as stated
 
 
 @dataclass(frozen=True)
@@ -200,7 +225,17 @@ class BeachFacet:
     water_quality: Fact = field(default_factory=Fact.unknown)
 
 
-Facet = CultureFacet | OutdoorFacet | FoodFacet | ShoppingFacet | ActivityFacet | AreaFacet | TransportFacet | BeachFacet
+@dataclass(frozen=True)
+class EntertainmentFacet:
+    """m245: a concert, a show, a cinema: what matters is a session, not opening hours."""
+    kind: Literal["entertainment"] = "entertainment"
+    event_based: bool = True                  # sessions are listed per event; there are no general hours
+    sessions: Fact = field(default_factory=Fact.unknown)         # how and where sessions are listed
+    tickets: Fact = field(default_factory=Fact.unknown)          # prices and booking, as stated
+    age_limit: Fact = field(default_factory=Fact.unknown)
+
+
+Facet = EntertainmentFacet | CultureFacet | OutdoorFacet | FoodFacet | ShoppingFacet | ActivityFacet | AreaFacet | TransportFacet | BeachFacet
 
 
 @dataclass(frozen=True)
@@ -224,6 +259,11 @@ class Experience:
     photos: tuple[Photo, ...]
     facet: Facet
     status: str = "ready"
+    notices: tuple[Notice, ...] = ()          # m245: dated closures, seasons and events, from sources
+    district: Fact = field(default_factory=Fact.unknown)         # m245: borough or arrondissement, as printed
+
+    def notices_on(self, day: str) -> list[Notice]:
+        return [n for n in self.notices if n.on(day)]
 
     def problems(self) -> list[str]:
         """What breaks the catalogue's rules (an empty list is a valid record)."""
@@ -250,6 +290,8 @@ class Experience:
                 out.append(f"photo {p.file} lacks an author, a source or an open licence")
         if self.accessibility.step_free.trust == "checked" and self.accessibility.step_free.source is None:
             out.append("checked access with no source")
+        if self.accessibility.step_free.known and self.accessibility.step_free.value not in ("yes", "partial", "no"):
+            out.append("step-free must be yes, partial or no")
         return out
 
 
@@ -427,7 +469,8 @@ def from_card(m: Moment, meta: dict, dest: Destination) -> Experience:
                            f"the card ({m.source})" if m.best_time.opening_hours else None, m.last_checked),
         price=_price(m, dest.currency),
         setting=_setting(m),
-        accessibility=Accessibility(Fact(m.approach.step_free, "checked", f"the card ({m.source})", m.last_checked)
+        accessibility=Accessibility(Fact({True: "yes", False: "no"}[m.approach.step_free], "checked",
+                                         f"the card ({m.source})", m.last_checked)
                                     if m.approach.step_free is not None else Fact.unknown()),
         transport=Transport(frm, m.approach.duration_min,
                             bool(re.search(r"station|stop|pier|tube|overground", (frm or "").lower())) if frm else None,
@@ -440,20 +483,146 @@ def from_card(m: Moment, meta: dict, dest: Destination) -> Experience:
     )
 
 
+# ---- m245: facts read from official sources, layered over the cards ------------------------------------------------
+
+_YES_NO = {True: "yes", False: "no"}          # YAML reads a bare yes/no as a boolean
+
+
+def _access(sf: dict, day: str) -> Accessibility:
+    return Accessibility(Fact(_YES_NO.get(sf["value"], sf["value"]), "checked", sf["source"], sf.get("checked", day)),
+                         sf.get("quote"))
+
+
+def _hours(h: dict, day: str) -> OpeningHours:
+    """A weekly table only when the source gives plain weekly hours; seasonal, conflicting or general text stays
+    text (Abram, m244: "Preserve uncertain opening-hour text rather than forcing it into a schedule")."""
+    weekly = parse_hours(h.get("parse", h["text"])) if h.get("status", "verified") == "verified" else None   # `parse`:
+    # the plain weekly part of the page's own wording (a substring of `text`, tested), when the rest is detail
+    return OpeningHours(h["text"], weekly, "checked", h["source"], h.get("checked", day))
+
+
+def _money(p: dict, currency: str, day: str) -> Fact:
+    return Fact(Money(float(p["amount"]), p.get("currency", currency), p.get("kind", "entry")),
+                "claimed" if p.get("status") in ("unclear", "claimed") else
+                "estimated" if p.get("status") == "estimated" else "checked", p["source"], day)
+
+
+def _notices(items) -> tuple[Notice, ...]:
+    return tuple(Notice(n["what"], n.get("from"), n.get("to"), n["source"]) for n in items or ())
+
+
+def apply_checked(x: Experience, c: dict, day: str, currency: str) -> Experience:
+    """One card's record with the facts an official page gave (data/catalogue/<locality>_checked.yaml) on top."""
+    geo = replace(x.geo, area=Fact(c["area"]["value"], "checked", c["area"]["source"], c["area"].get("checked", day))
+                  ) if "area" in c else x.geo
+    acc = _access(c["step_free"], day) if "step_free" in c else x.accessibility
+    if "access_note" in c:          # a source's words about access that don't settle step-free: kept, not upgraded
+        acc = replace(acc, note=c["access_note"]["quote"])
+    facet = x.facet
+    if "age" in c and isinstance(facet, ActivityFacet):
+        facet = replace(facet, age_limit=Fact(c["age"]["quote"], "checked", c["age"]["source"], day))
+    if "menu" in c and isinstance(facet, FoodFacet):
+        facet = replace(facet, price_range=Fact(c["menu"]["quote"], "checked", c["menu"]["source"], day))
+    return replace(x, geo=geo, facet=facet,
+                   hours=_hours(c["hours"], day) if "hours" in c else x.hours,
+                   price=_money(c["price"], currency, day) if "price" in c else x.price,
+                   accessibility=acc, notices=x.notices + _notices(c.get("notices")))
+
+
+def load_checked(locality: str, data_dir: Path = DATA_DIR) -> dict:
+    f = data_dir / "catalogue" / f"{locality}_checked.yaml"
+    return yaml.safe_load(f.read_text(encoding="utf-8")) if f.exists() else {"cards": {}, "not_read": []}
+
+
 @lru_cache(maxsize=4)
-def load_catalogue(data_dir: Path = DATA_DIR) -> tuple[Experience, ...]:
-    """Every ready card that the catalogue maps, as an Experience. A ready card left out of the map fails loudly."""
+def load_catalogue(data_dir: Path = DATA_DIR, checked: bool = True) -> tuple[Experience, ...]:
+    """Every ready card that the catalogue maps, as an Experience, with the official facts read since (m245) on
+    top. `checked=False` gives the cards alone (the coverage report's "before"). A ready card left out of the map
+    fails loudly."""
     dests = load_destinations(data_dir / "destinations.yaml")
     cards = {m.id: m for m in load_moments(data_dir / "moments") if m.status == "ready"}
     out = []
     for f in sorted((data_dir / "catalogue").glob("*.yaml")):
         d = yaml.safe_load(f.read_text(encoding="utf-8"))
+        if "locality" not in d:                    # <locality>_checked.yaml, <locality>_locations.yaml: layers, not a list
+            continue
         dest = dests[d["locality"]]
         missing = [i for i in cards if i not in d["experiences"]] if dest.key == "london" else []
         if missing:
             raise ValueError(f"ready cards with no catalogue entry: {missing}")
-        out += [from_card(cards[i], meta, dest) for i, meta in d["experiences"].items() if i in cards]
+        ch = load_checked(dest.key, data_dir) if checked else {"cards": {}}
+        for i, meta in d["experiences"].items():
+            if i in cards:
+                x = from_card(cards[i], meta, dest)
+                c = ch["cards"].get(i)
+                out.append(apply_checked(x, c, ch["checked"], dest.currency) if c else x)
     return tuple(out)
+
+
+# ---- m245: a destination described in one file, for development (Paris) ---------------------------------------------
+
+DEV_DIR = DATA_DIR / "dev"
+
+
+def _record_facet(category: str, type_: str, f: dict, day: str) -> Facet:
+    fact = lambda k: Fact(f[k]["value"], f[k].get("trust", "checked"), f[k]["source"], day) if k in f else Fact.unknown()
+    kind = FACET_OF_CATEGORY[category]
+    if kind == "culture":
+        return CultureFacet(booking=fact("booking"), timed_ticket=f.get("timed_ticket"))
+    if kind == "outdoor":
+        return OutdoorFacet(terrain=fact("terrain"), weather_dependence=fact("weather_dependence"),
+                            closes_at_dusk=f.get("closes_at_dusk"))
+    if kind == "food":
+        return FoodFacet(service={"market": "market", "restaurant": "sit_down"}.get(type_), cuisine=fact("cuisine"),
+                         reservations=fact("reservations"), price_range=fact("price_range"), meals=fact("meals"))
+    if kind == "shopping":
+        return ShoppingFacet(covered=f.get("covered"))
+    if kind == "activity":
+        return ActivityFacet(age_limit=fact("age_limit"))
+    if kind == "area":
+        return AreaFacet()
+    if kind == "entertainment":
+        return EntertainmentFacet(sessions=fact("sessions"), tickets=fact("tickets"), age_limit=fact("age_limit"))
+    return TransportFacet()
+
+
+def from_record(key: str, v: dict, dest: Destination, day: str) -> Experience:
+    """One experience written straight into the model (no card underneath), every fact with its source."""
+    pt = v["point"]
+    lo, hi = v.get("minutes", (None, None))
+    return Experience(
+        id=f"xp:{dest.country.lower()}:{dest.key}:{key.replace('_', '-')}", legacy_ids=(), place_id=pt.get("source"),
+        name=v["name"], title=v["title"],
+        geo=Geo(dest.country, dest.region_code, dest.key, dest.name,
+                Fact(v["area"]["value"], "checked", v["area"]["source"], day) if "area" in v else Fact.unknown(),
+                pt["lat"], pt["lon"], dest.timezone),
+        category=v["category"], type=v["type"],
+        duration=Duration(lo, hi, None, None) if lo is not None else None,
+        hours=_hours(v["hours"], day) if "hours" in v else OpeningHours(None, None, "unknown", None, None),
+        price=_money(v["price"], dest.currency, day) if "price" in v else Fact.unknown(),
+        setting=Fact(v["setting"], "estimated", "Claude's reading of the place", day) if "setting" in v else Fact.unknown(),
+        accessibility=_access(v["step_free"], day) if "step_free" in v else Accessibility(Fact.unknown()),
+        transport=Transport(v.get("nearest"), None, None, None),
+        provenance=Provenance(v.get("source", "research"), day, "category, type and tags: Claude, " + day),
+        features=v.get("features", {}), photos=(),
+        facet=_record_facet(v["category"], v["type"], v.get("facet", {}), day),
+        status=v.get("status", "draft"),
+        notices=_notices(v.get("notices")),
+        district=Fact(v["district"]["value"], v["district"].get("trust", "checked"), v["district"]["source"], day)
+        if "district" in v else Fact.unknown(),
+    )
+
+
+@lru_cache(maxsize=4)
+def load_dev(key: str, dev_dir: Path = DEV_DIR) -> tuple[Destination, tuple[Experience, ...], dict]:
+    """A development destination (data/dev/<key>.yaml): never in the registry, so never offered to anyone."""
+    d = yaml.safe_load((dev_dir / f"{key}.yaml").read_text(encoding="utf-8"))
+    g = d["destination"]
+    dest = Destination(key, g["name"], g["country"], g.get("region"), g["timezone"], g["currency"],
+                       tuple(g.get("languages") or ()), Point(**{k: g["centre"][k] for k in ("lat", "lon")}), None,
+                       "none", "estimate", None, g.get("region_code"))
+    day = d["checked"]
+    return dest, tuple(from_record(k, v, dest, day) for k, v in d["experiences"].items()), d
 
 
 def ids_in_category(category: str, data_dir: Path = DATA_DIR) -> frozenset[str]:

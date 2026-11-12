@@ -26,7 +26,7 @@ def test_the_audit_gives_counts_and_never_a_value(client, caplog):
     _legacy(client, uid_b, "")
     assert client.get("/v1/admin/audit/foods-avoided", headers=a).status_code == 403   # admin only
     r = client.get("/v1/admin/audit/foods-avoided", headers=ADMIN)
-    assert r.json() == {"profiles": 3, "with_key": 2, "non_empty": 1}
+    assert {k: v for k, v in r.json().items() if k != "old_app_saves_dropped_since_start"} == {"profiles": 3, "with_key": 2, "non_empty": 1}
     assert SECRET not in r.text and SECRET not in caplog.text and "pork" not in caplog.text
 
 

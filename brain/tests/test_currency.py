@@ -81,7 +81,7 @@ def test_the_rate_source_keeps_the_last_good_rates_and_never_makes_them_up():
 
 def test_one_currency_compares_as_before():
     fl = [_flight("a", 389.0, "GBP", 665), _flight("b", 512.4, "GBP", 430)]
-    px = trips.flight_pricing(fl, _rates())
+    px = trips.flight_pricing(fl, _rates(), today=TODAY)
     assert px.mode == "one" and px.note("flights") is None and px.estimate(389.0, "GBP") is None
     assert [x.id for x in trips.filter_flights(fl, trips.FlightFilters(sort="cheapest"), px)] == ["a", "b"]
     tabs, tags = trips.flight_tops(fl, trips.FlightFilters(), px)
@@ -94,7 +94,7 @@ def test_one_currency_compares_as_before():
     assert facets["currency"] == "EUR" and facets["price"] == [250.0, 300.0] and not facets["estimated"]
     assert facets["airlines"][0]["currency"] == "EUR" and px.note("flights") is None   # no rate: nothing to estimate
     # with a current rate, the pounds are shown beside the euros, never instead of them
-    px = trips.flight_pricing(eur, _rates())
+    px = trips.flight_pricing(eur, _rates(), today=TODAY)
     est = px.estimate(250.0, "EUR")
     assert est == {"amount": 208.54, "currency": "GBP", "rate": 0.83415, "source": fx.ECB_SOURCE, "as_of": "2026-11-06",
                    "line": "ECB rate of 6 Nov 2026"}
@@ -131,7 +131,7 @@ def test_several_currencies_without_a_rate_are_grouped_and_nothing_is_cheapest_o
 def test_several_currencies_with_a_current_rate_are_converted_and_the_fare_is_kept():
     fl = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR", airline="Euro Air"),
           _flight("u1", 450.0, "USD", airline="Dollar Air")]
-    px = trips.flight_pricing(fl, _rates())
+    px = trips.flight_pricing(fl, _rates(), today=TODAY)
     assert px.mode == "converted"
     # 400 EUR ≈ £333.66 and 450 USD ≈ £336.20: both cheaper than £389
     assert [x.id for x in trips.filter_flights(fl, trips.FlightFilters(sort="cheapest"), px)] == ["e1", "u1", "g1"]
@@ -149,10 +149,10 @@ def test_several_currencies_with_a_current_rate_are_converted_and_the_fare_is_ke
 
 def test_a_currency_the_ecb_doesnt_publish_or_a_stale_rate_means_grouped():
     fl = [_flight("g1", 389.0, "GBP"), _flight("z1", 4_500_000.0, "UZS", airline="Som Air")]
-    px = trips.flight_pricing(fl, _rates())
+    px = trips.flight_pricing(fl, _rates(), today=TODAY)
     assert px.mode == "grouped" and "no current exchange rate for UZS here" in px.note("flights")
     fl = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR")]
-    assert trips.flight_pricing(fl, _rates(as_of=date(2026, 10, 20))).mode == "grouped"   # too old: not used
+    assert trips.flight_pricing(fl, _rates(as_of=date(2026, 10, 20)), today=TODAY).mode == "grouped"   # too old: not used
 
 
 def test_stays_sort_by_what_a_night_really_costs():
@@ -169,7 +169,7 @@ def test_stays_sort_by_what_a_night_really_costs():
     _, tags = trips.stay_tops(mixed, trips.StayFilters(), px)
     assert "Cheapest" not in [t for ts in tags.values() for t in ts] and "Cheapest in EUR" in tags["e"]
     assert trips.stay_facets(mixed, px)["price_night"] == [110.0, 110.0]   # the slider in pounds only
-    px = trips.stay_pricing(mixed, _rates())                              # 700 EUR ≈ £583.91, a night £83.42 (100 × 0.83415)
+    px = trips.stay_pricing(mixed, _rates(), today=TODAY)                              # 700 EUR ≈ £583.91, a night £83.42 (100 × 0.83415)
     assert [s.id for s in trips.filter_stays(mixed, trips.StayFilters(sort="price"), px)] == ["e", "g"]
     est = trips.stay_estimate(px, mixed[1])
     assert (est["amount"], est["total"], est["currency"]) == (83.42, 583.91, "GBP")   # 583.905, halves up
@@ -218,7 +218,7 @@ def test_a_traveller_can_plan_in_their_own_currency_and_the_fare_is_kept():
     """m238 (WS5): a person who plans in US dollars sees estimates in dollars, crossed through the euro at the ECB
     rate; the provider's price and currency never change."""
     fl = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR", airline="Euro Air")]
-    px = trips.flight_pricing(fl, _rates(), display="USD")
+    px = trips.flight_pricing(fl, _rates(), display="USD", today=TODAY)
     assert px.mode == "converted" and px.unit == "USD" and px.currencies == ("EUR", "GBP")   # no USD fares: by count
     # 400 EUR × 1.1165 = 446.60 USD; £389 ÷ 0.83415 × 1.1165 = 520.67 USD
     assert px.estimate(400.0, "EUR") == {"amount": 446.6, "currency": "USD", "rate": 1.1165,
@@ -235,7 +235,7 @@ def test_a_display_currency_without_a_current_rate_falls_back_to_grouping():
     fl = [_flight("g1", 389.0, "GBP"), _flight("e1", 400.0, "EUR")]
     unknown = trips.flight_pricing(fl, _rates(), display="UZS")          # not an ECB currency
     assert unknown.mode == "grouped" and unknown.estimate(400.0, "EUR") is None
-    stale = trips.flight_pricing(fl, _rates(as_of=date(2026, 10, 20)), display="USD")
+    stale = trips.flight_pricing(fl, _rates(as_of=date(2026, 10, 20)), display="USD", today=TODAY)
     assert stale.mode == "grouped" and stale.rates is None              # over five days old: never used
     assert fx.display_options(None) == ["GBP"]                           # without rates, pounds only
     assert fx.display_options(_rates()) == ["GBP", "EUR", "USD"]

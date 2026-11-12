@@ -120,3 +120,19 @@ def test_food_needs_are_never_stored_until_their_dpia(client):
     risky = ("diet", "halal", "kosher", "allerg", "religio", "vegan", "vegetarian")
     assert not [f for f in ProfileIn.model_fields if any(w in f for w in risky)]
     assert not [c for c in db.User.__table__.columns.keys() if any(w in c for w in risky + ("food",))]
+
+
+def test_an_old_app_sending_the_retired_field_is_counted_and_never_logged(client, caplog):
+    """m251, m257 (Abram, m244, m252): build 91 and Android 21 still send `foodsAvoided` with a profile save. The branch
+    Brain drops it and keeps only an aggregate count, reported by the admin audit: no log line, no user, no value."""
+    import logging
+    from test_api import ADMIN, install
+    h, _ = install(client)
+    before = client.get("/v1/admin/audit/foods-avoided", headers=ADMIN).json()["old_app_saves_dropped_since_start"]
+    with caplog.at_level(logging.DEBUG):
+        client.put("/v1/me/profile", headers=h, json={"based": "london", "foods_avoided": "no pork, peanuts"})
+        client.put("/v1/me/profile", headers=h, json={"based": "london"})
+    assert not [r for r in caplog.records if "foods_avoided" in r.getMessage() and "audit" not in r.getMessage()]
+    assert "pork" not in caplog.text and "peanuts" not in caplog.text
+    after = client.get("/v1/admin/audit/foods-avoided", headers=ADMIN).json()
+    assert after["old_app_saves_dropped_since_start"] == before + 1 and after["with_key"] == 0

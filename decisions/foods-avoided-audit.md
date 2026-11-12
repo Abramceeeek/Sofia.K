@@ -67,3 +67,15 @@ FROM users;
 - The guard from m223 still holds: `test_food_needs_are_never_stored_until_their_dpia`.
 
 **Hours:** Claude ~1.5 h. Abram: the count (~5 min), and the deletion if any exist (~5 min), then the weekly re-count until the deploy.
+
+## Old apps can't bring it back unnoticed (m251, 12 Nov 2026)
+
+Build 91 and Android 21 still send `foodsAvoided` with every profile save (above).
+- **On the branch Brain:** the field is dropped (m223). Each such save adds one to an **aggregate count**, reported by the admin audit as `old_app_saves_dropped_since_start`. There is no log line, no user and no value (m257, Abram m252: "Prefer an aggregate counter"; tested). The count resets when the server restarts, and the audit says so.
+- **On the live Brain (`main`):** it's still stored, so **the weekly count stays**, until the branch Brain is live.
+- **Restores:** restoring an older backup strips it (m233, tested). Requirement 7 is met.
+
+## Status on 12 Nov 2026 (m257): the live audit is Abram's to run
+
+- **Blocked for Claude:** this session has no access to the live database and must not use the admin token. Steps 2–5 (count, key-only delete, zero re-count) are Abram's, with the SQL above.
+- **The clean replacement backup:** nightly sealed backups run on `main` (the latest is from 12 Nov). But `main` doesn't strip the field, so **the first clean backup is the one taken the night after Abram's delete**. Older artifacts expire within 30 days. Delete none before that clean one exists.

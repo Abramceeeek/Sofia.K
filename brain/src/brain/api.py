@@ -454,6 +454,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if amap is not None and (bad := [f for f in body.fields if f not in amap.fields]):
             raise HTTPException(422, f"unknown fields {bad}")
         new = body.model_dump(exclude_none=True, exclude={"foods_avoided"})   # m223: never stored (schemas.py)
+        if body.foods_avoided is not None:   # m251, m257: an old app sent the retired field. Only an aggregate count
+            app.state.retired_food_saves = getattr(app.state, "retired_food_saves", 0) + 1   # is kept: no log line,
+            # no user, no value (Abram, m252: "Prefer an aggregate counter or privacy-preserving metric")
         for key in ("based", "home_city"):   # D116: a later save without them keeps them (the Test B cohort)
             if key not in new and key in (user.profile or {}):
                 new[key] = user.profile[key]
@@ -1437,7 +1440,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         counts = food.audit_profiles(u.profile for u in s.scalars(select(db.User)))
         ops.log.info("foods_avoided audit: %d of %d profiles hold the key, %d non-empty",
                      counts["with_key"], counts["profiles"], counts["non_empty"])
-        return counts
+        # m257: profile saves from old apps that carried the field (dropped), since this server last started
+        return {**counts, "old_app_saves_dropped_since_start": getattr(app.state, "retired_food_saves", 0)}
 
     @app.post("/v1/admin/audit/foods-avoided/delete", dependencies=[Depends(admin)])
     def delete_foods_avoided(body: dict = Body(...), s: Session = Depends(session)):

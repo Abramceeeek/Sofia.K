@@ -13,6 +13,11 @@
 | TestFlight's external review of build 91 | Abram | **Waiting** (after the Apple check) |
 | Recruiting, with the code FRIENDS; start date into the manifest | Abram | After all of the above |
 
+**Checked 12 Nov 2026 (m252), for Abram's approval; no tag was created:**
+- `main`, the live Brain, iOS run 91 (TestFlight upload succeeded) and Android run 21 (the `android-latest` release, `ODYS-android-21.apk`) are all on `80a0da3`.
+- `friends-round-1` doesn't exist yet.
+- Nightly backups are running.
+
 ## The experiment manifest
 
 | What | Value | How to check it during the round |

@@ -1,0 +1,54 @@
+# m247: every card photo's Wikimedia Commons page re-read on 11 Nov 2026 (Claude, by web fetch, a few pages a turn
+# to respect Wikimedia's limits). What each page itself says. Read with the licence terms in design/photo-credits.md.
+# author: the credit matches the page (ok), or the page asks for a different credit (fix).
+# licence: as the page states it; "conflict" when the page contradicts itself.
+# shows: the place itself (place), something related nearby (related), or a photo 15 years old or more (dated):
+#   judged from each page's title and description, not by viewing the image.
+# notes: anything on the page that limits use (requests, notices).
+checked: "2026-11-11"
+photos:
+  a_covent_garden_soho:        {author: ok, licence: CC BY-SA 2.0, taken: "2010-03-11", shows: dated, notes: "Geograph; asks for \"title\" by Lewis Clarke"}
+  a_kings_cross_canal:         {author: ok, licence: CC0, taken: "2025-09-18", shows: place}
+  a_old_spitalfields_market:   {author: ok, licence: CC BY-SA 4.0, taken: "2025-11-02", shows: place, notes: "asks for the credit \"Image © Acabashi; CC-BY-SA 4.0; Wikimedia Commons\"; social-media reuse must attribute; asks that modified versions aren't uploaded without consultation"}
+  a_portobello_saturday:       {author: ok, licence: CC BY 4.0, taken: "2025-06-14", shows: place}
+  a_soho_chinatown_evening:    {author: ok, licence: CC BY-SA 3.0, taken: "2014-08-30", shows: place}
+  a_west_end_outdoor_dining:   {author: ok, licence: CC BY-SA 4.0, taken: "2010-09-10", shows: dated, notes: "shows Regent Street's architecture, not outdoor dining"}
+  m_alderman_stairs_sunset:    {author: ok, licence: CC BY-SA 2.5 ca, taken: "2022-10-11", shows: related, notes: "Tower Bridge at golden hour: the view, not the stairs"}
+  m_bank_of_england_gold:      {author: ok, licence: CC BY-SA 4.0, taken: "2017-04-16", shows: place}
+  m_beigel_bake_late:          {author: ok, licence: CC BY 2.0, taken: "2015-08-29", shows: place}
+  m_bm_great_court:            {author: ok, licence: CC BY-SA 2.0, taken: "2013-01-11", shows: place, notes: "Geograph; asks for \"title\" by Jim Osley"}
+  m_borough_market_graze:      {author: ok, licence: CC BY 2.0, taken: "2010-06-12", shows: dated}
+  m_burlington_arcade:         {author: ok, licence: CC0, taken: "1987-09-01", shows: dated, notes: "the arcade as it was in September 1987"}
+  m_canary_wharf_towers:       {author: fixed, licence: CC BY-SA 3.0, taken: "2008-06-01", shows: dated, notes: "the page asks for \"Photo by DAVID ILIFF\" (Author field: Diliff); also offered under GFDL; cites UK freedom of panorama"}
+  m_chinatown_dim_sum:         {author: ok, licence: CC BY 2.0, taken: "2009-10-16", shows: dated}
+  m_city_towers_walk:          {author: ok, licence: CC BY-SA 2.0, taken: "2021-08-15", shows: place}
+  m_courtauld_gallery:         {author: ok, licence: CC BY-SA 4.0, taken: "2009-09-13", shows: dated, notes: "asks to be credited as the author line (\"Photograph by Mike Peel (www.mikepeel.net)\") and, optionally, told of reuse"}
+  m_evensong_st_pauls:         {author: ok, licence: CC BY-SA 4.0, taken: "2023-07-01", shows: related, notes: "the dome from outside; the page notes the image was enhanced (Gigapixel)"}
+  m_garden_at_120:             {author: ok, licence: CC0, taken: "2025-06-19", shows: place}
+  m_greenwich_peninsula_walk:  {author: ok, licence: CC BY-SA 2.0, taken: "2020-01-28", shows: place, notes: "Geograph; asks for \"title\" by Ian S"}
+  m_greenwich_wolfe_view:      {author: ok, licence: CC BY-SA 4.0, taken: "2009-09-08", shows: dated, notes: "the skyline beyond has changed since 2009"}
+  m_horizon_22:                {author: ok, licence: CC BY-SA 4.0, taken: "2023-10-08", shows: place}
+  m_leadenhall_market:         {author: ok, licence: CC BY 2.0, taken: "2018-05-19", shows: place, notes: "Flickr account \"It's No Game\"; filed under Duncan Harris's photographs without linking the names"}
+  m_liberty_timber_galleries:  {author: ok, licence: CC BY-SA 2.0, taken: "2011-04-25", shows: related, notes: "the building outside, not the timber galleries; Geograph"}
+  m_london_fields_lido:        {author: ok, licence: CC BY 2.0, taken: "2009-02-16", shows: dated}
+  m_millennium_bridge_dome:    {author: ok, licence: CC BY-SA 3.0, taken: "2009-09-25", shows: dated}
+  m_national_gallery:          {author: ok, licence: CC BY 2.0, taken: "2023-08-31", shows: place, notes: "the page writes the author \". Ray in Manila\""}
+  m_national_portrait_gallery: {author: ok, licence: CC BY-SA 4.0, taken: "2023-06-30", shows: place}
+  m_park_bike_loop_hyde:       {author: ok, licence: CC BY-SA 2.0, taken: "2024-01-13", shows: place, notes: "Geograph"}
+  m_park_break_battersea:      {author: ok, licence: CC BY-SA 2.0, taken: "2012-06-14", shows: place, notes: "Geograph"}
+  m_park_break_embankment:     {author: ok, licence: CC BY-SA 3.0, taken: "2010-01-01", shows: dated, notes: "the page gives only the year 2010"}
+  m_park_break_holland_kyoto:  {author: ok, licence: CC BY-SA 3.0, taken: "2009-08-09", shows: dated, notes: "also offered under GFDL"}
+  m_park_break_hyde:           {author: ok, licence: CC BY-SA 4.0, taken: "2023-06-24", shows: place, notes: "Mike Peel: credit as the author line"}
+  m_park_break_olympic:        {author: ok, licence: CC BY-SA 4.0, taken: "2012-08-01", shows: dated, notes: "taken during the 2012 Games; the park has changed since"}
+  m_park_break_regents:        {author: ok, licence: CC BY-SA 4.0, taken: "2024-03-23", shows: place, notes: "Mike Peel; shows the 1936 Triton fountain (a public sculpture)"}
+  m_park_break_st_james:       {author: ok, licence: CC BY-SA 2.0, taken: "2014-10-23", shows: place, notes: "Geograph"}
+  m_rfh_foyers_rest:           {author: ok, licence: CC BY-SA 4.0, taken: "2015-11-04", shows: place, notes: "an edited version of Nick-D's photo"}
+  m_richmond_park_view:        {author: ok, licence: conflict, taken: "2024-11-10", shows: related, notes: "the licensing section says CC BY 4.0 but the page's structured data says CC BY-SA 4.0; red deer, not the view from King Henry's Mound"}
+  m_soane_museum:              {author: ok, licence: CC BY-SA 4.0, taken: "2022-04-16", shows: place}
+  m_st_dunstan_garden:         {author: ok, licence: CC BY-SA 2.0, taken: "2016-09-24", shows: place, notes: "Geograph"}
+  m_st_martin_crypt_lunch:     {author: ok, licence: CC BY 4.0, taken: "2026-06-23", shows: place}
+  m_to_river_somerset:         {author: ok, licence: CC BY-SA 2.0, taken: "2010-08-24", shows: dated, notes: "Geograph"}
+  m_to_river_villiers:         {author: ok, licence: CC BY-SA 2.0, taken: "2010-02-02", shows: dated, notes: "Geograph"}
+  m_uber_boat_west_day:        {author: ok, licence: CC BY-SA 4.0, taken: "2025-09-22", shows: place, notes: "the page excludes social-media use unless the platform enforces the CC licence terms, and asks that modified versions aren't uploaded without consultation"}
+  m_uber_boat_west_night:      {author: ok, licence: CC BY-SA 2.0, taken: "2016-09-04", shows: place}
+  m_waterloo_bridge_sunset:    {author: ok, licence: CC BY-SA 2.0, taken: "2014-06-29", shows: place, notes: "Geograph"}

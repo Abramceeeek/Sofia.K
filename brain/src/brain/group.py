@@ -38,6 +38,7 @@ from .discovery import Scorer
 
 DELTA = 0.2          # GUESS: "likes" = in the member's own top 20% (Sato's top-Δ%)
 EPS = 1e-6
+GOOD = 0.5           # quality.GOOD: below this for every place, nothing here is a good match for that member
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,11 @@ class Member:
     budget_per_day: float | None = None
     musts: tuple[str, ...] = ()     # experience ids, in the member's order
     rejects: tuple[str, ...] = ()
+    needs_step_free: bool = False   # m250: a stated need, a hard rule; never inferred
+    days_present: tuple[int, ...] | None = None   # m250: the days (1-based) the member is there; None = every day
+    strict_access: bool = False     # m256: only places a source says are step-free (unknown access is left out)
+    joins_first: dict[int, int] | None = None     # m256: day → how many of that day's stops they join (a later start
+                                                  # or an earlier finish is the same count from the other end: GUESS)
 
 
 @dataclass
@@ -69,8 +75,17 @@ class GroupPlan:
                 "proportional_share": sum(self.proportional.values()) / len(self.proportional)}
 
 
-def _price(x: Experience) -> float:
-    return x.price.value.amount if x.price.known else 0.0
+def _price(x: Experience, currency: str = "GBP", rates=None) -> float | None:
+    """m255: the price per person in the budget's currency, or None when it isn't known or can't be converted (a
+    missing or foreign price is never counted as free)."""
+    if not x.price.known:
+        return None
+    m = x.price.value
+    if m.currency == currency:
+        return m.amount
+    if rates is not None and m.currency in rates.per_eur and currency in rates.per_eur:
+        return m.amount / rates.per_eur[m.currency] * rates.per_eur[currency]
+    return None
 
 
 def _objective(method: str, members: list[Member], chosen: list[Experience], P: dict, U: dict) -> float:
@@ -85,11 +100,25 @@ def _objective(method: str, members: list[Member], chosen: list[Experience], P: 
 
 
 def plan(members: list[Member], candidates: list[Experience], days: int, per_day: int,
-         method: str = "nash") -> GroupPlan:
+         method: str = "nash", unknown_access: str = "flag", currency: str = "GBP", rates=None) -> GroupPlan:
     """The shared itinerary: `days` days of `per_day` stops. Greedy on the objective, then single swaps until nothing
-    improves it; the hard rules hold throughout."""
+    improves it; the hard rules hold throughout.
+
+    m250: when a member needs step-free access, a place a source says isn't step-free is out (a hard rule). A place
+    whose access is unknown stays in and is named in the notes (`unknown_access="flag"`), or is left out too
+    (`"exclude"`): unknown is never read as "no", but the group can choose to be strict."""
     vetoed = {r for m in members for r in m.rejects}
-    pool = [x for x in candidates if x.id not in vetoed]
+    access = any(m.needs_step_free for m in members)
+    strict = any(m.needs_step_free and m.strict_access for m in members) or unknown_access == "exclude"
+    sf = lambda x: x.accessibility.step_free
+    not_step_free = {x.id for x in candidates if access and sf(x).known and sf(x).value == "no"}
+    unknown = {x.id for x in candidates if access and not sf(x).known}
+    out_ids = vetoed | not_step_free | (unknown if strict else set())
+    pool = [x for x in candidates if x.id not in out_ids]
+    cap0 = min((m.budget_per_day for m in members if m.budget_per_day is not None), default=None)
+    unpriced = [x for x in pool if _price(x, currency, rates) is None] if cap0 is not None else []
+    if unpriced:          # m255: with a budget, a price that isn't known in the budget's currency can't be shown to fit
+        pool = [x for x in pool if x not in unpriced]
     cap = min((m.budget_per_day for m in members if m.budget_per_day is not None), default=None)
     P = {(m.label, x.id): m.scorer.p_good(x) for m in members for x in pool}
     U = {(m.label, x.id): m.scorer.utility(x) for m in members for x in pool}
@@ -97,8 +126,21 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     notes = []
     if vetoed & {x.id for x in candidates}:
         notes.append(f"{len(vetoed & {x.id for x in candidates})} place(s) left out because someone rejected them.")
+    if not_step_free:
+        notes.append(f"{len(not_step_free)} place(s) left out because their own sources say they aren't step-free: "
+                     + "; ".join(x.title for x in candidates if x.id in not_step_free) + ".")
+    if strict and unknown & {x.id for x in candidates}:
+        notes.append(f"{len(unknown)} place(s) left out because no source confirms they're step-free (not because "
+                     "they're known to have steps): " + "; ".join(x.title for x in candidates if x.id in unknown) + ".")
+    if unpriced:
+        notes.append(f"{len(unpriced)} place(s) left out because their price isn't known in {currency}, so they can't "
+                     "be checked against the smallest budget: " + "; ".join(x.title for x in unpriced) + ".")
+    for m in members:
+        if pool and max(P[(m.label, x.id)] for x in pool) < GOOD:
+            notes.append(f"Nothing here is a strong match for {m.label}: their satisfaction will be low whatever we "
+                         "choose, so it's said rather than hidden.")
     def fits_budget(xs: list[Experience]) -> bool:   # the trip's cost per person within the smallest budget overall
-        return cap is None or sum(_price(x) for x in xs) <= cap * days + 1e-9
+        return cap is None or sum(_price(x, currency, rates) for x in xs) <= cap * days + 1e-9
 
     # must-sees: each member's first, then the rest in turns, while they fit the days and the smallest budget
     by_id = {x.id: x for x in pool}
@@ -152,30 +194,52 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                     break
             if improved:
                 break
-    day_lists, highlights, over = _assign(chosen, members, days, per_day, P, cap)
+    day_lists, highlights, over = _assign(chosen, members, days, per_day, P, cap,
+                                          lambda x: _price(x, currency, rates) or 0.0)
     notes += over
-    sats = {m.label: sum(P[(m.label, x.id)] for x in chosen) / max(1, len(chosen)) for m in members}
-    prop, envy = _fairness(members, pool, chosen, P)
+    if access and not strict:
+        flagged = [x.title for x in chosen if x.id in unknown]
+        if flagged:
+            notes.append(f"Step-free access isn't known for {len(flagged)} stop(s): check before going ("
+                         + "; ".join(flagged) + ").")
+
+    def seen(m: Member) -> list[Experience]:      # the stops on the days, and the part of each day, the member is there
+        return [x for i, d in enumerate(day_lists, 1) if m.days_present is None or i in m.days_present
+                for x in (d[:m.joins_first[i]] if m.joins_first and i in m.joins_first else d)]
+    sats = {m.label: (sum(P[(m.label, x.id)] for x in seen(m)) / len(seen(m))) if seen(m) else 0.0 for m in members}
+    _, envy = _fairness(members, pool, chosen, P)
+    k = max(1, round(DELTA * len(pool)))
+    favourites = {m.label: set(x.id for x in sorted(pool, key=lambda y: -P[(m.label, y.id)])[:k]) for m in members}
+    prop = {m.label: any(x.id in favourites[m.label] for x in seen(m)) for m in members}   # only stops they're there for
+    left_out = [m.label for m in members if not prop[m.label]]
+    if left_out:          # m256: say the trade-off, and what would change it (Abram: "Do not hide this limitation")
+        notes.append(f"{', '.join(left_out)} {'has' if len(left_out) == 1 else 'have'} none of their favourite places in "
+                     f"this plan: {days * per_day} stops can't hold a favourite for all {len(members)} of you. To change "
+                     "that: add a day or a stop, split up for one stop, or let them choose one stop.")
     return GroupPlan(day_lists, highlights, method, sats, prop, envy, notes)
 
 
 def _assign(chosen: list[Experience], members: list[Member], days: int, per_day: int, P: dict,
-            cap: float | None) -> tuple[list[list[Experience]], list[str], list[str]]:
+            cap: float | None, price) -> tuple[list[list[Experience]], list[str], list[str]]:
     """Each day's highlight takes turns: day 1 leads with member A's favourite of what's left, day 2 with B's…, and
     each day's cost per person stays within the smallest budget where the stops allow it (said where it can't)."""
     left = list(chosen)
-    out, leads, over = [], [], []
-    spend = lambda day: sum(_price(x) for x in day)
-    fits = lambda day, x: cap is None or spend(day) + _price(x) <= cap + 1e-9
+    out, leads, over, led = [], [], [], set()
+    spend = lambda day: sum(price(x) for x in day)   # only known prices reach here when a cap is set
+    fits = lambda day, x: cap is None or spend(day) + price(x) <= cap + 1e-9
     for d in range(days):
         if not left:
             break
-        m = members[d % len(members)]
+        here = [o for o in members if o.days_present is None or d + 1 in o.days_present] or members
+        # m250: a member who is only there some days leads one of them; otherwise turns go round the group
+        short = [o for o in here if o.days_present is not None and o.label not in led]
+        m = short[0] if short else here[d % len(here)]
+        led.add(m.label)
         options = [x for x in left if fits([], x)] or left
         lead = max(options, key=lambda x: P[(m.label, x.id)])
         left.remove(lead)
         day = [lead]
-        others = [o for o in members if o is not m] or [m]
+        others = [o for o in here if o is not m] or [m]
         while len(day) < per_day and left:
             # the stop the day's other members like most, so each day has something for someone else too
             options = [x for x in left if fits(day, x)]
