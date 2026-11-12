@@ -67,3 +67,21 @@ def test_paris_has_no_photos_until_each_is_checked():
     from brain.catalogue import load_dev
     _, xs, _ = load_dev("paris")
     assert all(x.photos == () for x in xs)                                    # no mass import (m244)
+
+
+def test_only_photos_cleared_one_by_one_reach_the_share_card():   # m258 (Abram, m252)
+    checks = yaml.safe_load((DATA_DIR / "photo_checks.yaml").read_text(encoding="utf-8"))["photos"]
+    shared = {k for k, v in CREDITS.items() if v.get("share") is True}
+    for card in shared:
+        v, r = CREDITS[card], checks[card]
+        assert v["licence"] == "CC0" or (v["licence"].startswith("CC BY ") and "SA" not in v["licence"]), card
+        assert r["author"] in ("ok", "fixed") and r["licence"] != "conflict", card
+        assert "social-media" not in (r.get("notes") or "") and v["licenceURL"].startswith("http"), card
+    assert all(isinstance(v.get("share"), bool) for v in CREDITS.values())           # every photo decided
+    assert not shared & {"a_old_spitalfields_market", "m_uber_boat_west_day"}       # their pages exclude social media
+    assert "m_richmond_park_view" not in shared                                       # licence stated two ways
+    assert len(shared) == 11 and not any("SA" in CREDITS[c]["licence"] for c in shared)
+    for app in ((ROOT / "app" / "Sources" / "ShareCard.swift"), (ROOT / "android" / "app" / "src" / "main" / "java" /
+                                                                  "com" / "odys" / "app" / "ShareCard.kt")):
+        t = app.read_text(encoding="utf-8")
+        assert "sharePhoto" in t and "CardPhotos.photo(" not in t                     # never an uncleared photo

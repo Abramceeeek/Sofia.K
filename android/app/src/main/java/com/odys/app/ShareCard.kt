@@ -71,7 +71,7 @@ object ShareCard {
         c.drawColor(Theme.cream.toArgb())
 
         // the picture: the card's photo, cropped to fill, or a warm field
-        val found = CardPhotos.photo(context, stop.momentId)
+        val found = CardPhotos.sharePhoto(context, stop.momentId)   // m258: only a photo cleared for sharing
         val photoRect = Rect(0, 0, W, PHOTO_H)
         if (found != null) {
             val bmp = found.second
@@ -122,8 +122,12 @@ object ShareCard {
         }
 
         // the foot: the arch and "Planned with ODYS", then the photo's credit
-        val credit = found?.first?.let { "Photo: ${it.author}, ${it.licence}, Wikimedia Commons (cropped)" }
-        val footY = H - PAD - (if (credit != null) 66f else 0f)
+        val credit = found?.first?.shareCredit
+        val creditPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 24f; color = Theme.creamSoft.toArgb() }
+        val creditLines = credit?.let {     // m258: room for the lines the full credit needs (at most 3), no more
+            StaticLayout.Builder.obtain(it, 0, it.length, creditPaint, width).setMaxLines(3).build().lineCount
+        } ?: 0
+        val footY = H - PAD - (if (credit != null) 18f + 24f * creditLines else 0f)
         val glyph = android.graphics.Path().apply {
             val gx = PAD
             val gw = 30f
@@ -141,10 +145,7 @@ object ShareCard {
             color = Theme.creamSoft.toArgb()
         })
         if (credit != null) {
-            draw(c, credit, TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-                textSize = 24f
-                color = Theme.creamSoft.toArgb()
-            }, width, footY + 24f, 2)
+            draw(c, credit, creditPaint, width, footY + 24f, 3)
         }
         return out
     }
@@ -179,7 +180,8 @@ object ShareCard {
         val send = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, "${referral.text}: $link")
+            val photo = CardPhotos.sharePhoto(context, stop.momentId)?.first   // m258: the licence link, clickable
+            putExtra(Intent.EXTRA_TEXT, "${referral.text}: $link" + (photo?.let { "\n\n" + it.shareLines } ?: ""))
             clipData = ClipData.newRawUri(null, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }

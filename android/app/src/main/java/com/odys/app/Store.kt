@@ -245,9 +245,17 @@ class Files(private val context: Context) {
  * in assets/photos/photo-credits.json, until Abram's own replace them. A card without one keeps its field of colour.
  */
 @Serializable
-data class CardPhoto(val file: String, val title: String, val author: String, val licence: String, val source: String) {
+data class CardPhoto(val file: String, val title: String, val author: String, val licence: String, val source: String,
+                     val licenceURL: String? = null,
+                     /** m258: cleared for the share card (brain/data/photo_checks.yaml); missing means no. */
+                     val share: Boolean = false) {
     /** The credit the licence asks for (title, author, source, licence), shown under the picture. */
     val credit: String get() = "“$title” by $author, $licence, Wikimedia Commons (resized)"
+    /** m258: on the share card, which crops the photo. */
+    val shareCredit: String get() = "Photo: “$title” by $author, $licence, Wikimedia Commons (cropped)"
+    /** m258: in the share message, where links are clickable. */
+    val shareLines: String get() = "Photo: “$title” by $author, $licence" + (licenceURL?.let { " ($it)" } ?: "") +
+        ", cropped. $source"
 }
 
 object CardPhotos {
@@ -268,6 +276,10 @@ object CardPhotos {
     fun cardId(momentId: String): String? = if (momentId.startsWith("lunch@")) null else momentId.substringBefore("#")
 
     fun info(context: Context, momentId: String): CardPhoto? = cardId(momentId)?.let { all(context)[it] }
+
+    /** m258: the photo only if it's cleared for sharing; otherwise the card keeps its field of colour. */
+    fun sharePhoto(context: Context, momentId: String): Pair<CardPhoto, Bitmap>? =
+        photo(context, momentId)?.takeIf { it.first.share }
 
     fun photo(context: Context, momentId: String): Pair<CardPhoto, Bitmap>? {
         val info = info(context, momentId) ?: return null

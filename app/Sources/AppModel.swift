@@ -846,7 +846,9 @@ final class AppModel {
         guard let referral, var link = URLComponents(url: AppConfig.baseURL.appendingPathComponent("r/\(referral.code)"),
                                                      resolvingAgainstBaseURL: false) else { return }
         link.queryItems = [URLQueryItem(name: "m", value: CardPhotos.cardId(stop.momentId) ?? stop.momentId)]
-        var items: [Any] = ["\(referral.text): \(link.url?.absoluteString ?? "")"]
+        var text = "\(referral.text): \(link.url?.absoluteString ?? "")"
+        if let photo = CardPhotos.sharePhoto(for: stop.momentId)?.0 { text += "\n\n" + photo.shareLines }   // m258
+        var items: [Any] = [text]
         if let card = ShareCardView.render(stop: stop, rating: rating, reason: reason) { items.insert(card, at: 0) }
         await client.event("share_sheet", ["moment": stop.momentId, "rating": "\(rating)", "reason": reason ? "1" : "0"])
         ShareSheet.present(items) { to, sent in
