@@ -554,7 +554,7 @@ Nash stays the preferred prototype, not a validated preference. No accounts were
 |---|---|
 | Brain (`pytest`) | **450 passed**, 0 failed (one library deprecation warning); 418 at the last report |
 | Android (`testDebugUnitTest`) | **119 tests, 0 failures** (after the share-card change) |
-| iPhone (CI run #110, `upload: false`, commit `096afee`) | Running when this section was committed; its result is added when it finishes (the share-card change is the only Swift change) |
+| iPhone (CI run #110, `upload: false`, commit `096afee`) | **Passed**: the share-card change compiles and every screen was drawn; signing and upload were skipped, as always off `main`. Its `sharecard` screenshot shows a cleared CC0 photo with the full credit (title, photographer, licence, "(cropped)") on two lines, nothing cut off |
 
 New tests:
 - ranking (4);
