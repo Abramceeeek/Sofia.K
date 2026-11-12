@@ -4,6 +4,16 @@ Openly licensed photos from Wikimedia Commons (Abram, 30 Sep 2026: "use openly l
 
 **Flag any photo you'd change: one line each.**
 
+**Every page re-read, 11 Nov 2026 (m247):** all 45 Commons pages, one by one (`brain/data/photo_checks.yaml`, tested).
+- 44 credits match their page. **One was corrected in both apps:** the Canary Wharf photo's page asks for "Photo by DAVID ILIFF", so the credit is now "David Iliff", not "Diliff".
+- **Richmond's deer photo:** its page states the licence two ways (CC BY 4.0 in the text, CC BY-SA 4.0 in its data). Treat it as BY-SA until it's resolved.
+- **Older photos:** 15 are 15 years old or more. 4 show something related rather than the place itself.
+- **All 45 licences permit commercial use and changes** (CC0, CC BY, CC BY-SA; the legal code read for each version).
+- **Three questions for the solicitor, about the share card** (`decisions/destination-quality-and-expansion-report.md`, section 7):
+  - its missing title and licence link;
+  - whether cropping makes it an adaptation under BY-SA;
+  - two Acabashi pages that exclude social media.
+
 **Re-checked 10 Nov 2026 (m243), as the catalogue grows (Abram, m234):**
 - **A test now guards it** (`brain/tests/test_photo_credits.py`, 4 tests, no network). It fails the build if:
   - the two apps' photos or credits differ;

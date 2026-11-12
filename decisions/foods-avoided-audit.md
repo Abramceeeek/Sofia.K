@@ -67,3 +67,10 @@ FROM users;
 - The guard from m223 still holds: `test_food_needs_are_never_stored_until_their_dpia`.
 
 **Hours:** Claude ~1.5 h. Abram: the count (~5 min), and the deletion if any exist (~5 min), then the weekly re-count until the deploy.
+
+## Old apps can't bring it back unnoticed (m251, 12 Nov 2026)
+
+Build 91 and Android 21 still send `foodsAvoided` with every profile save (above).
+- **On the branch Brain:** the field is dropped (m223), and the save logs one line: "profile save carried the retired foods_avoided field (an old app); dropped, not stored". **The value is never logged** (tested).
+- **On the live Brain (`main`):** it's still stored, so **the weekly count stays**, until the branch Brain is live.
+- **Restores:** restoring an older backup strips it (m233, tested). Requirement 7 is met.
