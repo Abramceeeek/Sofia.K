@@ -9,7 +9,8 @@ turned into the chance of "Good" or better) and the match words shown. The quali
 **After the experience** (stored today): the 1-5 rating after a stop (Good or better = 4 or 5), "Would you bring
 someone here?", and at the end of a day "Was it worth what you spent?" and "Would you do this day again?".
 Not collected (and not to be added without Abram's approval, never into the frozen round): whether a stop matched
-expectations, and whether the person would recommend it.
+expectations (approved to investigate after the round, m260) and whether the person would recommend it (deferred):
+`decisions/post-experience-questions.md`.
 
 **Measures:** calibration (Brier score, and predicted against observed by band), discrimination (the chance a stop
 rated Good was predicted higher than one that wasn't: AUC), whether each match word holds up, how many planned stops
@@ -62,9 +63,14 @@ def predictions_from_plans(plans: list[dict], scale: float, cut: float) -> list[
 
 
 def evaluate(preds: list[Prediction], outs: list[Outcome], days: list[DayOutcome] = (), *, synthetic: bool,
-             bands: int = 5) -> dict:
+             bands: int = 5, open_questions: dict[tuple[int, str], tuple[str, ...]] | None = None) -> dict:
     """Pair each rating with the prediction made for that stop in that plan, then measure. Nothing is imputed: an
-    unrated stop is counted as unrated, never as a guess."""
+    unrated stop is counted as unrated, never as a guess.
+
+    m268 (Abram, m260, priority C): with `open_questions` ((plan id, moment id) → the facts quality.uncertainties
+    leaves materially open for that day, empty when none), rated stops are also split by whether their facts had an
+    open question. That tests the premise of the uncertainty-aware ranking on real ratings: places with open questions
+    disappoint more often. A stop not in the mapping is counted apart, never guessed."""
     by = {(p.plan_id, p.moment_id): p for p in preds}
     pairs = [(by[(o.plan_id, o.moment_id)], o) for o in outs if (o.plan_id, o.moment_id) in by]
     out = {"synthetic": synthetic, "label": "SYNTHETIC: not real-user validation" if synthetic else "real ratings",
@@ -94,6 +100,20 @@ def evaluate(preds: list[Prediction], outs: list[Outcome], days: list[DayOutcome
     out["match_words"] = {w: {"n": len(v), "observed_good": round(sum(v) / len(v), 3)} for w, v in words.items()}
     bring = [o.would_bring for _, o in pairs if o.would_bring is not None]
     out["would_bring"] = round(sum(bring) / len(bring), 3) if bring else None
+    if open_questions is not None:
+        share = lambda v: {"n": len(v), "observed_good": round(sum(v) / len(v), 3) if v else None}
+        split, fields = {"none": [], "some": []}, {}
+        for (pr, _), yi in zip(pairs, y):
+            qs = open_questions.get((pr.plan_id, pr.moment_id))
+            if qs is None:
+                continue
+            split["some" if qs else "none"].append(yi)
+            for f in qs:
+                fields.setdefault(f, []).append(yi)
+        out["open_questions"] = {"none": share(split["none"]), "some": share(split["some"]),
+                                 "by_fact": {f: share(v) for f, v in sorted(fields.items())},
+                                 "not_in_catalogue": sum(1 for pr, _ in pairs
+                                                         if (pr.plan_id, pr.moment_id) not in open_questions)}
     if days:
         again = [d.again for d in days if d.again is not None]
         out["day_again"] = round(sum(again) / len(again), 3) if again else None

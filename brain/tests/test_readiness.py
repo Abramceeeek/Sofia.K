@@ -76,3 +76,13 @@ def test_every_assessment_has_a_review_date_and_supported_needs_abrams_final_rev
     passing = [type(i)(**{**i.__dict__, "status": "pass"}) for i in items]
     assert level(passing) == "preview"                                     # all numbers pass: still not supported
     assert assessment(passing, "2026-11-12", "x", abram_final_review="2026-12-01")["level"] == "supported"
+
+
+def test_a_price_passes_with_a_source_or_an_estimate_label_and_fails_with_neither():    # m263 (Abram, m260)
+    from dataclasses import replace
+    ready = [x for x in load_catalogue() if x.status == "ready" and x.price.known]
+    prices = lambda xs: {i.key: i for i in checklist(london_inputs(), xs, TODAY, 2027)}["prices"].status
+    labelled = replace(ready[0], price=replace(ready[0].price, source=None, trust="estimated"))
+    bare = replace(ready[0], price=replace(ready[0].price, source=None, trust="checked"))
+    assert prices([labelled, *ready[1:]]) == "pass"
+    assert prices([bare, *ready[1:]]) == "fail"

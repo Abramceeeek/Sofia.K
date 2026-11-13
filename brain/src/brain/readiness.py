@@ -113,8 +113,7 @@ def checklist(inp: Inputs, ready: list[Experience], today: str, trip_year: int) 
         Item("photos", "Photos' licences and credits checked one by one", False,
              "pass" if inp.photos_checked else "fail", "yes" if inp.photos_checked else "no"),
         Item("prices", "Every price shown has a source, or is labelled an estimate (unknown stays unknown)", False,
-             "pass" if all(x.price.source and (x.price.trust == "estimated" or x.price.source) for x in ready
-                           if x.price.known) else "fail",
+             "pass" if all(x.price.source or x.price.trust == "estimated" for x in ready if x.price.known) else "fail",
              f"{sum(1 for x in ready if x.price.known)} priced, {sum(1 for x in ready if not x.price.known)} unknown"),
     ]
 
