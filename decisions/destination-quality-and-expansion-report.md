@@ -1,4 +1,4 @@
-# Destination quality and international validation: report (12 Nov 2026; m244–m251)
+# Destination quality and international validation: report (12–13 Nov 2026; m244–m269)
 
 Abram's decisions and five workstreams (m244), built on the branch `claude/vigilant-cannon-my82dj`. The aim was to prove that ODYS's intelligence transfers beyond London, not just that its architecture can store international data. **The short answer:**
 - **Partly.** The model, the catalogue and the quality checks work in Paris without London assumptions, once one bug was fixed: euro prices were scored as free.
@@ -619,3 +619,180 @@ New tests:
 | Evaluation | ~1 |
 | Report | ~1 |
 | **Total** | **about 13 h** |
+
+# Abram's founder decisions of 12 Nov (m260), and what was done (m261–m269)
+
+Abram: "Our objective is to prove that ODYS makes discovering and planning experiences meaningfully better for real people." So the friends' round comes first. Everything below is on the work branch.
+
+**The release rules held (checked 13 Nov):**
+- `main` is unchanged at `80a0da3`, and the live Brain answers `"version":"80a0da3"`.
+- Nothing was merged, deployed or uploaded, and no APK was published.
+- No paid API was enabled, and nothing was bought or migrated. No payment work was started.
+- No live price changed, no food data was collected, and no database table was added.
+- The experiment's logic and questions are untouched.
+- No new data is collected anywhere: every read-out uses data the frozen build already keeps.
+
+## The decisions by status
+
+### Approved (Abram, m260)
+
+1. The uncertainty-aware ranking, **for internal testing only**: three configurations in shadow, with the default unchanged.
+2. The readiness levels (Preview, Limited support, Supported) and Limited support's bar, with five extra conditions. **Paris stays in development.**
+3. **The Courtauld and both Uber Boat fares stay on hold.**
+4. **Share cards with the 11 cleared photos.** The exclusions stay, and the list isn't expanded until the other photos are checked.
+5. **The tag `friends-round-1` at exactly `80a0da3`**, after an 8-point preflight; and a real-device rehearsal.
+6. **The old food field:** the count-only audit and key-only deletion, run by an authorised operator.
+7. **Median planning allowances for unknown prices**, never zero, with Abram's safeguards.
+8. **"Did this experience match what you expected?"**, investigated for after the round. "Would you recommend…" is deferred.
+9. **Priorities:** the friends' round first, then data quality on material facts, evaluation against real feedback, and the database decision.
+
+### Implemented (code and tests on the branch; documents)
+
+| What | Where | Tests |
+|---|---|---|
+| **Three ranking configurations** in shadow: baseline (the default), uncertainty-aware, and uncertainty-aware with stricter money risks. **"Might be open" is told apart from "confirmed open"**: a reason says "Open on Saturdays by its published hours" or "Might be open: …", never a certainty | `quality.CONFIGS`, `quality.open_status`, `discovery.shadow` | 3 (default unchanged; shadow ranks all three; open status) |
+| **The four-dimension benchmark** (below). `ranking_rules.txt` (m254) is kept as it was | `scripts/benchmark_configs.py` → `benchmarks/synthetic/ranking_configs.txt` | — |
+| **Planning allowances** for unknown prices: the median of at least 3 checked prices of the same type (else category), same city and currency, labelled with sample size and dates; unknown when there aren't enough. **Budgets split confirmed, estimated and unknown**; a strict budget uses the upper quartile and says "can't be verified yet" when a cost is unknown. Stored prices are never replaced | `priceestimate.py` | 4 |
+| **Readiness as Abram set it:** the four quality items for Limited support (hours 80%, areas 60%, step-free 50%, prices sourced or labelled), review dates on every assessment, and Abram's final review for Supported. **Fixed 13 Nov:** a price labelled as an estimate now passes without a source, as Abram's rule says | `readiness.py` | 7 |
+| **The three price discrepancies on hold**, with source and date kept; the cards keep their values | `london_price_proposals.yaml` | 1 (replacing one) |
+| **Predictions against real ratings** from an export: calibration, discrimination, match words, the day's answers; "exploratory only" below 30 rated stops | `scripts/evaluate_export.py` | 1 |
+| **Real ratings split by open questions** (m268): stops whose facts had a material open question on their own planned day are compared with stops that had none. This tests the uncertainty ranking's premise on the friends' round (below) | `evaluation.py`, `evaluate_export.py` | 2 |
+| **The friends' round plan** (invite, procedure, data, success criteria, exploratory against meaningful, limits, analysis) and **the 25-step rehearsal** for both phones | `validation/friends-round-plan.md`, `friends-round-rehearsal.md` | — |
+| **The tag's 8-point preflight: all passed** (12 Nov; points 1–3 and 8 rechecked 13 Nov). The push was refused (below) | `validation/friends-round.md` | — |
+| **The food field's operator procedure**: Abram's seven steps word for word, the counter and the database count kept apart, and **`python -m brain.backup count-food`**, which counts a sealed backup in memory and prints only three numbers | `foods-avoided-audit.md`, `backup.py` | 1 (no value on screen; nothing written to disk) |
+| **The database decision document** | `database-before-6-dec.md` | — |
+| **The post-experience questions**: "as expected?" designed; the test that decides "recommend" | `post-experience-questions.md`, after-9-Nov #98 and #99 | — |
+| **Material data gaps, by plan share** (priority B) | `scripts/material_gaps.py` → `benchmarks/coverage/material_gaps.md` | — |
+
+### Awaiting real-user validation
+
+- **Whether the uncertainty-aware ranking improves real outcomes.** Build 91 doesn't use it, so the friends' round can't test it directly. What the round can test is its premise: are stops with a material open question rated lower? (`evaluate_export.py`, m268; exploratory below 30 rated stops.) The ranking itself needs a later comparison where people receive its plans.
+- **The risk values** (0.30 for unknown hours on a day, and so on): GUESSES until real ratings set them.
+- **The personal plan against the generic one** (Test B): the friends' round, read as direction, not proof.
+- **"Was it what you expected?"**: built only after the round, if Abram says yes after its read-out.
+
+### Awaiting external verification
+
+- **London's gaps to Limited support:** 9 more places with hours read on an official page (31 of 49; 40 needed), and 8 more with step-free status from a named source (17 of 49; 25 needed).
+- **The most-planned places come first** (`material_gaps.md`): the Royal Festival Hall foyers (in 40% of simulated plans) and the British Museum's Great Court (32%) lack hours, step-free status and area. **Both official sites refuse automated reading (403).** Reading two pages in a browser would cover the most plan weight.
+- **Paris transport** (RATP and IDFM refuse automated reading). It's the only thing keeping Paris in development: every Paris quality item passes. The bar isn't lowered.
+- **The Courtauld's two prices** (£16 and £14, unlabelled) and **the two piers' zones** for the boat fares: from the gallery and Thames Clippers.
+- **The 34 share-card photos not cleared**, checked one by one before the list grows.
+- **Render's current prices** (its pricing page didn't render for the fetch on 12 Nov).
+
+### Awaiting solicitor review
+
+- The share card's sharing approach, and whether a cropped CC BY-SA photo with text over it is an adaptation.
+- The food DPIA (before any food preference is stored).
+
+### Awaiting founder action (Abram)
+
+| Action | Time | Where |
+|---|---|---|
+| **Push the tag** from your copy: the session's git proxy refused it (HTTP 403; it allows only the work branch). The preflight passed; nothing was created at any other commit | ~2 min | `validation/friends-round.md`, "Before the first invite", step 2 |
+| **The rehearsal** on both phones with `REHEARSAL` | ~45 min | `validation/friends-round-rehearsal.md` |
+| **The food field's seven steps** | ~30 min, then step 2 weekly | `decisions/foods-avoided-audit.md` |
+| **The database:** decide, check the price, and upgrade after the final export (by 29 Nov) | ~10 min, then ~20 min | `decisions/database-before-6-dec.md` |
+| The Apple outside-activities check, then TestFlight's external review, then the invites | as before | `validation/friends-round.md` |
+| **Optional:** read the Royal Festival Hall's and the British Museum's visit pages in a browser and send Claude the hours, step-free answer and area | ~15 min | `material_gaps.md` |
+| Limited support for London: your review, once the 17 facts above are in | later | `readiness.py` |
+
+## The ranking configurations, on four dimensions (`ranking_configs.txt`)
+
+**Synthetic travellers only: not evidence of customer satisfaction.** 11 travellers; the top 5 on Tuesday 24 and Saturday 28 Nov 2026. "Paris + allowances" gives unknown prices a planning allowance where 3 or more comparable prices exist (2 of Paris's 5).
+
+| Configuration | City | Chance of "Good" | Own kind | Confirmed open | Might be open | Closed | Money good | Price unknown | Allowance | Trust good |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Baseline (default) | London | 0.76 | 46% | 96% | 4% | 0 | 100% | 0% | 0% | 100% |
+| Uncertainty-aware | London | 0.80 | 51% | 64% | 36% | 0 | 95% | 0% | 0% | 100% |
+| Stricter money risks | London | 0.80 | 51% | 64% | 36% | 0 | 95% | 0% | 0% | 100% |
+| Baseline (default) | Paris | 0.70 | 37% | 64% | 36% | 0 | 100% | 0% | 0% | 100% |
+| Uncertainty-aware | Paris | 0.78 | 54% | 47% | 42% | 0 | 78% | 22% | 0% | 69% |
+| Stricter money risks | Paris | 0.77 | 49% | 42% | 47% | 0 | 91% | 9% | 0% | 82% |
+| Baseline (default) | Paris + allowances | 0.71 | 37% | 71% | 29% | 0 | 93% | 0% | 7% | 100% |
+| Uncertainty-aware | Paris + allowances | 0.77 | 54% | 45% | 42% | 0 | 80% | 9% | 11% | 82% |
+| Stricter money risks | Paris + allowances | 0.77 | 51% | 44% | 45% | 0 | 87% | 4% | 9% | 87% |
+
+**Read plainly:**
+- **Relevance:** both uncertainty-aware configurations match people better (London 0.76 to 0.80; Paris 0.70 to 0.77–0.78).
+- **Practicality:** nothing is closed on the day in any configuration. But fewer stops are *confirmed* open: in London, 64% against 96%. The rest are "might be open", almost all because their hours change with the season, and each stop says so.
+- **Money:** in Paris, the uncertainty-aware rule picks places with unknown prices (22%). Stricter money risks cut that to 9%, and allowances to 4%, for a little relevance.
+- **Trust:** it follows the unknown prices (69% to 87%).
+- **London:** the two uncertainty-aware configurations are identical, because every London card has a price.
+- **If one is ever trialled:** stricter money risks with allowances, for internal testing first. Nothing is enabled, and the evidence is synthetic.
+
+## Readiness today (`readiness.py`, 13 Nov)
+
+| Item | London | Paris | Limited support needs |
+|---|---|---|---|
+| Ready experiences; kinds | 49; 8 | 20; 7 | 20; 6 |
+| Transport | official (TfL) | **estimated** | verified, for transport claims |
+| Emergency numbers | 3, checked 10 Nov | 5, checked 10 Nov | official, for the destination |
+| Hours from an official page (180 days) | **31 of 49 (63%)** | 20 of 20 | 80% |
+| Named areas | 31 of 49 (63%) | 20 of 20 | 60% |
+| Step-free known | **17 of 49 (35%)** | 12 of 20 (60%) | 50% |
+| Prices | 49 priced | 15 priced, 5 unknown (never shown as a price) | every shown price sourced or labelled |
+| **Level** | **Preview** | **Development** | plus Abram's review |
+
+## Tests run (13 Nov)
+
+| Suite | Result |
+|---|---|
+| Brain (`pytest`) | **463 passed**, 0 failed (one library deprecation warning); 450 at the last report |
+| Android (`testDebugUnitTest`) | running at the time of this commit; result added below when it finishes |
+| iPhone | Not run: no app file changed this round |
+
+New tests (13): planning allowances (4), ranking configurations and open status (3), evaluation (3), readiness (2), `count-food` (1). One price-proposal test was replaced by "every unclear price is held, not guessed".
+
+## Failures, blockers and limitations
+
+- **The tag push was refused** (HTTP 403). Nothing was worked around: Abram pushes it.
+- **The live food audit wasn't run by Claude**, by design: no database access, and the admin token stays with Abram.
+- **Render's prices weren't readable** on 12 Nov. The database document uses the 9 Oct figures, marked UNVERIFIED.
+- **No new facts were verified this round.** The material gaps are listed and ranked instead; the top ones need a person.
+- **The planning allowance isn't used by the day planner or the apps yet.** The day planner still refuses an unknown price under a budget (m255), which is the safe side. Wiring the breakdown into plans is ~1.5 h, and it changes nothing in London (every card is priced).
+- **The risk values and the 0.05 "material" line are GUESSES.**
+
+## Files changed, and commits
+
+**Commits:**
+- `8fc905a` (ranking configurations);
+- `40fd33a` (planning allowances);
+- `d209c33` (readiness, prices on hold);
+- `87c991c` (the export read-out);
+- the commits holding the documents, `count-food`, the open-question split, the readiness fix and this section.
+
+| Area | Files |
+|---|---|
+| Brain | `quality.py`, `discovery.py`, `priceestimate.py` (new), `readiness.py`, `evaluation.py`, `backup.py` |
+| Scripts and benchmarks | `benchmark_configs.py`, `evaluate_export.py`, `material_gaps.py` (new); `ranking_configs.txt`, `material_gaps.md` (new) |
+| Data | `london_price_proposals.yaml` |
+| Tests | `test_priceestimate.py` (new); `test_recommend_international.py`, `test_readiness.py`, `test_price_proposals.py`, `test_evaluation.py`, `test_foods_avoided_audit.py` |
+| Documents | `database-before-6-dec.md`, `post-experience-questions.md` (new); `foods-avoided-audit.md`, `decision-log.md`, `after-9-nov.md`; `validation/friends-round-plan.md`, `friends-round-rehearsal.md` (new), `friends-round.md` |
+| Apps | none this round |
+
+## Decisions still needing Abram
+
+| # | Decision | Recommendation | Hours |
+|---|---|---|---|
+| 1 | **The database before 6 Dec** | Upgrade in place to Render's smallest paid plan after the final export, with a sealed backup first | Abram ~30 min |
+| 2 | **Use planning allowances in day plans and trips** (the budget breakdown) | Yes, after the round; nothing changes in London | Claude ~1.5 h |
+| 3 | **The model's cost term for an unknown price** (m252's open question) | Use the allowance where one exists, else no cost; the price is still shown as unknown | Claude ~1 h |
+| 4 | **After the round's read-out:** build "Was it what you expected?" | Yes, if the round shows ratings alone don't say why a stop disappointed | Claude ~3.5 h |
+| 5 | **Unchanged:** the solicitor; the four councils; the unread pages by hand | — | as before |
+
+**Hours this round (Claude, approximate):**
+
+| Work | Hours |
+|---|---|
+| Ranking configurations and benchmark | ~1.5 |
+| Planning allowances | ~1.5 |
+| Readiness | ~0.5 |
+| Evaluation read-outs | ~1.5 |
+| The friends' round documents and the tag preflight | ~2 |
+| The database document and its research | ~1.5 |
+| The food procedure and `count-food` | ~1 |
+| Post-experience questions | ~0.5 |
+| Material gaps | ~0.5 |
+| Report and log | ~1 |
+| **Total** | **about 11.5 h** |
