@@ -1,0 +1,14 @@
+SYNTHETIC PEOPLE ONLY: not evidence of customer satisfaction. The three configurations (quality.CONFIGS) on
+11 travellers; top 5 on Tue 24 and Sat 28 Nov 2026. 'Paris+allow': unknown prices given a median planning
+allowance where 3+ comparable prices exist (priceestimate.py). The baseline stays the default.
+
+configuration            city         p(Good) own kind | confirmed open might be open closed | money good unknown allowance | trust good
+baseline                 London          0.76      46% |            96%            4%      0 |       100%      0%        0% |       100%
+uncertainty              London          0.80      51% |            64%           36%      0 |        95%      0%        0% |       100%
+uncertainty_finance_alt  London          0.80      51% |            64%           36%      0 |        95%      0%        0% |       100%
+baseline                 Paris           0.70      37% |            64%           36%      0 |       100%      0%        0% |       100%
+uncertainty              Paris           0.78      54% |            47%           42%      0 |        78%     22%        0% |        69%
+uncertainty_finance_alt  Paris           0.77      49% |            42%           47%      0 |        91%      9%        0% |        82%
+baseline                 Paris+allow     0.71      37% |            71%           29%      0 |        93%      0%        7% |       100%
+uncertainty              Paris+allow     0.77      54% |            45%           42%      0 |        80%      9%       11% |        82%
+uncertainty_finance_alt  Paris+allow     0.77      51% |            44%           45%      0 |        87%      4%        9% |        87%

@@ -46,6 +46,7 @@ RISK = {
     "price_unknown_budget": 0.15,     # a budget is set and the price isn't known
     "price_unknown": 0.10,            # m254: 0.03 left a third of Paris's top 5 unpriced (benchmark_ranking.py)
     "price_estimate": 0.02,
+    "price_median": 0.05,             # m262: no verified price, a planning allowance from comparable places
     "access_unknown_need": 0.50,      # step-free needed (not strictly) and access isn't known
     "area_unknown": 0.01,             # where it is, roughly: a small confidence cost
     "stale": 0.10,                    # facts checked 180 to 365 days ago
@@ -63,35 +64,39 @@ class Risk:
 
 
 def uncertainties(x: Experience, *, today: date, day: date | None = None, budget_left: float | None = None,
-                  needs_step_free: bool = False) -> tuple[Risk, ...]:
+                  needs_step_free: bool = False, risk: dict | None = None) -> tuple[Risk, ...]:
     """Each gap that matters for this use, with its dimension and its risk. A gap that doesn't bear on the use (access
     for someone with no step-free need, a missing description) costs nothing. Unknown is never read as good."""
+    RISK_ = {**RISK, **(risk or {})}        # m261: a configuration may set its own risks
     out = []
     event = getattr(x.facet, "event_based", False)
     if not event:
         if x.hours.trust == "unknown" or not x.hours.text:
             k = "hours_unknown_on_day" if day else "hours_unknown"
-            out.append(Risk("hours", "practicality", RISK[k], "Opening hours aren't known."))
+            out.append(Risk("hours", "practicality", RISK_[k], "Opening hours aren't known."))
         elif x.hours.weekly is None:
             k = "hours_text_on_day" if day else "hours_text"
-            out.append(Risk("hours", "practicality", RISK[k], "Hours vary: check them for the day."))
+            out.append(Risk("hours", "practicality", RISK_[k], "Hours vary: check them for the day."))
     if x.category in OUTDOOR and not x.notices and not _SEASONAL.search((x.hours.text or "").lower()):
         winter = (day or today).month in WINTER
-        out.append(Risk("season", "practicality", RISK["season_outdoor_winter" if winter else "season_outdoor"],
+        out.append(Risk("season", "practicality", RISK_["season_outdoor_winter" if winter else "season_outdoor"],
                         "No seasonal information for an outdoor place."))
     if not x.price.known:
-        out.append(Risk("price", "money", RISK["price_unknown_budget" if budget_left is not None else "price_unknown"],
+        out.append(Risk("price", "money", RISK_["price_unknown_budget" if budget_left is not None else "price_unknown"],
                         "The price isn't known."))
     elif x.price.trust == "estimated":
-        out.append(Risk("price", "money", RISK["price_estimate"], "The price is an estimate."))
+        median = (x.price.source or "").startswith("median")      # m262: an allowance, not the place's own price
+        out.append(Risk("price", "money", RISK_["price_median" if median else "price_estimate"],
+                        "No verified price: a planning allowance from comparable places." if median
+                        else "The price is an estimate."))
     if needs_step_free and not x.accessibility.step_free.known:
-        out.append(Risk("access", "practicality", RISK["access_unknown_need"], "Step-free access isn't verified."))
+        out.append(Risk("access", "practicality", RISK_["access_unknown_need"], "Step-free access isn't verified."))
     if not x.geo.area.known and not x.district.known:
-        out.append(Risk("area", "trust", RISK["area_unknown"], "Its neighbourhood isn't named by a source."))
+        out.append(Risk("area", "trust", RISK_["area_unknown"], "Its neighbourhood isn't named by a source."))
     if x.provenance.checked:
         age = (today - date.fromisoformat(x.provenance.checked[:10])).days
         if STALE_DAYS < age <= OLD_DAYS:
-            out.append(Risk("freshness", "trust", RISK["stale"], f"Last checked {age} days ago."))
+            out.append(Risk("freshness", "trust", RISK_["stale"], f"Last checked {age} days ago."))
     return tuple(out)
 
 
@@ -144,6 +149,18 @@ class Assessment:
                  ("trust", self.trust))}
 
 
+def open_status(x: Experience, day: date | None) -> str:
+    """m261 (Abram, m260): never imply certainty. "confirmed open" only when a source's weekly hours say so for that
+    day (and no dated closure); "confirmed closed" when they say closed; otherwise "might be open"."""
+    if getattr(x.facet, "event_based", False):
+        return "sessions per event"
+    if day is not None and any(n.what.lower().startswith("closed") for n in x.notices_on(day.isoformat())):
+        return "confirmed closed"
+    if x.hours.weekly is None or x.hours.trust == "unknown" or day is None:
+        return "might be open" if day is not None else ("hours known" if x.hours.weekly is not None else "might be open")
+    return "confirmed open" if x.hours.open_on(WEEKDAYS[day.weekday()]) else "confirmed closed"
+
+
 def relevance(p_good: float | None) -> Perspective:
     if p_good is None:
         return Perspective("unknown", "We don't know enough about you yet.")
@@ -187,10 +204,12 @@ def practicality(x: Experience, day: date | None, minutes_free: float | None, tr
     if getattr(x.facet, "event_based", False):
         return Perspective("fair", "Sessions are listed per event: check the calendar.")
     if x.hours.weekly is None and x.hours.trust != "unknown":
-        return Perspective("fair", "Its hours vary, so check them on the day.")
+        return Perspective("fair", "Might be open: its hours vary, so check them for the day.")
     if x.hours.trust == "unknown":
-        return Perspective("fair", "Its opening hours aren't known.")
-    return Perspective("good", "Open then, and it fits your time.")
+        return Perspective("fair", "Might be open: its opening hours aren't known.")
+    if day is None:
+        return Perspective("good", "Its weekly hours are known from its own page.")
+    return Perspective("good", f"Open on {day:%A}s by its published hours, and it fits your time.")
 
 
 def money(x: Experience, budget_left: float | None, currency: str | None = None) -> Perspective:
@@ -228,10 +247,23 @@ def trust(x: Experience, today: date) -> Perspective:
 
 def assess(x: Experience, *, p_good: float | None, today: date, day: date | None = None,
            minutes_free: float | None = None, travel_min: float | None = None, budget_left: float | None = None,
-           currency: str | None = None, needs_step_free: bool = False, strict_access: bool = False) -> Assessment:
+           currency: str | None = None, needs_step_free: bool = False, strict_access: bool = False,
+           risk: dict | None = None) -> Assessment:
     return Assessment(relevance(p_good), practicality(x, day, minutes_free, travel_min, needs_step_free, strict_access),
                       money(x, budget_left, currency), trust(x, today), p_good,
-                      uncertainties(x, today=today, day=day, budget_left=budget_left, needs_step_free=needs_step_free))
+                      uncertainties(x, today=today, day=day, budget_left=budget_left, needs_step_free=needs_step_free,
+                                    risk=risk))
+
+
+# m261 (Abram, m260): three configurations kept side by side. "baseline" is the default everywhere; the other two are for
+# internal discovery testing and shadow comparisons only, never for the frozen round, day plans or production users.
+CONFIGS: dict[str, dict] = {
+    "baseline": {"calibrated": False, "risk": {}},
+    "uncertainty": {"calibrated": True, "risk": {}},
+    "uncertainty_finance_alt": {"calibrated": True,   # stricter money: unknown and allowance prices cost more
+                                "risk": {"price_unknown": 0.20, "price_unknown_budget": 0.30, "price_median": 0.10}},
+}
+DEFAULT_CONFIG = "baseline"
 
 
 def rank(items: list[tuple[object, Assessment]], doubt_cost: float | None = None,

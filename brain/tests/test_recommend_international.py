@@ -98,3 +98,34 @@ def test_the_default_ranking_is_unchanged():
     import inspect
     sig = inspect.signature(quality.rank)
     assert sig.parameters["doubt_cost"].default is None and sig.parameters["calibrated"].default is False
+
+
+# ---- m261: configurations, shadow comparisons, and "might be open" (Abram, m260) ----------------------------------
+
+def test_three_configurations_and_the_baseline_stays_the_default():
+    assert set(quality.CONFIGS) == {"baseline", "uncertainty", "uncertainty_finance_alt"}
+    assert quality.DEFAULT_CONFIG == "baseline" and quality.CONFIGS["baseline"]["calibrated"] is False
+    alt = quality.CONFIGS["uncertainty_finance_alt"]["risk"]
+    assert alt["price_unknown"] > quality.RISK["price_unknown"]
+
+
+def test_shadow_ranks_the_same_places_under_each_configuration():
+    from brain import discovery
+    s = Scorer(POP, None, rates=RATES)
+    xs = [x for x in PARIS.values() if x.status == "ready"]
+    sh = discovery.shadow(s, xs, date(2026, 11, 12), day=date(2026, 11, 24))
+    assert set(sh) == set(quality.CONFIGS) and all(len(v) == 3 for v in sh.values())
+    shown = discovery._top(s, xs, date(2026, 11, 12), day=date(2026, 11, 24))
+    assert [x.id for x in shown] == sh["baseline"]                   # what a person sees is the baseline's
+
+
+def test_unknown_hours_are_might_be_open_never_confirmed():
+    from brain.catalogue import OpeningHours
+    day = date(2026, 11, 24)                                          # a Tuesday
+    assert quality.open_status(PARIS["rodin"], day) == "confirmed open"      # Tue-Sun from its own page
+    assert quality.open_status(PARIS["buttes-chaumont"], day) == "might be open"   # seasonal text
+    blank = replace(PARIS["rodin"], hours=OpeningHours(None, None, "unknown", None, None))
+    assert quality.open_status(blank, day) == "might be open"
+    assert quality.practicality(blank, day, None, None).reason.startswith("Might be open")
+    assert quality.open_status(LONDON["m_bank_of_england_gold"], date(2026, 11, 28)) == "confirmed closed"
+    assert quality.open_status(LONDON["m_courtauld_gallery"], date(2026, 12, 25)) == "confirmed closed"   # a notice

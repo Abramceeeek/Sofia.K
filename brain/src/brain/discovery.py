@@ -97,9 +97,21 @@ def _assess(s: Scorer, x: Experience, today: date, **kw) -> quality.Assessment:
     return quality.assess(x, p_good=s.p_good(x), today=today, **kw)
 
 
+def _ranked(s: Scorer, xs: list[Experience], today: date, ranking: str = quality.DEFAULT_CONFIG, **kw):
+    """m261: one of quality.CONFIGS; "baseline" (the default) unless an internal test asks for another."""
+    cfg = quality.CONFIGS[ranking]
+    return quality.rank([(x, _assess(s, x, today, risk=cfg["risk"], **kw)) for x in xs], calibrated=cfg["calibrated"])
+
+
+def shadow(s: Scorer, xs: list[Experience], today: date, n: int = LIMIT, **kw) -> dict[str, list[str]]:
+    """m261 (Abram, m260): the same question ranked under every configuration, for internal comparison only. What a
+    person is shown stays the baseline's."""
+    return {name: [x.id for x, _ in _ranked(s, xs, today, name, **kw)[:n]] for name in quality.CONFIGS}
+
+
 def _top(s: Scorer, xs: list[Experience], today: date, extra: dict[str, list[str]] | None = None,
-         **kw) -> list[Suggestion]:
-    scored = quality.rank([(x, _assess(s, x, today, **kw)) for x in xs])
+         ranking: str = quality.DEFAULT_CONFIG, **kw) -> list[Suggestion]:
+    scored = _ranked(s, xs, today, ranking, **kw)
     out = []
     for x, a in scored[:LIMIT]:
         why = [w for w in [_why_taste(s, x), *(extra or {}).get(x.id, [])] if w]
