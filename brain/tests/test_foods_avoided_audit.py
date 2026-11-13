@@ -60,3 +60,23 @@ def test_a_backup_never_carries_it_and_an_older_backup_cannot_bring_it_back(clie
         profile = s.get(db.User, uid).profile
     assert "foods_avoided" not in profile and profile["based"] == "london"
     assert food.audit_profiles([profile]) == {"profiles": 1, "with_key": 0, "non_empty": 0}
+
+
+def test_a_backup_can_be_counted_without_showing_a_value(tmp_path, capsys):
+    """m266 (Abram, m260, step 7): a sealed backup made on main (which keeps the field) is counted on Abram's computer;
+    only the three numbers reach the screen, and nothing is written next to it."""
+    public, private = backup.keygen()
+    key = tmp_path / "k.key"
+    key.write_text(private, encoding="utf-8")
+    older = {"format": 1, "tables": {"users": [{"id": 1, "profile": {"based": "london", "foods_avoided": SECRET}},
+                                               {"id": 2, "profile": json.dumps({"foods_avoided": ""})},
+                                               {"id": 3, "profile": None}]}}
+    sealed = tmp_path / "odys.bak"
+    sealed.write_bytes(backup.seal(json.dumps(older).encode(), public))
+    before = set(tmp_path.iterdir())
+    assert backup.main(["count-food", str(sealed)]) == 1                          # sealed: needs the key
+    assert backup.main(["count-food", str(sealed), "--key", str(key)]) == 0
+    out = capsys.readouterr()
+    assert out.out.strip() == "profiles 3, with_key 2, non_empty 1"
+    assert SECRET not in out.out + out.err and "pork" not in out.out + out.err
+    assert set(tmp_path.iterdir()) == before                                       # nothing opened onto disk

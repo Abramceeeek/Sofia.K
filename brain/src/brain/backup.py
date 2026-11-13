@@ -182,6 +182,30 @@ def sealed_backup(engine: Engine, public_key_b64: str) -> tuple[bytes, dict[str,
 
 # ---- Abram's commands ------------------------------------------------------------------------------------------
 
+def _count_food(path: Path, key: str | None) -> int:
+    """m266 (Abram, m260, step 7): check a backup for the retired food field on Abram's own computer. It opens the
+    backup in memory and prints three counts, never a value, not even its length; nothing is written to disk."""
+    raw = path.read_bytes()
+    if raw.startswith(MAGIC):
+        if not key:
+            print("This backup is sealed: add --key and the path to your private key.", file=sys.stderr)
+            return 1
+        raw = unseal(raw, Path(key).read_text(encoding="utf-8"))
+    users = json.loads(raw.decode("utf-8-sig")).get("tables", {}).get("users", [])
+    profiles = []
+    for row in users:
+        p = row.get("profile")
+        if isinstance(p, str):
+            try:
+                p = json.loads(p)
+            except ValueError:
+                p = None
+        profiles.append(p if isinstance(p, dict) else None)
+    c = food.audit_profiles(profiles)
+    print(f"profiles {c['profiles']}, with_key {c['with_key']}, non_empty {c['non_empty']}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m brain.backup", description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -194,7 +218,12 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("file")
     r.add_argument("--key", help="the private key, to restore a sealed backup straight from GitHub")
     r.add_argument("--database-url", required=True)
+    f = sub.add_parser("count-food", help="count-only: how many profiles in a backup hold the retired food field")
+    f.add_argument("file")
+    f.add_argument("--key", help="the private key, for a sealed backup")
     a = ap.parse_args(argv)
+    if a.cmd == "count-food":
+        return _count_food(Path(a.file), a.key)
     if a.cmd == "keygen":
         out = Path(a.out)
         if out.exists():
