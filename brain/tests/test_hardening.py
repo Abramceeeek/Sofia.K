@@ -137,8 +137,9 @@ def test_sec04_the_export_survives_a_bad_number_already_in_the_database(client):
     with client.app.state.Session() as s:      # as an older server could have stored it
         row = s.scalar(select(db.Rating).where(db.Rating.user_id == uid))
         row.travel_min = float("inf")
-        user = s.get(db.User, uid)
-        user.delta = {**(user.delta or {}), "poison": [float("inf")]}
+        if s.get_bind().dialect.name == "sqlite":   # Postgres refuses an infinity inside JSON, so it can't be stored
+            user = s.get(db.User, uid)
+            user.delta = {**(user.delta or {}), "poison": [float("inf")]}
         s.commit()
     r = client.get("/v1/admin/export", headers=ADMIN)
     assert r.status_code == 200                # before: 500 for the whole export
@@ -234,3 +235,19 @@ def test_sec05_one_ipv6_subscriber_is_one_address_however_many_addresses_it_uses
     assert ops._network("2001:db8:1:3::1") != ops._network("2001:db8:1:2::1")
     assert ops._network("203.0.113.7") == "203.0.113.7" and ops._network("::ffff:203.0.113.7") == "203.0.113.7"
     assert ops._network("not an address") == "not an address"
+
+
+def test_a_fit_that_gives_a_non_number_keeps_the_last_good_fit(client, monkeypatch):
+    """Found running the tests on Postgres: a NaN in the person's fit can't be stored there and failed the request."""
+    import numpy as np
+    from brain import api as api_mod
+    from brain.personal import DeltaPosterior
+    h, uid = install(client)
+    assert client.post("/v1/me/ratings", headers=h, json={"moment_id": "t_view", "rating": 4}).status_code == 201
+    with client.app.state.Session() as s:
+        good = s.get(db.User, uid).delta
+    bad = lambda pop, obs: DeltaPosterior(np.full(len(pop.delta_prior_sd), np.nan), np.eye(len(pop.delta_prior_sd)), 1, 1)
+    monkeypatch.setattr(api_mod, "update_person", bad)
+    assert client.post("/v1/me/ratings", headers=h, json={"moment_id": "t_park", "rating": 2}).status_code == 201
+    with client.app.state.Session() as s:
+        assert s.get(db.User, uid).delta == good

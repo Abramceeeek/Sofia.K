@@ -16,8 +16,9 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+import numpy as np
 import yaml
-from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Response
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Request, Response
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -247,6 +248,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def refit(s: Session, user: db.User, p: PopulationModel) -> DeltaPosterior:
         """Rebuild δ_person from everything this person has told us (swipes, choices, ratings)."""
         post = update_person(p, observations(s, user, p))
+        if not (np.all(np.isfinite(post.mean)) and np.all(np.isfinite(post.precision))):
+            # audit (Postgres in CI): a non-number can't be stored in a JSON column there, and would fail the person's
+            # request. Keep their last good fit and say so in the log (the error kind only, nothing about them).
+            ops.errors.warning("a person's fit gave a non-finite result; their previous fit is kept")
+            return posterior(user, p)
         user.delta, user.population_version = post.to_json(), p.version
         return post
 
@@ -931,7 +937,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if contact:   # D118: only to reply to this message; deleted when resolved
             s.add(db.SafetyContact(alert_id=alert.id, contact=contact))
         s.commit()
-        alert.notified = notify.send_alert(settings.alert_webhook_url, alert.id, user.id, body.message, contact)
+        alert.notified = notify.send_alert(settings.alert_webhook_url, alert.id, alert.created_at)   # SEC-09
         s.commit()
         return {"alert_id": alert.id, "message": notify.USER_MESSAGE}
 
@@ -994,6 +1000,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except trips.ProviderError as e:
             if str(e) == "too_many":
                 raise HTTPException(429, "That's a lot of searches in an hour. Try again in a few minutes.")
+            if str(e) == "too_many_today":   # the install's share of the day's searches (audit, 12 Nov)
+                raise HTTPException(429, "That's a lot of searches for one day. The booking sites' own links still "
+                                         "work; searching here starts again tomorrow.")
             _trip_event(s, user, "flights", "unavailable", 0, 0, f.sort, [])
             return {"source": "unavailable", "note": "Flights couldn't be searched just now. The links below search "
                     "for real.", "total": 0, "shown": 0, "results": [], "facets": trips.flight_facets([]),
@@ -1112,6 +1121,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except trips.ProviderError as e:
             if str(e) == "too_many":
                 raise HTTPException(429, "That's a lot of searches in an hour. Try again in a few minutes.")
+            if str(e) == "too_many_today":   # the install's share of the day's searches (audit, 12 Nov)
+                raise HTTPException(429, "That's a lot of searches for one day. The booking sites' own links still "
+                                         "work; searching here starts again tomorrow.")
             _trip_event(s, user, "stays", "unavailable", 0, 0, f.sort, [])
             return {"source": "unavailable", "note": "Places to stay couldn't be searched just now. The links below "
                     "search for real.", "total": 0, "shown": 0, "results": [], "facets": trips.stay_facets([]),
@@ -1358,7 +1370,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.delete("/v1/me", status_code=204)
     def delete_me(user: db.User = Depends(current_user), s: Session = Depends(session)):
-        """Delete everything about this install (App Review 5.1.1(v); UK GDPR erasure)."""
+        """Delete everything about this install (App Review 5.1.1(v); UK GDPR erasure). SEC-10: one row is kept, a
+        one-way code made from the install's id, so restoring an older backup can't bring the person back."""
+        s.add(db.Deletion(user_hash=backup.deleted_key(user.id)))
         s.delete(user)
         s.commit()
         return Response(status_code=204)
@@ -1412,6 +1426,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.add(plan)
         s.commit()
         return plan_out(plan)
+
+    @app.get("/v1/admin/client-address", dependencies=[Depends(admin)])
+    def client_address(request: Request):
+        """SEC-05: what the server sees of the caller's own address, header by header, and which one the limits use.
+        For checking once on a staging service: call it, then call it again with a made-up `X-Forwarded-For` and a
+        made-up `CF-Connecting-IP`. If `cf_connecting_ip` stays your real address, the edge overwrites it and it can
+        be trusted. It shows only the caller's own address, to the admin, and keeps nothing."""
+        h = request.headers
+        fwd = [x.strip() for x in h.get("x-forwarded-for", "").split(",") if x.strip()]
+        return {"cf_connecting_ip": h.get("cf-connecting-ip"), "true_client_ip": h.get("true-client-ip"),
+                "x_forwarded_for": fwd, "peer": request.client.host if request.client else None,
+                "cf_ray_present": "cf-ray" in h, "counted_as": ops._address(request)}
 
     @app.get("/v1/admin/referrals", dependencies=[Depends(admin)])
     def referrals(s: Session = Depends(session)):

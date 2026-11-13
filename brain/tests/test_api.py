@@ -9,7 +9,7 @@ from brain import db
 from brain.api import EXAMPLE_DAY, create_app
 from brain.config import Settings
 
-from conftest import DATA, make_moment
+from conftest import DATA, database_url, make_moment
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def client(tmp_path, test_moments):
              make_moment("m_borough_market_graze", 51.5055, -0.0905, tags=dict(food=2, crowds=2), cost=15)]
     for m in test_moments + extra:
         (data / "moments" / f"{m.id}.yaml").write_text(yaml.safe_dump(m.model_dump(by_alias=True)))
-    settings = Settings(database_url=f"sqlite:///{tmp_path / 'test.db'}", data_dir=data,
+    settings = Settings(database_url=database_url(tmp_path, "test.db"), data_dir=data,
                         admin_token="admin-secret", alert_webhook_url=None, planner_time_limit_s=0.3)
     with TestClient(create_app(settings)) as c:
         yield c
