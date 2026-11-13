@@ -2,6 +2,19 @@ import Foundation
 import Observation
 import SwiftUI
 
+/// SEC-16 (audit, Abram, 12 Nov 2026): a link that comes from the Brain (a booking site, a stay's photo) is used only
+/// if it is https with a host. Today the Brain builds every such link from fixed addresses, so nothing changes; if the
+/// Brain or a provider's data were ever compromised, a link could not dial a number, open another app or load a page
+/// in the clear. Links the app makes itself (Apple Maps, 999) don't go through this.
+enum SafeLink {
+    static func https(_ text: String?) -> URL? {
+        guard let text, let c = URLComponents(string: text.trimmingCharacters(in: .whitespaces)),
+              c.scheme?.lowercased() == "https", let host = c.host, !host.isEmpty, c.user == nil, c.password == nil,
+              let url = c.url else { return nil }
+        return url
+    }
+}
+
 /// D131 (shape A): what the home leads with: what's next, the day itself, or what you rated.
 enum HomePhase {
     case before, today, after

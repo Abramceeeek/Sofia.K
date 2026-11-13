@@ -220,8 +220,20 @@ fun PageWithBottom(
     }
 }
 
-/** Opens a link in the browser or the app that handles it (Maps, the dialler). */
+/**
+ * SEC-16 (audit, Abram, 12 Nov 2026): only an https link with a host is opened. Every link the app opens is https
+ * (booking sites, Google Maps directions, the privacy notice, photo pages; the dialler has its own path, Safety.kt), so
+ * nothing changes today. If the Brain or a provider's data were ever compromised, a link could not open another app
+ * through a custom scheme or an intent: link, or load a page in the clear.
+ */
+fun isSafeLink(url: String): Boolean {
+    val u = try { java.net.URI(url.trim()) } catch (e: java.net.URISyntaxException) { return false }
+    return u.scheme?.equals("https", ignoreCase = true) == true && !u.host.isNullOrEmpty() && u.userInfo == null
+}
+
+/** Opens a link in the browser or the app that handles it (Maps), if it is a safe one (above). */
 fun openUrl(context: Context, url: String) {
+    if (!isSafeLink(url)) return
     try {
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     } catch (e: ActivityNotFoundException) {

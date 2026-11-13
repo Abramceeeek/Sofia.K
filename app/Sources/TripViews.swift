@@ -515,7 +515,7 @@ private struct KnowItem: View {
             Text(title).font(.headline).foregroundStyle(Theme.ink)
             Text(text).font(.subheadline).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
             ForEach(links, id: \.self) { link in
-                if let url = URL(string: link.url) {
+                if let url = SafeLink.https(link.url) {
                     Link(destination: url) {
                         Text("\(link.label) ↗").font(.subheadline).foregroundStyle(Theme.accent)
                     }

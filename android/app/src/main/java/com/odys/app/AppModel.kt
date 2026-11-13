@@ -816,8 +816,9 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun clearLocal() {
         for (k in listOf("onboardingDone", "improved", "morePlacesDone", "moreTasksDone", "onboardingStep", "ratedOnce",
             "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone", "testerCode",
-            "testBPlanId")) prefs.remove(k)
-        for (k in prefs.keys()) if (k.startsWith("ratings.") || k.startsWith("nowIndex.") || k.startsWith("arrived.")) prefs.remove(k)
+            "testBPlanId", "refCode.joined")) prefs.remove(k)   // SEC-15 (audit): a share code they joined through
+        for (k in prefs.keys()) if (k.startsWith("ratings.") || k.startsWith("nowIndex.") || k.startsWith("arrived.") ||
+            k.startsWith("dayFeedback.")) prefs.remove(k)   // SEC-15 (audit): each day's "worth it" and "again" answers
         for (f in listOf("plan.json", "request.json", "profile.json", "trips.json", "pending_ratings.json", "handoff.json")) {
             files.delete(f)
         }
