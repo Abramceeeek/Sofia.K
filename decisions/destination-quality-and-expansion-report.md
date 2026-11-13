@@ -739,7 +739,7 @@ Abram: "Our objective is to prove that ODYS makes discovering and planning exper
 | Suite | Result |
 |---|---|
 | Brain (`pytest`) | **463 passed**, 0 failed (one library deprecation warning); 450 at the last report |
-| Android (`testDebugUnitTest`) | running at the time of this commit; result added below when it finishes |
+| Android (`testDebugUnitTest`) | **119 tests, 0 failures** (the first Gradle attempt stopped early, as it often does here; the retry passed). No app code changed |
 | iPhone | Not run: no app file changed this round |
 
 New tests (13): planning allowances (4), ranking configurations and open status (3), evaluation (3), readiness (2), `count-food` (1). One price-proposal test was replaced by "every unclear price is held, not guessed".
