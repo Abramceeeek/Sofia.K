@@ -5,8 +5,8 @@ Before any level, **development**: data is being gathered; nothing is offered to
 (m252, m259):
 1. **Preview**: every *essential* item passes. For internal development and evaluation; never presented as reliable
    coverage.
-2. **Limited support**: preview, plus fresh hours and named areas pass, and Abram has reviewed it. Offered for the
-   features that pass, with the limits said.
+2. **Limited support**: preview, plus fresh hours (80%), named areas (60%), known accessibility (50%) and sourced or
+   labelled prices, and Abram has reviewed it. Offered for the features that pass, with the limits said.
 3. **Supported**: every item passes, and Abram has reviewed it.
 
 **What may be claimed depends on each feature, not on the level** (`claims`): accessibility is never "comprehensive"
@@ -112,10 +112,14 @@ def checklist(inp: Inputs, ready: list[Experience], today: str, trip_year: int) 
              ratio(seasonal, len(outdoor), 1.0) if outdoor else "pass", _share(seasonal, len(outdoor))),
         Item("photos", "Photos' licences and credits checked one by one", False,
              "pass" if inp.photos_checked else "fail", "yes" if inp.photos_checked else "no"),
+        Item("prices", "Every price shown has a source, or is labelled an estimate (unknown stays unknown)", False,
+             "pass" if all(x.price.source and (x.price.trust == "estimated" or x.price.source) for x in ready
+                           if x.price.known) else "fail",
+             f"{sum(1 for x in ready if x.price.known)} priced, {sum(1 for x in ready if not x.price.known)} unknown"),
     ]
 
 
-LIMITED = ("hours", "areas")      # the quality items limited support needs (GUESS, for Abram)
+LIMITED = ("hours", "areas", "access", "prices")   # limited support's quality items (Abram, m260)
 
 
 def level(items: list[Item], reviewed_by_abram: bool = False) -> str:
@@ -129,6 +133,15 @@ def level(items: list[Item], reviewed_by_abram: bool = False) -> str:
     if reviewed_by_abram and all(by[k].status == "pass" for k in LIMITED):
         return "limited support"
     return "preview"
+
+
+def assessment(items: list[Item], last_reviewed: str, reviewed_by: str, abram_final_review: str | None = None) -> dict:
+    """m263 (Abram, m260): every assessment carries its last review date; Supported needs Abram's final manual
+    review (a date), not just passing numbers."""
+    lv = level(items, reviewed_by_abram=abram_final_review is not None)
+    return {"level": lv, "last_reviewed": last_reviewed, "reviewed_by": reviewed_by,
+            "abram_final_review": abram_final_review, "items": [i.__dict__ for i in items], "claims": claims(items),
+            "gaps": [f"{i.label}: {i.evidence}" for i in items if i.status != "pass"]}
 
 
 def claims(items: list[Item]) -> dict[str, str]:
@@ -155,4 +168,4 @@ def _days_before(day: str, n: int) -> str:
     return (date.fromisoformat(day) - timedelta(days=n)).isoformat()
 
 
-__all__ = ["Item", "Inputs", "checklist", "level", "claims", "MIN_READY", "MIN_CATEGORIES"]
+__all__ = ["Item", "Inputs", "checklist", "level", "claims", "assessment", "MIN_READY", "MIN_CATEGORIES"]

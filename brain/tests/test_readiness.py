@@ -4,7 +4,7 @@ import yaml
 from brain.catalogue import load_catalogue, load_dev
 from brain.config import DATA_DIR
 from brain.destination import load_emergency
-from brain.readiness import Inputs, checklist, claims, level
+from brain.readiness import Inputs, assessment, checklist, claims, level
 from brain.traveltiming import load_bank_holidays
 
 EM = load_emergency()
@@ -64,3 +64,15 @@ def test_claims_follow_each_feature_not_the_level():                     # m259 
     p = claims(checklist(paris_inputs(raw), [x for x in xs if x.status == "ready"], TODAY, 2027))
     assert "not official transport information" in p["transport"]          # RATP and IDFM unread
     assert level(items) == "preview"                                        # London stays a preview (Abram, m252)
+
+
+def test_every_assessment_has_a_review_date_and_supported_needs_abrams_final_review():   # m263 (Abram, m260)
+    items = checklist(london_inputs(), [x for x in load_catalogue() if x.status == "ready"], TODAY, 2027)
+    a = assessment(items, last_reviewed="2026-11-12", reviewed_by="Claude (data check)")
+    assert a["last_reviewed"] == "2026-11-12" and a["level"] == "preview" and a["abram_final_review"] is None
+    assert any(g.startswith("Step-free access") for g in a["gaps"])        # gaps listed, never hidden by a percentage
+    by = {i["key"]: i for i in a["items"]}
+    assert by["prices"]["status"] == "pass"                                # every shown price has a source
+    passing = [type(i)(**{**i.__dict__, "status": "pass"}) for i in items]
+    assert level(passing) == "preview"                                     # all numbers pass: still not supported
+    assert assessment(passing, "2026-11-12", "x", abram_final_review="2026-12-01")["level"] == "supported"
