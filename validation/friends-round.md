@@ -7,7 +7,7 @@
 | Item | Who | Status |
 |---|---|---|
 | The live Brain runs `80a0da3`, and branch pushes can't redeploy it | Abram (Render), Claude (checks) | **Done** 6 Nov 22:54 UTC; checked again 7 Nov |
-| Tag `friends-round-1` on `80a0da3` | Abram (this session can't push tags) | **Waiting** |
+| Tag `friends-round-1` on `80a0da3` | Abram (this session can't push tags) | **Approved (m260); preflight passed 12 Nov; Abram pushes it** (below) |
 | Rehearsal on TestFlight 91 and Android 21 with the code `REHEARSAL`, then the read-out, then clean-up (steps 3-4 below) | Abram, Claude reads the read-out | **Waiting** |
 | Apple outside-activities check (D60, D94) | Abram | **Waiting** |
 | TestFlight's external review of build 91 | Abram | **Waiting** (after the Apple check) |
@@ -17,6 +17,18 @@
 - `main`, the live Brain, iOS run 91 (TestFlight upload succeeded) and Android run 21 (the `android-latest` release, `ODYS-android-21.apk`) are all on `80a0da3`.
 - `friends-round-1` doesn't exist yet.
 - Nightly backups are running.
+
+**The tag's 8-point preflight, 12 Nov 2026 (m265; Abram approved the tag in m260), all passed:**
+1. No `friends-round-1` on GitHub.
+2. `main` is `80a0da3`.
+3. The live Brain's `/v1/health` gives `"version": "80a0da3"`.
+4. TestFlight 91 is iOS run #91 at `80a0da3`, and its upload succeeded.
+5. Android 21 is run #21 at `80a0da3`; `android-latest` holds `ODYS-android-21.apk`.
+6. The latest backup (ops run 43196164553, 12 Nov 09:58 UTC, 56,918 bytes) passed the workflow's sealed-format check. Only Abram's key can show it opens: `count-food` does that, printing only numbers (`decisions/foods-avoided-audit.md`, step 1).
+7. No commits on `main` after `80a0da3`.
+8. This session's annotated tag points exactly at `80a0da3d117a1898deeb5a8913fea9f5914cb390`.
+
+**The push was refused:** the session's git proxy answers HTTP 403 to any push but the work branch. Claude stopped there, as the approval required, and created nothing at any other commit. Rechecked 13 Nov: points 1–3 and 8 unchanged. **Abram pushes it** with step 2 of "Before the first invite"; the check after it must name `80a0da3`.
 
 ## The experiment manifest
 
@@ -67,7 +79,8 @@ Also the stops' ratings, the end-of-day questions, and the Test A survey. `brain
 
 - **Nightly sealed backup** (the `ops` workflow), kept 30 days on GitHub. Only Abram's private key opens it (m195).
 - **The admin export once a week and at the end**, saved by Abram into `validation/raw/` on his computer (git-ignored). Then `python brain/scripts/testb_report.py <export.json> --code FRIENDS --since <start date>`.
-- **The free database expires on 6 Dec 2026** (Render's banner; deleted 14 days later). The round ends, and its final export is saved, **by 29 Nov**. Otherwise, before then, the database moves to a paid plan or is swapped and restored as on 6 Nov (`brain/README.md`).
+- **The free database expires on 6 Dec 2026** (Render's banner; deleted 14 days later). The round ends, and its final export is saved, **by 29 Nov**. Otherwise, before then, the database moves to a paid plan or is swapped and restored as on 6 Nov (`brain/README.md`). **The options, costs and steps are `decisions/database-before-6-dec.md` (m266); nothing is bought or moved without Abram.**
+- **The plan, the invite and the analysis:** `friends-round-plan.md` (m265).
 
 ## Before the first invite
 
@@ -79,7 +92,7 @@ Also the stops' ratings, the end-of-day questions, and the Test A survey. `brain
    5. Claude checks `/v1/health` shows `"version": "80a0da3"`, and GitHub's deployment record shows `main` (dashboard labels alone don't count).
 2. **The tag** (Abram, from his copy of the repo, in PowerShell):
    `git fetch origin` then `git tag -a friends-round-1 80a0da3 -m "The friends' round: main 80a0da3, TestFlight 91, Android 21"` then `git push origin friends-round-1`. Check: `git show friends-round-1 --no-patch` names commit `80a0da3`.
-3. **An internal run on the real builds** (Abram, with the code `REHEARSAL`):
+3. **An internal run on the real builds** (Abram, with the code `REHEARSAL`). The full 25-step checklist for both phones is `friends-round-rehearsal.md` (m265); nothing in the experiment changes during it. Its minimum:
 
    | Install | Gut choice and both scores | "Easier" | Why |
    |---|---|---|---|
