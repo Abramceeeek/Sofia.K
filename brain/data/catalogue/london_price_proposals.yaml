@@ -9,8 +9,8 @@ proposals:
                sources: ["https://courtauld.ac.uk/gallery/plan-your-visit/", "https://courtauld.ac.uk/whats-on/permanent-collection-display/"]}
     category: "adult (19+) permanent-collection entry; under-18s, members and some concessions free; temporary exhibitions extra"
     conditions: "no day or channel difference stated; no booking fee stated; cashless"
-    proposal: "Plan £16 (the higher adult price, so no one is under-budgeted) and show 'from £14', until the page labels its two prices"
-    confidence: medium      # the amounts are official; which one a visitor pays isn't stated
+    proposal: "Hold (Abram, m260: don't assume what the two prices represent). Keep the card at £12 until the ticket categories behind £16 and £14 are established from the gallery's own page or the gallery itself"
+    confidence: low         # the amounts are official; which one a visitor pays isn't stated
   m_uber_boat_west_day:
     card: {amount: 22.90, currency: GBP, basis: "matches 'All Zones, Peak Adult' Oyster/contactless"}
     official: {amounts: [20.50, 23.50, 19.30, 22.90], currency: GBP,
