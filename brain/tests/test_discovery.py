@@ -50,7 +50,7 @@ def test_a_strong_match_that_is_closed_unaffordable_or_unverified_never_outranks
     assert quality.trust(old, TODAY).level == "poor"                  # over a year since anyone checked
     synthetic = TEST.experiences[0]
     assert quality.trust(synthetic, TODAY) == quality.Perspective("poor", "Test data, not a checked place.")
-    assert quality.relevance(None).level == "unknown" and quality.relevance(0.8).reason == "A strong match for you."
+    assert quality.relevance(None).level == "unknown" and quality.relevance(0.8).reason == "Among your top-ranked places, by your answers so far."
 
 
 def test_what_fits_ninety_minutes_and_no_money_on_a_monday():
@@ -110,7 +110,7 @@ def test_where_to_go_ranks_ready_destinations_and_names_what_the_rest_lack():
     test.parts["emergency"] = Emergency("ZZ", "Testville", (), "2026-11-10")   # numbers present, facts still synthetic
     out = dv.destinations(VIEWS, [museum_city, views_city, test, TEST], days=2, stops_a_day=3, today=TODAY)
     assert [sg.id for sg in out[:2]] == ["views_city", "museum_city"]
-    assert out[0].why[0].endswith("strong matches among its best 6 moments for you.")
+    assert out[0].why[0].endswith("of its best 6 moments rank highest for you by your answers so far.")
     assert [sg.id for sg in dv.destinations(CULTURE, [views_city, museum_city], 2, 3, TODAY)][0] == "museum_city"
     not_ready = {sg.id: sg.why[0] for sg in out[2:]}
     assert not_ready["testville"].startswith("Not ready to recommend yet")

@@ -39,7 +39,7 @@
     "rateable": true,
     "mine": null,
     "worth_gbp": 25,
-    "match": "A strong match for you",
+    "match": "Recommended because of your interest in history & culture and your lean towards views",
     "feel_word": "Wonder",
     "reveal": true,
     "approach_steps": [
@@ -171,7 +171,7 @@
     "rateable": true,
     "mine": null,
     "worth_gbp": 20,
-    "match": "A strong match for you",
+    "match": "Recommended because of your lean towards views and big reveals",
     "feel_word": "Wonder",
     "reveal": true,
     "approach_steps": [
@@ -385,7 +385,7 @@
     "rateable": true,
     "mine": null,
     "worth_gbp": 36,
-    "match": "A strong match for you",
+    "match": "Recommended because of your lean towards views and awe",
     "feel_word": "Awe",
     "reveal": false,
     "approach_steps": [

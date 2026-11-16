@@ -137,8 +137,8 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                      "be checked against the smallest budget: " + "; ".join(x.title for x in unpriced) + ".")
     for m in members:
         if pool and max(P[(m.label, x.id)] for x in pool) < GOOD:
-            notes.append(f"Nothing here is a strong match for {m.label}: their satisfaction will be low whatever we "
-                         "choose, so it's said rather than hidden.")
+            notes.append(f"Nothing here ranks well for {m.label} by their answers so far, whatever we choose, so it's "
+                         "said rather than hidden.")   # m275: a ranking, not a claim about how they'll feel
     def fits_budget(xs: list[Experience]) -> bool:   # the trip's cost per person within the smallest budget overall
         return cap is None or sum(_price(x, currency, rates) for x in xs) <= cap * days + 1e-9
 

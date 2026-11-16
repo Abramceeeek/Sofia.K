@@ -268,7 +268,7 @@ data class Stop(
     val chosenFor: List<String> = emptyList(),
     val card: Card? = null,
     val worthGbp: Double? = null,     // the model's £V (D88): kept for the day's curve, no longer shown (D127)
-    val match: String? = null,        // D127: "A strong match for you" / "A good match for you" / "Worth a try"
+    val match: String? = null,        // m275: "Recommended because of your lean towards views and awe" (never a chance)
     val approachSteps: List<ApproachStep>? = null,
     val bestLight: String? = null,
     val bestWindow: String? = null,
@@ -284,7 +284,8 @@ data class Stop(
 ) {
     val id: String get() = "$momentId@$arrive"
 
-    /** D127 (algorithm reviews): the price, then how well it matches, in words. The £ figure overclaimed. */
+    /** D127 (algorithm reviews): the price, then why it's recommended. The £ figure overclaimed. m275: the factors from
+     *  the person's answers, never a chance of "Good" (not yet checked against real ratings). As on the iPhone. */
     val matchLine: String?
         get() = match?.let { (if (costGbp == 0.0) "Free entry." else "Costs ${Money.text(costGbp)}.") + " $it." }
 

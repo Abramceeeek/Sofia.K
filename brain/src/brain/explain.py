@@ -59,8 +59,8 @@ MODE_WORDS = {"walk": "on foot", "tube": "by Tube", "bus": "by bus", "transit": 
 
 
 def p_good(scale: float, cutpoint: float, u: float) -> float:
-    """The rating model's chance of "Good" or better, P(y ≥ 3) = F(scale·u − c₂|₃): the same number behind
-    "A strong match for you" (dayplan.match_label)."""
+    """The rating model's chance of "Good" or better, P(y ≥ 3) = F(scale·u − c₂|₃), as in dayplan.match_band. Used
+    inside the Brain only: m275 (Abram, 12 Nov) no chance or match word is shown until it's checked on real ratings."""
     return 1.0 / (1.0 + math.exp(-(scale * u - cutpoint)))
 
 
@@ -84,11 +84,9 @@ def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_tex
     pros: list[str] = []      # m230: the score's own named terms, for "Why this stop?" (never their values)
     cons: list[str] = []
     if p is not None:
-        strong, good = p >= 0.75, p >= 0.5
-        word = "A strong match for you" if strong else "A good match for you" if good else "Worth a try"
-        f.append(Factor("preference", FOR if good else NEUTRAL,
-                        f"{word}: the rating model gives a {round(p * 100)}% chance you'd rate it Good or better.",
-                        round(p, 3), "your answers (the rating model)"))
+        # m275 (Abram, 12 Nov): no percentage and no "strong match": the chance isn't checked on real ratings yet
+        f.append(Factor("preference", NEUTRAL, "Ranked by your answers so far: a first guess, not a promise of how "
+                        "you'll feel.", None, "your answers (the scoring weights)"))
         for w in st.get("why") or []:   # the score's own named terms, largest first (scoring.contributions)
             c = float(w["contribution"])
             if abs(c) < 0.05:
@@ -314,21 +312,22 @@ def why_this_stay(fit: dict, cost: dict, refundable: bool | None, holidays: list
 # ---- a trip length ------------------------------------------------------------------------------------------------
 
 def trip_length(r: dict) -> dict:
-    """From triplength.suggest: the person's strong and good matches, what the suggestion is built on (`best`: the
-    strong matches, or with fewer of them than places a day, the best few days' worth of strong and good ones), and the
-    days those take at their places a day, keeping the day's shape."""
+    """From triplength.suggest: the person's top-ranked and well-ranked places (the internal strong and good bands),
+    what the suggestion is built on (`best`: the top-ranked, or with fewer of them than places a day, the best few
+    days' worth of both), and the days those take at their places a day, keeping the day's shape."""
     strong, best, per_day, need = r["strong_matches"], r["best"], r["places_per_day"], r["suggested_days"]
     days = lambda n: f"{n} exploring day{'s' if n != 1 else ''}"
+    # m275 (Abram, 12 Nov): rankings by the person's answers, never a chance of "Good" or a "strong match"
     f = [Factor("coverage", FOR if strong else NEUTRAL,
-                f"{strong} strong matches for you in {r['place']} (a 75% or better chance of Good), and "
-                f"{r['good_matches']} good ones, of {r['checked']} checked places.", strong,
-                "your answers (the rating model) and the checked places")]
+                f"{strong} places in {r['place']} rank highest for you by your answers so far, and "
+                f"{r['good_matches']} more rank well, of {r['checked']} checked places.", strong,
+                "your answers (the scoring weights) and the checked places")]
     if strong >= per_day:
-        f.append(Factor("coverage", FOR, f"The suggestion is built on your {strong} strong matches.", best,
-                        "your answers (the rating model)"))
+        f.append(Factor("coverage", FOR, f"The suggestion is built on your {strong} top-ranked places.", best,
+                        "your answers (the scoring weights)"))
     else:
-        f.append(Factor("coverage", NEUTRAL, f"Fewer strong matches than your places a day, so it uses your best "
-                        f"{best} for now (strong and good ones).", best, "your answers (the rating model)"))
+        f.append(Factor("coverage", NEUTRAL, f"Fewer top-ranked places than your places a day, so it uses your best "
+                        f"{best} for now.", best, "your answers (the scoring weights)"))
     f.append(Factor("pace", NEUTRAL, f"At {per_day} places a day, keeping the day's shape (at most two history stops "
                     f"a day, one wander), those {best} take {days(need)}"
                     + (", the most it suggests." if r.get("capped") else "."), need, "your places a day"))
@@ -348,7 +347,7 @@ def why_this_length(r: dict) -> list[dict]:
     need, per_day = r["suggested_days"], r["places_per_day"]
     plural = lambda n: f"{n} day{'s' if n != 1 else ''}"
     lines = [{"kind": "coverage", "effect": FOR,
-              "text": (f"{r['strong_matches']} strong matches for you in {r['place']}: at {per_day} a day they take "
+              "text": (f"Your {r['strong_matches']} top-ranked places in {r['place']}: at {per_day} a day they take "
                        f"{plural(need)}." if r["strong_matches"] >= per_day else
                        f"Your best {r['best']} places in {r['place']} for now take {plural(need)} at {per_day} a day.")}]
     opts = r.get("options") or []

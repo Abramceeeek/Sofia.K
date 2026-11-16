@@ -124,7 +124,7 @@ def test_when_nothing_suits_a_member_it_is_said():
     d[[i for i, k in enumerate(pop.names[:len(sd)]) if k.startswith("cost")]] = 0
     ms = [Member("Member A", Scorer(pop, d)), Member("Member B", Scorer(pop, None))]
     gp = plan(ms, _london(), 1, 3)
-    assert any("Nothing here is a strong match for Member A" in n for n in gp.notes)
+    assert any("Nothing here ranks well for Member A" in n for n in gp.notes)
 
 
 # ---- m256: Abram's regression cases (m252) -------------------------------------------------------------------------

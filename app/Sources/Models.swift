@@ -348,7 +348,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let chosenFor: [String]
     let card: Card?
     let worthGbp: Double?          // the model's £V (D88): kept for the day's curve, no longer shown (D127)
-    let match: String?             // D127: "A strong match for you" / "A good match for you" / "Worth a try"
+    let match: String?             // m275: "Recommended because of your lean towards views and awe" (never a chance)
     let approachSteps: [ApproachStep]?   // from where, the way in, where you arrive: the card's own text (D112)
     let bestLight: String?         // the card's light line
     let bestWindow: String?        // "16:12–17:12" on the plan's date
@@ -364,8 +364,9 @@ struct Stop: Codable, Hashable, Identifiable {
 
     var id: String { momentId + "@" + arrive }
 
-    /// D127 (algorithm reviews): the price, then how well it matches, in words. The £ figure overclaimed: after the short
-    /// onboarding its 95% range spans about 20 times, so it stays inside the model.
+    /// D127 (algorithm reviews): the price, then why it's recommended. The £ figure overclaimed: after the short
+    /// onboarding its 95% range spans about 20 times, so it stays inside the model. m275: the factors from the person's
+    /// answers, never a chance of "Good" (not yet checked against real ratings).
     var matchLine: String? {
         match.map { (costGbp == 0 ? "Free entry." : "Costs \(Money.text(costGbp)).") + " \($0)." }
     }

@@ -3,7 +3,7 @@ what was *observed* after it. Research and a prototype: read-only over data the 
 new question, and nothing in the frozen friends' round changes.
 
 **Before the experience** (stored with each plan's stops today): the predicted fit (`predicted`, the model's utility,
-turned into the chance of "Good" or better) and the match words shown. The quality perspectives and data confidence
+turned into the chance of "Good" or better) and the line shown beside it. The quality perspectives and data confidence
 (quality.py) are computed, not stored yet: storing them with each stop is a later step, for Abram (no new table).
 
 **After the experience** (stored today): the 1-5 rating after a stop (Good or better = 4 or 5), "Would you bring
@@ -13,7 +13,8 @@ expectations (approved to investigate after the round, m260) and whether the per
 `decisions/post-experience-questions.md`.
 
 **Measures:** calibration (Brier score, and predicted against observed by band), discrimination (the chance a stop
-rated Good was predicted higher than one that wasn't: AUC), whether each match word holds up, how many planned stops
+rated Good was predicted higher than one that wasn't: AUC), whether each internal band holds up (m275: no words or
+chances are shown until it does), how many planned stops
 are rated (a low share means the rest is guesswork), and the day-level answers. Synthetic data is labelled and never
 reported as real-user validation.
 """
@@ -31,7 +32,7 @@ class Prediction:
     plan_id: int
     moment_id: str
     p_good: float                  # the chance of "Good" or better, before the visit
-    match: str | None = None       # the words shown ("A strong match for you"…)
+    match: str | None = None       # the line shown: the old words before m275, the factor line after
     kind: str = "personal"         # personal | generic (Test B's no-answers plan)
 
 
@@ -50,6 +51,13 @@ class DayOutcome:
     again: bool | None
 
 
+STRONG_LINE, GOOD_LINE = 0.75, 0.5   # dayplan.MATCH_STRONG, MATCH_GOOD (internal since m275; never shown)
+
+
+def _band(p: float) -> str:
+    return "strong" if p >= STRONG_LINE else "good" if p >= GOOD_LINE else "other"
+
+
 def p_from_utility(u: float, scale: float, cut: float) -> float:
     """The planner stores each stop's utility (`predicted`); the rating model turns it into the chance of Good."""
     return 1.0 / (1.0 + math.exp(-(scale * u - cut)))
@@ -62,8 +70,15 @@ def predictions_from_plans(plans: list[dict], scale: float, cut: float) -> list[
             for p in plans for s in p.get("stops") or [] if s.get("predicted") is not None]
 
 
+def shown_from_plans(plans: list[dict]) -> dict[tuple[int, str], str]:
+    """m276: the line each stored stop showed beside its price, (plan id, moment id) → text. Plans made before m276
+    kept no prediction, but those from the frozen round (build 91) kept D127's words, the bands themselves."""
+    return {(p["id"], s["moment_id"]): s["match"] for p in plans for s in p.get("stops") or [] if s.get("match")}
+
+
 def evaluate(preds: list[Prediction], outs: list[Outcome], days: list[DayOutcome] = (), *, synthetic: bool,
-             bands: int = 5, open_questions: dict[tuple[int, str], tuple[str, ...]] | None = None) -> dict:
+             bands: int = 5, open_questions: dict[tuple[int, str], tuple[str, ...]] | None = None,
+             shown: dict[tuple[int, str], str] | None = None) -> dict:
     """Pair each rating with the prediction made for that stop in that plan, then measure. Nothing is imputed: an
     unrated stop is counted as unrated, never as a guess.
 
@@ -75,8 +90,20 @@ def evaluate(preds: list[Prediction], outs: list[Outcome], days: list[DayOutcome
     pairs = [(by[(o.plan_id, o.moment_id)], o) for o in outs if (o.plan_id, o.moment_id) in by]
     out = {"synthetic": synthetic, "label": "SYNTHETIC: not real-user validation" if synthetic else "real ratings",
            "planned_stops": len(preds), "rated": len(pairs),
-           "rated_share": round(len(pairs) / len(preds), 3) if preds else None}
+           "rated_share": round(len(pairs) / len(preds), 3) if preds else None,
+           # m276: ratings whose plan kept no prediction (plans made before m276, the frozen round's included)
+           "rated_without_prediction": len(outs) - len(pairs)}
+    # the line each rated stop showed, whether or not its plan kept a prediction: before m275, D127's words
+    said = dict(shown or {}) | {k: pr.match for k, pr in by.items() if pr.match and k not in (shown or {})}
+    words: dict[str, list[int]] = {}
+    for o in outs:
+        if (w := said.get((o.plan_id, o.moment_id))):
+            words.setdefault(w, []).append(1 if o.rating >= GOOD_RATING else 0)
+    out["match_words"] = {w: {"n": len(v), "observed_good": round(sum(v) / len(v), 3)} for w, v in words.items()}
     if not pairs:
+        if outs:   # never "no rated stops" when there are ratings: say what they can and can't show
+            return out | {"note": f"{len(outs)} rated stops, but their plans kept no prediction (made before m276): "
+                                  "only the words shown with them can be checked."}
         return out | {"note": "No rated stops yet: nothing can be said about quality."}
     y = [1 if o.rating >= GOOD_RATING else 0 for _, o in pairs]
     p = [pr.p_good for pr, _ in pairs]
@@ -93,11 +120,13 @@ def evaluate(preds: list[Prediction], outs: list[Outcome], days: list[DayOutcome
             out["calibration"].append({"band": f"{lo:.1f}-{hi:.1f}", "n": len(idx),
                                        "predicted": round(sum(p[i] for i in idx) / len(idx), 3),
                                        "observed": round(sum(y[i] for i in idx) / len(idx), 3)})
-    words = {}
+    bands = {}
     for (pr, _), yi in zip(pairs, y):
-        if pr.match:
-            words.setdefault(pr.match, []).append(yi)
-    out["match_words"] = {w: {"n": len(v), "observed_good": round(sum(v) / len(v), 3)} for w, v in words.items()}
+        bands.setdefault(_band(pr.p_good), []).append(yi)
+    # m275 (Abram, 12 Nov): the internal bands behind the old words, by the chance before the visit. The evidence
+    # any wording of a chance would need first: does "strong" (75% or more) come true about that often on real ratings?
+    out["match_bands"] = {k: {"n": len(bands[k]), "observed_good": round(sum(bands[k]) / len(bands[k]), 3)}
+                          for k in ("strong", "good", "other") if k in bands}
     bring = [o.would_bring for _, o in pairs if o.would_bring is not None]
     out["would_bring"] = round(sum(bring) / len(bring), 3) if bring else None
     if open_questions is not None:
@@ -122,6 +151,78 @@ def evaluate(preds: list[Prediction], outs: list[Outcome], days: list[DayOutcome
     return out
 
 
+# ---- learning by milestone (Abram, 12 Nov, part 3B) ---------------------------------------------------------------
+
+# Does ODYS learn about a real person? Each rated stop is judged by the prediction its plan was made with, grouped by
+# how much the person had told us when that plan was made, and compared with what the model would have said knowing
+# nothing about them (the population's weights alone, the same stop and conditions). Learning shows as the personal
+# prediction beating that baseline by more at each later milestone. Ratings only; nothing imputed; never synthetic
+# users in place of real ones.
+MILESTONES = ("after onboarding", "after the first rating", "after 2 days out", "after 5 days out", "after 20 ratings")
+MIN_PER_MILESTONE = 30   # GUESS, as evaluate_export's MIN_FOR_PATTERNS: fewer rated stops and a row is exploratory
+
+
+def milestone(n_ratings_before: int, days_out_before: int) -> str:
+    """The furthest milestone reached when a plan was made. "Days out" are London dates with at least one rating, so
+    a day without the app doesn't count as learning. Twenty ratings can come before five days out; it's the further."""
+    if n_ratings_before >= 20:
+        return MILESTONES[4]
+    if days_out_before >= 5:
+        return MILESTONES[3]
+    if days_out_before >= 2:
+        return MILESTONES[2]
+    return MILESTONES[1] if n_ratings_before >= 1 else MILESTONES[0]
+
+
+@dataclass(frozen=True)
+class PlanMade:
+    user_id: str
+    made_at: str                  # ISO time the plan was made (the stored plan's created_at)
+
+
+def learning_by_milestone(preds: list[Prediction], outs: list[Outcome], made: dict[int, PlanMade],
+                          rated_at: dict[str, list[str]], baseline: dict[tuple[int, str], float] | None = None, *,
+                          synthetic: bool) -> dict:
+    """`rated_at`: each person's rating times (ISO). `baseline`: (plan id, moment id) → the chance of Good from the
+    population's weights alone. Per milestone: rated stops, people, observed Good, mean predicted, Brier score for the
+    personal prediction and for the baseline, and the gain (baseline minus personal: above 0, the person's answers
+    helped). Rows under MIN_PER_MILESTONE are marked exploratory."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    london = ZoneInfo("Europe/London")
+    when = lambda t: datetime.fromisoformat(t.replace("Z", "+00:00"))
+    times = {u: sorted(when(t) for t in ts) for u, ts in rated_at.items()}
+    by = {(p.plan_id, p.moment_id): p for p in preds}
+    groups: dict[str, list[tuple[str, float, float | None, int]]] = {m: [] for m in MILESTONES}
+    unplaced = 0
+    for o in outs:
+        pr, meta = by.get((o.plan_id, o.moment_id)), made.get(o.plan_id)
+        if pr is None or meta is None:
+            unplaced += 1
+            continue
+        t0 = when(meta.made_at)
+        before = [t for t in times.get(meta.user_id, []) if t < t0]
+        stage = milestone(len(before), len({t.astimezone(london).date() for t in before}))
+        base = (baseline or {}).get((o.plan_id, o.moment_id))
+        groups[stage].append((meta.user_id, pr.p_good, base, 1 if o.rating >= GOOD_RATING else 0))
+    brier = lambda ps, ys: round(sum((p - y) ** 2 for p, y in zip(ps, ys)) / len(ys), 4)
+    rows = []
+    for stage, g in groups.items():
+        row = {"milestone": stage, "n": len(g), "people": len({u for u, *_ in g})}
+        if g:
+            ps, ys = [x[1] for x in g], [x[3] for x in g]
+            row.update(observed_good=round(sum(ys) / len(ys), 3), mean_predicted=round(sum(ps) / len(ps), 3),
+                       brier=brier(ps, ys), auc=_auc(ps, ys), exploratory=len(g) < MIN_PER_MILESTONE)
+            with_base = [x for x in g if x[2] is not None]
+            if with_base:
+                bp, bp_base, by_ = [x[1] for x in with_base], [x[2] for x in with_base], [x[3] for x in with_base]
+                row.update(n_with_baseline=len(with_base), brier_baseline=brier(bp_base, by_),
+                           gain=round(brier(bp_base, by_) - brier(bp, by_), 4))
+        rows.append(row)
+    return {"synthetic": synthetic, "label": "SYNTHETIC: not real-user validation" if synthetic else "real ratings",
+            "rows": rows, "rated_without_prediction": unplaced}
+
+
 def _auc(p: list[float], y: list[int]) -> float | None:
     pos = [pi for pi, yi in zip(p, y) if yi]
     neg = [pi for pi, yi in zip(p, y) if not yi]
@@ -131,4 +232,5 @@ def _auc(p: list[float], y: list[int]) -> float | None:
     return round(wins / (len(pos) * len(neg)), 3)
 
 
-__all__ = ["Prediction", "Outcome", "DayOutcome", "evaluate", "predictions_from_plans", "p_from_utility"]
+__all__ = ["Prediction", "Outcome", "DayOutcome", "evaluate", "predictions_from_plans", "p_from_utility",
+           "shown_from_plans", "MILESTONES", "milestone", "PlanMade", "learning_by_milestone"]

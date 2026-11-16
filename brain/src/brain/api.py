@@ -125,6 +125,18 @@ def kept_stops(stops: list[dict], *, drop_start_pin: bool = False, hide: str | N
     return out
 
 
+# m276 (audit, 16 Nov): each stop's prediction before the visit (the model's utility, `predicted`) is kept with the
+# stored plan, so ratings can be checked against what was predicted (evaluation.py). The m260 framework assumed it was
+# kept; it wasn't. It's the person's own derived score, kept beside the score terms (`why`) the plan already holds,
+# and never sent to the app (Abram, m224: no raw model scores).
+PRIVATE_STOP_KEYS = ("predicted",)
+
+
+def public(stops: list[dict]) -> list[dict]:
+    """A plan's stops as the app is sent them: without the prediction kept for the evaluation."""
+    return [{k: v for k, v in st.items() if k not in PRIVATE_STOP_KEYS} for st in stops]
+
+
 def _finite(v):
     """A value JSON can carry: a number that isn't one (an infinity, a NaN) becomes null, at any depth. One such
     number in one row used to make the whole admin export fail (audit SEC-04)."""
@@ -305,7 +317,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     def plan_out(plan: db.Plan) -> dict:
         return {"id": plan.id, "kind": plan.kind, "label": plan.label, "date": plan.date, "intent": plan.intent,
-                "stops": plan.stops, "value": plan.value, "status": plan.status,
+                "stops": public(plan.stops), "value": plan.value, "status": plan.status,
                 "fit_rating": plan.fit_rating, "created_at": plan.created_at.isoformat()}
 
     # ---- public -------------------------------------------------------------------
@@ -612,6 +624,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             money = lambda sts: block(sts, lunch)
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
+        for st, inner in zip(out, stops):   # m276: kept with the stored plan for the evaluation, never sent
+            st["predicted"] = inner.get("predicted")
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
         ms = moments_by_id(s)
         if feelings is None:
@@ -646,11 +660,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if st["rateable"] and base in by_id:
                 st["card"] = card(by_id[base])
                 m = by_id[base]
+                mine = amap.labels(amap.fields_of(m) & fields) if amap else []
                 st["reasons"] = [] if blind else reasons.stop_reasons(
                     p, post.mean, m, loved=loved_places, feelings=feelings, rated=rated,
-                    loved_kinds=loved_kinds, wanted=wanted,
-                    interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices,
-                    taken=taken)
+                    loved_kinds=loved_kinds, wanted=wanted, interests=mine, n_choices=n_choices, taken=taken)
+                # m275 (Abram, 12 Nov): the factors from the person's answers, never a chance of "Good"
+                st["match"] = None if blind else reasons.factor_line(
+                    p, post.mean, m, loved=loved_places, feelings=feelings, interests=mine, n_choices=n_choices)
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
@@ -714,7 +730,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                       stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
         s.add(row)
         s.commit()
-        return {**plan_out(row), "stops": out, **head}
+        return {**plan_out(row), "stops": public(out), **head}
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -1275,7 +1291,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       **({"weather": outlook.out()} if outlook else {})})
                 s.add(row)
                 s.flush()
-                return {**plan_out(row), "stops": stops, **head}, stops
+                return {**plan_out(row), "stops": public(stops), **head}, stops
             return None
 
         for i in wanted:

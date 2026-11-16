@@ -83,7 +83,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 32,
-      "match": "A strong match for you",
+      "match": "Recommended because of your lean towards views and big reveals",
       "feel_word": "Big views",
       "reveal": true,
       "approach_steps": [
@@ -214,7 +214,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 33,
-      "match": "A strong match for you",
+      "match": "Recommended because of your interest in history & culture and your lean towards views",
       "feel_word": "Wonder",
       "reveal": true,
       "approach_steps": [
@@ -392,7 +392,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": null,
-      "match": "A good match for you",
+      "match": "Recommended because of your interest in history & culture and your lean towards awe",
       "feel_word": "Curious",
       "reveal": false,
       "approach_steps": [
@@ -620,7 +620,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 20,
-      "match": "A strong match for you",
+      "match": "Recommended because of your interest in history & culture and your lean towards views",
       "feel_word": "Wonder",
       "reveal": true,
       "approach_steps": [
@@ -794,7 +794,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 28,
-      "match": "A strong match for you",
+      "match": "Recommended because of your interest in history & culture and your lean towards big reveals",
       "feel_word": "Calm",
       "reveal": true,
       "approach_steps": [
@@ -921,7 +921,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 22,
-      "match": "A strong match for you",
+      "match": "Recommended because of your lean towards views and awe",
       "feel_word": "Awe",
       "reveal": false,
       "approach_steps": [
@@ -1111,7 +1111,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 16,
-      "match": "A strong match for you",
+      "match": "Recommended because of your lean towards views and awe",
       "feel_word": "Awe",
       "reveal": false,
       "approach_steps": [
@@ -1290,7 +1290,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 19,
-      "match": "A strong match for you",
+      "match": "Recommended because of your lean towards views and awe",
       "feel_word": "Big views",
       "reveal": false,
       "approach_steps": [
@@ -1419,7 +1419,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 27,
-      "match": "A strong match for you",
+      "match": "Recommended because you loved it",
       "feel_word": "Awe",
       "reveal": true,
       "approach_steps": [
@@ -1610,7 +1610,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 4,
-      "match": "A good match for you",
+      "match": "Recommended because of your lean towards views and history",
       "feel_word": "Resting",
       "reveal": false,
       "approach_steps": [
@@ -1785,7 +1785,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 6,
-      "match": "A good match for you",
+      "match": "Recommended because of your lean towards views and big reveals",
       "feel_word": "Wonder",
       "reveal": true,
       "approach_steps": [
@@ -1914,7 +1914,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 7,
-      "match": "A good match for you",
+      "match": "Recommended because of your lean towards awe and views",
       "feel_word": "Awe",
       "reveal": false,
       "approach_steps": [
@@ -2111,7 +2111,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": null,
-      "match": "A good match for you",
+      "match": "Recommended because of your lean towards green space and awe",
       "feel_word": "Calm",
       "reveal": false,
       "approach_steps": [
@@ -2238,7 +2238,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": 8,
-      "match": "A good match for you",
+      "match": "Recommended because of your interest in history & culture and your lean towards awe",
       "feel_word": "Curious",
       "reveal": false,
       "approach_steps": [
@@ -2406,7 +2406,7 @@
       "familiar": false,
       "rateable": true,
       "worth_gbp": null,
-      "match": "A good match for you",
+      "match": "Recommended because of your interest in history & culture and your lean towards awe",
       "feel_word": "Awe",
       "reveal": true,
       "approach_steps": [
