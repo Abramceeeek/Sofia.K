@@ -37,7 +37,7 @@ Abram's review of the audit, parts 10–12 (12 Nov). This is the plan, the check
 ## 3. The database and the server, with costs (`infrastructure-decision.md`)
 
 - **The database:** upgrade in place to `0.1c-256mb`, $6 + $0.30 a month, after the round's final export and before 6 Dec.
-- **The server:** 1 CPU, $25 a month, keeps today's plan quality. After the planner change, 0.5 CPU at $7 should be enough.
+- **The server:** 1 CPU, $25 a month, keeps today's plan quality. After the planner change, 0.5 CPU at $7 is enough. Checked on 18 Nov: the same plans, stop for stop, in a 0.5 CPU quota.
 - **Total:**
   - **$31.30 a month now**;
   - **$13.30 a month after the planner change**;

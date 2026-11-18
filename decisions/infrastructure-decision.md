@@ -53,8 +53,7 @@ The performance study (`performance-study.md`):
 - **Time:** the planner limits its search by **wall-clock** time. A request takes about the same time on any CPU (about 4.8–5 s for a day), but **gets worse plans on less CPU**. One own-time scenario lost 28% of its plan value at 0.5 CPU.
 
 **So the minimum viable server, without a code change, is 1 CPU.**
-- **With the planner change** (search effort fixed, not time), 0.5 CPU should give the same plans, about twice as slowly.
-- **That is an estimate:** the check inside a 0.5 CPU quota is the change's first step.
+- **With the planner change** (search effort fixed, not time), 0.5 CPU gives the same plans, stop for stop. The experiment ran inside a 0.5 CPU quota on 18 Nov, and a day took 2–7 s.
 - **At 0.1 CPU (today's free plan):**
   - own-time days lose up to 40%;
   - eight people at once wait about 60 s each, against the apps' 90 s limit.

@@ -107,11 +107,20 @@ That way, **the same request gives the same plan on any machine**, and less CPU 
 | 1000 | 4.534 | 4.472 | **4.418** | 3.697 | 30.6 s |
 
 - **At 50 solutions:** the same quality as today's 1 s limit on a full CPU, in about half the time.
-- **On 0.5 CPU,** it should be the same plans in about twice the time. **Not yet confirmed:** the run inside a 0.5 CPU quota is the first step of the work below.
+- **On 0.5 CPU (checked 18 Nov, inside a 0.5 CPU quota): the same plans, stop for stop, as on the full CPU.** It took 1.4–2.2 times as long:
+
+| Scenario | Full CPU | 0.5 CPU | Same stops |
+|---|---|---|---|
+| Day | 2.4 s | 3.4 s | yes |
+| One block | 1.9 s | 4.1 s | yes |
+| Two blocks | 3.2 s | 6.5 s | yes |
+| Relaxed | 1.1 s | 2.3 s | yes |
+
+  Today's setting takes about 4.9 s on 0.5 CPU and gives worse own-time plans.
 - **Two blocks of own time need far more search** (1000 solutions) to find the better day. A smarter seed for own-time days is likely the cheaper fix than more search (m216's greedy seed fills around the blocks).
 
 **The work** (Claude, about 4 h; after the friends' round, not in its build):
-1. Run the 0.5 and 0.1 CPU check.
+1. Run the 0.1 CPU check (0.5 is done, above).
 2. Set the solution limit from `benchmark_planner.py`'s full benchmark (1,188 plans), so that **no plan gets worse than today's on a full CPU** (checked plan by plan).
 3. Make the cap explicit, with the "in a hurry" status shown in both apps.
 4. Re-run this study.
@@ -120,7 +129,7 @@ That way, **the same request gives the same plan on any machine**, and less CPU 
 ## What it means for the server (`infrastructure-decision.md`)
 
 - **Without the fix:** 1 CPU (`1c-2g`, $25 a month) keeps today's plan quality. 0.5 CPU ($7) loses up to 28% on own-time days. The free plan (0.1 CPU) loses up to 40%, and makes simultaneous requests slow.
-- **With the fix:** 0.5 CPU gives today's full-CPU plans, about twice as slowly (an estimate until the check runs). The free plan stays too slow for trips and simultaneous requests.
+- **With the fix:** 0.5 CPU gives today's full-CPU plans (checked: the same stops), in 2–7 s for a day. The free plan stays too slow for trips and simultaneous requests.
 - **For the friends' round:**
   - The pair's personal plan is a plain day without own time, so it is affected least: −1% at 0.1 CPU.
   - **Trip days and own-time days are affected most.**
