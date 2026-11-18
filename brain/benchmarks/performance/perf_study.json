@@ -1,0 +1,386 @@
+{
+ "made_at": "2026-11-16 07:07 UTC",
+ "machine_cpus": 4,
+ "planner_time_limit_s": 1.0,
+ "levels": [
+  {
+   "cpus": 1.0,
+   "catalogue": "London, 49 cards",
+   "startup_s": 2.51,
+   "scenarios": {
+    "day": {
+     "n": 10,
+     "median_s": 4.78,
+     "max_s": 4.82,
+     "p95_s": 4.82,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 4.67,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 4.502,
+     "solver_not_ok": 0
+    },
+    "day, one block of own time": {
+     "n": 10,
+     "median_s": 4.78,
+     "max_s": 4.84,
+     "p95_s": 4.84,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 4.68,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 4.48,
+     "solver_not_ok": 0
+    },
+    "day, two blocks of own time": {
+     "n": 10,
+     "median_s": 4.86,
+     "max_s": 4.89,
+     "p95_s": 4.89,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 4.76,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 3.41,
+     "solver_not_ok": 0
+    },
+    "relaxed day": {
+     "n": 10,
+     "median_s": 4.73,
+     "max_s": 4.85,
+     "p95_s": 4.85,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 4.65,
+     "rule_breaks": 0,
+     "places_median": 3.0,
+     "value_median": 3.697,
+     "solver_not_ok": 0
+    },
+    "trip of 3 days": {
+     "n": 3,
+     "median_s": 11.34,
+     "max_s": 11.4,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 11.28,
+     "days_planned": "9 of 9"
+    },
+    "trip of 7 days": {
+     "n": 3,
+     "median_s": 25.2,
+     "max_s": 25.21,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 24.98,
+     "days_planned": "21 of 21"
+    },
+    "trip of 14 days": {
+     "n": 2,
+     "median_s": 44.79,
+     "max_s": 44.84,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 44.52,
+     "days_planned": "20 of 28"
+    },
+    "4 people at once": {
+     "n": 4,
+     "median_s": 6.58,
+     "max_s": 6.59,
+     "failed": 0,
+     "cpu_s_total": 6.17,
+     "rule_breaks": 0,
+     "value_median": 4.502
+    },
+    "8 people at once": {
+     "n": 8,
+     "median_s": 8.93,
+     "max_s": 9.02,
+     "failed": 0,
+     "cpu_s_total": 8.7,
+     "rule_breaks": 0,
+     "value_median": 4.441
+    }
+   },
+   "rss_mb": 169,
+   "peak_mb": 169
+  },
+  {
+   "cpus": 1.0,
+   "catalogue": "a smaller destination, 20 cards",
+   "startup_s": 1.91,
+   "scenarios": {
+    "day": {
+     "n": 10,
+     "median_s": 3.11,
+     "max_s": 3.14,
+     "p95_s": 3.14,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 3.03,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 3.996,
+     "solver_not_ok": 0
+    }
+   },
+   "rss_mb": 117,
+   "peak_mb": 117
+  },
+  {
+   "cpus": 0.5,
+   "catalogue": "London, 49 cards",
+   "startup_s": 3.99,
+   "scenarios": {
+    "day": {
+     "n": 10,
+     "median_s": 4.91,
+     "max_s": 4.99,
+     "p95_s": 4.99,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 2.44,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 4.502,
+     "solver_not_ok": 0
+    },
+    "day, one block of own time": {
+     "n": 10,
+     "median_s": 4.99,
+     "max_s": 5.1,
+     "p95_s": 5.1,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 2.48,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 3.221,
+     "solver_not_ok": 0
+    },
+    "day, two blocks of own time": {
+     "n": 10,
+     "median_s": 5.12,
+     "max_s": 5.2,
+     "p95_s": 5.2,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 2.55,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 3.41,
+     "solver_not_ok": 0
+    },
+    "relaxed day": {
+     "n": 10,
+     "median_s": 4.9,
+     "max_s": 5.04,
+     "p95_s": 5.04,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 2.45,
+     "rule_breaks": 0,
+     "places_median": 3.0,
+     "value_median": 3.697,
+     "solver_not_ok": 0
+    },
+    "trip of 3 days": {
+     "n": 3,
+     "median_s": 11.56,
+     "max_s": 11.64,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 5.82,
+     "days_planned": "9 of 9"
+    },
+    "trip of 7 days": {
+     "n": 3,
+     "median_s": 25.5,
+     "max_s": 25.57,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 12.68,
+     "days_planned": "21 of 21"
+    },
+    "trip of 14 days": {
+     "n": 2,
+     "median_s": 45.38,
+     "max_s": 45.89,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 22.72,
+     "days_planned": "20 of 28"
+    },
+    "4 people at once": {
+     "n": 4,
+     "median_s": 7.63,
+     "max_s": 7.96,
+     "failed": 0,
+     "cpu_s_total": 3.9,
+     "rule_breaks": 0,
+     "value_median": 4.441
+    },
+    "8 people at once": {
+     "n": 8,
+     "median_s": 11.13,
+     "max_s": 11.15,
+     "failed": 0,
+     "cpu_s_total": 5.53,
+     "rule_breaks": 0,
+     "value_median": 4.441
+    }
+   },
+   "rss_mb": 166,
+   "peak_mb": 166
+  },
+  {
+   "cpus": 0.5,
+   "catalogue": "a smaller destination, 20 cards",
+   "startup_s": 3.21,
+   "scenarios": {
+    "day": {
+     "n": 10,
+     "median_s": 3.65,
+     "max_s": 4.19,
+     "p95_s": 4.19,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 1.82,
+     "rule_breaks": 0,
+     "places_median": 4.0,
+     "value_median": 3.996,
+     "solver_not_ok": 0
+    }
+   },
+   "rss_mb": 117,
+   "peak_mb": 117
+  },
+  {
+   "cpus": 0.1,
+   "catalogue": "London, 49 cards",
+   "startup_s": 21.2,
+   "scenarios": {
+    "day": {
+     "n": 5,
+     "median_s": 6.59,
+     "max_s": 6.78,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 0.66,
+     "rule_breaks": 0,
+     "places_median": 4,
+     "value_median": 4.441,
+     "solver_not_ok": 0
+    },
+    "day, one block of own time": {
+     "n": 5,
+     "median_s": 6.9,
+     "max_s": 7.9,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 0.72,
+     "rule_breaks": 0,
+     "places_median": 4,
+     "value_median": 3.221,
+     "solver_not_ok": 0
+    },
+    "day, two blocks of own time": {
+     "n": 5,
+     "median_s": 7.4,
+     "max_s": 7.8,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 0.75,
+     "rule_breaks": 0,
+     "places_median": 3,
+     "value_median": 2.062,
+     "solver_not_ok": 0
+    },
+    "relaxed day": {
+     "n": 5,
+     "median_s": 6.31,
+     "max_s": 6.5,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 0.63,
+     "rule_breaks": 0,
+     "places_median": 3,
+     "value_median": 3.697,
+     "solver_not_ok": 0
+    },
+    "trip of 3 days": {
+     "n": 3,
+     "median_s": 14.11,
+     "max_s": 14.19,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 1.44,
+     "days_planned": "9 of 9"
+    },
+    "trip of 7 days": {
+     "n": 3,
+     "median_s": 30.7,
+     "max_s": 30.9,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 3.11,
+     "days_planned": "21 of 21"
+    },
+    "trip of 14 days": {
+     "n": 2,
+     "median_s": 61.99,
+     "max_s": 62.09,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_trip": 6.24,
+     "days_planned": "22 of 28"
+    },
+    "4 people at once": {
+     "n": 4,
+     "median_s": 25.24,
+     "max_s": 26.4,
+     "failed": 0,
+     "cpu_s_total": 2.64,
+     "rule_breaks": 0,
+     "value_median": 4.393
+    },
+    "8 people at once": {
+     "n": 8,
+     "median_s": 60.01,
+     "max_s": 60.19,
+     "failed": 0,
+     "cpu_s_total": 5.99,
+     "rule_breaks": 0,
+     "value_median": 4.124
+    }
+   },
+   "rss_mb": 164,
+   "peak_mb": 164
+  },
+  {
+   "cpus": 0.1,
+   "catalogue": "a smaller destination, 20 cards",
+   "startup_s": 18.04,
+   "scenarios": {
+    "day": {
+     "n": 5,
+     "median_s": 4.7,
+     "max_s": 4.89,
+     "failed": 0,
+     "failure_codes": [],
+     "cpu_s_per_request": 0.47,
+     "rule_breaks": 0,
+     "places_median": 4,
+     "value_median": 4.165,
+     "solver_not_ok": 0
+    }
+   },
+   "rss_mb": 117,
+   "peak_mb": 117
+  }
+ ]
+}
