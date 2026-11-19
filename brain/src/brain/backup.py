@@ -270,16 +270,20 @@ def sealed_backup(engine: Engine, public_key_b64: str) -> tuple[bytes, dict[str,
 
 # ---- Abram's commands ------------------------------------------------------------------------------------------
 
-def _count_food(path: Path, key: str | None) -> int:
+def _count_food(path: Path, key: str | None, after_restore: bool = False) -> int:
     """m266 (Abram, m260, step 7): check a backup for the retired food field on Abram's own computer. It opens the
-    backup in memory and prints three counts, never a value, not even its length; nothing is written to disk."""
+    backup in memory and prints three counts, never a value, not even its length; nothing is written to disk.
+
+    m271 (step 6, "check backup restoration"): with --after-restore it also restores the backup into a database held
+    only in memory, with the same restore code a real recovery uses, and counts again: with_key must be 0."""
     raw = path.read_bytes()
     if raw.startswith(MAGIC):
         if not key:
             print("This backup is sealed: add --key and the path to your private key.", file=sys.stderr)
             return 1
         raw = unseal(raw, Path(key).read_text(encoding="utf-8"))
-    users = json.loads(raw.decode("utf-8-sig")).get("tables", {}).get("users", [])
+    data = json.loads(raw.decode("utf-8-sig"))
+    users = data.get("tables", {}).get("users", [])
     profiles = []
     for row in users:
         p = row.get("profile")
@@ -291,6 +295,30 @@ def _count_food(path: Path, key: str | None) -> int:
         profiles.append(p if isinstance(p, dict) else None)
     c = food.audit_profiles(profiles)
     print(f"profiles {c['profiles']}, with_key {c['with_key']}, non_empty {c['non_empty']}")
+    if after_restore:
+        from . import foodfield
+        engine = db.make_engine("sqlite://")          # in memory only: gone when this command ends
+        restore(engine, data)
+        r = foodfield.count(engine)
+        print(f"after a restore (in memory, nothing written): profiles {r['profiles']}, with_key {r['with_key']}, "
+              f"non_empty {r['non_empty']}")
+        engine.dispose()
+    return 0
+
+
+def _counts(path: Path, key: str | None) -> int:
+    """m272 (Abram, 19 Nov: the final export "completed and independently checked before migration"): the number of
+    rows in each table of a backup, and nothing else, to compare with the admin export's own counts."""
+    raw = path.read_bytes()
+    if raw.startswith(MAGIC):
+        if not key:
+            print("This backup is sealed: add --key and the path to your private key.", file=sys.stderr)
+            return 1
+        raw = unseal(raw, Path(key).read_text(encoding="utf-8"))
+    data = json.loads(raw.decode("utf-8-sig"))
+    print(f"made_at {data.get('made_at', '?')}")
+    for name, rows in sorted(data.get("tables", {}).items()):
+        print(f"{name} {len(rows)}")
     return 0
 
 
@@ -315,9 +343,15 @@ def main(argv: list[str] | None = None) -> int:
     f = sub.add_parser("count-food", help="count-only: how many profiles in a backup hold the retired food field")
     f.add_argument("file")
     f.add_argument("--key", help="the private key, for a sealed backup")
+    f.add_argument("--after-restore", action="store_true", help="also restore it in memory and count again")
+    n = sub.add_parser("counts", help="rows per table in a backup: numbers only, to check an export against")
+    n.add_argument("file")
+    n.add_argument("--key", help="the private key, for a sealed backup")
     a = ap.parse_args(argv)
     if a.cmd == "count-food":
-        return _count_food(Path(a.file), a.key)
+        return _count_food(Path(a.file), a.key, a.after_restore)
+    if a.cmd == "counts":
+        return _counts(Path(a.file), a.key)
     if a.cmd == "keygen":
         out = Path(a.out)
         if out.exists():
