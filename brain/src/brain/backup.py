@@ -274,7 +274,7 @@ def _count_food(path: Path, key: str | None, after_restore: bool = False) -> int
     """m266 (Abram, m260, step 7): check a backup for the retired food field on Abram's own computer. It opens the
     backup in memory and prints three counts, never a value, not even its length; nothing is written to disk.
 
-    m271 (step 6, "check backup restoration"): with --after-restore it also restores the backup into a database held
+    m289 (step 6, "check backup restoration"): with --after-restore it also restores the backup into a database held
     only in memory, with the same restore code a real recovery uses, and counts again: with_key must be 0."""
     raw = path.read_bytes()
     if raw.startswith(MAGIC):
@@ -307,7 +307,7 @@ def _count_food(path: Path, key: str | None, after_restore: bool = False) -> int
 
 
 def _counts(path: Path, key: str | None) -> int:
-    """m272 (Abram, 19 Nov: the final export "completed and independently checked before migration"): the number of
+    """m288 (Abram, 19 Nov: the final export "completed and independently checked before migration"): the number of
     rows in each table of a backup, and nothing else, to compare with the admin export's own counts."""
     raw = path.read_bytes()
     if raw.startswith(MAGIC):

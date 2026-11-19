@@ -1,4 +1,4 @@
-"""m271 (Abram, m260 and 19 Nov): the old free-text food field (`foods_avoided`, D19), for an authorised operator.
+"""m289 (Abram, m260 and 19 Nov): the old free-text food field (`foods_avoided`, D19), for an authorised operator.
 
     python -m brain.foodfield count  --database-url <External URL>
     python -m brain.foodfield delete --database-url <External URL> --confirm delete

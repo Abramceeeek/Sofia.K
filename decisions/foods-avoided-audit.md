@@ -23,7 +23,7 @@
 | **Render's point-in-time recovery** (paid plans only, 3 days on Hobby: `database-before-6-dec.md`) | None on the free plan | Recovering to a moment before the deletion would bring it back |
 | **A backup opened on Abram's computer** (`backup.json`) | The README already says to delete it after reading | `count-food` counts without opening it onto disk (m266) |
 
-## The operator procedure (Abram's seven steps, m260; exact commands and outputs, m271, 19 Nov)
+## The operator procedure (Abram's seven steps, m260; exact commands and outputs, m289, 19 Nov)
 
 **Who:** an authorised operator, Abram, on his own computer. Claude never runs it: "Do not attempt to obtain additional database permissions or use an admin token."
 
@@ -199,14 +199,14 @@ Then remove your IP address from the database's Networking in Render. The downlo
 - the delete is admin-only, refuses without `{"confirm": "delete"}`, keeps the rest of the profile, is safe to run twice, and never echoes the value;
 - a new backup has no value, and restoring an "older" backup that has one gives a profile without it;
 - **`count-food` (m266)** counts a sealed backup made on main (a dict profile, a JSON-text profile, an empty one), refuses without the key, shows only the three numbers, and writes nothing to disk;
-- **`foodfield` (m271)** counts, refuses to delete without `--confirm delete`, removes only the key, keeps every record and the rest of each profile, and prints no value;
-- **`foodfield` rolls back** when the count doesn't reach 0, leaving the database as it was (m271);
-- **`count-food --after-restore` and `counts` (m271, m272)** restore a backup made on main in memory, show `with_key 0` after the restore, print table counts only, and write nothing to disk.
+- **`foodfield` (m289)** counts, refuses to delete without `--confirm delete`, removes only the key, keeps every record and the rest of each profile, and prints no value;
+- **`foodfield` rolls back** when the count doesn't reach 0, leaving the database as it was (m289);
+- **`count-food --after-restore` and `counts` (m289, m288)** restore a backup made on main in memory, show `with_key 0` after the restore, print table counts only, and write nothing to disk.
 
 Also:
 - **On PostgreSQL 16.15** (a throwaway local server, synthetic rows only, deleted after): both routes and both SQL statements agree (9 Nov). **On 19 Nov**, with main's own `users` table: `foodfield` and the SQL count agreed (4, 2, 1); the delete committed, removed only the key, created no table, and the count after was 0.
 - The guard from m223 still holds: `test_food_needs_are_never_stored_until_their_dpia`.
 
 **Hours:**
-- **Claude:** ~1.5 h (m233), plus 0.5 h for this procedure and `count-food` (m266), plus ~1 h for `foodfield`, the restore check and the exact commands (m271).
+- **Claude:** ~1.5 h (m233), plus 0.5 h for this procedure and `count-food` (m266), plus ~1 h for `foodfield`, the restore check and the exact commands (m289).
 - **Abram:** ~30 min for the seven steps; then step 2 weekly (~5 min) until the branch Brain is live.

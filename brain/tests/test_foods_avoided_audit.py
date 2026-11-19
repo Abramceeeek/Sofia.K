@@ -82,7 +82,7 @@ def test_a_backup_can_be_counted_without_showing_a_value(tmp_path, capsys):
     assert set(tmp_path.iterdir()) == before                                       # nothing opened onto disk
 
 
-def test_the_operator_command_counts_deletes_only_the_key_and_prints_no_value(client, capsys):   # m271
+def test_the_operator_command_counts_deletes_only_the_key_and_prints_no_value(client, capsys):   # m289
     from brain import foodfield
     _, uid_a = install(client)
     _, uid_b = install(client)
@@ -101,7 +101,7 @@ def test_the_operator_command_counts_deletes_only_the_key_and_prints_no_value(cl
         assert s.get(db.User, uid_b) is not None                                            # no record deleted
 
 
-def test_the_operator_delete_rolls_back_unless_the_count_reaches_zero(client, monkeypatch):    # m271
+def test_the_operator_delete_rolls_back_unless_the_count_reaches_zero(client, monkeypatch):    # m289
     from brain import foodfield
     _, uid = install(client)
     _legacy(client, uid, SECRET)
@@ -112,7 +112,7 @@ def test_the_operator_delete_rolls_back_unless_the_count_reaches_zero(client, mo
         assert s.get(db.User, uid).profile["foods_avoided"] == SECRET                # rolled back: unchanged
 
 
-def test_a_backup_is_checked_after_a_restore_in_memory_and_counted_by_table(client, tmp_path, capsys):   # m271, m272
+def test_a_backup_is_checked_after_a_restore_in_memory_and_counted_by_table(client, tmp_path, capsys):   # m289, m288
     _, uid = install(client)
     older = json.loads(json.dumps(backup.dump(client.app.state.engine)))
     next(u for u in older["tables"]["users"] if u["id"] == uid)["profile"]["foods_avoided"] = SECRET   # made on main
