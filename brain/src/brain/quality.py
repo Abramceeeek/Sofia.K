@@ -161,6 +161,45 @@ def open_status(x: Experience, day: date | None) -> str:
     return "confirmed open" if x.hours.open_on(WEEKDAYS[day.weekday()]) else "confirmed closed"
 
 
+AVAILABILITY = ("confirmed open", "might be open", "closed or unavailable")   # m291 (Abram, 19 Nov)
+_SHUT = ("closed", "cancelled", "sold out", "unavailable", "no ")             # a dated notice that stops the visit
+CONFIRMED_WITHIN_DAYS = 180       # GUESS, as readiness's FRESH_DAYS: older official hours are only "might be open"
+
+
+def availability(x: Experience, day: date, today: date | None = None) -> str:
+    """m291 (Abram, 19 Nov): exactly three states for a planned day, and never "open" when it's uncertain.
+    - "closed or unavailable": its weekly hours say closed that day, or a dated notice stops the visit ("Closed…",
+      "No Choral Evensong listed", "Cancelled", "Sold out").
+    - "confirmed open": weekly hours read on its own official page within 180 days say open, and no notice stops it.
+    - "might be open": everything else, including hours taken from a card or a search result rather than an official
+      page, hours that vary with the season, unknown hours, and events whose sessions are listed per event.
+    For showing and comparing only: the default ranking is unchanged (Abram: "Do not change the default ranking")."""
+    if any(n.what.lower().startswith(_SHUT) for n in x.notices_on(day.isoformat())):
+        return "closed or unavailable"
+    if getattr(x.facet, "event_based", False):
+        return "might be open"
+    if x.hours.weekly is not None and x.hours.open_on(WEEKDAYS[day.weekday()]) is False:
+        return "closed or unavailable"       # closed is the safe side, whatever the source
+    today = today or day
+    official = (x.hours.trust == "checked" and (x.hours.source or "").startswith("https://")
+                and x.hours.checked is not None
+                and (today - date.fromisoformat(x.hours.checked)).days <= CONFIRMED_WITHIN_DAYS)
+    if x.hours.weekly is not None and official and x.hours.open_on(WEEKDAYS[day.weekday()]):
+        return "confirmed open"
+    return "might be open"
+
+
+def kept_apart(a: "Assessment", x: Experience, day: date | None, today: date) -> dict:
+    """m291 (Abram, 19 Nov): the four things never merged into one score on screen or in a report.
+    Suitability is the model's prediction; feasibility is the day; data confidence is what's known; satisfaction exists
+    only after a visit, from the person's own rating (evaluation.py), and is never filled in from a prediction."""
+    return {"suitability": {"p_good": a.p_good, "says": a.relevance.reason},
+            "feasibility": {"availability": availability(x, day, today) if day else None, "says": a.practicality.reason},
+            "data_confidence": {"confidence": round(a.confidence, 3), "open_questions": [r.reason for r in a.risks],
+                                "says": a.trust.reason},
+            "satisfaction": None}
+
+
 def relevance(p_good: float | None) -> Perspective:
     if p_good is None:
         return Perspective("unknown", "We don't know enough about you yet.")

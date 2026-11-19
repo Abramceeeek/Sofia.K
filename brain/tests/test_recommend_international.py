@@ -119,6 +119,31 @@ def test_shadow_ranks_the_same_places_under_each_configuration():
     assert [x.id for x in shown] == sh["baseline"]                   # what a person sees is the baseline's
 
 
+def test_three_states_and_never_open_when_uncertain():                    # m291 (Abram, 19 Nov)
+    today, tue, sat = date(2026, 11, 19), date(2026, 11, 24), date(2026, 11, 28)
+    av = lambda k, d, src=LONDON: quality.availability(src[k], d, today)
+    assert av("m_national_gallery", tue) == "confirmed open"                  # weekly hours from its own page
+    assert av("rodin", tue, PARIS) == "confirmed open"
+    assert av("m_bm_great_court", tue) == "might be open"                    # hours from search results, not its page
+    assert av("m_rfh_foyers_rest", date(2026, 11, 23)) == "closed or unavailable"   # its card says closed Mondays
+    assert av("m_bank_of_england_gold", sat) == "closed or unavailable"
+    assert av("m_courtauld_gallery", date(2026, 12, 25)) == "closed or unavailable"  # a dated notice
+    assert av("m_evensong_st_pauls", sat) == "closed or unavailable"          # "No Choral Evensong listed" that day
+    assert av("m_evensong_st_pauls", date(2026, 11, 27)) != "closed or unavailable"
+    stale = replace(LONDON["m_national_gallery"], hours=replace(LONDON["m_national_gallery"].hours, checked="2026-01-02"))
+    assert quality.availability(stale, tue, today) == "might be open"         # official, but read too long ago
+    assert {quality.availability(x, tue, today) for x in LONDON.values()} <= set(quality.AVAILABILITY)
+
+
+def test_suitability_feasibility_confidence_and_satisfaction_stay_apart():   # m291 (Abram, 19 Nov)
+    x = LONDON["m_bm_great_court"]
+    a = quality.assess(x, p_good=0.8, today=date(2026, 11, 19), day=date(2026, 11, 24))
+    k = quality.kept_apart(a, x, date(2026, 11, 24), date(2026, 11, 19))
+    assert set(k) == {"suitability", "feasibility", "data_confidence", "satisfaction"}
+    assert k["suitability"]["p_good"] == 0.8 and k["feasibility"]["availability"] == "might be open"
+    assert 0 < k["data_confidence"]["confidence"] <= 1 and k["satisfaction"] is None   # only ever from a rating
+
+
 def test_unknown_hours_are_might_be_open_never_confirmed():
     from brain.catalogue import OpeningHours
     day = date(2026, 11, 24)                                          # a Tuesday
