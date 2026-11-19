@@ -1,4 +1,4 @@
-# Manual verification: the most-planned London places first (19 Nov 2026; m270)
+# Manual verification: the most-planned London places first (19 Nov 2026; m290)
 
 **Abram's decision (19 Nov):**
 - Verify the British Museum and the Royal Festival Hall by hand first.
