@@ -253,3 +253,25 @@ def test_the_address_check_is_admin_only_and_shows_the_header_chain(client):
                                                         "X-Forwarded-For": "10.9.9.9, 198.51.100.1"}).json()
     assert r["cf_connecting_ip"] == "203.0.113.5" and r["x_forwarded_for"] == ["10.9.9.9", "198.51.100.1"]
     assert r["counted_as"] == "203.0.113.5"
+
+
+def test_the_export_check_counts_tables_and_finds_rows_without_a_person(client, tmp_path, capsys):
+    """Abram, 19 Nov: the final export is checked on its own, in the same form as `backup verify`, before the upgrade."""
+    import importlib.util
+    import json as _json
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("ec", Path(__file__).parents[1] / "scripts" / "export_counts.py")
+    ec = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ec)
+    h, _ = install(client)
+    client.post("/v1/me/swipes", headers=h, json={"items": [{"item": 2, "reaction": "loved"}]})
+    export = client.get("/v1/admin/export", headers=ADMIN).json()
+    f = tmp_path / "export.json"
+    f.write_text(_json.dumps(export))
+    assert ec.main([str(f)]) == 0
+    out = capsys.readouterr().out
+    assert "swipes 1" in out and "users 1" in out and "Holds together." in out
+    export["swipes"].append({"user_id": "nobody", "item": 3})
+    f.write_text(_json.dumps(export))
+    assert ec.main([str(f)]) == 1
+    assert "swipes: 1 rows name a person who isn't in users" in capsys.readouterr().err

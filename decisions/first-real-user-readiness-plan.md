@@ -4,6 +4,34 @@ Abram's review of the audit, parts 10–12 (12 Nov). This is the plan, the check
 
 **Nothing is deployed, bought or migrated, and the frozen friends' round is untouched.** Passing automated tests is not readiness: every criterion below that matters is about real phones, real people or real money decisions.
 
+## 0. The operational checklist after Abram's decisions of 19 Nov
+
+**Abram's priorities, in his order:**
+1. preserve the database;
+2. resolve the alert webhook;
+3. the frozen-experiment preflight;
+4. merge PR #1 into the development branch after the iPhone build;
+5. start the friends' round on the frozen builds;
+6. let its findings set what comes next.
+
+**ABRAM** marks a step only he can take.
+
+| # | Item | His decision (19 Nov) | Status now | Next step | Who | Document |
+|---|---|---|---|---|---|---|
+| 1 | **The repository is public** (new, 19 Nov) | — | GitHub reports `visibility: public`. Anyone can read every decision document, the security audit (production's open findings SEC-01/02 included), the tester codes `FRIENDS` and `FAMILY`, and the Android debug key | **Decide:**<br>• keep it public;<br>• or make it private (then Android friends need another way to get the APK, and macOS CI minutes are billed).<br>**If it stays public:** consider the A1/A2 patches plus SEC-01/02 for production sooner, and a new unpublished tester code for the round (`tester_codes.yaml` is on `main`: a change before the round starts, not during) | **ABRAM** | this table |
+| 2 | Database upgrade | approved in principle; final go after the evidence | runbook ready, `export_counts.py` built | the export on 29 Nov; backup check and restore test; **his "go" by 1 Dec**; upgrade by 3 Dec | **ABRAM** (Claude reads the counts) | `database-upgrade-runbook.md` |
+| 3 | Backup and restore verification | required before the upgrade | nightly backups green (latest 19 Nov 10:30 UTC); never opened with his key since 6 Nov | `verify`, then a restore into a scratch database on his computer, then compare the counts | **ABRAM** | runbook steps 2c–3 |
+| 4 | Server cost | 1 CPU ($25) for the round, $31.30 a month in all; 0.5 CPU only after the planner change and a Render benchmark | **the live server is free (0.1 CPU) today**, not 1 CPU | change `moments-brain` to `1c-2g` **before the first invite**; check `/v1/health` still says `80a0da3` | **ABRAM** | `infrastructure-decision.md` |
+| 5 | Alert webhook privacy | check now; smallest fix separately | the live Brain posts the whole message and the contact to the webhook, if one is set. Patch A1 is ready and tested against `80a0da3` | check `BRAIN_ALERT_WEBHOOK_URL`, and look for `notified: true` alerts; approve or decline A1 | **ABRAM** | `production-privacy-patch.md` |
+| 6 | Security fixes and deployment status | Category A only during the round; B waits | A1 (alert) and A2 (stored location) ready and tested on the frozen code (209 tests). Everything else is Category B | approve A1/A2 separately, or neither | **ABRAM** | `production-privacy-patch.md`, `security-release-proposal.md` |
+| 7 | Android signing key | made on his own computer; never in GitHub | runbook ready; not needed for the round | make the key; send **only** the fingerprint; Claude then makes CI build release unsigned (3 h, after the round) | **ABRAM**, then Claude | `android-signing-key-runbook.md` |
+| 8 | iPhone privacy manifest | before public release; no invented answers | every declaration listed. `UserDefaults` → `CA92.1` (decided by the facts); 9 answers are his | the nine answers | **ABRAM**, then Claude (2 h) | `ios-privacy-manifest.md` |
+| 9 | Mobile rehearsal | before the tag | waiting | the 25 steps on TestFlight 91 and Android 21 | **ABRAM** | `validation/friends-round-rehearsal.md` |
+| 10 | Friends' round preflight | tag at exactly `80a0da3`, pushed by him | 6 of 8 checks hold; the backup check (needs his key) and the rehearsal remain | items 3 and 9, then push the tag | **ABRAM** | `validation/friends-round-preflight.md` |
+| 11 | Stage 2 sample size | 76 completers, provisionally | the ten points written. Exact: 46 of 76 to pass, α 0.042, power 0.826 at 0.65; about 109 installs at 70% completion | confirm 0.65 and δ = 0.5 points; Stage 1 fills in σ_d and the completion rate | **ABRAM** (0.25 h), then Claude | `validation/stage2-sample-size.md` |
+| 12 | Post-experiment planner work | in the backlog; frozen planner untouched | proven in a 0.5 CPU limit: the same plans | after the round: build it (about 7 h), then benchmark on Render, concurrency, p50/p95, memory, validity, against 1 CPU, before any downgrade | Claude, then **ABRAM** for any downgrade | `performance-study.md` |
+| 13 | PR #1 into the development branch | approved after the iPhone build on `474eca1` | see the pull request | merged by Claude once the iPhone run on `474eca1` is green | Claude | PR #1 |
+
 ## 1. Where things stand (16 Nov)
 
 | | Production (what testers get) | Development (the audit branch, merged with the development branch's m261–m269) |
@@ -224,6 +252,8 @@ Abram asked for its complete diff to be reviewed first, confirming two things: i
 - every non-security change, each with the founder decision behind it.
 
 ## 15. Decisions for Abram
+
+*As of 16 Nov. **Abram decided most of these on 19 Nov** (decision log m287). Where they overlap, §0 above is current: the database, the server, the tag, the webhook, the privacy patch, the iPhone manifest, the Android key, Stage 2's size and the merge. Still open: the decisions in §0's "Next step" column, and items 3, 10–12 and 14–16 below.*
 
 **Money:**
 1. **The database:** upgrade in place to Render's `0.1c-256mb` ($6 + $0.30 a month), after the final export, before 6 Dec.
