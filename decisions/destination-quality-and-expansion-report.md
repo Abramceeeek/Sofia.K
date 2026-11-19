@@ -906,7 +906,19 @@ Abram: "Our immediate objective is to get ODYS safely into the hands of its firs
 
 ## Tests run (19 Nov)
 
-TESTS_19_PLACEHOLDER
+On the merged branch (this session's work plus the audit's):
+
+| Suite | Result |
+|---|---|
+| Brain (`pytest`) | **534 passed**, 0 failed (one library deprecation warning). 463 at the last report; the audit's tests account for most of the rise |
+| Android (`testDebugUnitTest`) | **122 tests, 0 failures** (119 before; the audit added 3) |
+| iPhone | Not run: this round changed no app file. The audit's app changes have their own CI runs |
+| PostgreSQL 16.15 | `foodfield` and the procedure's SQL agree on main's `users` table (synthetic rows, then deleted) |
+
+New tests this round (8):
+- the food commands (3);
+- the availability states and `kept_apart` (2);
+- allowance recency, missing prices in the model, and group budgets (3).
 
 **Hours this round (Claude, approximate):**
 
