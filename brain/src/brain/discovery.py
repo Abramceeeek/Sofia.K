@@ -60,11 +60,14 @@ def cost_gbp(x: Experience, rates=None) -> float | None:
     return None
 
 
-def _moment(x: Experience, rates=None) -> Moment:
-    """The catalogue's features as a pseudo-moment, so the model scores any experience the same way."""
+def _moment(x: Experience, rates=None, missing_cost: float | None = None) -> Moment:
+    """The catalogue's features as a pseudo-moment, so the model scores any experience the same way. A place with no
+    usable price takes `missing_cost` (priceestimate.model_costs) when given, so it isn't scored as free (m293)."""
     place = {k: v for k, v in x.features.items() if k in PLACE_TAGS}
     mom = {k: v for k, v in x.features.items() if k in MOMENT_TAGS}
     cost = cost_gbp(x, rates)
+    if cost is None and missing_cost is not None:
+        cost = missing_cost
     return Moment.model_validate({"id": x.id, "title": x.title, "place": {"name": x.name, "lat": x.geo.lat,
                                   "lon": x.geo.lon}, "features": {"place": place, "moment": mom},
                                   "cost_gbp": cost, "source": "catalogue"})
@@ -73,18 +76,25 @@ def _moment(x: Experience, rates=None) -> Moment:
 class Scorer:
     """One person's taste over experiences: utility, the chance of "Good" or better, and the taste terms behind it."""
 
-    def __init__(self, pop: PopulationModel, delta: np.ndarray | None, rates=None):
+    def __init__(self, pop: PopulationModel, delta: np.ndarray | None, rates=None,
+                 missing_costs: dict[str, float] | None = None):
+        """`missing_costs` (m293): the model's cost, in pounds, for places with no usable price, from
+        priceestimate.model_costs. Without it a missing price adds no cost, as before m293."""
         self.pop, self.b, self.rates = pop, pop.b_person(delta), rates
+        self.missing_costs = missing_costs or {}
         self.taste = {n for n in pop.names if pop.spec(n).group in TASTE_GROUPS}
 
+    def _m(self, x: Experience) -> Moment:
+        return _moment(x, self.rates, self.missing_costs.get(x.id))
+
     def utility(self, x: Experience) -> float:
-        return float(self.pop.vector(moment_features(_moment(x, self.rates))) @ self.b)
+        return float(self.pop.vector(moment_features(self._m(x))) @ self.b)
 
     def p_good(self, x: Experience) -> float:
         return _p_good(self.pop.scales["rating"], self.pop.cutpoints["rating"][1], self.utility(x))
 
     def likes(self, x: Experience, n: int = 2) -> list[str]:
-        terms = contributions(self.pop, self.b, moment_features(_moment(x, self.rates)), top=6)
+        terms = contributions(self.pop, self.b, moment_features(self._m(x)), top=6)
         return [t["label"] for t in terms if t["feature"] in self.taste and t["contribution"] >= 0.05][:n]
 
 

@@ -1,0 +1,28 @@
+SYNTHETIC TRAVELLERS ONLY: not evidence of real satisfaction. m293: a missing price under the old rule (no
+cost: scored as free) and the new one (a valid allowance, else the city's paid prices; the uncertainty
+penalty stays separate). 'new: median' uses medians; 'new: upper q.' uses upper quartiles, the default and
+what sections 2 and 3 use.
+'Rewarded' = climbed 3+ places only because the price went missing.
+
+1. Masking: mean change in rank (negative = climbed) and the share rewarded
+group                                        old: free   new: median  new: upper q.      n
+all                                         -3.0   25%    -0.5   12%     +0.3   11%    704
+London (GBP)                                -3.3   23%    -1.0   12%     -0.2   11%    539
+Paris (EUR)                                 -1.8   30%    +1.1   12%     +1.9   10%    165
+budget-conscious traveller                  -5.1   31%    -0.4   14%     +1.0   12%     64
+other travellers                            -2.8   24%    -0.5   12%     +0.2   10%    640
+free places                                 +0.0    0%    +0.6    0%     +1.1    0%    484
+inexpensive places                          -5.5   70%    +1.7   14%     +3.5   12%    110
+expensive places                           -13.5   90%    -7.6   63%     -6.5   56%    110
+
+2. Incomplete coverage: London with 15 of 49 prices hidden (30%, seed fixed)
+rule         hidden-price places in top 5 (mean)    real top 5 kept (mean)
+old                                         2.09                      4.64
+new                                         1.82                      4.91
+
+3. Group budgets: 200 groups of three (one budget-conscious), London with the same 30% hidden
+daily budget    rule       stops with an unconfirmed price
+none            old                             338 of 800
+none            new                             282 of 800
+GBP 15          old                               0 of 800
+GBP 15          new                               0 of 800

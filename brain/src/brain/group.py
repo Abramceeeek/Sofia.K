@@ -77,8 +77,9 @@ class GroupPlan:
 
 def _price(x: Experience, currency: str = "GBP", rates=None) -> float | None:
     """m255: the price per person in the budget's currency, or None when it isn't known or can't be converted (a
-    missing or foreign price is never counted as free)."""
-    if not x.price.known:
+    missing or foreign price is never counted as free). m293 (Abram, 19 Nov): a planning allowance (a median of other
+    places' prices) is never a confirmed price, so a group budget treats it as unknown: left out and named."""
+    if not x.price.known or (x.price.source or "").startswith("median"):
         return None
     m = x.price.value
     if m.currency == currency:
