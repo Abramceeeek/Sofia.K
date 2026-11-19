@@ -355,7 +355,7 @@ def measure(stops: list[Stop], brief: Brief, pop: PopulationModel, b_true: np.nd
     kept_min = sum(blk.end_min - blk.start_min for k, blk in enumerate(brief.mine)
                    if any(s.id.startswith(f"mine{k}@") and s.arrive <= blk.start_min and s.depart >= blk.end_min
                           for s in stops))
-    labels = [dayplan.match_label(pop, x) for x in u]
+    labels = [dayplan.match_band(pop, x) for x in u]
     return {
         "violations": violations(stops, brief, by_id, 15.0),
         "places": len(places),
@@ -363,8 +363,8 @@ def measure(stops: list[Stop], brief: Brief, pop: PopulationModel, b_true: np.nd
         "value": round(sum(u) + sum(u_lunch) - sum(legs.penalty(s.travel) for s in stops if not s.id.startswith("mine")),
                        3),
         "u": [round(x, 3) for x in u],
-        "strong": sum(lab.startswith("A strong") for lab in labels),
-        "good": sum(lab.startswith("A good") for lab in labels),
+        "strong": labels.count("strong"),
+        "good": labels.count("good"),
         "travel_min": sum(s.travel for s in stops),
         "max_leg": max((s.travel for s in stops), default=0),
         "legs_over_30": sum(s.travel > 30 for s in stops),
@@ -396,7 +396,7 @@ def available_strong(pop: PopulationModel, b_true: np.ndarray, brief: Brief) -> 
         if not any(max(lo, day_start) + m.duration_min() <= min(hi, day_end) for lo, hi in m.windows()):
             continue
         u = score(pop.vector(moment_features(m, cond)), b_true)
-        n += dayplan.match_label(pop, u).startswith("A strong")
+        n += dayplan.match_band(pop, u) == "strong"
     return n
 
 

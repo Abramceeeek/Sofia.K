@@ -913,6 +913,9 @@ class TripSearch:
     # order (duffel.com/pricing, read 19 Oct 2026); with no orders through Duffel every search counts, so this caps
     # live flight searches at $1 a day ($30 a month at worst). LiteAPI's searches are free (sources.csv, 6 Oct).
     per_day_all: int = 200
+    # Audit (Abram, 12 Nov 2026): one install may use at most this many of the day's provider searches, so a single
+    # install can't use up the shared cap for everyone. A GUESS: 10% of the day's cap, about five full trip searches.
+    per_day_each: int = 20
     clock: Callable[[], float] = time.monotonic
     _cache: dict[str, tuple[float, list]] = field(default_factory=dict)
     _calls: dict[str, deque] = field(default_factory=dict)
@@ -946,6 +949,8 @@ class TripSearch:
             return hit[1]
         if not self._allowed(who):
             raise ProviderError("too_many")
+        if not self._allowed(f"{who}:day", self.per_day_each, 86400):
+            raise ProviderError("too_many_today")
         if not self._allowed("*everyone*", self.per_day_all, 86400):
             raise ProviderError("daily_cap")
         results = run()

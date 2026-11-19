@@ -137,12 +137,13 @@ def test_days_keep_weekday_only_places_out_of_weekend_plans(test_moments):
     assert "best_time.days (format)" in m.missing_for_planning()
 
 
-def test_match_words_follow_the_rating_models_chance_of_good(pop):
-    """D127: words instead of "worth about £V", from P(rating >= Good) = F(u - c_2|3) with c = -0.75."""
-    from brain.dayplan import match_label
-    assert match_label(pop, 1.0) == "A strong match for you"     # F(1.75) = 0.85
-    assert match_label(pop, -0.5) == "A good match for you"      # F(0.25) = 0.56
-    assert match_label(pop, -1.5) == "Worth a try"               # F(-0.75) = 0.32
+def test_match_bands_follow_the_rating_models_chance_of_good_and_stay_internal(pop):
+    """D127's bands of P(rating >= Good) = F(u - c_2|3) with c = -0.75, kept for ranking and calibration checks only:
+    m275 (Abram, 12 Nov) the app never shows them."""
+    from brain.dayplan import match_band
+    assert match_band(pop, 1.0) == "strong"     # F(1.75) = 0.85
+    assert match_band(pop, -0.5) == "good"      # F(0.25) = 0.56
+    assert match_band(pop, -1.5) == "other"     # F(-0.75) = 0.32
 
 
 def test_about_you_answers_lean_the_weights_and_neutral_ones_say_nothing(pop):

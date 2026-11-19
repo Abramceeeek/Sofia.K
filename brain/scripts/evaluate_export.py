@@ -29,7 +29,7 @@ from datetime import date  # noqa: E402
 
 from brain.catalogue import load_catalogue  # noqa: E402
 from brain.config import DATA_DIR  # noqa: E402
-from brain.evaluation import DayOutcome, Outcome, evaluate, predictions_from_plans  # noqa: E402
+from brain.evaluation import DayOutcome, Outcome, evaluate, predictions_from_plans, shown_from_plans  # noqa: E402
 from brain.population import load_population  # noqa: E402
 from brain.quality import uncertainties  # noqa: E402
 
@@ -65,7 +65,8 @@ def read_out(export: dict) -> list[str]:
             for r in export.get("ratings", []) if r.get("plan_id") is not None and r.get("user_id") not in visitors]
     days = [DayOutcome(d["plan_id"], d.get("worth"), d.get("again"))
             for d in export.get("day_feedback", []) if d.get("user_id") not in visitors]
-    r = evaluate(preds, outs, days, synthetic=False, open_questions=open_questions(plans))
+    r = evaluate(preds, outs, days, synthetic=False, open_questions=open_questions(plans),
+                 shown=shown_from_plans(plans))
     lines = [f"Predictions against what people reported ({r['label']}).",
              f"Planned stops with a prediction: {r['planned_stops']}; rated: {r['rated']}"
              + (f" ({r['rated_share']:.0%})" if r["rated_share"] is not None else "") + "."]
@@ -78,7 +79,8 @@ def read_out(export: dict) -> list[str]:
                   "(lower is better).",
                   f"Discrimination (AUC): {r['auc'] if r['auc'] is not None else 'needs both Good and not-Good ratings'}."]
         lines += [f"  predicted {b['band']}: {b['n']} stops, observed Good {b['observed']:.0%}" for b in r["calibration"]]
-        lines += [f"  \"{w}\": {v['n']} stops, observed Good {v['observed_good']:.0%}" for w, v in r["match_words"].items()]
+        lines += [f"  band \"{k}\" (internal, not shown since m275): {v['n']} stops, observed Good "
+                  f"{v['observed_good']:.0%}" for k, v in r["match_bands"].items()]
         if r.get("would_bring") is not None:
             lines.append(f"Would bring someone: {r['would_bring']:.0%}.")
         oq = r.get("open_questions")
@@ -90,6 +92,12 @@ def read_out(export: dict) -> list[str]:
                          f"{pct(oq['none'])}" + (f"; not in the catalogue: {oq['not_in_catalogue']}" if
                                                  oq["not_in_catalogue"] else "") + ".")
             lines += [f"  open {f}: {g['n']} stops, observed Good {pct(g)}" for f, g in oq["by_fact"].items()]
+    if r.get("rated_without_prediction"):
+        lines.append(f"Rated stops whose plan kept no prediction (made before m276, the frozen round's included): "
+                     f"{r['rated_without_prediction']}. For these, only the words shown can be checked.")
+    if r["match_words"]:
+        lines.append("By the line shown beside the price (D127's words before m275):")
+        lines += [f"  \"{w}\": {v['n']} stops, observed Good {v['observed_good']:.0%}" for w, v in r["match_words"].items()]
     if r.get("day_again") is not None:
         lines.append(f"Would do the day again: {r['day_again']:.0%}; worth what they spent: {r.get('day_worth')}.")
     return lines

@@ -165,10 +165,10 @@ def relevance(p_good: float | None) -> Perspective:
     if p_good is None:
         return Perspective("unknown", "We don't know enough about you yet.")
     if p_good >= STRONG:
-        return Perspective("good", "A strong match for you.")
+        return Perspective("good", "Among your top-ranked places, by your answers so far.")
     if p_good >= GOOD:
-        return Perspective("good", "A good match for you.")
-    return Perspective("fair", "Worth a try, but not one of your strongest matches.")
+        return Perspective("good", "Ranks well for you, by your answers so far.")
+    return Perspective("fair", "Further down your list, by your answers so far.")
 
 
 def practicality(x: Experience, day: date | None, minutes_free: float | None, travel_min: float | None,

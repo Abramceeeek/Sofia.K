@@ -515,7 +515,7 @@ private struct KnowItem: View {
             Text(title).font(.headline).foregroundStyle(Theme.ink)
             Text(text).font(.subheadline).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
             ForEach(links, id: \.self) { link in
-                if let url = URL(string: link.url) {
+                if let url = SafeLink.https(link.url) {
                     Link(destination: url) {
                         Text("\(link.label) ↗").font(.subheadline).foregroundStyle(Theme.accent)
                     }
@@ -1280,7 +1280,7 @@ struct MenuRow: View {
     }
 }
 
-/// m196: "How long should I stay?" From the person's strong matches at their pace (brain/src/brain/triplength.py).
+/// m196: "How long should I stay?" From the person's top-ranked places at their pace (brain/src/brain/triplength.py).
 /// An estimate of how much there is for them, never a limit: their dates stay unless they pick another length.
 /// Asked once, with the dates they chose; picking a length only changes the nights.
 struct LengthStep: View {

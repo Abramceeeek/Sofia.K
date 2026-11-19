@@ -1,0 +1,65 @@
+{
+ "day": "Saturday 31 October",
+ "start": {
+  "title": "Charing Cross station",
+  "time": "12:00",
+  "lat": 51.507819,
+  "lon": -0.126137
+ },
+ "stops": [
+  {
+   "title": "Lunch near Waterloo station",
+   "word": "Lunch",
+   "arrive": "12:12",
+   "depart": "12:57",
+   "lat": 51.50861,
+   "lon": -0.11694,
+   "mode": "walk",
+   "travel_min": 12,
+   "lunch": true,
+   "minutes": 45
+  },
+  {
+   "title": "The Garden at 120",
+   "word": "Big views",
+   "arrive": "13:33",
+   "depart": "14:23",
+   "lat": 51.5121,
+   "lon": -0.0815,
+   "mode": "transit",
+   "travel_min": 26,
+   "lunch": false,
+   "minutes": 50
+  },
+  {
+   "title": "St Dunstan-in-the-East",
+   "word": "Calm",
+   "arrive": "14:34",
+   "depart": "15:19",
+   "lat": 51.50967,
+   "lon": -0.08272,
+   "mode": "walk",
+   "travel_min": 6,
+   "lunch": false,
+   "minutes": 45
+  },
+  {
+   "title": "The whole of London from General Wolfe's hill, Greenwich Park",
+   "word": "Awe",
+   "arrive": "16:10",
+   "depart": "17:00",
+   "lat": 51.481675,
+   "lon": -0.010802,
+   "mode": "transit",
+   "travel_min": 41,
+   "lunch": false,
+   "minutes": 50
+  }
+ ],
+ "stay": {
+  "title": "A sample place to stay",
+  "lat": 51.511131,
+  "lon": -0.122141
+ },
+ "finish": "17:00"
+}

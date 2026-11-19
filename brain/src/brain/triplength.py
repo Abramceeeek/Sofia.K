@@ -1,7 +1,8 @@
 """m196 (6 Nov): "How long should I stay?" for a trip, from the person's own matches, not a rule of thumb.
 
 The trip is built around the person's strong matches: places the rating model gives at least a 75% chance of "Good"
-or better, the same test as "A strong match for you" on a stop (D127, `dayplan.match_label`). The good matches (50% to
+or better, the band behind the old "A strong match for you" (D127, now `dayplan.match_band`, never shown: m275). The
+person sees "rank highest for you", a ranking, not a chance (Abram, 12 Nov). The good matches (50% to
 75%) are what extra days add. A 50% bar alone was too low here: with no answers yet, 34 of the 39 checked London cards
 pass it (they're hand-picked) and none is strong; for simulated people with real tastes, the median is about 10 strong
 matches (0 to 32, 10th to 90th percentile; 6 Nov). The suggested length is the exploring days it takes to see the
@@ -39,7 +40,7 @@ SHOPPING = ids_in_category("shopping")
 
 
 def chance_good(pop: PopulationModel, u: float) -> float:
-    """P(rating >= Good) for a card with utility u, as in `dayplan.match_label`."""
+    """P(rating >= Good) for a card with utility u, as in `dayplan.match_band`."""
     c = pop.cutpoints["rating"][1]
     return 1.0 / (1.0 + math.exp(-(pop.scales["rating"] * u - c)))
 
@@ -107,10 +108,10 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
 
     # Abram, 6 Nov: an estimate of how much there is for this person, never a rule about how long to stay
     if len(strong) >= per_day:
-        why = (f"Based on your current preferences, we've found {len(strong)} places in {place} that are "
-               f"particularly well suited to you." + (f" {len(more)} more are likely to be good too." if more else ""))
+        why = (f"Based on your answers so far, {len(strong)} places in {place} rank highest for you."
+               + (f" {len(more)} more rank well too." if more else ""))
     else:
-        why = (f"No place in {place} stands out strongly for you yet, so this uses your best {len(core)} for now. "
+        why = (f"Your answers don't single out many places in {place} yet, so this uses your best {len(core)} for now. "
                f"Rating the places you visit makes it sharper.")
     note = (f"Based on the {len(cards)} places we've checked in {place} so far, your preferences, and "
             f"{_a_day(per_day)}. It's an estimate of how much there is for you, not a limit on how long to stay.")
@@ -128,7 +129,7 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
         elif d == need:
             label, line = "Suggested for you", f"All {len(core)} of your best, at {_a_day(per_day)}."
         elif added:
-            label, line = "More time", (f"All {len(core)} of your best, plus {len(added)} more you'd likely enjoy, "
+            label, line = "More time", (f"All {len(core)} of your best, plus {len(added)} more that rank well for you, "
                                         f"such as {_names(added, 2, seen)}.")
         else:
             label, line = "More time", (f"All {len(core)} of your best at {_a_day(math.ceil(len(core) / d))}, with "
@@ -141,8 +142,8 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
     if yours and yours > need:
         spare = yours - need
         if more:
-            extra.append({"kind": "more", "title": "See more you'd likely enjoy",
-                          "line": f"{len(more)} more good matches, such as {_names(more, 2, seen)}."})
+            extra.append({"kind": "more", "title": "See more that rank well for you",
+                          "line": f"{len(more)} more that rank well for you, such as {_names(more, 2, seen)}."})
         extra.append({"kind": "slower", "title": "Take it slower",
                       "line": f"Your best places spread out: {_a_day(math.ceil(len(core) / yours))}, "
                               f"with longer at each."})
@@ -153,7 +154,7 @@ def suggest(pop: PopulationModel, post: DeltaPosterior, moments: list[Moment], *
             extra.append({"kind": "shopping", "title": "A shopping day", "line": f"Such as {_names(shops, 2, seen)}."})
         if rest:
             extra.append({"kind": "try", "title": "Try something new",
-                          "line": f"Places that are worth a try for you, such as {_names(rest, 2, seen)}."})
+                          "line": f"Places outside your usual picks, such as {_names(rest, 2, seen)}."})
 
     short = None
     if yours and yours < need:

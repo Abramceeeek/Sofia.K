@@ -854,7 +854,7 @@ fun FeelStep(trip: Trip, onChange: (Trip) -> Unit) {
 fun Trip.lengthRequest() = TripLengthRequest(destination, nights, feelings, dayFrom, dayTo, placesPerDay)
 
 /**
- * m196: "How long should I stay?" From the person's strong matches at their pace (brain/src/brain/triplength.py), as
+ * m196: "How long should I stay?" From the person's top-ranked places at their pace (brain/src/brain/triplength.py), as
  * on the iPhone. An estimate of how much there is for them, never a limit: their dates stay unless they pick another
  * length. Asked once, with the dates they chose; picking a length only changes the nights.
  */

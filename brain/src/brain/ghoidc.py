@@ -76,6 +76,8 @@ class GithubOIDC:
             header, claims = json.loads(_b64(h)), json.loads(_b64(p))
         except (ValueError, json.JSONDecodeError):
             return None
+        if not isinstance(header, dict) or not isinstance(claims, dict):
+            return None   # audit SEC-08: a header that was a list or a string raised an error (a 500 and an alert)
         if header.get("alg") != "RS256" or not (key := self._key(str(header.get("kid", "")))):
             return None
         try:

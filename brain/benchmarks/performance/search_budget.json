@@ -1,0 +1,310 @@
+{
+ "day": {
+  "0.1": {
+   "value": 4.441,
+   "s": 1.38,
+   "stops": [
+    "m_national_gallery",
+    "m_rfh_foyers_rest",
+    "lunch@a_old_spitalfields_market",
+    "m_beigel_bake_late",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "0.2": {
+   "value": 4.441,
+   "s": 1.69,
+   "stops": [
+    "m_national_gallery",
+    "m_rfh_foyers_rest",
+    "lunch@a_old_spitalfields_market",
+    "m_beigel_bake_late",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "0.5": {
+   "value": 4.502,
+   "s": 2.57,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_bm_great_court",
+    "lunch@a_covent_garden_soho",
+    "m_liberty_timber_galleries",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "1.0": {
+   "value": 4.502,
+   "s": 4.66,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_bm_great_court",
+    "lunch@a_covent_garden_soho",
+    "m_liberty_timber_galleries",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "2.0": {
+   "value": 4.534,
+   "s": 9.19,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "lunch@m_transport_museum",
+    "m_bm_great_court",
+    "m_liberty_timber_galleries",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "4.0": {
+   "value": 4.534,
+   "s": 18.17,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "lunch@m_transport_museum",
+    "m_bm_great_court",
+    "m_liberty_timber_galleries",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  }
+ },
+ "one block": {
+  "0.1": {
+   "value": 3.221,
+   "s": 1.41,
+   "stops": [
+    "m_bm_great_court",
+    "lunch@a_covent_garden_soho",
+    "m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_burlington_arcade",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "0.2": {
+   "value": 3.221,
+   "s": 1.71,
+   "stops": [
+    "m_bm_great_court",
+    "lunch@a_covent_garden_soho",
+    "m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_burlington_arcade",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "0.5": {
+   "value": 4.48,
+   "s": 2.62,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "lunch@m_transport_museum",
+    "m_bm_great_court",
+    "mine0@m_liberty_timber_galleries",
+    "m_burlington_arcade",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "1.0": {
+   "value": 4.48,
+   "s": 4.69,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "lunch@m_transport_museum",
+    "m_bm_great_court",
+    "mine0@m_liberty_timber_galleries",
+    "m_burlington_arcade",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "2.0": {
+   "value": 4.48,
+   "s": 9.2,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "lunch@m_transport_museum",
+    "m_bm_great_court",
+    "mine0@m_liberty_timber_galleries",
+    "m_burlington_arcade",
+    "m_evensong_st_pauls"
+   ],
+   "status": "ok"
+  },
+  "4.0": {
+   "value": 4.472,
+   "s": 18.22,
+   "stops": [
+    "m_national_gallery",
+    "m_rfh_foyers_rest",
+    "lunch@m_courtauld_gallery",
+    "mine0@m_soane_museum",
+    "m_bm_great_court",
+    "m_liberty_timber_galleries"
+   ],
+   "status": "ok"
+  }
+ },
+ "two blocks": {
+  "0.1": {
+   "value": 3.41,
+   "s": 1.47,
+   "stops": [
+    "m_national_gallery",
+    "m_burlington_arcade",
+    "m_liberty_timber_galleries",
+    "lunch@m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_nhm_whale_hall",
+    "mine1@m_nhm_whale_hall"
+   ],
+   "status": "ok"
+  },
+  "0.2": {
+   "value": 3.41,
+   "s": 1.77,
+   "stops": [
+    "m_national_gallery",
+    "m_burlington_arcade",
+    "m_liberty_timber_galleries",
+    "lunch@m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_nhm_whale_hall",
+    "mine1@m_nhm_whale_hall"
+   ],
+   "status": "ok"
+  },
+  "0.5": {
+   "value": 3.41,
+   "s": 2.64,
+   "stops": [
+    "m_national_gallery",
+    "m_burlington_arcade",
+    "m_liberty_timber_galleries",
+    "lunch@m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_nhm_whale_hall",
+    "mine1@m_nhm_whale_hall"
+   ],
+   "status": "ok"
+  },
+  "1.0": {
+   "value": 3.41,
+   "s": 4.78,
+   "stops": [
+    "m_national_gallery",
+    "m_burlington_arcade",
+    "m_liberty_timber_galleries",
+    "lunch@m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_nhm_whale_hall",
+    "mine1@m_nhm_whale_hall"
+   ],
+   "status": "ok"
+  },
+  "2.0": {
+   "value": 3.41,
+   "s": 9.31,
+   "stops": [
+    "m_national_gallery",
+    "m_burlington_arcade",
+    "m_liberty_timber_galleries",
+    "lunch@m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_nhm_whale_hall",
+    "mine1@m_nhm_whale_hall"
+   ],
+   "status": "ok"
+  },
+  "4.0": {
+   "value": 3.41,
+   "s": 18.27,
+   "stops": [
+    "m_national_gallery",
+    "m_burlington_arcade",
+    "m_liberty_timber_galleries",
+    "lunch@m_liberty_timber_galleries",
+    "mine0@m_liberty_timber_galleries",
+    "m_nhm_whale_hall",
+    "mine1@m_nhm_whale_hall"
+   ],
+   "status": "ok"
+  }
+ },
+ "relaxed": {
+  "0.1": {
+   "value": 3.697,
+   "s": 1.43,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_national_gallery",
+    "lunch@a_covent_garden_soho",
+    "m_bm_great_court"
+   ],
+   "status": "ok"
+  },
+  "0.2": {
+   "value": 3.697,
+   "s": 1.68,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_national_gallery",
+    "lunch@a_covent_garden_soho",
+    "m_bm_great_court"
+   ],
+   "status": "ok"
+  },
+  "0.5": {
+   "value": 3.697,
+   "s": 2.58,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_national_gallery",
+    "lunch@a_covent_garden_soho",
+    "m_bm_great_court"
+   ],
+   "status": "ok"
+  },
+  "1.0": {
+   "value": 3.697,
+   "s": 4.67,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_national_gallery",
+    "lunch@a_covent_garden_soho",
+    "m_bm_great_court"
+   ],
+   "status": "ok"
+  },
+  "2.0": {
+   "value": 3.697,
+   "s": 9.17,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_national_gallery",
+    "lunch@a_covent_garden_soho",
+    "m_bm_great_court"
+   ],
+   "status": "ok"
+  },
+  "4.0": {
+   "value": 3.697,
+   "s": 18.16,
+   "stops": [
+    "m_rfh_foyers_rest",
+    "m_national_gallery",
+    "lunch@a_covent_garden_soho",
+    "m_bm_great_court"
+   ],
+   "status": "ok"
+  }
+ }
+}

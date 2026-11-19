@@ -935,8 +935,9 @@ final class AppModel {
         self.reaction = nil
         self.saidPatterns = []
         UserDefaults.standard.removeObject(forKey: "onboardingStep")
+        // SEC-15 (audit): also the Test B plan's id, a share code they joined through, and an unsent video note
         for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone",
-                    "testerCode"] {
+                    "testerCode", "testBPlanId", "refCode.joined", "founderVideo"] {
             UserDefaults.standard.removeObject(forKey: key)
         }
         Reminders.clear()
@@ -956,7 +957,8 @@ final class AppModel {
         self.step = .based
         self.route = .welcome
         for key in UserDefaults.standard.dictionaryRepresentation().keys
-        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") || key.hasPrefix("arrived.") {
+        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") || key.hasPrefix("arrived.")
+            || key.hasPrefix("dayFeedback.") {   // SEC-15: each day's "worth it" and "again" answers
             UserDefaults.standard.removeObject(forKey: key)
         }
         self.myRatings = [:]
@@ -964,6 +966,7 @@ final class AppModel {
         AppModel.cache(nil as [RatingRequest]?, "pending_ratings.json")
         AppModel.cache(nil as SavedHandoff?, "handoff.json")
         self.location.forget()                 // D123: the location choice goes too
+        URLCache.shared.removeAllCachedResponses()   // SEC-15: e.g. stay photos fetched while searching
     }
 
     // ---- the current plan and its request stay on the phone ("Your plan is saved on this phone") -------

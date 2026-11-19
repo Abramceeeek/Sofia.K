@@ -934,7 +934,7 @@ fun MomentCardBody(model: AppModel, stop: Stop, basis: Basis?, showWhy: Boolean 
                 if (basis != null && reasons.isNotEmpty()) Text(basis.soFar, style = Theme.footnote)
                 stop.matchLine?.let {
                     Text(it, style = Theme.body.copy(color = Theme.inkSoft), modifier = Modifier.padding(top = 4.dp))
-                    // D118: plainly a first estimate; D127: in words, from the chance you'd rate it Good or better
+                    // D118: plainly a first estimate; m275: the factors from their answers, never a chance
                     Text("A first guess from your answers so far, not a promise of how you'll feel. It gets sharper as you rate stops.",
                         style = Theme.footnote)
                 }

@@ -170,6 +170,46 @@ def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_
     return out, (used - before) | {r["you"] for r in out}
 
 
+# m275 (Abram's review of the audit, 12 Nov): the line beside a stop's price, instead of "A strong match for you".
+# The rating model's chance of "Good" isn't checked against real ratings yet, so the app names the factors from the
+# person's own answers that raise this stop, under the same honesty rule as the reasons above, and never a chance.
+LEAN = {   # a feature as something a person leans towards
+    "movement_views": "views", "food": "good food", "green_nature": "green space", "history_culture": "history",
+    "iconic": "famous sights", "local_novel": "somewhere local and new", "walking_effort": "a good walk",
+    "active": "active days", "outdoor_exposure": "time outdoors", "photo_potential": "photo spots",
+    "contrast_reveal": "big reveals", "absorption": "absorbing things to do", "awe": "awe",
+    "social_pull": "places to bring people",
+}
+NOT_YET = "Chosen to fit your route and hours: your answers don't say much about places like this yet"
+
+
+def factor_line(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: list[tuple[str, list[str], Moment]],
+                feelings: list[str], interests: list[str], n_choices: int) -> str:
+    """"Recommended because of your interest in history and your lean towards quieter places": at most two factors,
+    each something the person told or showed us that raises this stop for them (the same rules as `stop_reasons`). With
+    none, it says the stop was chosen for the route and hours. No full stop: the app adds one after the price."""
+    if any(m.id in cards for _, cards, _ in loved):
+        return "Recommended because you loved it"
+    d = dict(zip(pop.personal_names, (float(v) for v in delta)))
+    tags = _tags(m)
+    felt = {f for w in feelings for f, v in FEELINGS.get(w, {}).items() if v > 0}
+    leans = sorted((f for f in LEAN if tags.get(f, 0) >= 1 and (d.get(f, 0) > MIN_WEIGHT or (f in felt and d.get(f, 0) > 0))),
+                   key=lambda f: -tags[f] * d[f])
+    factors = [("interest", f"your interest in {interests[0].lower()}")] if interests else []
+    factors += [("lean", LEAN[f]) for f in leans]
+    if n_choices and tags.get("crowds", 0) == 0 and d.get("crowds", 0) < -MIN_WEIGHT:
+        factors.append(("pick", "your pick of quieter days"))
+    if n_choices and not (m.cost_gbp or 0) and d.get("cost_per_10gbp", 0) > MIN_WEIGHT:   # log scale (D88)
+        factors.append(("pick", "your pick of cheaper days"))
+    factors = factors[:MAX_REASONS]
+    if not factors:
+        return NOT_YET
+    leaned = [x for k, x in factors if k == "lean"]
+    parts = [x if k != "lean" else f"your lean towards {' and '.join(leaned)}" for k, x in factors
+             if k != "lean" or x == leaned[0]]   # two leans read as one: "your lean towards views and awe"
+    return f"Recommended because of {' and '.join(parts)}"
+
+
 def basis(n_places: int, n_choices: int, n_ratings: int, n_feelings: int, n_kinds: int = 0) -> dict:
     """What the reasons rest on so far, for the "so far" line."""
     return {"places": n_places, "choices": n_choices, "ratings": n_ratings, "feelings": n_feelings, "kinds": n_kinds}

@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A day, flat and in relief</title>
+<!--
+  Audit proof of concept, 11 Nov 2026 (decisions/odys-3d-and-spatial-experience.md). One file, no libraries, no map
+  tiles, no network. It draws the app's own sample day (app/Sources/Demo/demo_plan.json; the stay is the first sample
+  stay) two ways from the same numbers:
+    - Flat: seen from above, each stop a dot sized by the time spent there.
+    - In relief: the same ground tilted, each stop a column whose height is the time spent there.
+  It is a sketch of the day, not a model of London: only the stops' own coordinates are drawn. No streets, no
+  buildings, no terrain, so nothing here can be wrong about the real place.
+  It draws only when something changes (no animation loop), and never moves by itself.
+-->
+<style>
+:root { --bg:#111317; --card:#1A1D23; --ink:#F4EBDD; --soft:#B5AC9E; --line:rgba(244,235,221,.16);
+        --amber:#FFC665; --stay:#8FBFFF; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.5 -apple-system,system-ui,"Segoe UI",sans-serif; }
+main { max-width:36rem; margin:0 auto; padding:24px 16px 48px; }
+h1 { font:400 1.7rem/1.2 Georgia,"Times New Roman",serif; margin:0 0 6px; }
+p.lede { color:var(--soft); margin:0 0 18px; }
+.switch { display:flex; gap:8px; margin:0 0 12px; }
+.switch button { flex:1; min-height:48px; font:inherit; color:var(--ink); background:transparent;
+  border:1px solid var(--line); border-radius:24px; cursor:pointer; }
+.switch button[aria-pressed="true"] { background:var(--amber); color:#111317; border-color:var(--amber); font-weight:600; }
+.switch button:focus-visible, #stage:focus-visible { outline:3px solid var(--stay); outline-offset:2px; }
+#stage { position:relative; width:100%; aspect-ratio:1/1; background:var(--card); border-radius:18px; overflow:hidden;
+  touch-action:none; }
+#stage canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+#stage canvas[hidden] { display:none; }
+.tag { position:absolute; transform:translate(-50%,-100%); padding:2px 8px; border-radius:10px; white-space:nowrap;
+  font-size:.82rem; background:rgba(17,19,23,.82); color:var(--ink); pointer-events:none; }
+.tag b { color:var(--amber); font-weight:600; }
+.tag.stay b { color:var(--stay); }
+.hint { color:var(--soft); font-size:.9rem; margin:10px 0 22px; }
+ol.day { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+ol.day li { padding:12px 0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:3.6rem 1fr; gap:4px 12px; }
+ol.day .t { color:var(--amber); font-variant-numeric:tabular-nums; }
+ol.day .s { grid-column:2; color:var(--soft); font-size:.92rem; }
+h2 { font:400 1.2rem/1.3 Georgia,serif; margin:26px 0 8px; }
+.note { color:var(--soft); font-size:.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>A day, flat and in relief</h1>
+  <p class="lede">The same day drawn two ways. A sketch of the day, not a map: only the stops' own positions are drawn.</p>
+
+  <div class="switch" role="group" aria-label="How to draw the day">
+    <button id="b-flat" aria-pressed="true">Flat</button>
+    <button id="b-relief" aria-pressed="false">In relief</button>
+  </div>
+
+  <div id="stage" tabindex="0" role="img" aria-describedby="stage-note"></div>
+  <p class="hint" id="stage-note">The drawing shows what the list below says. In relief, a taller column means longer
+    spent there. Drag to turn it, pinch or scroll to zoom, or use the arrow keys; it never moves by itself.</p>
+
+  <h2 id="day-title">The day</h2>
+  <ol class="day" id="list"></ol>
+  <p class="note" id="stay-note"></p>
+</main>
+
+<script>
+"use strict";
+// The app's own sample day (app/Sources/Demo/demo_plan.json) and first sample stay (demo_stays.json): day.json here.
+const DAY = {"day":"Saturday 31 October","start":{"title":"Charing Cross station","time":"12:00","lat":51.507819,"lon":-0.126137},
+ "stops":[{"title":"Lunch near Waterloo station","word":"Lunch","arrive":"12:12","depart":"12:57","lat":51.50861,"lon":-0.11694,"mode":"walk","travel_min":12,"lunch":true,"minutes":45},
+  {"title":"The Garden at 120","word":"Big views","arrive":"13:33","depart":"14:23","lat":51.5121,"lon":-0.0815,"mode":"transit","travel_min":26,"lunch":false,"minutes":50},
+  {"title":"St Dunstan-in-the-East","word":"Calm","arrive":"14:34","depart":"15:19","lat":51.50967,"lon":-0.08272,"mode":"walk","travel_min":6,"lunch":false,"minutes":45},
+  {"title":"General Wolfe's hill, Greenwich Park","word":"Awe","arrive":"16:10","depart":"17:00","lat":51.481675,"lon":-0.010802,"mode":"transit","travel_min":41,"lunch":false,"minutes":50}],
+ "stay":{"title":"A sample place to stay","lat":51.511131,"lon":-0.122141},"finish":"17:00"};
+
+// ---- the day as numbers: metres east and north of the middle, on a flat ground ----------------------------------
+const pts = [DAY.start, ...DAY.stops];
+const all = [...pts, DAY.stay];
+const lat0 = (Math.min(...all.map(p => p.lat)) + Math.max(...all.map(p => p.lat))) / 2;
+const lon0 = (Math.min(...all.map(p => p.lon)) + Math.max(...all.map(p => p.lon))) / 2;
+const east = p => (p.lon - lon0) * 111320 * Math.cos(lat0 * Math.PI / 180);
+const north = p => (p.lat - lat0) * 110540;
+const half = Math.max(...all.map(p => Math.max(Math.abs(east(p)), Math.abs(north(p))))) * 1.18;   // metres from the middle to the edge
+const X = p => east(p) / half, Z = p => -north(p) / half;       // -1..1; north is "up" (-z)
+const km = (a, b) => Math.hypot(east(a) - east(b), north(a) - north(b)) / 1000;
+const H = s => 0.10 + 0.55 * (s.minutes / 60);                   // a column's height: time spent there
+const KM = 1000 / half;                                          // one kilometre, in ground units
+
+// ---- the list: the whole day in words (what a screen reader reads; the drawing adds nothing to it) ---------------
+const how = s => (s.mode === "walk" ? "on foot" : "by Tube or bus");
+document.getElementById("day-title").textContent = "The day: " + DAY.day;
+const list = document.getElementById("list");
+const row = (t, title, sub) => { const li = document.createElement("li");
+  li.innerHTML = `<span class="t"></span><span></span><span class="s"></span>`;
+  li.children[0].textContent = t; li.children[1].textContent = title; li.children[2].textContent = sub; list.append(li); };
+row(DAY.start.time, "Start: " + DAY.start.title, km(DAY.start, DAY.stay).toFixed(1) + " km from the stay");
+DAY.stops.forEach((s, i) => row(s.arrive, `${i + 1}. ${s.title}`,
+  `${s.travel_min} min ${how(s)} to get there · ${s.minutes} min there · ${km(s, DAY.stay).toFixed(1)} km from the stay`));
+document.getElementById("stay-note").textContent =
+  "Distances are straight lines from the sample stay, from the stops' own coordinates. The grid's squares are 1 km.";
+
+// ---- the stage ----------------------------------------------------------------------------------------------------
+const stage = document.getElementById("stage");
+const flat = document.createElement("canvas"), relief = document.createElement("canvas");
+flat.setAttribute("aria-hidden", "true"); relief.setAttribute("aria-hidden", "true"); relief.hidden = true;
+stage.append(flat, relief);
+const tags = [...DAY.stops.map((s, i) => ({ p: s, html: `<b>${i + 1}</b> ${s.word}`, cls: "tag", y: H(s) })),
+              { p: DAY.start, html: "Start", cls: "tag", y: 0.04 }, { p: DAY.stay, html: "<b>Stay</b>", cls: "tag stay", y: 0.08 }]
+  .map(t => { const el = document.createElement("div"); el.className = t.cls; el.innerHTML = t.html;
+              el.setAttribute("aria-hidden", "true"); stage.append(el); return { ...t, el }; });
+let view = "flat", W = 0, Hh = 0, dpr = 1;
+const cam = { az: -0.55, el: 0.62, dist: 3.4 };
+const AMBER = [1, 0.776, 0.396], SOFT = [0.71, 0.675, 0.62], STAY = [0.56, 0.75, 1], GRID = [0.22, 0.235, 0.27], GROUND = [0.125, 0.14, 0.165];
+const shade = i => { const k = 0.55 + 0.45 * (i / Math.max(1, DAY.stops.length - 1)); return AMBER.map(c => c * k); };
+
+function size() {
+  const r = stage.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = Math.round(r.width * dpr); Hh = Math.round(r.height * dpr);
+  for (const c of [flat, relief]) { c.width = W; c.height = Hh; }
+}
+
+// ---- flat: seen from above ------------------------------------------------------------------------------------------
+function drawFlat() {
+  const g = flat.getContext("2d"), s = Math.min(W, Hh) / 2, cx = W / 2, cy = Hh / 2;
+  const px = p => [cx + X(p) * s, cy + Z(p) * s];
+  g.clearRect(0, 0, W, Hh);
+  g.strokeStyle = "rgba(244,235,221,.07)"; g.lineWidth = dpr;
+  for (let k = -Math.ceil(1 / KM); k <= Math.ceil(1 / KM); k++) {
+    g.beginPath(); g.moveTo(cx + k * KM * s, 0); g.lineTo(cx + k * KM * s, Hh); g.stroke();
+    g.beginPath(); g.moveTo(0, cy + k * KM * s); g.lineTo(W, cy + k * KM * s); g.stroke();
+  }
+  for (let i = 1; i < pts.length; i++) {                      // the legs: on foot solid, Tube or bus dashed
+    const [ax, ay] = px(pts[i - 1]), [bx, by] = px(pts[i]);
+    g.setLineDash(pts[i].mode === "walk" ? [] : [6 * dpr, 6 * dpr]);
+    g.strokeStyle = pts[i].mode === "walk" ? "rgba(255,198,101,.9)" : "rgba(244,235,221,.55)"; g.lineWidth = 2.5 * dpr;
+    g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke();
+  }
+  g.setLineDash([]);
+  DAY.stops.forEach((st, i) => { const [x, y] = px(st); const c = shade(i);
+    g.fillStyle = `rgb(${c.map(v => Math.round(v * 255)).join(",")})`;
+    g.beginPath(); g.arc(x, y, (5 + 9 * Math.sqrt(st.minutes / 60)) * dpr, 0, 7); g.fill(); });
+  let [x, y] = px(DAY.start); g.fillStyle = "rgb(181,172,158)"; g.beginPath(); g.arc(x, y, 5 * dpr, 0, 7); g.fill();
+  [x, y] = px(DAY.stay); g.fillStyle = "rgb(143,191,255)"; g.fillRect(x - 6 * dpr, y - 6 * dpr, 12 * dpr, 12 * dpr);
+  label(tags.map(t => { const [tx, ty] = px(t.p); return [t.el, tx / dpr, ty / dpr - 12]; }));
+}
+// Names sit above their points; where two would overlap (stops a few minutes' walk apart), the later one moves up.
+function label(wanted) {
+  const placed = [];
+  for (const [el, x0, y0] of wanted) {
+    const w = el.offsetWidth || 60, h = el.offsetHeight || 22;
+    const x = Math.max(w / 2 + 4, Math.min(W / dpr - w / 2 - 4, x0)); let y = Math.max(h + 4, y0);
+    for (let tries = 0; tries < 8 && placed.some(b => Math.abs(b.x - x) < (b.w + w) / 2 + 2 && Math.abs(b.y - y) < h + 2); tries++) y -= h + 3;
+    y = Math.max(h + 4, y); placed.push({ x, y, w }); el.style.left = x + "px"; el.style.top = y + "px";
+  }
+}
+
+// ---- in relief: the same ground, tilted, with a column for the time at each stop (plain WebGL) ---------------------
+let gl = null, prog = null, buf = null, count = 0, loc = {};
+const VS = `attribute vec3 p; attribute vec3 n; attribute vec3 c; uniform mat4 m; varying vec3 v;
+void main(){ float l = 0.55 + 0.45 * max(dot(normalize(n), normalize(vec3(0.4, 0.85, 0.35))), 0.0); v = c * l; gl_Position = m * vec4(p, 1.0); }`;
+const FS = `precision mediump float; varying vec3 v; void main(){ gl_FragColor = vec4(v, 1.0); }`;
+function quad(out, a, b, c, d, n, col) { for (const q of [a, b, c, a, c, d]) out.push(...q, ...n, ...col); }
+function box(out, x, z, w, h, col) {
+  const a = x - w, b = x + w, e = z - w, f = z + w;
+  quad(out, [a, h, e], [a, h, f], [b, h, f], [b, h, e], [0, 1, 0], col);
+  quad(out, [a, 0, f], [b, 0, f], [b, h, f], [a, h, f], [0, 0, 1], col);
+  quad(out, [b, 0, e], [a, 0, e], [a, h, e], [b, h, e], [0, 0, -1], col);
+  quad(out, [b, 0, f], [b, 0, e], [b, h, e], [b, h, f], [1, 0, 0], col);
+  quad(out, [a, 0, e], [a, 0, f], [a, h, f], [a, h, e], [-1, 0, 0], col);
+}
+function ribbon(out, a, b, w, y, col, dashed) {
+  const dx = X(b) - X(a), dz = Z(b) - Z(a), len = Math.hypot(dx, dz) || 1, nx = -dz / len * w, nz = dx / len * w;
+  const steps = dashed ? Math.max(1, Math.round(len / 0.07)) : 1;
+  for (let i = 0; i < steps; i++) {
+    const t0 = i / steps, t1 = dashed ? (i + 0.55) / steps : 1;
+    const x0 = X(a) + dx * t0, z0 = Z(a) + dz * t0, x1 = X(a) + dx * t1, z1 = Z(a) + dz * t1;
+    quad(out, [x0 - nx, y, z0 - nz], [x0 + nx, y, z0 + nz], [x1 + nx, y, z1 + nz], [x1 - nx, y, z1 - nz], [0, 1, 0], col);
+  }
+}
+function build() {
+  const o = [];
+  quad(o, [-1.25, 0, -1.25], [-1.25, 0, 1.25], [1.25, 0, 1.25], [1.25, 0, -1.25], [0, 1, 0], GROUND);
+  for (let k = -Math.ceil(1.25 / KM); k <= Math.ceil(1.25 / KM); k++) { const q = k * KM, w = 0.0022;
+    if (Math.abs(q) > 1.25) continue;
+    quad(o, [q - w, 0.001, -1.25], [q - w, 0.001, 1.25], [q + w, 0.001, 1.25], [q + w, 0.001, -1.25], [0, 1, 0], GRID);
+    quad(o, [-1.25, 0.001, q - w], [-1.25, 0.001, q + w], [1.25, 0.001, q + w], [1.25, 0.001, q - w], [0, 1, 0], GRID); }
+  for (let i = 1; i < pts.length; i++) ribbon(o, pts[i - 1], pts[i], 0.011, 0.003, pts[i].mode === "walk" ? AMBER : SOFT, pts[i].mode !== "walk");
+  DAY.stops.forEach((s, i) => box(o, X(s), Z(s), 0.035, H(s), shade(i)));
+  box(o, X(DAY.start), Z(DAY.start), 0.022, 0.04, SOFT);
+  box(o, X(DAY.stay), Z(DAY.stay), 0.03, 0.08, STAY);
+  return new Float32Array(o);
+}
+function mul(a, b) { const o = new Float32Array(16);
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+function mvp() {
+  const f = 1 / Math.tan(0.30), a = W / Hh, n = 0.1, fr = 20;
+  const P = new Float32Array([f / a, 0, 0, 0, 0, f, 0, 0, 0, 0, (fr + n) / (n - fr), -1, 0, 0, 2 * fr * n / (n - fr), 0]);
+  const ex = Math.sin(cam.az) * Math.cos(cam.el) * cam.dist, ey = Math.sin(cam.el) * cam.dist, ez = Math.cos(cam.az) * Math.cos(cam.el) * cam.dist;
+  const fwd = [-ex, 0.12 - ey, -ez], fl = Math.hypot(...fwd).valueOf(); const F = fwd.map(v => v / fl);
+  const R = [F[1] * 0 - F[2] * 1, F[2] * 0 - F[0] * 0, F[0] * 1 - F[1] * 0]; const rl = Math.hypot(...R); const S = R.map(v => v / rl);
+  const U = [S[1] * F[2] - S[2] * F[1], S[2] * F[0] - S[0] * F[2], S[0] * F[1] - S[1] * F[0]];
+  const V = new Float32Array([S[0], U[0], -F[0], 0, S[1], U[1], -F[1], 0, S[2], U[2], -F[2], 0,
+    -(S[0] * ex + S[1] * ey + S[2] * ez), -(U[0] * ex + U[1] * ey + U[2] * ez), F[0] * ex + F[1] * ey + F[2] * ez, 1]);
+  return mul(P, V);
+}
+function initGL() {
+  gl = relief.getContext("webgl", { antialias: true, alpha: true, powerPreference: "low-power" });
+  if (!gl) return false;
+  const sh = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+  prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const data = build(); count = data.length / 9; buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  ["p", "n", "c"].forEach((name, i) => { const a = gl.getAttribLocation(prog, name); gl.enableVertexAttribArray(a);
+    gl.vertexAttribPointer(a, 3, gl.FLOAT, false, 36, i * 12); });
+  loc.m = gl.getUniformLocation(prog, "m"); gl.enable(gl.DEPTH_TEST);
+  return true;
+}
+function drawRelief() {
+  if (!gl && !initGL()) { setView("flat"); return; }        // no WebGL on this device: the flat view does the job
+  const M = mvp();
+  gl.viewport(0, 0, W, Hh); gl.clearColor(0.102, 0.114, 0.137, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.uniformMatrix4fv(loc.m, false, M); gl.drawArrays(gl.TRIANGLES, 0, count);
+  label(tags.map(t => { const x = X(t.p), y = t.y, z = Z(t.p);
+    const cw = M[3] * x + M[7] * y + M[11] * z + M[15];
+    const sx = (M[0] * x + M[4] * y + M[8] * z + M[12]) / cw, sy = (M[1] * x + M[5] * y + M[9] * z + M[13]) / cw;
+    return [t.el, (sx + 1) / 2 * W / dpr, (1 - sy) / 2 * Hh / dpr - 6]; }));
+}
+
+// ---- one drawing per change: no loop running while nothing moves ----------------------------------------------------
+let queued = false;
+function draw() { queued = false; (view === "flat" ? drawFlat : drawRelief)(); }
+function ask() { if (!queued) { queued = true; requestAnimationFrame(draw); } }
+function setView(v) { view = v; flat.hidden = v !== "flat"; relief.hidden = v !== "relief";
+  document.getElementById("b-flat").setAttribute("aria-pressed", v === "flat");
+  document.getElementById("b-relief").setAttribute("aria-pressed", v === "relief"); ask(); }
+document.getElementById("b-flat").onclick = () => setView("flat");
+document.getElementById("b-relief").onclick = () => setView("relief");
+const turn = (da, de, dz) => { if (view !== "relief") return;
+  cam.az += da; cam.el = Math.max(0.18, Math.min(1.45, cam.el + de)); cam.dist = Math.max(1.6, Math.min(6, cam.dist * dz)); ask(); };
+const touches = new Map(); let pinch = 0;
+stage.addEventListener("pointerdown", e => { touches.set(e.pointerId, [e.clientX, e.clientY]); stage.setPointerCapture(e.pointerId); });
+stage.addEventListener("pointerup", e => { touches.delete(e.pointerId); pinch = 0; });
+stage.addEventListener("pointercancel", e => { touches.delete(e.pointerId); pinch = 0; });
+stage.addEventListener("pointermove", e => { if (!touches.has(e.pointerId)) return;
+  const [px, py] = touches.get(e.pointerId); touches.set(e.pointerId, [e.clientX, e.clientY]);
+  if (touches.size === 1) turn(-(e.clientX - px) * 0.008, (e.clientY - py) * 0.006, 1);
+  else if (touches.size === 2) { const [a, b] = [...touches.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (pinch) turn(0, 0, pinch / d); pinch = d; } });
+stage.addEventListener("wheel", e => { if (view !== "relief") return; e.preventDefault(); turn(0, 0, e.deltaY > 0 ? 1.08 : 0.93); }, { passive: false });
+stage.addEventListener("keydown", e => { const k = { ArrowLeft: [0.12, 0, 1], ArrowRight: [-0.12, 0, 1], ArrowUp: [0, 0.08, 1], ArrowDown: [0, -0.08, 1], "+": [0, 0, 0.9], "-": [0, 0, 1.1] }[e.key];
+  if (k && view === "relief") { e.preventDefault(); turn(...k); } });
+new ResizeObserver(() => { size(); ask(); }).observe(stage);
+size(); draw();
+performance.mark("first-drawing");
+
+// ---- for the audit's measurements (prototype/day-in-relief/measure.js): N drawings, timed. Each drawing is read back
+// (one pixel), which makes the browser finish it before the clock is read; without that both would look free. --------
+window.bench = (v, n) => { setView(v); size(); const px = new Uint8Array(4), g2 = flat.getContext("2d"); const t = performance.now();
+  for (let i = 0; i < n; i++) {
+    if (v === "relief") { cam.az += 0.03; drawRelief(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+    else { drawFlat(); g2.getImageData(0, 0, 1, 1); } }
+  return (performance.now() - t) / n; };
+</script>
+</body>
+</html>

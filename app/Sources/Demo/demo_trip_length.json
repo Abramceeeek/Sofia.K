@@ -8,7 +8,7 @@
  "your_days": 5,
  "spare_days": 2,
  "headline": "Around 3 days",
- "why": "Based on your current preferences, we've found 8 places in London that are particularly well suited to you. 20 more are likely to be good too.",
+ "why": "Based on your answers so far, 8 places in London rank highest for you. 20 more rank well too.",
  "note": "Based on the 39 places we've checked in London so far, your preferences, and about 3 places a day. It's an estimate of how much there is for you, not a limit on how long to stay.",
  "short": null,
  "options": [
@@ -43,7 +43,7 @@
   {
    "days": 5,
    "label": "More time",
-   "line": "All 8 of your best, plus 7 more you'd likely enjoy, such as A rooftop garden among the City towers, Dim sum lunch on Gerrard Street, Chinatown and 5 more.",
+   "line": "All 8 of your best, plus 7 more that rank well for you, such as A rooftop garden among the City towers, Dim sum lunch on Gerrard Street, Chinatown and 5 more.",
    "covers": 8,
    "of": 8,
    "adds": [
@@ -63,8 +63,8 @@
  "extra": [
   {
    "kind": "more",
-   "title": "See more you'd likely enjoy",
-   "line": "20 more good matches, such as Liberty's wooden galleries, built from two old warships, From Trafalgar Square into the quiet of the National Gallery and 18 more."
+   "title": "See more that rank well for you",
+   "line": "20 more that rank well for you, such as Liberty's wooden galleries, built from two old warships, From Trafalgar Square into the quiet of the National Gallery and 18 more."
   },
   {
    "kind": "slower",
@@ -84,7 +84,7 @@
   {
    "kind": "try",
    "title": "Try something new",
-   "line": "Places that are worth a try for you, such as Sir John Soane's house of curiosities, top-lit and full of mirrors, A wander through Covent Garden and Soho and 9 more."
+   "line": "Places outside your usual picks, such as Sir John Soane's house of curiosities, top-lit and full of mirrors, A wander through Covent Garden and Soho and 9 more."
   }
  ]
 }

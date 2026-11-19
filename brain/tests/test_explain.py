@@ -26,8 +26,10 @@ def test_a_stop_says_why_from_the_planners_own_numbers():
     e = explain.stop(_st(), p=0.81, windows=[(600, 1050)], hours_text="10:00-17:30",
                      labels={"aspiration_match": "one of your interests"})
     f = {(x["kind"], x["value"]): x for x in e["factors"]}
-    assert f[("preference", 0.81)]["text"] == ("A strong match for you: the rating model gives a 81% chance you'd "
-                                               "rate it Good or better.")
+    # m275 (Abram, 12 Nov): no chance and no match word, only that it's ranked by their answers, as a first guess
+    assert f[("preference", None)]["text"] == ("Ranked by your answers so far: a first guess, not a promise of how "
+                                               "you'll feel.")
+    assert not any("%" in x["text"] or "match" in x["text"] for x in e["factors"])
     assert f[("preference", 0.42)]["effect"] == "for" and f[("preference", -0.21)]["effect"] == "against"
     assert f[("preference", 0.12)]["text"] == "One of your interests: counts for it, for you."   # the app's words
     assert ("preference", 0.01) not in f                       # too small to have mattered: not said
@@ -48,7 +50,7 @@ def test_a_stop_against_a_budget_and_a_weak_match():
     block = {"budget_gbp": 20.0, "total_gbp": 21.0, "status": "over"}
     e = explain.stop(_st(cost_gbp=6.0), p=0.4, windows=[(0, 1440)], budget=block)
     f = {x["kind"]: x for x in reversed(e["factors"])}       # the first factor of each kind
-    assert f["preference"]["text"].startswith("Worth a try: the rating model gives a 40% chance")
+    assert f["preference"]["text"].startswith("Ranked by your answers so far")   # the same words, whatever the chance
     assert f["preference"]["effect"] == "neutral"
     assert f["budget"]["text"] == "£6 of your £20; the day comes to £21." and f["budget"]["effect"] == "against"
     assert f["hours"]["text"] == "Any time of day suits it."
@@ -92,15 +94,16 @@ def test_a_stay_against_the_trip_and_a_trip_length():
     r = {"place": "London", "strong_matches": 9, "good_matches": 14, "checked": 39, "best": 9, "capped": False,
          "places_per_day": 3, "suggested_days": 3, "your_days": 2, "spare_days": 0}
     t = explain.trip_length(r)["factors"]
-    assert t[0]["text"] == ("9 strong matches for you in London (a 75% or better chance of Good), and 14 good ones, "
+    assert t[0]["text"] == ("9 places in London rank highest for you by your answers so far, and 14 more rank well, "
                             "of 39 checked places.")
-    assert t[1]["text"] == "The suggestion is built on your 9 strong matches."
+    assert t[1]["text"] == "The suggestion is built on your 9 top-ranked places."
     assert t[2]["text"] == ("At 3 places a day, keeping the day's shape (at most two history stops a day, one wander), "
                             "those 9 take 3 exploring days.")
     assert (t[3]["effect"], t[3]["text"]) == ("against", "Your trip has 2 exploring days: fewer than they need.")
     # no strong matches yet: it never says "the strong matches take…", it says what it used instead
     t = explain.trip_length({**r, "strong_matches": 0, "best": 9})["factors"]
-    assert t[1]["text"] == "Fewer strong matches than your places a day, so it uses your best 9 for now (strong and good ones)."
+    assert t[1]["text"] == "Fewer top-ranked places than your places a day, so it uses your best 9 for now."
+    assert not any("%" in x["text"] or "match" in x["text"] for x in t)   # m275: rankings, never chances
 
 
 TASTE = {"movement_views", "crowds", "aspiration_match", "awe"}
@@ -165,8 +168,9 @@ def test_explanations_come_with_plans_stays_and_lengths_and_never_with_the_blind
             assert f["travel"]["value"] == round(st["travel_min"])          # the plan's own travel time
         if st["rateable"]:
             pref = [x for x in st["explain"]["factors"] if x["kind"] == "preference"]
-            word = st["match"].split(" for you")[0]
-            assert pref[0]["text"].startswith(word)                        # the same number as the stop's words
+            assert st["match"].startswith(("Recommended because of ", "Recommended because you loved it",
+                                           "Chosen to fit your route and hours"))   # m275: factors, never a chance
+            assert pref[0]["value"] is None and "%" not in pref[0]["text"]
             named = {round(w["contribution"], 3) for w in st["why"]}
             assert {x["value"] for x in pref[1:] if x["value"] != "familiar"} <= named   # the score's own terms
             f = {x["kind"]: x for x in st["explain"]["factors"]}
@@ -221,12 +225,12 @@ def test_why_this_length_says_what_more_days_add_and_fewer_leave_out():
          "places_per_day": 3, "suggested_days": 3, "your_days": None, "spare_days": None,
          "options": [{"days": 1, "line": "Your 3 best, at about 3 places a day. You'd leave out 6: A, B, C and 3 more."},
                      {"days": 3, "line": "All 9 of your best, at about 3 places a day."},
-                     {"days": 5, "line": "All 9 of your best, plus 4 more you'd likely enjoy, such as D and E."}]}
+                     {"days": 5, "line": "All 9 of your best, plus 4 more that rank well for you, such as D and E."}]}
     why = explain.trip_length(r)["why"]
     assert [w["text"] for w in why] == [
-        "9 strong matches for you in London: at 3 a day they take 3 days.",
+        "Your 9 top-ranked places in London: at 3 a day they take 3 days.",
         "In 1 day: Your 3 best, at about 3 places a day. You'd leave out 6: A, B, C and 3 more.",
-        "In 5 days: All 9 of your best, plus 4 more you'd likely enjoy, such as D and E."]
+        "In 5 days: All 9 of your best, plus 4 more that rank well for you, such as D and E."]
     assert [w["effect"] for w in why] == ["for", "against", "for"] and not any("%" in w["text"] for w in why)
     weak = explain.trip_length({**r, "strong_matches": 1, "best": 6})["why"]
     assert weak[0]["text"] == "Your best 6 places in London for now take 3 days at 3 a day."

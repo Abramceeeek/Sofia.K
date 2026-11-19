@@ -1275,7 +1275,7 @@ struct MomentCardBody: View {
                     if let worth = stop.matchLine {
                         Text(worth).foregroundStyle(Theme.inkSoft).padding(.top, 4)
                             .fixedSize(horizontal: false, vertical: true)
-                        // D118: plainly a first estimate; D127: in words, from the chance you'd rate it Good or better
+                        // D118: plainly a first estimate; m275: the factors from their answers, never a chance
                         Text("A first guess from your answers so far, not a promise of how you'll feel. It gets sharper as you rate stops.")
                             .font(.footnote)
                             .foregroundStyle(Theme.muted)

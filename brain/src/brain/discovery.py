@@ -143,7 +143,7 @@ def destinations(s: Scorer, profiles: list[Profile], days: int, stops_a_day: int
             cats[x.category] = cats.get(x.category, 0) + 1
         mix = ", ".join(f"{n} {c.replace('_', ' ')}" for c, n in sorted(cats.items(), key=lambda kv: -kv[1])[:3])
         out.append((fit, Suggestion(prof.dest.key, prof.dest.name,
-                                    (f"{strong} strong matches among its best {len(ps)} moments for you.",
+                                    (f"{strong} of its best {len(ps)} moments rank highest for you by your answers so far.",
                                      f"Its best for you: {mix}."), None)))
     out.sort(key=lambda t: -t[0])
     return [sg for _, sg in out[:LIMIT]] + not_ready

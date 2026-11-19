@@ -88,7 +88,7 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": 32,
-   "match": "A strong match for you",
+   "match": "Recommended because of your lean towards views and big reveals",
    "feel_word": "Big views",
    "reveal": true,
    "approach_steps": [
@@ -202,9 +202,9 @@
      {
       "kind": "preference",
       "effect": "for",
-      "text": "A strong match for you: the rating model gives a 83% chance you'd rate it Good or better.",
-      "value": 0.831,
-      "source": "your answers (the rating model)"
+      "text": "Ranked by your answers so far: a first guess, not a promise of how you'll feel.",
+      "value": null,
+      "source": "your answers (the scoring weights)"
      },
      {
       "kind": "preference",
@@ -297,7 +297,7 @@
    "familiar": false,
    "rateable": true,
    "worth_gbp": 28,
-   "match": "A strong match for you",
+   "match": "Recommended because of your interest in history & culture and your lean towards big reveals",
    "feel_word": "Calm",
    "reveal": true,
    "approach_steps": [
@@ -406,9 +406,9 @@
      {
       "kind": "preference",
       "effect": "for",
-      "text": "A strong match for you: the rating model gives a 82% chance you'd rate it Good or better.",
-      "value": 0.818,
-      "source": "your answers (the rating model)"
+      "text": "Ranked by your answers so far: a first guess, not a promise of how you'll feel.",
+      "value": null,
+      "source": "your answers (the scoring weights)"
      },
      {
       "kind": "preference",
@@ -494,7 +494,7 @@
    "familiar": true,
    "rateable": true,
    "worth_gbp": 27,
-   "match": "A strong match for you",
+   "match": "Recommended because you loved it",
    "feel_word": "Awe",
    "reveal": true,
    "approach_steps": [
@@ -609,9 +609,9 @@
      {
       "kind": "preference",
       "effect": "for",
-      "text": "A strong match for you: the rating model gives a 81% chance you'd rate it Good or better.",
-      "value": 0.814,
-      "source": "your answers (the rating model)"
+      "text": "Ranked by your answers so far: a first guess, not a promise of how you'll feel.",
+      "value": null,
+      "source": "your answers (the scoring weights)"
      },
      {
       "kind": "preference",

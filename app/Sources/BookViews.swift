@@ -667,7 +667,7 @@ struct FlightDetailView: View {
     }
 
     private func open(_ link: TripLink, _ trip: Trip?) {
-        guard let url = URL(string: link.url), let trip else { return }
+        guard let url = SafeLink.https(link.url), let trip else { return }
         let back = flight.inbound
         let landing = String(flight.outbound.arriveAt.prefix(10))
         let sameDay = landing == trip.start
@@ -825,7 +825,7 @@ struct LinksOut: View {
         VStack(spacing: 8) {
             ForEach(links, id: \.name) { link in
                 ProviderRow(name: link.name, note: link.note ?? "Search there with the same dates") {
-                    if let url = URL(string: link.url) { openURL(url) }
+                    if let url = SafeLink.https(link.url) { openURL(url) }
                 }
             }
         }
@@ -931,7 +931,7 @@ struct StayImage: View {
     let stay: StayResult
 
     var body: some View {
-        if let s = stay.photo, let url = URL(string: s) {
+        if let url = SafeLink.https(stay.photo) {
             AsyncImage(url: url) { phase in
                 if let image = phase.image {
                     image.resizable().scaledToFill()
@@ -1193,7 +1193,7 @@ struct StayDetailView: View {
     }
 
     private func open(_ link: TripLink, _ trip: Trip?) {
-        guard let url = URL(string: link.url), let trip else { return }
+        guard let url = SafeLink.https(link.url), let trip else { return }
         let choice = TripChoice(kind: "stay", title: stay.name, provider: link.name, price: stay.priceTotal, booked: false,
                                 point: stay.point, sample: stay.sample, currency: stay.currency)
         model.openHandoff(Handoff(provider: link.name, url: url, what: trip.lengthLabel, price: stay.priceTotal,

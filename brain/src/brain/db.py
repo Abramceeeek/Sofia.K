@@ -213,6 +213,16 @@ class MomentRow(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
 
 
+class Deletion(Base):
+    """SEC-10 (Abram, 12 Nov 2026): that an install's data was deleted, and when. Only a one-way code made from the
+    install's id (`backup.deleted_key`), never the id, the token or anything the person said. A restore of an older
+    backup removes these installs again (`backup.restore`). Deleted with everything else at the end of the study."""
+    __tablename__ = "deletions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    deleted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
 class TravelTime(Base):
     """Stage 1 (roadmap step 3): TfL's journey between two card points (~100 m keys), kept across restarts so the
     table is asked for once. Places only: nothing about anyone's plan or where they are."""
