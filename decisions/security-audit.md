@@ -184,6 +184,7 @@ Severity is for the product as it stands and where it is heading (strangers next
 - **Evidence:** testers install a **debug** build signed with a keystore committed with its public password. The release type uses the same key and has shrinking off (`:38-39`).
 - **What that allows:** a debug build is debuggable, so anyone with the phone unlocked and a cable can read the app's private files. Anyone who can read the repository can build an app with the same identity and signature, and if a tester installs it, it replaces ODYS and inherits its data. The repository is private, so today that means collaborators.
 - **Two consequences to decide before friends on Android:** the download is a release on a private repository, so a friend without access to the repository can't fetch it; and making the repository public to solve that would publish this key along with every decision document. **Don't make it public.** Use Google Play's internal testing or Firebase App Distribution instead.
+- **Update, 19 Nov (m305):** GitHub reports the repository as **public**, so the higher severity applies now. The key plan is replaced by `android-signing-key-runbook.md`: the key is made on Abram's computer, and never goes to GitHub or its Secrets.
 - **Fix (~3 h, and Abram for the key):** a release key held in GitHub Secrets; the release type signed with it, shrinking on; testers get the release build.
 
 ### SEC-13. Android's target version (Medium, release blocker; open)

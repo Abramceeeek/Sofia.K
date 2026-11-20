@@ -1,0 +1,77 @@
+diff --git a/brain/src/brain/notify.py b/brain/src/brain/notify.py
+index d2ec73a..8d781b1 100644
+--- a/brain/src/brain/notify.py
++++ b/brain/src/brain/notify.py
+@@ -23,2 +23,6 @@ USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. A pe
+ 
++def alert_text(alert_id: int) -> str:
++    return f"Safety message #{alert_id} is waiting"
++
++
+ def send_alert(webhook_url: str | None, alert_id: int, user_id: str, message: str, contact: str | None = None) -> bool:
+@@ -27,5 +31,5 @@ def send_alert(webhook_url: str | None, alert_id: int, user_id: str, message: st
+         return False
+-    reach = (f"Reply to: {contact}" if contact
+-             else f"No contact left: reply in the app (POST /v1/admin/safety/{alert_id}/reply with text)")
+-    body = json.dumps({"text": f"Safety alert #{alert_id} (user {user_id[:8]}): {message} | {reach}"}).encode()
++    # A1 (Abram, 19-20 Nov): the channel learns only that a message is waiting. The message, the contact, who sent it
++    # and where they are stay in the database, read with GET /v1/admin/safety.
++    body = json.dumps({"text": alert_text(alert_id)}).encode()
+     req = urllib.request.Request(webhook_url, data=body, headers={"Content-Type": "application/json"})
+diff --git a/brain/tests/test_alert_minimal.py b/brain/tests/test_alert_minimal.py
+new file mode 100644
+index 0000000..3048470
+--- /dev/null
++++ b/brain/tests/test_alert_minimal.py
+@@ -0,0 +1,51 @@
++"""A1 (Abram, 19-20 Nov): the alert channel learns only that a safety message is waiting."""
++import json
++
++from brain import notify
++
++from test_api import client, install  # noqa: F401 - the frozen suite's app fixture
++
++
++class _Resp:
++    status = 200
++
++    def __enter__(self):
++        return self
++
++    def __exit__(self, *a):
++        return False
++
++
++def test_the_alert_says_only_that_a_message_is_waiting(monkeypatch):
++    sent = []
++    monkeypatch.setattr(notify.urllib.request, "urlopen", lambda req, timeout: sent.append(req.data) or _Resp())
++    ok = notify.send_alert("https://hooks.example.invalid/x", 42, "user-abcdef123456",
++                           "I feel unsafe near the bridge at 51.5072, -0.1276", "07700 900123")
++    assert ok and len(sent) == 1
++    assert json.loads(sent[0]) == {"text": "Safety message #42 is waiting"}
++
++
++def test_the_alert_is_the_same_with_or_without_a_contact(monkeypatch):
++    sent = []
++    monkeypatch.setattr(notify.urllib.request, "urlopen", lambda req, timeout: sent.append(req.data) or _Resp())
++    notify.send_alert("https://hooks.example.invalid/x", 7, "u1", "first", None)
++    notify.send_alert("https://hooks.example.invalid/x", 7, "u2", "second", "someone@example.com")
++    assert sent[0] == sent[1]
++
++
++def test_no_webhook_means_nothing_is_posted(monkeypatch):
++    monkeypatch.setattr(notify.urllib.request, "urlopen", lambda *a, **k: (_ for _ in ()).throw(AssertionError))
++    assert notify.send_alert(None, 1, "u", "m", "c") is False
++
++
++def test_a_failed_post_never_fails_the_request(monkeypatch):
++    def boom(*a, **k):
++        raise OSError("down")
++    monkeypatch.setattr(notify.urllib.request, "urlopen", boom)
++    assert notify.send_alert("https://hooks.example.invalid/x", 7, "u", "m") is False
++
++
++def test_the_person_still_gets_the_same_reply(client):
++    h, _ = install(client)
++    r = client.post("/v1/me/safety", headers=h, json={"message": "lost near the river", "contact": "07700 900123"})
++    assert r.status_code == 201 and r.json()["message"] == notify.USER_MESSAGE

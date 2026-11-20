@@ -36,13 +36,33 @@ def test_allowances_are_marked_as_estimates_never_prices():
 def test_budgets_never_claim_a_fit_they_cannot_verify():
     xs, made = with_allowances(READY, today=TODAY)
     pick = lambda *ids: [x for x in xs if x.id.split(":")[-1] in ids]
-    assert budget_breakdown(pick("rodin", "pantheon"), made, 40)["status"] == "fits"             # verified only
-    est = budget_breakdown(pick("rodin", "chasse-nature"), made, 60)
+    assert budget_breakdown(pick("rodin", "pantheon"), made, 40, today=TODAY)["status"] == "fits"   # verified only
+    est = budget_breakdown(pick("rodin", "chasse-nature"), made, 60, today=TODAY)
     assert est["status"] == "likely fits" and "isn't guaranteed" in est["say"]                   # strict: not a promise
     assert est["estimated_conservative"] >= est["estimated"]
-    unk = budget_breakdown(pick("rodin", "enfants-rouges"), made, 100)
+    unk = budget_breakdown(pick("rodin", "enfants-rouges"), made, 100, today=TODAY)
     assert unk["status"] == "can't be verified yet" and unk["unknown"]                           # never free
-    assert budget_breakdown(pick("catacombes", "sainte-chapelle"), made, 40)["status"] == "over budget"
+    assert budget_breakdown(pick("catacombes", "sainte-chapelle"), made, 40, today=TODAY)["status"] == "over budget"
+    assert "estimate" in made[BY["chasse-nature"].id].label().lower()                            # labelled as one
+
+
+def test_an_old_or_undated_verified_price_is_never_confirmed_spending():   # Abram, 20 Nov §6
+    two = [x for x in READY if x.id.split(":")[-1] in ("rodin", "pantheon")]
+    assert budget_breakdown(two, {}, 40, today=TODAY)["status"] == "fits"
+    late = budget_breakdown(two, {}, 40, today=date(2028, 1, 1))              # over a year after they were checked
+    assert late["status"] == "likely fits" and late["confirmed"] == 0 and late["estimated"] > 0
+    undated = [replace(x, price=replace(x.price, checked=None)) for x in two]
+    assert budget_breakdown(undated, {}, 40, today=TODAY)["status"] == "likely fits"
+    assert late["currency"] == "EUR"                                          # the supplier's own currency, kept
+
+
+def test_prices_in_two_currencies_are_never_added_up():                     # Abram, 20 Nov §6
+    rodin = BY["rodin"]
+    pounds = replace(BY["pantheon"], price=replace(BY["pantheon"].price,
+                                                     value=replace(BY["pantheon"].price.value, amount=10.0, currency="GBP")))
+    r = budget_breakdown([rodin, pounds], {}, 100, today=TODAY)
+    assert r["status"] == "mixed currencies" and r["currencies"] == ["EUR", "GBP"] and r["currency"] is None
+    assert rodin.price.value.currency == "EUR" and pounds.price.value.amount == 10.0   # neither price was changed
 
 
 def test_comparable_prices_must_be_recent_enough_for_their_kind():         # m292 (Abram, 19 Nov)

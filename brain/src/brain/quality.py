@@ -162,31 +162,82 @@ def open_status(x: Experience, day: date | None) -> str:
 
 
 AVAILABILITY = ("confirmed open", "might be open", "closed or unavailable")   # m291 (Abram, 19 Nov)
-_SHUT = ("closed", "cancelled", "sold out", "unavailable", "no ")             # a dated notice that stops the visit
 CONFIRMED_WITHIN_DAYS = 180       # GUESS, as readiness's FRESH_DAYS: older official hours are only "might be open"
+# m309 (Abram, 20 Nov §7): what a person comes for. A service, show or match is a session: the place being open
+# doesn't mean it is on, and a day without it doesn't mean the place is shut.
+SESSION_TYPES = frozenset({"performance", "live_music", "theatre", "comedy", "sport", "cinema"})
 
 
-def availability(x: Experience, day: date, today: date | None = None) -> str:
-    """m291 (Abram, 19 Nov): exactly three states for a planned day, and never "open" when it's uncertain.
-    - "closed or unavailable": its weekly hours say closed that day, or a dated notice stops the visit ("Closed…",
-      "No Choral Evensong listed", "Cancelled", "Sold out").
-    - "confirmed open": weekly hours read on its own official page within 180 days say open, and no notice stops it.
-    - "might be open": everything else, including hours taken from a card or a search result rather than an official
-      page, hours that vary with the season, unknown hours, and events whose sessions are listed per event.
-    For showing and comparing only: the default ranking is unchanged (Abram: "Do not change the default ranking")."""
-    if any(n.what.lower().startswith(_SHUT) for n in x.notices_on(day.isoformat())):
-        return "closed or unavailable"
-    if getattr(x.facet, "event_based", False):
-        return "might be open"
-    if x.hours.weekly is not None and x.hours.open_on(WEEKDAYS[day.weekday()]) is False:
-        return "closed or unavailable"       # closed is the safe side, whatever the source
+def objective(x: Experience) -> str:
+    """"session" when the person comes for something scheduled (evensong, a show, a match); else "place"."""
+    return "session" if getattr(x.facet, "event_based", False) or x.type in SESSION_TYPES else "place"
+
+
+def notice_kind(what: str) -> str:
+    """m309: which of the three things a dated notice is about, kept apart (Abram, 20 Nov §7):
+    - "place closed": the venue itself ("Closed", "Closed for the day");
+    - "session not on": a scheduled event or service isn't on ("No Choral Evensong listed", "Cancelled");
+    - "activity unavailable": the specific activity can't be done ("Sold out", "Lift unavailable");
+    - "information": anything else ("Closes at 15:00", "Scaffolding; the market remains fully open")."""
+    w = what.strip().lower()
+    if w.startswith("closed"):
+        return "place closed"
+    if w.startswith(("sold out", "fully booked", "unavailable")) or " unavailable" in w:
+        return "activity unavailable"
+    if w.startswith(("no ", "cancelled")):
+        return "session not on"
+    return "information"
+
+
+def availability_parts(x: Experience, day: date, today: date | None = None) -> dict:
+    """m309 (Abram, 20 Nov §7): the place, the session and the activity, each on its own, then the one state for what
+    the person comes for. Never "confirmed open" when that thing isn't confirmed:
+    - **for a session** (the person comes for the service or show): never confirmed from usual times alone, because
+      a listing for that date is what confirms it, and the catalogue holds none. A day with "No … listed" or
+      "Cancelled", or a weekday its usual times leave out, is "closed or unavailable" for it. The place isn't marked
+      shut by that;
+    - **for a place**: as m291. A session notice ("No Choral Evensong listed") doesn't close it; it is shown beside it.
+    For showing and comparing only: the default ranking is unchanged until the round ends (Abram, 19 and 20 Nov)."""
     today = today or day
+    notices = [(n.what, notice_kind(n.what)) for n in x.notices_on(day.isoformat())]
+    kinds = {k for _, k in notices}
+    weekly_open = x.hours.open_on(WEEKDAYS[day.weekday()]) if x.hours.weekly is not None else None
     official = (x.hours.trust == "checked" and (x.hours.source or "").startswith("https://")
                 and x.hours.checked is not None
                 and (today - date.fromisoformat(x.hours.checked)).days <= CONFIRMED_WITHIN_DAYS)
-    if x.hours.weekly is not None and official and x.hours.open_on(WEEKDAYS[day.weekday()]):
-        return "confirmed open"
-    return "might be open"
+    obj = objective(x)
+    activity = "unavailable" if "activity unavailable" in kinds else "no notice"
+    if obj == "session":
+        place = "closed" if "place closed" in kinds else "not recorded"   # the card's hours are the session's times
+        if "session not on" in kinds:
+            session = "not on"
+        elif weekly_open is False:
+            session = "not usually on that day"
+        elif weekly_open:
+            session = "usual times only: not confirmed for this date"
+        else:
+            session = "not known"
+        stopped = place == "closed" or session in ("not on", "not usually on that day") or activity == "unavailable"
+        state = "closed or unavailable" if stopped else "might be open"
+    else:
+        session = "not needed"
+        if "place closed" in kinds or weekly_open is False:
+            place = "closed"
+        elif weekly_open and official:
+            place = "confirmed open"
+        else:
+            place = "might be open"
+        state = ("closed or unavailable" if place == "closed" or activity == "unavailable"
+                 else "confirmed open" if place == "confirmed open" else "might be open")
+    say = next((w for w, k in notices if k != "information"), None)
+    return {"objective": obj, "place": place, "session": session, "activity": activity, "state": state,
+            "notices": [w for w, _ in notices], "says": say}
+
+
+def availability(x: Experience, day: date, today: date | None = None) -> str:
+    """m291 (Abram, 19 Nov), refined by m309 (20 Nov): exactly three states for a planned day, for what the person
+    comes for, and never "open" when it's uncertain (`availability_parts` has the three things kept apart)."""
+    return availability_parts(x, day, today)["state"]
 
 
 def kept_apart(a: "Assessment", x: Experience, day: date | None, today: date) -> dict:
@@ -194,7 +245,8 @@ def kept_apart(a: "Assessment", x: Experience, day: date | None, today: date) ->
     Suitability is the model's prediction; feasibility is the day; data confidence is what's known; satisfaction exists
     only after a visit, from the person's own rating (evaluation.py), and is never filled in from a prediction."""
     return {"suitability": {"p_good": a.p_good, "says": a.relevance.reason},
-            "feasibility": {"availability": availability(x, day, today) if day else None, "says": a.practicality.reason},
+            "feasibility": {"availability": availability(x, day, today) if day else None,
+                            "parts": availability_parts(x, day, today) if day else None, "says": a.practicality.reason},
             "data_confidence": {"confidence": round(a.confidence, 3), "open_questions": [r.reason for r in a.risks],
                                 "says": a.trust.reason},
             "satisfaction": None}

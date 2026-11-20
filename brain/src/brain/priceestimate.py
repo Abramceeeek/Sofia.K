@@ -26,9 +26,9 @@ from datetime import date
 from .catalogue import Experience, Money
 from .places import Fact
 
-MIN_SAMPLE = 3                      # GUESS: fewer comparable prices and nothing is estimated
-MAX_AGE_DAYS = {"entertainment": 90, "food_drink": 180}   # GUESS (Abram sets these): events change fastest
-DEFAULT_MAX_AGE_DAYS = 365          # GUESS: admissions, tours, activities, views and the rest
+MIN_SAMPLE = 3                      # Abram, 20 Nov §6: fewer comparable prices and nothing is estimated
+MAX_AGE_DAYS = {"entertainment": 90, "food_drink": 180}   # Abram, 20 Nov §6: events change fastest
+DEFAULT_MAX_AGE_DAYS = 365          # Abram, 20 Nov §6: admissions, tours, activities, views and the rest
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class Allowance:
     peers: tuple[str, ...]
 
     def label(self) -> str:
-        return (f"No verified price. Planning allowance about {self.amount:g} {self.currency}: the median of {self.n} "
+        return (f"No verified price. Estimate: about {self.amount:g} {self.currency}, the median of {self.n} "
                 f"{self.basis} prices here (checked {self.observed[0]} to {self.observed[1]}), not this place's price.")
 
 
@@ -54,11 +54,21 @@ def _recent(p: Experience, today: date, max_days: int) -> bool:
     return bool(p.price.checked) and (today - date.fromisoformat(p.price.checked)).days <= max_days
 
 
+def max_age_days(x: Experience) -> int:
+    return MAX_AGE_DAYS.get(x.category, DEFAULT_MAX_AGE_DAYS)
+
+
+def confirmed_price(x: Experience, today: date) -> bool:
+    """Abram, 20 Nov §6: a verified price that is dated and recent enough for its kind. An undated or older one is
+    never a recent verified price: a budget counts it as an estimate, at the amount the supplier gave."""
+    return _priced(x) and _recent(x, today, max_age_days(x))
+
+
 def allowance(x: Experience, places: list[Experience], *, today: date,
               min_sample: int = MIN_SAMPLE) -> Allowance | None:
     if x.price.known:
         return None
-    max_days = MAX_AGE_DAYS.get(x.category, DEFAULT_MAX_AGE_DAYS)
+    max_days = max_age_days(x)
     local = [p for p in places if p.id != x.id and p.status == "ready" and _priced(p)
              and p.geo.locality == x.geo.locality]
     cur = next((p.price.value.currency for p in local), None)       # the city's own currency, kept as it is
@@ -92,19 +102,29 @@ def with_allowances(places: list[Experience], *, today: date) -> tuple[list[Expe
 
 
 def budget_breakdown(items: list[Experience], allowances: dict[str, Allowance], budget: float | None,
-                     strict: bool = True) -> dict:
-    """Confirmed, estimated and unknown spending, kept apart, and what can honestly be said about the budget."""
-    confirmed = [x for x in items if _priced(x)]
-    estimated = [x for x in items if x.price.known and not _priced(x)]
+                     strict: bool = True, *, today: date | None = None) -> dict:
+    """Confirmed, estimated and unknown spending, kept apart, and what can honestly be said about the budget.
+
+    Abram, 20 Nov §6: confirmed means verified, dated and recent for its kind (`confirmed_price`); an estimate never
+    counts as confirmed; an unknown necessary cost means the total can't be verified. Each price stays in the
+    supplier's own currency: prices in more than one currency aren't added up here (they need a dated conversion
+    first), so the total can't be verified."""
+    today = today or date.today()
+    confirmed = [x for x in items if x.price.known and confirmed_price(x, today)]
+    estimated = [x for x in items if x.price.known and not confirmed_price(x, today)]
     unknown = [x for x in items if not x.price.known]
+    currencies = sorted({x.price.value.currency for x in confirmed + estimated})
     c = round(sum(x.price.value.amount for x in confirmed), 2)
     e_mid = round(sum(x.price.value.amount for x in estimated), 2)
     e_high = round(sum(allowances[x.id].conservative if x.id in allowances else x.price.value.amount
                        for x in estimated), 2)
     out = {"confirmed": c, "estimated": e_mid, "estimated_conservative": e_high,
-           "unknown": [x.title for x in unknown], "budget": budget}
+           "unknown": [x.title for x in unknown], "budget": budget,
+           "currency": currencies[0] if len(currencies) == 1 else None, "currencies": currencies}
     if budget is None:
         out["status"] = "no budget"
+    elif len(currencies) > 1:
+        out["status"] = "mixed currencies"
     elif c > budget:
         out["status"] = "over budget"
     elif unknown:
@@ -120,6 +140,8 @@ def budget_breakdown(items: list[Experience], allowances: dict[str, Allowance], 
         "over budget": "Over budget on confirmed prices alone.",
         "can't be verified yet": f"Some costs aren't known ({', '.join(out['unknown'])}), so the total can't be "
                                  "verified yet.",
+        "mixed currencies": f"Prices are in {' and '.join(currencies)}, so the total can't be verified without a "
+                            "conversion.",
         "fits": "Fits your budget on verified prices.",
         "likely fits": "Likely fits, but part of it is an estimate, so it isn't guaranteed.",
         "fits with estimates": "Fits, counting planning allowances at their higher figure.",
@@ -128,7 +150,8 @@ def budget_breakdown(items: list[Experience], allowances: dict[str, Allowance], 
     return out
 
 
-__all__ = ["Allowance", "allowance", "with_allowances", "budget_breakdown", "MIN_SAMPLE"]
+__all__ = ["Allowance", "allowance", "with_allowances", "budget_breakdown", "confirmed_price", "max_age_days",
+           "MIN_SAMPLE"]
 
 
 def model_costs(places: list[Experience], *, today: date, rates=None,

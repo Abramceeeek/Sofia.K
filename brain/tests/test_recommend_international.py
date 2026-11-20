@@ -154,3 +154,33 @@ def test_unknown_hours_are_might_be_open_never_confirmed():
     assert quality.practicality(blank, day, None, None).reason.startswith("Might be open")
     assert quality.open_status(LONDON["m_bank_of_england_gold"], date(2026, 11, 28)) == "confirmed closed"
     assert quality.open_status(LONDON["m_courtauld_gallery"], date(2026, 12, 25)) == "confirmed closed"   # a notice
+
+
+def test_the_place_the_session_and_the_activity_stay_apart():              # m309 (Abram, 20 Nov §7)
+    from brain.catalogue import Notice
+    today, fri, sat, tue = date(2026, 11, 19), date(2026, 11, 27), date(2026, 11, 28), date(2026, 11, 24)
+    parts = lambda x, d: quality.availability_parts(x, d, today)
+    ev = LONDON["m_evensong_st_pauls"]
+    assert quality.objective(ev) == "session"
+    p = parts(ev, sat)                                                       # "No Choral Evensong listed"
+    assert p["state"] == "closed or unavailable" and p["session"] == "not on" and p["place"] == "not recorded"
+    assert p["says"] == "No Choral Evensong listed"                          # the reason names the service
+    p = parts(ev, fri)                                       # the card's times are general text: no date listing
+    assert p["state"] == "might be open" and p["session"] == "not known"                 # never promised
+    weekly = replace(ev, hours=LONDON["m_national_gallery"].hours)          # even with official weekly times
+    assert parts(weekly, fri)["state"] == "might be open"
+    assert parts(weekly, fri)["session"] == "usual times only: not confirmed for this date"
+    ng = LONDON["m_national_gallery"]
+    assert quality.objective(ng) == "place" and parts(ng, tue)["state"] == "confirmed open"
+    day = tue.isoformat()
+    with_service = replace(ng, notices=(*ng.notices, Notice("No Choral Evensong listed", day, day, "https://x")))
+    p = parts(with_service, tue)
+    assert p["state"] == "confirmed open" and p["session"] == "not needed"   # a missing service doesn't shut a place
+    assert p["says"] == "No Choral Evensong listed"                          # but it is shown beside it
+    sold = replace(ng, notices=(*ng.notices, Notice("Sold out", day, day, "https://x")))
+    assert parts(sold, tue)["state"] == "closed or unavailable" and parts(sold, tue)["activity"] == "unavailable"
+    shut = replace(ng, notices=(*ng.notices, Notice("Closed for a private event", day, day, "https://x")))
+    assert parts(shut, tue)["place"] == "closed"
+    assert quality.notice_kind("Closes at 15:00 (last entry 14:00)") == "information"
+    assert quality.notice_kind("Scaffolding for maintenance; the market remains fully open") == "information"
+    assert quality.notice_kind("Cancelled") == "session not on"
