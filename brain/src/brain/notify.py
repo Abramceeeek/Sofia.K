@@ -15,8 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import urllib.request
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
+from datetime import datetime
 
 log = logging.getLogger("brain.safety")
 
@@ -29,10 +28,9 @@ USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. A pe
 
 
 def alert_text(alert_id: int, at: datetime | None = None) -> str:
-    """The whole alert: that a message is waiting, its number and when (London time). Nothing the person wrote."""
-    when = (at or datetime.now(timezone.utc)).astimezone(ZoneInfo("Europe/London")).strftime("%d %b %H:%M")
-    return (f"ODYS Help & safety: message #{alert_id} is waiting (received {when}, London time). Read it and reply "
-            f"with GET /v1/admin/safety; it isn't copied here.")
+    """The whole alert, word for word as Abram set it (20 Nov §2): that a message is waiting, and its number. Never the
+    message, the contact, who sent it or where they are. `at` is kept so callers needn't change; it isn't shown."""
+    return f"Safety message #{alert_id} is waiting"
 
 
 def send_alert(webhook_url: str | None, alert_id: int, at: datetime | None = None) -> bool:

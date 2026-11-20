@@ -1,4 +1,13 @@
-# The friends' round: one fixed version (m196, m197)
+# The friends' round: one fixed version (m196, m197; moved to the new build, m315)
+
+> **20 Nov (m315): the round moves to the new `main`.** Abram chose to put everything on `main` (`decisions/release-to-main.md`). No friend had been invited, so nothing is lost.
+> - **The round's fixed version is the release's merge commit**, not `80a0da3`. TestFlight gets the build the merge uploads; Android stays unpublished until Abram's release key exists.
+> - **Everything below keeps its checks and order, with three changes:**
+>   - read "`80a0da3`" as **the new `main` commit**;
+>   - read "TestFlight 91" as **the new build number**;
+>   - Android is option B only, once the release key exists.
+> - **The tag goes on the new commit.** The commands below show where to put it.
+
 
 **Decision.** The friends' round is a controlled run of Test B: every tester uses the same app and Brain, recorded below, and nothing reaches `main` until the round ends: no code, no notes. This sheet lives on the work branch. Friends are a first usability group; the results are read as direction, not proof (D127).
 
@@ -77,7 +86,9 @@ git ls-remote origin main
 #   experiment was frozen at; condition 5 shows the merge changed nothing under app/ or android/)
 git ls-remote --tags origin friends-round-1
 #   expected: nothing (no tag yet). If a line appears, stop and tell Claude.
-git tag -a friends-round-1 80a0da3d117a1898deeb5a8913fea9f5914cb390 -m "The friends' round: code 80a0da3, TestFlight 91 (the manifest records the rest)"
+git tag -a friends-round-1 <the new main commit, in full> -m "The friends' round: code <short commit>, TestFlight <build> (the manifest records the rest)"
+#   m315: since the move to main (20 Nov), the round's commit is the release's merge commit, not 80a0da3.
+#   Claude fills in the exact commit and build number in the manifest before this step.
 #   if it says "already exists": git rev-parse "friends-round-1^{commit}" must print 80a0da3d117a…; anything else, stop
 git show friends-round-1 --no-patch
 #   expected: "tag friends-round-1", your name, the message, then "commit 80a0da3d117a1898deeb5a8913fea9f5914cb390"

@@ -1519,9 +1519,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except backup.BackupError as e:
             raise HTTPException(503, str(e))
         ops.log.info("backup sealed: %d rows, %d bytes", sum(counts.values()), len(blob))
+        size = backup.database_bytes(app.state.engine)   # A4: read by the nightly job's storage warning
         return Response(blob, media_type="application/octet-stream",
                         headers={"Content-Disposition": "attachment; filename=odys-brain.odysbk",
-                                 "Cache-Control": "no-store"})
+                                 "Cache-Control": "no-store",
+                                 **({"X-Database-Bytes": str(size)} if size is not None else {})})
 
     return app
 
