@@ -104,11 +104,11 @@ Then tell Claude, and Claude checks it from here (read-only).
 
 | What | Value | How to check it during the round |
 |---|---|---|
-| Code (git commit on `main`) | `80a0da3` | `git ls-remote origin main` still gives `80a0da3…` |
-| Git tag | `friends-round-1` on `80a0da3` | `git ls-remote --tags origin friends-round-1`. **Abram pushes it** (this session can't push tags): see "Before the first invite" |
-| iPhone (TestFlight build) | `91` (iOS run #91, from `80a0da3`, uploaded 6 Nov) | TestFlight shows build 91 to testers |
+| Code (git commit on `main`) | **`ca6fd69`** (`ca6fd69b3317738db55c76502f1b52e3dbf89de7`), the release merge of 20 Nov (m315). Was `80a0da3` | `git ls-remote origin main` still gives `ca6fd69…` |
+| Git tag | `friends-round-1` on **`ca6fd69`** (after the rehearsal) | `git ls-remote --tags origin friends-round-1`. **Abram pushes it** (this session can't push tags): see "Before the first invite" |
+| iPhone (TestFlight build) | **`112`** (iOS run #112, attempt 3, from `ca6fd69`, uploaded 20 Nov 14:08 UTC). Attempts 1 and 2 were refused by Apple until Abram accepted the updated agreements. Was 91 | TestFlight shows build 112 to testers; external testers only once Abram adds it to the external group |
 | Android (APK) | **Not build 21:** it is signed with the public debug key (certificate `a07dae0c…cfb9`, checked 20 Nov). Option A: none (iPhone only). Option B: the re-signed release build of `80a0da3`, its SHA-256 and certificate recorded here | Under option B: `Get-FileHash` and `apksigner verify --print-certs` on the file friends get |
-| Brain (server) | `80a0da3`, live since 6 Nov 22:54 UTC (Render: branch `main`, Auto-Deploy off, Blueprint Auto Sync off). **To be recorded:** the 1 CPU change, and the privacy commit if approved | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"` (checked 6 Nov 22:54) |
+| Brain (server) | **Still `80a0da3` until Abram deploys `ca6fd69` by hand**, after the database backup and preflight (`decisions/release-to-main.md`). Render: branch `main`, Auto-Deploy off, Blueprint Auto Sync off. **To be recorded:** the deploy time and the 1 CPU change | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"` (checked 6 Nov 22:54) |
 | Database | **To be recorded:** Basic-256mb, 1 GB, autoscaling off, from <date> (free until then) | Render → the database's Info page |
 | Population model | `0.2` | `/v1/health` `population_version` |
 | Consent text | `app-2026-10-02` | The apps' consent version |
