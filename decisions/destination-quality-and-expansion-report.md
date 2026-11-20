@@ -1,4 +1,4 @@
-# Destination quality and international validation: report (12–13 Nov 2026; m244–m269)
+# Destination quality and international validation: report (12–19 Nov 2026; m244–m297)
 
 Abram's decisions and five workstreams (m244), built on the branch `claude/vigilant-cannon-my82dj`. The aim was to prove that ODYS's intelligence transfers beyond London, not just that its architecture can store international data. **The short answer:**
 - **Partly.** The model, the catalogue and the quality checks work in Paris without London assumptions, once one bug was fixed: euro prices were scored as free.
@@ -796,3 +796,142 @@ New tests (13): planning allowances (4), ranking configurations and open status 
 | Material gaps | ~0.5 |
 | Report and log | ~1 |
 | **Total** | **about 11.5 h** |
+
+# Abram's decisions of 19 Nov (m287), and what was done (m288–m297)
+
+Abram: "Our immediate objective is to get ODYS safely into the hands of its first real testers, without compromising the integrity of the experiment or the data behind it."
+
+**The release rules held (checked 19 Nov):**
+- `main` and the live Brain are on `80a0da3`.
+- Nothing was deployed, uploaded, published, bought or migrated.
+- No tag was created; the production database wasn't touched; no food data was collected.
+- The default ranking and the frozen experiment are unchanged.
+
+**One thing to know first:** while this work ran, the audit's branch (PR #1, m270–m286) was merged into the work branch.
+- This session merged it in before pushing, and renumbered its own three unpushed commits (they had reused m270–m273).
+- Where the two overlap, they now say the same thing (m297):
+  - the database page points to the audit's server decision;
+  - the expectation question shares the rating sheet with the audit's one-tap reasons (m285);
+  - the rehearsal stays the frozen builds' check.
+
+## In Abram's priority order
+
+| # | Priority | Done | Where |
+|---|---|---|---|
+| 1 | **The database and current pricing** | Render's prices read today from its own page: **Basic-256mb `0.1c-256mb` $6/month, storage $0.30/GB, Hobby $0, 3-day recovery**.<br>**Total $6.30 a month (£4.79), or $7.56 (£5.75) with VAT (unverified).** The plan also covers configuration, storage, backups, procedure, downtime ("a few minutes"), recovery if it fails, and the alternatives.<br>Found: **Render's recovery can't reach back before the upgrade**, so our sealed backup, checked by row counts, is the safety net | `decisions/database-before-6-dec.md` (m288) |
+| 2 | **The fresh preflight** | All eight points match the manifest. Exact tag commands with expected outputs, using the full commit | `validation/friends-round.md` (m295) |
+| 3 | **Manual verification of the two most-planned places** | Links, current values, the fields, and a template; then the top 20. Undated official PDFs say the Royal Festival Hall is open "every day except Christmas Day", against the card's "closed Mondays". Abram settles it in a browser | `validation/manual-verification.md` (m290) |
+| 4 | **The food-field operation** | Exact PowerShell commands and the expected output of each of the seven steps, with no `psql`. Tested on PostgreSQL 16.15 with main's own table (synthetic rows) | `decisions/foods-avoided-audit.md` (m289) |
+| 5 | **Ranking variants stay internal** | Three availability states (on a Tuesday, only 12 of London's 49 are "confirmed open"); suitability, feasibility, data confidence and satisfaction kept apart; default unchanged | `quality.availability`, `kept_apart` (m291) |
+| 6 | **The expectation question** | Abram's three answers; one optional row; the test that keeps or drops it after 30 answered stops; "recommend" deferred | `decisions/post-experience-questions.md` (m294) |
+| 7 | **Rehearsal preparation** | 19 of 25 steps marked as blocking the first invite; `REHEARSAL` confirmed on the frozen build | `validation/friends-round-rehearsal.md` (m296) |
+| — | **Estimated prices** (decision 2) | Recency by kind (m292). The model never scores a missing price as free (m293). Group budgets never count an allowance as confirmed. Benchmarked (below) | `priceestimate.py`, `missing_prices.txt` |
+
+## The missing-price benchmark (`brain/benchmarks/synthetic/missing_prices.txt`; synthetic travellers only)
+
+| Hiding a price, then ranking by the model | Old: scored as free | New: median | **New: upper quartile (default)** |
+|---|---|---|---|
+| All 704 cases: mean change in rank (negative = climbed) | −3.0 | −0.5 | **+0.3** |
+| Climbed 3+ places only because the price went missing | 25% | 12% | **11%** |
+| Budget-conscious traveller | −5.1 (31%) | −0.4 (14%) | **+1.0 (12%)** |
+| Inexpensive places | −5.5 (70%) | +1.7 (14%) | **+3.5 (12%)** |
+| Expensive places | −13.5 (90%) | −7.6 (63%) | **−6.5 (56%)** |
+| London (GBP) / Paris (EUR) | −3.3 / −1.8 | −1.0 / +1.1 | **−0.2 / +1.9** |
+
+**Read plainly:**
+- **On average, a missing price no longer helps a place** (+0.3 places).
+- **A truly expensive place still climbs when its price is hidden.** Any typical figure understates a high price. That's why the separate uncertainty penalty stays, and the price is shown as unknown.
+- **Incomplete coverage** (London with 30% of prices hidden): the top 5 holds fewer hidden-price places (1.82 against 2.09) and keeps more of the real top 5 (4.91 against 4.64).
+- **Group budgets:** with a daily budget, no stop with an unconfirmed price under either rule (0 of 800). Without one, 282 of 800 under the new rule against 338.
+
+## By status
+
+**Approved (Abram, 19 Nov):**
+- the ranking stays internal;
+- allowances with recency and three budget amounts, shown in plans after the round;
+- the model's "never zero";
+- the tag after a fresh preflight, pushed by Abram;
+- the rehearsal;
+- the food procedure;
+- the expectation question after the round;
+- manual verification first;
+- the database upgrade in place, provisionally.
+
+**Implemented (branch, tested):**
+- three availability states and `kept_apart`;
+- allowance recency, with a required date;
+- missing prices in the model, and group budgets;
+- `foodfield`;
+- `backup count-food --after-restore` and `backup counts`;
+- `export_counts.py`;
+- the top-20 gaps table.
+
+**Awaiting real-user validation:**
+- whether "might be open" places disappoint more often (m268's read-out);
+- the risk values and the allowance age limits;
+- whether the expectation question adds anything (after the round).
+
+**Awaiting external verification:**
+- the Royal Festival Hall's and the British Museum's hours, step-free status and area (Abram in a browser);
+- the National Portrait Gallery;
+- whether Render adds UK VAT (the first invoice);
+- the database's PostgreSQL version and storage used (the dashboard);
+- Paris transport.
+
+**Awaiting solicitor review:** unchanged: the share card's BY-SA question and the food DPIA.
+
+**Awaiting founder action:**
+
+| Action | Time |
+|---|---|
+| Push the tag (`validation/friends-round.md`) | ~2 min |
+| The rehearsal on both phones | ~45 min |
+| The food field's seven steps, **before** the database upgrade | ~30 min |
+| The database: choose A or B, confirm the purchase, run the steps **by 2 Dec** | ~40 min |
+| Read the two venues' pages and fill the template | ~15 min |
+| Apple's outside-activities check, then TestFlight's external review | as before |
+
+## Outstanding decisions (separately, as Abram asked)
+
+| # | Decision | Recommendation |
+|---|---|---|
+| 1 | **When to upgrade the database:** after the round's final export (A), or before the first invite (B) | **B.** The round hasn't started; B gives it no database deadline, and nobody is affected by the downtime |
+| 2 | **Confirm the purchase:** Basic-256mb, 1 GB, Hobby; $6.30 a month, or $7.56 with VAT | Yes. And turn storage autoscaling on (+$1.20 a month only if ever needed) |
+| 3 | **The allowance age limits:** entertainment 90 days, food 180, everything else 365 | Accept for now; revisit with real prices |
+| 4 | **The model's figure for a missing price:** the upper quartile (default) or the median | The upper quartile: it's the one where a missing price doesn't help on average |
+| 5 | **The default ranking's dated notices:** today, only "Closed…" stops a day. "No Choral Evensong listed" is a warning, though the three-state view marks it unavailable | After the round, let the default treat it as unavailable too (~0.5 h, one test) |
+| 6 | **The expectation question's keep-or-drop thresholds** (1 in 5; twice as common) | Accept before it's built |
+| 7 | **Claude checks the readable pages of ranks 4–18** (step-free, areas, seasons) | Yes, ~2 h; facts not stated stay unknown |
+| 8 | **The audit's 17 decisions** (`first-real-user-readiness-plan.md`, m286) | Unchanged by this round; read there |
+
+## Tests run (19 Nov)
+
+On the merged branch (this session's work plus the audit's):
+
+| Suite | Result |
+|---|---|
+| Brain (`pytest`) | **534 passed**, 0 failed (one library deprecation warning). 463 at the last report; the audit's tests account for most of the rise |
+| Android (`testDebugUnitTest`) | **122 tests, 0 failures** (119 before; the audit added 3) |
+| iPhone | Not run: this round changed no app file. The audit's app changes have their own CI runs |
+| PostgreSQL 16.15 | `foodfield` and the procedure's SQL agree on main's `users` table (synthetic rows, then deleted) |
+
+New tests this round (8):
+- the food commands (3);
+- the availability states and `kept_apart` (2);
+- allowance recency, missing prices in the model, and group budgets (3).
+
+**Hours this round (Claude, approximate):**
+
+| Work | Hours |
+|---|---|
+| Database pricing and plan | ~2 |
+| Preflight | ~0.5 |
+| Verification pack | ~1.5 |
+| Food commands and tests | ~1.5 |
+| Availability states | ~1 |
+| Prices and benchmark | ~2.5 |
+| Expectation question | ~0.5 |
+| Rehearsal | ~0.25 |
+| Merging the audit and reconciling | ~1 |
+| Report and log | ~1 |
+| **Total** | **about 12 h** |

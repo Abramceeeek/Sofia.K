@@ -37,7 +37,7 @@ def main() -> int:
     pop = load_population(DATA_DIR / "priors.yaml")
     paris = [x for x in load_dev("paris")[1] if x.status == "ready"]
     cities = {"London": ([x for x in load_catalogue() if x.status == "ready"], "GBP"), "Paris": (paris, "EUR"),
-              "Paris+allow": (with_allowances(paris)[0], "EUR")}
+              "Paris+allow": (with_allowances(paris, today=bp.TODAY)[0], "EUR")}
     rows = {}
     for name, (d, sig, budget, needs, _gap) in bp.PROFILES.items():
         s = Scorer(pop, bp.delta_for(pop, d), rates=bp.RATES)

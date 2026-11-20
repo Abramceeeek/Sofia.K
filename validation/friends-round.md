@@ -7,7 +7,7 @@
 | Item | Who | Status |
 |---|---|---|
 | The live Brain runs `80a0da3`, and branch pushes can't redeploy it | Abram (Render), Claude (checks) | **Done** 6 Nov 22:54 UTC; checked again 7 Nov |
-| Tag `friends-round-1` on `80a0da3` | Abram (this session can't push tags) | **Approved (m260); preflight passed 12 Nov; Abram pushes it** (below) |
+| Tag `friends-round-1` on `80a0da3` | Abram (this session can't push tags) | **Approved (m260, 19 Nov); fresh preflight passed 19 Nov; Abram pushes it** (commands below) |
 | Rehearsal on TestFlight 91 and Android 21 with the code `REHEARSAL`, then the read-out, then clean-up (steps 3-4 below) | Abram, Claude reads the read-out | **Waiting** |
 | Apple outside-activities check (D60, D94) | Abram | **Waiting** |
 | TestFlight's external review of build 91 | Abram | **Waiting** (after the Apple check) |
@@ -29,6 +29,41 @@
 8. This session's annotated tag points exactly at `80a0da3d117a1898deeb5a8913fea9f5914cb390`.
 
 **The push was refused:** the session's git proxy answers HTTP 403 to any push but the work branch. Claude stopped there, as the approval required, and created nothing at any other commit. Rechecked 13 Nov: points 1–3 and 8 unchanged. **Abram pushes it** with step 2 of "Before the first invite"; the check after it must name `80a0da3`.
+
+### Fresh read-only preflight, 19 Nov 2026 (m295; Abram, 19 Nov: "Do not create or push the tag yourself")
+
+Nothing was created, pushed or changed. **All agree with the manifest:**
+
+| Check | Found on 19 Nov | Matches |
+|---|---|---|
+| `main` | `80a0da3d117a1898deeb5a8913fea9f5914cb390`, 0 commits after it | yes |
+| The live Brain | `/v1/health`: `"ok":true`, `"version":"80a0da3"`, `"population_version":"0.2"` | yes |
+| TestFlight build 91 | iOS run #91 (run 42303190373) on `main` at `80a0da3`, 6 Nov 22:14 UTC, success. TestFlight keeps a build for 90 days (Apple, TestFlight overview), so until about 4 Feb 2027. Claude can't see App Store Connect | yes |
+| Android build 21 | Android run #21 (run 42303190295) on `main` at `80a0da3`, success. The `android-latest` release targets `80a0da3`: "ODYS for Android (build 21)", asset `ODYS-android-21.apk` (30,143,378 bytes) | yes |
+| Remote tags | only `android-latest`; **no `friends-round-1`** | yes |
+| Local tag (this session) | annotated, made 6 Nov 22:37 UTC, pointing at `80a0da3d117a…`. It can't be pushed from here | yes |
+| Latest backup | ops run #119 (44506350232), 19 Nov 10:31 UTC; artifact `odys-brain-backup-44506350232`, 56,918 bytes, kept until 19 Dec. The run passed the workflow's sealed-format check | yes |
+| Frozen configuration at `80a0da3` | tester codes FRIENDS and FAMILY (any other code, such as `REHEARSAL`, is accepted and kept as the source); consent `app-2026-10-02` in both apps; population model `0.2` | yes |
+
+**Abram: push the tag (PowerShell, from your copy of the repo; about 2 minutes).** Use the full commit, never a branch name:
+
+```powershell
+git fetch origin
+git ls-remote origin main
+#   expected: 80a0da3d117a1898deeb5a8913fea9f5914cb390  refs/heads/main
+git ls-remote --tags origin friends-round-1
+#   expected: nothing (no tag yet). If a line appears, stop and tell Claude.
+git tag -a friends-round-1 80a0da3d117a1898deeb5a8913fea9f5914cb390 -m "The friends' round: main 80a0da3, TestFlight 91, Android 21"
+#   if it says "already exists": git rev-parse "friends-round-1^{commit}" must print 80a0da3d117a…; anything else, stop
+git show friends-round-1 --no-patch
+#   expected: "tag friends-round-1", your name, the message, then "commit 80a0da3d117a1898deeb5a8913fea9f5914cb390"
+git push origin refs/tags/friends-round-1
+git ls-remote --tags origin friends-round-1
+#   expected: two lines: "<tag object>  refs/tags/friends-round-1" and
+#             "80a0da3d117a1898deeb5a8913fea9f5914cb390  refs/tags/friends-round-1^{}"
+```
+
+Then tell Claude, and Claude checks it from here (read-only).
 
 ## The experiment manifest
 
@@ -90,8 +125,7 @@ Also the stops' ratings, the end-of-day questions, and the Test A survey. `brain
    3. On the same page → **Auto-Deploy: Off**.
    4. `moments-brain` → **Manual Deploy → Deploy latest commit**, and wait for "Deploy live".
    5. Claude checks `/v1/health` shows `"version": "80a0da3"`, and GitHub's deployment record shows `main` (dashboard labels alone don't count).
-2. **The tag** (Abram, from his copy of the repo, in PowerShell):
-   `git fetch origin` then `git tag -a friends-round-1 80a0da3 -m "The friends' round: main 80a0da3, TestFlight 91, Android 21"` then `git push origin friends-round-1`. Check: `git show friends-round-1 --no-patch` names commit `80a0da3`.
+2. **The tag** (Abram, from his copy of the repo, in PowerShell): the commands and expected outputs under "Fresh read-only preflight, 19 Nov 2026" above. They tag the full commit `80a0da3d117a1898deeb5a8913fea9f5914cb390`, never a branch.
 3. **An internal run on the real builds** (Abram, with the code `REHEARSAL`). The full 25-step checklist for both phones is `friends-round-rehearsal.md` (m265); nothing in the experiment changes during it. Its minimum:
 
    | Install | Gut choice and both scores | "Easier" | Why |

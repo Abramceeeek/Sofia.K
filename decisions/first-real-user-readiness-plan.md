@@ -253,7 +253,7 @@ Abram asked for its complete diff to be reviewed first, confirming two things: i
 
 ## 15. Decisions for Abram
 
-*As of 16 Nov. **Abram decided most of these on 19 Nov** (decision log m287). Where they overlap, §0 above is current: the database, the server, the tag, the webhook, the privacy patch, the iPhone manifest, the Android key, Stage 2's size and the merge. Still open: the decisions in §0's "Next step" column, and items 3, 10–12 and 14–16 below.*
+*As of 16 Nov. **Abram decided most of these on 19 Nov** (decision log m298). Where they overlap, §0 above is current: the database, the server, the tag, the webhook, the privacy patch, the iPhone manifest, the Android key, Stage 2's size and the merge. Still open: the decisions in §0's "Next step" column, and items 3, 10–12 and 14–16 below.*
 
 **Money:**
 1. **The database:** upgrade in place to Render's `0.1c-256mb` ($6 + $0.30 a month), after the final export, before 6 Dec.

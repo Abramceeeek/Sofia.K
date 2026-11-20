@@ -1,12 +1,12 @@
-"""Abram's decisions of 19 Nov, §1: check the round's final export on its own, before the database is upgraded.
+"""m288 (Abram, 19 Nov): the final export must be "completed and independently checked before migration". Read-only.
 
-    .venv/bin/python scripts/export_counts.py ../validation/raw/export-<date>.json
+    python scripts/export_counts.py ../validation/raw/export-<date>.json
 
-Read-only. It prints each table's row count in the same form as `python -m brain.backup verify` ("users 21,
-swipes 120, …"), so the export (taken through the admin API) and the sealed backup (taken through the backup route)
-can be compared line by line: two separate paths out of the same database. It also checks that every row that names a
-person names one who exists, and that every rating's plan exists. It prints counts and problems only, never a value
-from a row. Exit code 1 if anything doesn't hold together.
+It prints the number of rows in each table of an admin export, one per line ("users 21"), to compare with a sealed
+backup taken by a different route (`python -m brain.backup counts <file> --key <key>`, or the fuller `preflight`).
+It also checks that every row that names a person names one who exists, and that every rating's plan exists (Abram,
+20 Nov, condition 5). It prints counts and problems only, never a value from a row. Exit code 1 if anything doesn't
+hold together.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ PERSON_TABLES = ("swipes", "conjoint_choices", "answers", "plans", "ratings", "e
 
 
 def counts(export: dict) -> dict[str, int]:
-    return {k: len(v) for k, v in export.items() if isinstance(v, list)}
+    return {k: len(v) for k, v in sorted(export.items()) if isinstance(v, list)}
 
 
 def problems(export: dict) -> list[str]:
@@ -44,8 +44,9 @@ def main(argv: list[str] | None = None) -> int:
     if len(args) != 1:
         print(__doc__.strip().splitlines()[2].strip(), file=sys.stderr)
         return 2
-    export = json.loads(Path(args[0]).read_text(encoding="utf-8"))
-    print(", ".join(f"{k} {n}" for k, n in sorted(counts(export).items())))
+    export = json.loads(Path(args[0]).read_text(encoding="utf-8-sig"))   # PowerShell writes a BOM
+    for name, n in counts(export).items():
+        print(f"{name} {n}")
     found = problems(export)
     for p in found:
         print("PROBLEM: " + p, file=sys.stderr)

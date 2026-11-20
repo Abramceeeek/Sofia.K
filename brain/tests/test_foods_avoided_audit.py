@@ -80,3 +80,51 @@ def test_a_backup_can_be_counted_without_showing_a_value(tmp_path, capsys):
     assert out.out.strip() == "profiles 3, with_key 2, non_empty 1"
     assert SECRET not in out.out + out.err and "pork" not in out.out + out.err
     assert set(tmp_path.iterdir()) == before                                       # nothing opened onto disk
+
+
+def test_the_operator_command_counts_deletes_only_the_key_and_prints_no_value(client, capsys):   # m289
+    from brain import foodfield
+    _, uid_a = install(client)
+    _, uid_b = install(client)
+    _legacy(client, uid_a, SECRET)
+    url = str(client.app.state.engine.url)
+    assert foodfield.main(["count", "--database-url", url]) == 0
+    assert foodfield.main(["delete", "--database-url", url]) == 1                  # no --confirm: nothing changes
+    assert foodfield.count(client.app.state.engine)["with_key"] == 1
+    assert foodfield.main(["delete", "--database-url", url, "--confirm", "delete"]) == 0
+    out = capsys.readouterr()
+    assert "profiles 2, with_key 1, non_empty 1" in out.out and "updated 1 profiles" in out.out
+    assert "after:  profiles 2, with_key 0, non_empty 0" in out.out and "COMMITTED" in out.out
+    assert SECRET not in out.out + out.err and "pork" not in out.out + out.err
+    with client.app.state.Session() as s:
+        assert s.get(db.User, uid_a).profile == {"based": "london", "budget_band": "20_40"}   # the rest kept
+        assert s.get(db.User, uid_b) is not None                                            # no record deleted
+
+
+def test_the_operator_delete_rolls_back_unless_the_count_reaches_zero(client, monkeypatch):    # m289
+    from brain import foodfield
+    _, uid = install(client)
+    _legacy(client, uid, SECRET)
+    monkeypatch.setattr(food, "scrub_profile", lambda p: p)                         # a delete that fails to remove it
+    r = foodfield.delete(client.app.state.engine)
+    assert not r["committed"] and r["after"]["with_key"] == 1
+    with client.app.state.Session() as s:
+        assert s.get(db.User, uid).profile["foods_avoided"] == SECRET                # rolled back: unchanged
+
+
+def test_a_backup_is_checked_after_a_restore_in_memory_and_counted_by_table(client, tmp_path, capsys):   # m289, m288
+    _, uid = install(client)
+    older = json.loads(json.dumps(backup.dump(client.app.state.engine)))
+    next(u for u in older["tables"]["users"] if u["id"] == uid)["profile"]["foods_avoided"] = SECRET   # made on main
+    public, private = backup.keygen()
+    key = tmp_path / "k.key"
+    key.write_text(private, encoding="utf-8")
+    sealed = tmp_path / "odys.bak"
+    sealed.write_bytes(backup.seal(json.dumps(older).encode(), public))
+    before = set(tmp_path.iterdir())
+    assert backup.main(["count-food", str(sealed), "--key", str(key), "--after-restore"]) == 0
+    assert backup.main(["counts", str(sealed), "--key", str(key)]) == 0
+    out = capsys.readouterr().out
+    assert "with_key 1" in out and "after a restore (in memory, nothing written): profiles 1, with_key 0" in out
+    assert "users 1" in out and SECRET not in out
+    assert set(tmp_path.iterdir()) == before                                        # nothing written to disk
