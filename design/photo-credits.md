@@ -4,6 +4,30 @@ Openly licensed photos from Wikimedia Commons (Abram, 30 Sep 2026: "use openly l
 
 **Flag any photo you'd change: one line each.**
 
+**Every page re-read, 11 Nov 2026 (m247):** all 45 Commons pages, one by one (`brain/data/photo_checks.yaml`, tested).
+- 44 credits match their page. **One was corrected in both apps:** the Canary Wharf photo's page asks for "Photo by DAVID ILIFF", so the credit is now "David Iliff", not "Diliff".
+- **Richmond's deer photo:** its page states the licence two ways (CC BY 4.0 in the text, CC BY-SA 4.0 in its data). Treat it as BY-SA until it's resolved.
+- **Older photos:** 15 are 15 years old or more. 4 show something related rather than the place itself.
+- **All 45 licences permit commercial use and changes** (CC0, CC BY, CC BY-SA; the legal code read for each version).
+- **Three questions for the solicitor, about the share card** (`decisions/destination-quality-and-expansion-report.md`, section 7):
+  - its missing title and licence link;
+  - whether cropping makes it an adaptation under BY-SA;
+  - two Acabashi pages that exclude social media.
+
+**Re-checked 10 Nov 2026 (m243), as the catalogue grows (Abram, m234):**
+- **A test now guards it** (`brain/tests/test_photo_credits.py`, 4 tests, no network). It fails the build if:
+  - the two apps' photos or credits differ;
+  - a photo has no credit, or a credit has no photo;
+  - a credit lacks a title, author, licence or Commons source page;
+  - a licence isn't CC0, public domain, CC BY or CC BY-SA (no NC or ND), or its link doesn't match its name;
+  - a credited card is missing from this page, or isn't a ready card;
+  - the app stops showing "title by author, licence, Wikimedia Commons (resized)".
+- **Six source pages re-read on Commons, 10 Nov 2026:** Covent Garden Piazza, Coal Drops Yard, The Garden at 120, Leadenhall Market roof, Horizon 22 and London Fields Lido. All six still state the author and licence in this table.
+  - Leadenhall's author is the Flickr account "It's No Game". The page also files it under "Photographs by Duncan Harris" without linking the two names, so the credit stays as the page's Author field gives it.
+- **Not re-read:** the other 39. A batch read of Commons' metadata was refused for too many requests (HTTP 429), and wasn't retried in a loop.
+  - **GUESS: Claude ~0.5 h** to re-read them, a few at a time, before the public release.
+  - The share card says "(cropped)" rather than "(resized)", because it crops the photo.
+
 | Card | Photo | Author | Licence |
 |---|---|---|---|
 | `a_covent_garden_soho` | [London , Westminster - Covent Garden Piazza](https://commons.wikimedia.org/wiki/File:London_,_Westminster_-_Covent_Garden_Piazza_-_geograph.org.uk_-_1784895.jpg) | Lewis Clarke | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
@@ -18,7 +42,7 @@ Openly licensed photos from Wikimedia Commons (Abram, 30 Sep 2026: "use openly l
 | `m_bm_great_court` | [Great Court, British Museum](https://commons.wikimedia.org/wiki/File:Great_Court,_British_Museum_-_geograph.org.uk_-_3292065.jpg) | Jim Osley | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
 | `m_borough_market_graze` | [Borough Market](https://commons.wikimedia.org/wiki/File:Borough_Market_(4701274756).jpg) | Jeremy Keith from Brighton & Hove, United Kingdom | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) |
 | `m_burlington_arcade` | [Burlington Arcade, September, 1987](https://commons.wikimedia.org/wiki/File:Burlington_Arcade,_September,_1987.jpg) | Cbaile19 | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) |
-| `m_canary_wharf_towers` | [Cabot Square, Canary Wharf - June 2008](https://commons.wikimedia.org/wiki/File:Cabot_Square,_Canary_Wharf_-_June_2008.jpg) | Diliff | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
+| `m_canary_wharf_towers` | [Cabot Square, Canary Wharf - June 2008](https://commons.wikimedia.org/wiki/File:Cabot_Square,_Canary_Wharf_-_June_2008.jpg) | David Iliff | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
 | `m_chinatown_dim_sum` | [Chinatown, London - Gerrard Street](https://commons.wikimedia.org/wiki/File:Chinatown,_London_-_Gerrard_Street_(4042214075).jpg) | Elliott Brown from Birmingham, United Kingdom | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) |
 | `m_city_towers_walk` | [City of London Eastern Cluster](https://commons.wikimedia.org/wiki/File:City_of_London_Eastern_Cluster.jpg) | Sebastian Doe | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
 | `m_courtauld_gallery` | [Courtauld Gallery, Staircase](https://commons.wikimedia.org/wiki/File:Courtauld_Gallery,_Staircase.jpg) | Mike Peel (www.mikepeel.net) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |

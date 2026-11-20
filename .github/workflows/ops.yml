@@ -94,7 +94,7 @@ jobs:
           mkdir -p out
           f="out/odys-brain-$(date -u +%Y%m%d).odysbk"
           code=$(curl -sS --max-time 150 --retry 1 --retry-delay 20 -H "Authorization: Bearer $TOKEN" \
-                 -o "$f" -w "%{http_code}" "$BRAIN/v1/admin/backup") || true
+                 -D "$RUNNER_TEMP/backup-headers.txt" -o "$f" -w "%{http_code}" "$BRAIN/v1/admin/backup") || true
           if [ "$code" != "200" ]; then
             echo "::error::The backup request answered $code."
             [ -f "$f" ] && head -c 300 "$f" | tr -cd '[:print:]\n' && echo
@@ -110,12 +110,27 @@ jobs:
           echo "made=yes" >> "$GITHUB_OUTPUT"
       - name: Keep it for 30 days
         if: steps.fetch.outputs.made == 'yes'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: odys-brain-backup-${{ github.run_id }}
           path: out/
           retention-days: 30
           if-no-files-found: error
+      # A4 (Abram, 20 Nov): a warning long before the database is full, so no storage is ever bought without his
+      # click. The repository's logs are public, so a run prints only "under 50%", never the size.
+      - name: Check the database's size
+        if: steps.fetch.outputs.made == 'yes'
+        env:
+          LIMIT_MB: "1024"   # the database's storage. If it is ever increased in Render, change this to match
+          WARN_PCT: "50"
+        run: |
+          bytes=$(tr -d '\r' < "$RUNNER_TEMP/backup-headers.txt" | awk -F': ' 'tolower($1)=="x-database-bytes" {print $2}' | tail -n 1)
+          case "$bytes" in ''|*[!0-9]*) echo "::warning::The Brain didn't say how big its database is."; exit 0;; esac
+          if [ $(( bytes * 100 / (LIMIT_MB * 1048576) )) -ge "$WARN_PCT" ]; then
+            echo "::error::The database is at or over ${WARN_PCT}% of its ${LIMIT_MB} MB. Nothing has been bought: see 'Storage' in decisions/database-before-6-dec.md."
+            exit 1
+          fi
+          echo "The database is under ${WARN_PCT}% of its ${LIMIT_MB} MB."
       - name: Tell a person
         if: failure()
         env:
@@ -123,5 +138,5 @@ jobs:
         run: |
           if [ -z "$HOOK" ]; then exit 0; fi
           curl -fsS --max-time 20 -X POST -H "Content-Type: application/json" \
-            -d '{"text": "ODYS Brain: last night'"'"'s backup failed (not a safety alert). GitHub, Actions, ops."}' \
+            -d '{"text": "ODYS Brain: last night'"'"'s backup job needs a look, the backup or the storage check (not a safety alert). GitHub, Actions, ops."}' \
             "$HOOK" > /dev/null

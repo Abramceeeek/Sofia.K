@@ -1,5 +1,6 @@
 """Shared fixtures. The test moments are made up for testing: they are not real curated moments."""
 
+import os
 from pathlib import Path
 
 import pytest
@@ -47,3 +48,19 @@ def test_moments():
                     mtags=dict(absorption=1)),
         make_moment("t_pricey", 51.5134, -0.1300, tags=dict(iconic=1, crowds=2), cost=80),
     ]
+
+
+def database_url(tmp_path, name: str) -> str:
+    """SEC-21 (audit): the database a test app uses. SQLite in a fresh file by default; when BRAIN_TEST_DATABASE_URL is
+    set (the CI job with a Postgres service), that database, emptied first, so each test starts clean."""
+    url = os.environ.get("BRAIN_TEST_DATABASE_URL")
+    if not url:
+        return f"sqlite:///{tmp_path / name}"
+    from brain import calibration, db
+    from brain.config import driver_url
+    url = driver_url(url)
+    engine = db.make_engine(url)
+    calibration.Base.metadata.drop_all(engine)
+    db.Base.metadata.drop_all(engine)
+    engine.dispose()
+    return url

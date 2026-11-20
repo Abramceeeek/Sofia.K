@@ -19,6 +19,7 @@ struct NowView: View {
     @State private var replanning = false            // decision 3: "Re-plan the rest of today"
     @State private var asked: Set<String> = []       // D123: stops already asked about after leaving
     @State private var glow = 0.0                    // D130: the light opening out as you arrive
+    @State private var showSaved = false             // m228: what's saved on this phone
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -28,6 +29,25 @@ struct NowView: View {
         NavigationStack {
             ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if !model.connectivity.online {   // m228: no signal: say so, and what's still here
+                    Button { showSaved = true } label: {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "wifi.slash").foregroundStyle(Theme.amberDeep)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("No signal").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                                Text("Your day, stay and journey are saved on this phone. Nothing shown is live.")
+                                    .font(.footnote).foregroundStyle(Theme.inkSoft)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text("See what's saved").font(.footnote.weight(.semibold)).foregroundStyle(Theme.accent)
+                            }
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Opens what's saved on this phone")
+                }
                 if i == 0, let day = tripDay {   // m176: the trip's first journeys come before the first stop
                     ForEach(day.journeys("arrive"), id: \.self) { JourneyCard(leg: $0) }
                     if let before = day.before {   // the place on the way, when travelling light (as on the day's page)
@@ -160,6 +180,7 @@ struct NowView: View {
                         QuietButton("See the whole day") { dismiss() }
                     }
                     Spacer()
+                    QuietButton("Saved on this phone") { showSaved = true }   // m228
                     QuietButton("Help") { showSafety = true }
                 }
             }
@@ -184,6 +205,7 @@ struct NowView: View {
             RatingView(stop: stop, onNext: { model.advanceNow() }).brainFeedback()
         }
         .sheet(isPresented: $showSafety) { SafetyView().brainFeedback() }
+        .sheet(isPresented: $showSaved) { OfflineView().followsSky() }
         .sheet(item: $onTheWay) { stop in
             RatingView(stop: stop, planId: model.currentTripDay?.day.before?.id).brainFeedback()
         }
@@ -192,6 +214,9 @@ struct NowView: View {
             model.location.start()
             if model.screen == "replan" {   // CI screenshots only: the question, open
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { replanning = true }
+            }
+            if model.screen == "offlinesaved" {   // CI screenshots only (m228): the saved view, open
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { showSaved = true }
             }
         }
         .onDisappear { model.location.stop() }

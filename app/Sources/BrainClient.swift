@@ -4,6 +4,7 @@ import Security
 enum BrainError: LocalizedError {
     case status(Int)
     case noToken
+    case keychain       // SEC-15: the token couldn't be stored safely, so it isn't kept at all
 
     var errorDescription: String? {
         switch self {
@@ -13,6 +14,7 @@ enum BrainError: LocalizedError {
         case .status(500...599): return "Something went wrong on our side. Please try again in a minute."
         case .status(let code): return "The planner answered with an error (\(code)). Please try again."
         case .noToken: return "Please agree to take part first."
+        case .keychain: return "This phone couldn't store its key safely. Please try again."
         }
     }
 }
@@ -41,6 +43,9 @@ final class BrainClient {
         self.demo = demo
         // The free server sleeps after 15 min idle and takes about a minute to wake (D109), so wait long.
         let config = URLSessionConfiguration.default
+        // SEC-15 (audit, Abram, 12 Nov 2026): a person's answers are never written to a cache on disk
+        config.urlCache = nil
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
         config.timeoutIntervalForRequest = 90
         config.timeoutIntervalForResource = 120
         session = URLSession(configuration: config)
@@ -66,8 +71,10 @@ final class BrainClient {
                                   consent: ConsentBody(version: AppConfig.consentVersion, research: research,
                                                        aiProcessing: false), code: code)
         let out: InstallResponse = try await call("POST", "v1/installs", body)
+        // SEC-15: kept only if the Keychain really stored it; otherwise the next launch would find no token and the
+        // person's answers would be stranded on the server. Saying so lets them try again with a fresh install.
+        guard Keychain.save(out.token) else { throw BrainError.keychain }
         token = out.token
-        Keychain.save(out.token)
         return out.channel
     }
 
@@ -191,13 +198,28 @@ final class BrainClient {
     }
 
     func flights(_ search: FlightSearch) async throws -> FlightResults {
-        if demo { return try Self.bundled("demo_flights") }
+        // m218: the "flightscurrency" screenshot searches the mixed-currency sample (three fares in euros)
+        if demo {
+            let mixed = ["flightscurrency", "flightcurrency"].contains(AppConfig.screen ?? "")
+            return try Self.bundled(mixed ? "demo_flights_mixed" : "demo_flights")
+        }
         return try await call("POST", "v1/trips/flights", search)
     }
 
     func stays(_ search: StaySearch) async throws -> StayResults {
         if demo { return try Self.bundled("demo_stays") }
         return try await call("POST", "v1/trips/stays", search)
+    }
+
+    /// m203: a stay judged against the trip: days from here, the whole cost, nearby dates (sample prices for now).
+    func stayCompare(_ request: StayCompareRequest) async throws -> StayCompare {
+        if demo { return try Self.bundled("demo_stay_compare") }
+        return try await call("POST", "v1/trips/stays/compare", request)
+    }
+
+    func tripLength(_ request: TripLengthRequest) async throws -> TripLength {
+        if demo { return try Self.bundled("demo_trip_length") }
+        return try await call("POST", "v1/me/trips/length", request)
     }
 
     func tripDays(_ request: TripDaysRequest) async throws -> TripDaysResponse {
@@ -284,7 +306,11 @@ final class BrainClient {
 }
 
 /// The install token is a credential, so it lives in the Keychain, not in UserDefaults.
+/// SEC-15 (audit, Abram, 12 Nov 2026): "ThisDeviceOnly", so it never moves to another phone in a backup or a transfer
+/// (a restored phone starts afresh, as a reinstall does). Still readable after the first unlock, as before.
 enum Keychain {
+    private static let accessible = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+
     private static func base(_ account: String) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
          kSecAttrService as String: "days-out.brain",
@@ -294,13 +320,18 @@ enum Keychain {
     /// m176: the token of a "Delete my data" made with no signal, kept until the Brain has deleted it too.
     static let pendingDelete = "pending-delete"
 
-    static func save(_ value: String, account: String = "install-token") {
+    /// True only if the Keychain now holds `value`. An existing item is updated in place, never deleted first, so a
+    /// failure can't lose the token that was there.
+    @discardableResult
+    static func save(_ value: String, account: String = "install-token") -> Bool {
         let item = base(account)
-        SecItemDelete(item as CFDictionary)
+        let change: [String: Any] = [kSecValueData as String: Data(value.utf8), kSecAttrAccessible as String: accessible]
+        let updated = SecItemUpdate(item as CFDictionary, change as CFDictionary)
+        if updated == errSecSuccess { return true }
+        guard updated == errSecItemNotFound else { return false }
         var add = item
-        add[kSecValueData as String] = Data(value.utf8)
-        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-        SecItemAdd(add as CFDictionary, nil)
+        add.merge(change) { _, new in new }
+        return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
     }
 
     static func load(account: String = "install-token") -> String? {
@@ -311,6 +342,8 @@ enum Keychain {
         guard SecItemCopyMatching(query as CFDictionary, &out) == errSecSuccess, let data = out as? Data else {
             return nil
         }
+        // SEC-15: a token saved by an earlier build moves to "this device only", in place (nothing is deleted)
+        _ = SecItemUpdate(base(account) as CFDictionary, [kSecAttrAccessible as String: accessible] as CFDictionary)
         return String(data: data, encoding: .utf8)
     }
 

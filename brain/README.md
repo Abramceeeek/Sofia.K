@@ -12,8 +12,8 @@ The Brain is the FastAPI backend. It holds the moment database, scores each mome
 cd brain
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev]"
 .venv/bin/python -m pytest -q                       # 92 tests
-BRAIN_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.api:app --app-dir src --reload
-# API docs: http://127.0.0.1:8000/docs
+BRAIN_ADMIN_TOKEN=change-me BRAIN_API_DOCS=1 .venv/bin/uvicorn brain.api:app --app-dir src --reload
+# API docs: http://127.0.0.1:8000/docs (only with BRAIN_API_DOCS=1; never set it in Render: they list the admin routes)
 ```
 
 **Settings** (environment variables):
@@ -135,7 +135,7 @@ Run it locally: `CALIBRATION_ADMIN_TOKEN=change-me .venv/bin/uvicorn brain.calib
 | For | Endpoints |
 |---|---|
 | The app | `POST /v1/installs` (no login: consent plus an optional tester code, returns a token) · `GET /v1/onboarding` · `POST /v1/me/swipes` · `/conjoint` · `/answers` · `PUT /v1/me/profile` · `GET /v1/me/weights` · `GET /v1/moments` · `POST /v1/me/plans` · `GET /v1/me/plans` · `POST /v1/me/plans/{id}/feedback` · `POST /v1/me/ratings` (refits δ) · `POST /v1/me/events` · `POST /v1/me/safety` · `DELETE /v1/me` |
-| Abram | `POST /v1/admin/moments/reload` (reports drafts and what they're missing) · `POST /v1/admin/users/{id}/plans` (a curated plan for Test B, Wizard of Oz) · `GET /v1/admin/safety` and `POST /v1/admin/safety/{id}/reply` (a reply the person sees in the app, D118; tracks the "within a few hours" target, D46) · `GET /v1/admin/export` (the Phase 3 data, with no tokens) · `GET /v1/admin/backup` (Stage 1: the sealed backup; the backup token or the admin token) |
+| Abram | `POST /v1/admin/moments/reload` (reports drafts and what they're missing) · `POST /v1/admin/users/{id}/plans` (a curated plan for Test B, Wizard of Oz) · `GET /v1/admin/safety` and `POST /v1/admin/safety/{id}/reply` (a reply the person sees in the app, D118; tracks the "within a few hours" target, D46) · `GET /v1/admin/export` (the Phase 3 data, with no tokens) · `GET /v1/admin/backup` (Stage 1: the sealed backup; the backup token or the admin token) · `GET /v1/admin/audit/foods-avoided` (m233: counts only, never a value) and `POST …/delete` with `{"confirm": "delete"}` (`decisions/foods-avoided-audit.md`) |
 
 **Answering a Help & safety message (D118).** The alert reaches you through the webhook (with the phone or email, if the person left one), and `GET /v1/admin/safety` lists those still waiting. Reply by phone or email if there's a contact, and always in the app too, so the person sees it under Help & safety. Run these in Terminal, with the admin token in an environment variable (never paste it anywhere else):
 

@@ -515,7 +515,7 @@ private struct KnowItem: View {
             Text(title).font(.headline).foregroundStyle(Theme.ink)
             Text(text).font(.subheadline).foregroundStyle(Theme.inkSoft).fixedSize(horizontal: false, vertical: true)
             ForEach(links, id: \.self) { link in
-                if let url = URL(string: link.url) {
+                if let url = SafeLink.https(link.url) {
                     Link(destination: url) {
                         Text("\(link.label) ↗").font(.subheadline).foregroundStyle(Theme.accent)
                     }
@@ -666,16 +666,19 @@ struct TripCreateFlow: View {
     @State private var showAirports = false
     @State private var confirmReplace = false
     let editing: Bool
+    var demoScrollEnd = false   // screenshots only: the bottom of the page (23c)
 
-    init(trip: Trip, editing: Bool, startAt: Int? = nil) {
+    init(trip: Trip, editing: Bool, startAt: Int? = nil, demoScrollEnd: Bool = false) {
         _trip = State(initialValue: trip)
         _step = State(initialValue: startAt ?? (editing ? 1 : 0))
         self.editing = editing
+        self.demoScrollEnd = demoScrollEnd
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     switch step {
@@ -683,7 +686,8 @@ struct TripCreateFlow: View {
                     case 1: WhenStep(trip: $trip)
                     case 2: FromStep(trip: $trip, showAirports: $showAirports)
                     case 3: DaysStep(trip: $trip)
-                    default: FeelStep(trip: $trip)
+                    case 4: FeelStep(trip: $trip)
+                    default: LengthStep(trip: $trip)   // m196: last, as it uses the hours, places a day and feelings
                     }
                 }
                 .padding(.horizontal, 24)
@@ -693,6 +697,11 @@ struct TripCreateFlow: View {
                 .settle(0)
             }
             .scrollBounceBehavior(.basedOnSize)
+            .onAppear {
+                guard demoScrollEnd else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { proxy.scrollTo("pageEnd", anchor: .bottom) }
+            }
+            }
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
@@ -759,7 +768,7 @@ struct TripCreateFlow: View {
         return a == b && (old.adults != new.adults || old.origin != new.origin)
     }
 
-    static let questions = 5
+    static let questions = 6
 
     private var buttonTitle: String {
         if step < Self.questions - 1 { return "Continue" }
@@ -1271,6 +1280,84 @@ struct MenuRow: View {
     }
 }
 
+/// m196: "How long should I stay?" From the person's top-ranked places at their pace (brain/src/brain/triplength.py).
+/// An estimate of how much there is for them, never a limit: their dates stay unless they pick another length.
+/// Asked once, with the dates they chose; picking a length only changes the nights.
+struct LengthStep: View {
+    @Environment(AppModel.self) private var model
+    @Binding var trip: Trip
+    @State private var answer: TripLength?
+    @State private var failed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Eyebrow("Your time in \(trip.city)")
+            if let a = answer {
+                PageTitle(text: a.headline, font: Theme.h1)
+                Text(a.why)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let short = a.short {
+                    Text(short).foregroundStyle(Theme.accent).fixedSize(horizontal: false, vertical: true)
+                } else if let spare = a.spareDays, spare > 0 {
+                    Text("Your dates give you \(spare) more day\(spare == 1 ? "" : "s") than this, to use as you like.")
+                        .foregroundStyle(Theme.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                SectionLabel(text: "How long?")
+                    .padding(.top, 8)
+                ForEach(a.options, id: \.days) { o in
+                    OptionTile(label: "\(o.days) day\(o.days == 1 ? "" : "s") · \(o.label)\(o.yours ? " · your dates" : "")",
+                               sub: o.line, on: trip.nights == o.days, offFill: Theme.surface, offStroke: .clear) {
+                        trip.nights = o.days
+                    }
+                }
+                if !a.extra.isEmpty {
+                    SectionLabel(text: "With longer, you could")
+                        .padding(.top, 8)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(a.extra, id: \.kind) { e in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(e.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                                Text(e.line)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Theme.inkSoft)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .surfaceCard(padding: 16)
+                }
+                Text(a.note + " Your arrival and departure days count as one between them.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+                    .id("pageEnd")
+            } else if failed {
+                PageTitle(text: "How long?", font: Theme.h1)
+                Text("We couldn't work this out just now. Your dates stay as they are.")
+                    .foregroundStyle(Theme.inkSoft)
+            } else {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Looking at what there is for you…").foregroundStyle(Theme.muted)
+                }
+            }
+        }
+        .task {
+            guard answer == nil else { return }
+            do {
+                answer = try await model.client.tripLength(TripLengthRequest(
+                    destination: trip.destination, nights: trip.nights, feelings: trip.feelings,
+                    dayStart: trip.dayFrom, dayEnd: trip.dayTo, stopsPerDay: trip.placesPerDay))
+            } catch {
+                failed = true
+            }
+        }
+    }
+}
+
 struct FeelStep: View {
     @Binding var trip: Trip
 
@@ -1491,11 +1578,11 @@ struct TripOverview: View {
             return "Chosen for other dates: check it on \(f.provider), or choose again"
         }
         if let f = trip.flight {
-            return "\(f.provider) · \(Money.whole(f.price))" + (f.sample == true ? " · a sample price, not a real fare" : "")
+            return "\(f.provider) · \(f.money)" + (f.sample == true ? " · a sample price, not a real fare" : "")
         }
         guard let origin = trip.origin else { return "Choose where you're flying from" }
         if model.book.resultsFor == trip.id, let r = model.book.flights, let low = r.facets.price?.first {
-            return "From \(Money.whole(low)) · \(r.total) options from \(origin.city)"
+            return "From \(r.facets.money(low)) · \(r.total) options from \(origin.city)"
         }
         return "Search flights from \(origin.city)"
     }
@@ -1505,10 +1592,10 @@ struct TripOverview: View {
             return "Chosen for other dates: check it on \(s.provider), or choose again"
         }
         if let s = trip.stay {
-            return "\(s.provider) · \(Money.whole(s.price)) for \(trip.lengthLabel)" + (s.sample == true ? " · a sample price" : "")
+            return "\(s.provider) · \(s.money) for \(trip.lengthLabel)" + (s.sample == true ? " · a sample price" : "")
         }
         if model.book.resultsFor == trip.id, let r = model.book.stays, let low = r.facets.priceNight?.first {
-            return "From \(Money.whole(low)) a night · \(r.total) places"
+            return "From \(r.facets.money(low)) a night · \(r.total) places"
         }
         return "Hotels, flats and hostels, from where your days happen"
     }
@@ -1615,10 +1702,10 @@ struct TripTotal: View {
         if trip.needFlight {
             if let f = trip.flight, !trip.fits(f) {   // journey audit: chosen for other dates, so not counted
                 out.append(("Flight", "for other dates", nil))
-            } else if let f = trip.flight {
-                out.append(("Flight", Money.whole(f.price), f.price))
-            } else if let low = flights?.facets.price?.first {
-                out.append(("Flight", "from \(Money.whole(low))", low))
+            } else if let f = trip.flight {   // m218: a fare in another currency is shown, never added to pounds
+                out.append(("Flight", f.money, f.inPounds ? f.price : nil))
+            } else if let r = flights, let low = r.facets.price?.first {
+                out.append(("Flight", "from \(r.facets.money(low))", (r.facets.currency ?? "GBP") == "GBP" ? low : nil))
             } else {
                 out.append(("Flight", "not chosen yet", nil))
             }
@@ -1627,10 +1714,10 @@ struct TripTotal: View {
             if let s = trip.stay, !trip.fits(s) {
                 out.append(("Stay · \(trip.lengthLabel)", "for other dates", nil))
             } else if let s = trip.stay {
-                out.append(("Stay · \(trip.lengthLabel)", Money.whole(s.price), s.price))
-            } else if let low = stays?.facets.priceNight?.first {
+                out.append(("Stay · \(trip.lengthLabel)", s.money, s.inPounds ? s.price : nil))
+            } else if let r = stays, let low = r.facets.priceNight?.first {
                 let total = low * Double(trip.nights)
-                out.append(("Stay · \(trip.lengthLabel)", "from \(Money.whole(total))", total))
+                out.append(("Stay · \(trip.lengthLabel)", "from \(r.facets.money(total))", (r.facets.currency ?? "GBP") == "GBP" ? total : nil))
             } else {
                 out.append(("Stay · \(trip.lengthLabel)", "not chosen yet", nil))
             }
@@ -1641,6 +1728,14 @@ struct TripTotal: View {
             out.append(("Days out (\(days.count) planned)", Money.whole(total), total))
         }
         return out
+    }
+
+    /// m218: a price in another currency is listed, never added to the pounds total.
+    private var apart: Bool {
+        let chosen = [trip.needFlight ? trip.flight : nil, trip.needStay ? trip.stay : nil].compactMap { $0 }
+        let searched = (trip.needFlight && trip.flight == nil && (flights?.facets.currency ?? "GBP") != "GBP")
+            || (trip.needStay && trip.stay == nil && (stays?.facets.currency ?? "GBP") != "GBP")
+        return chosen.contains { trip.fits($0) && !$0.inPounds } || searched
     }
 
     var body: some View {
@@ -1654,6 +1749,12 @@ struct TripTotal: View {
             }
             if trip.flight?.sample == true || trip.stay?.sample == true || flights?.source == "sample" || stays?.source == "sample" {
                 Text("Includes sample prices: the real ones show once live search is on.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if apart {
+                Text("Prices in another currency are listed below, not added to this total.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -1723,8 +1824,16 @@ struct TripDayView: View {
                             if day.before != nil || !day.journeys("arrive").isEmpty {
                                 SectionLabel(text: "From your stay").padding(.top, 4)
                             }
-                            ForEach(plan.stops) { stop in TripDayStop(stop: stop) }
-                            if let end = day.window?.end, let last = plan.stops.last,   // journey round 2: free time
+                            ForEach(plan.stops) { stop in
+                                if stop.mine != nil { MyTimeRow(stop: stop) } else { TripDayStop(stop: stop) }
+                            }
+                            ForEach(day.mine?.filter { !$0.planned } ?? [], id: \.self) { t in   // m200
+                                Text("\(t.kind == "plans" ? "Your plans" : "Free time") at \(t.start)–\(t.end) fall outside the hours planned for this day, so the plan doesn't go around them.")
+                                    .font(.footnote)
+                                    .foregroundStyle(Theme.muted)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            if let end = day.window?.end, let last = plan.stops.last, last.mine == nil,   // journey round 2: free time
                                AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
                                 FreeTimeRow(from: last.depart, to: end, canAdd: trip.placesPerDay < 6) {
                                     Task {
@@ -1751,6 +1860,14 @@ struct TripDayView: View {
                             PrimaryButton(title: model.busy ? "Planning…" : "Plan this day", disabled: model.busy) {
                                 Task { await model.planDay(tripId, index) }
                             }
+                        } else if let day, day.freeDay == true {   // m200: "a day that's yours"
+                            Text("Nothing is planned, as you chose. Rest, meet someone, wander: it's your time.")
+                                .foregroundStyle(Theme.inkSoft)
+                                .padding(20)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, lineWidth: 1))
+                            ForEach(day.journeys("leave"), id: \.self) { JourneyCard(leg: $0) }
+                            SecondaryButton(title: "Change this day", icon: "clock.arrow.circlepath") { changing = day }
                         } else {
                             ForEach(day?.journeys("leave") ?? [], id: \.self) { JourneyCard(leg: $0) }
                             if day?.before == nil {
@@ -1802,10 +1919,12 @@ struct ChangeDaySheet: View {
     @State private var from: String
     @State private var to: String
     @State private var places: Int
+    @State private var own: DayTime   // m200: time for yourself
 
     init(trip: Trip, day: TripDayOut) {
         self.trip = trip
         self.day = day
+        _own = State(initialValue: trip.own(day.index))
         // the arrival and leaving days keep the person's own hours: the journeys set their real start and end
         _from = State(initialValue: day.kind == "arrive" ? trip.dayFrom : (day.window?.start ?? trip.dayFrom))
         _to = State(initialValue: day.kind == "leave" ? trip.dayTo : (day.window?.end ?? trip.dayTo))
@@ -1822,6 +1941,7 @@ struct ChangeDaySheet: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Eyebrow("Day \(day.index + 1) · \(Dates.shortDay(day.date))")
@@ -1850,6 +1970,28 @@ struct ChangeDaySheet: View {
                             .font(.subheadline)
                             .foregroundStyle(Theme.accent)
                     }
+                    // m200 (product direction, step 2): time that's theirs, alongside the places
+                    SectionLabel(text: "Time for yourself").padding(.top, 8).id("own")
+                    OwnToggle(title: "Keep this day free", line: "Nothing planned: rest, meet someone, or wander.",
+                              on: $own.freeDay)
+                    if !own.freeDay {
+                        OwnToggle(title: "A relaxed day", line: "One place fewer, with longer at each.", on: $own.relaxed)
+                        ForEach(own.mine.indices, id: \.self) { k in   // guarded: a removed block may still be drawn once
+                            MyTimeEditor(time: Binding(get: { k < own.mine.count ? own.mine[k] : MyTime(kind: "free", start: from, end: to) },
+                                                       set: { if k < own.mine.count { own.mine[k] = $0 } }),
+                                         dayFrom: from, dayTo: to) { if k < own.mine.count { own.mine.remove(at: k) } }
+                        }
+                        if own.mine.count < 2 {
+                            HStack(spacing: 10) {
+                                Chip(title: "+ Your plans", on: false, height: 44) { add("plans") }
+                                Chip(title: "+ Free time", on: false, height: 44) { add("free") }
+                            }
+                            Text("Meeting someone, a booking, or an hour to yourself: the day is planned around it.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                     Text(note)
                         .font(.footnote)
                         .foregroundStyle(Theme.muted)
@@ -1858,12 +2000,19 @@ struct ChangeDaySheet: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
             }
+            .onAppear {   // CI screenshots only (25d): the new section
+                guard AppConfig.demo, AppConfig.screen == "daychangemine" else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { proxy.scrollTo("own", anchor: .top) }
+            }
+            }
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(title: model.busy ? "Planning…" : "Plan this day again", disabled: model.busy || tooShort) {
+            PrimaryButton(title: model.busy ? "Planning…" : (own.freeDay ? "Keep this day free" : "Plan this day again"),
+                          disabled: model.busy || (tooShort && !own.freeDay) || badTimes) {
                 Task {
-                    if await model.changeTripDay(trip.id, day.index, from: from, to: to, places: places) { dismiss() }
+                    if await model.changeTripDay(trip.id, day.index, from: from, to: to, places: places,
+                                                 own: own) { dismiss() }
                 }
             }
             .padding(.horizontal, 24)
@@ -1872,17 +2021,149 @@ struct ChangeDaySheet: View {
         }
     }
 
+    /// m200: a block that ends before it starts can't be planned around.
+    private var badTimes: Bool { !own.freeDay && own.mine.contains { Self.minutes($0.end) <= Self.minutes($0.start) } }
+
+    /// m200: a new block, inside the day's hours: plans in the early afternoon, free time at the end of the day.
+    private func add(_ kind: String) {
+        let lo = Self.minutes(from), hi = Self.minutes(to)
+        let start = kind == "plans" ? min(max(lo, 13 * 60), max(lo, hi - 60)) : max(lo, hi - 90)
+        let end = kind == "plans" ? min(hi, start + 120) : hi
+        own.mine.append(MyTime(kind: kind, start: Self.hhmm(start), end: Self.hhmm(end)))
+    }
+
+    static func hhmm(_ m: Int) -> String { String(format: "%02d:%02d", m / 60, m % 60) }
+
     private var note: String {
         switch day.kind {
-        case "arrive": return "This day still starts once you've arrived. Busy in the middle of the day? Choose the part that's free."
-        case "leave": return "This day still ends in time for your journey home. Busy in the middle of the day? Choose the part that's free."
-        default: return "Busy in the middle of the day? Choose the part that's free. Once it's your day, you can also swap a stop."
+        // m200: plans in the middle of the day go in "Time for yourself", so there's no need to pick a part
+        case "arrive": return "This day still starts once you've arrived."
+        case "leave": return "This day still ends in time for your journey home."
+        default: return "Once it's your day, you can also swap a stop."
         }
     }
 
     static func minutes(_ hhmm: String) -> Int {
         let p = hhmm.split(separator: ":").compactMap { Int($0) }
         return p.count == 2 ? p[0] * 60 + p[1] : 0
+    }
+}
+
+/// m200: a switch for the day's own time, on the surface.
+struct OwnToggle: View {
+    let title: String
+    let line: String
+    @Binding var on: Bool
+
+    var body: some View {
+        Toggle(isOn: $on) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).foregroundStyle(Theme.ink)
+                Text(line)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .tint(Theme.amberDeep)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+/// m200: one block of the person's own time: what it is, from when, until when.
+struct MyTimeEditor: View {
+    /// m201 (Abram, 7 Nov): where the plans are, if they say. Not decided leaves time either side.
+    static let places = ["near", "elsewhere", "unknown"]
+    static func placeName(_ key: String) -> String {
+        ["near": "Near one of the day's places", "elsewhere": "Somewhere else"][key] ?? "Not decided yet"
+    }
+
+    @Binding var time: MyTime
+    let dayFrom: String
+    let dayTo: String
+    let remove: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("\(time.start)–\(time.end)").font(Theme.serif(19, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                    .monospacedDigit()
+                Spacer()
+                QuietButton("Remove", color: Theme.accent, action: remove)
+            }
+            HStack(spacing: 10) {
+                Chip(title: "Your plans", on: time.kind == "plans", height: 40) { time.kind = "plans" }
+                Chip(title: "Free time", on: time.kind == "free", height: 40) { time.kind = "free" }
+            }
+            // the two times as one group, as on Android and in "Your days" (Abram, 7 Nov: differences on purpose only)
+            VStack(spacing: 0) {
+                TimeMenu(label: "From", time: $time.start, options: HalfHours.from(6, to: 23))
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+                TimeMenu(label: "Until", time: $time.end, options: HalfHours.from(6, to: 23))
+            }
+            .background(Theme.background, in: RoundedRectangle(cornerRadius: 14))
+            if time.kind == "plans" {   // m201 (Abram, 7 Nov): optional; not said means we leave time either side
+                Menu {
+                    Picker("Where are your plans?", selection: Binding(get: { time.location ?? "unknown" },
+                                                                       set: { time.location = $0 })) {
+                        ForEach(MyTimeEditor.places, id: \.self) { key in Text(MyTimeEditor.placeName(key)).tag(key) }
+                    }
+                } label: {
+                    MenuRow(label: "Where are your plans?", value: MyTimeEditor.placeName(time.location ?? "unknown"))
+                }
+                .background(Theme.background, in: RoundedRectangle(cornerRadius: 14))
+                if time.overlapsLunch {
+                    Toggle(isOn: Binding(get: { time.meal ?? false }, set: { time.meal = $0 })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Will you eat during this time?").foregroundStyle(Theme.ink)
+                            Text("Then there's no separate lunch stop.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                        }
+                    }
+                    .tint(Theme.amberDeep)
+                }
+            }
+            if ChangeDaySheet.minutes(time.end) <= ChangeDaySheet.minutes(time.start) {
+                Text("It needs to end after it starts.").font(.subheadline).foregroundStyle(Theme.accent)
+            } else if ChangeDaySheet.minutes(time.start) < ChangeDaySheet.minutes(dayFrom)
+                        || ChangeDaySheet.minutes(time.end) > ChangeDaySheet.minutes(dayTo) {
+                Text("Outside \(dayFrom)–\(dayTo), so the plan won't go around it.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+            }
+        }
+        .surfaceCard(padding: 16)
+    }
+}
+
+/// m200: the person's own time in a trip day: its times, what it is, and where we've assumed it is.
+struct MyTimeRow: View {
+    let stop: Stop
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: stop.mine == "plans" ? "person.2" : "sun.max")
+                .font(.body)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 24)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(stop.arrive)–\(stop.depart)").font(.subheadline.monospacedDigit()).foregroundStyle(Theme.muted)
+                Text(stop.title).font(Theme.serif(19, relativeTo: .title3)).foregroundStyle(Theme.ink)
+                Text(stop.what)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.outline, style: StrokeStyle(lineWidth: 1, dash: [5, 4])))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -2123,10 +2404,12 @@ struct TripDemoScreen: View {
             if let pair = Self.pair("demo_pair") { PairCompare(pair: pair, demoQuestions: true).background(Theme.background) }
         case "pairreveal":                                                                // 18
             if let pair = Self.pair("demo_pair_done") { PairReveal(pair: pair) }
-        case "tripwhere", "tripwhen", "tripfrom", "tripdays", "tripfeel":                 // 20-23, 22a
+        case "tripwhere", "tripwhen", "tripfrom", "tripdays", "tripfeel", "triplength", "triplength2":   // 20-23, 22a, 23b-c (m196)
             if let trip = model.trips.first {
                 TripCreateFlow(trip: trip, editing: false,
-                               startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4][name] ?? 0)
+                               startAt: ["tripwhere": 0, "tripwhen": 1, "tripfrom": 2, "tripdays": 3, "tripfeel": 4,
+                                         "triplength": 5, "triplength2": 5][name] ?? 0,
+                               demoScrollEnd: name == "triplength2")
             }
         case "trip", "tripday":                                                           // 24, 25
             LivingHome().onAppear {
@@ -2149,7 +2432,11 @@ struct TripDemoScreen: View {
             if let trip = model.trips.first {
                 NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: true) }
             }
-        case "flights", "flightfilters", "stays", "staysmap", "stayfilters":              // 26, 27, 29-31
+        case "tripdaymine", "daychangemine":                                              // 25c, 25d (m200): own time
+            if let trip = model.trips.first {
+                NavigationStack { TripDayView(tripId: trip.id, index: 1, openChange: name == "daychangemine") }
+            }
+        case "flights", "flightfilters", "flightscurrency", "stays", "staysmap", "stayfilters":   // 26, 27, 26b (m218), 29-31
             LivingHome().onAppear {
                 model.book.segment = name.hasPrefix("flight") ? .flights : .stays
                 model.book.stayMap = name == "staysmap"
@@ -2168,8 +2455,15 @@ struct TripDemoScreen: View {
                     }
                     .onAppear { if name != "flight" { model.book.handoff = Self.handoff(f, back: name == "handoffback") } }
             }
-        case "stay":                                                                      // 32
-            if let s = model.book.stays?.results.first { NavigationStack { StayDetailView(stay: s) } }
+        case "flightcurrency":                                                            // 28c (m231)
+            // a fare in euros: its price in its own currency, and under it the estimate in pounds with the rate's date
+            if let f = model.book.flights?.results.first(where: { $0.estimate != nil }) {
+                NavigationStack { FlightDetailView(flight: f) }
+            }
+        case "stay", "stayfortrip":                                                       // 32, 32b (m203)
+            if let s = model.book.stays?.results.first {
+                NavigationStack { StayDetailView(stay: s, scrollToTrip: name == "stayfortrip") }
+            }
         case "you": LivingHome().onAppear { model.path.append(TripDest.you) }            // 33 (D131: from the menu)
         case "hometoday", "homeafter":                                                    // 19b, 19c (D131)
             LivingHome().onAppear {

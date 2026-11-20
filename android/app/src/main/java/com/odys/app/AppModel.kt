@@ -118,6 +118,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     val prefs = Prefs(app)
     val files = Files(app)
     val tokens = TokenStore(app)
+    val connectivity = Connectivity(app)   // m228: whether there's signal, for "what's saved on this phone"
     val client = BrainClient(AppConfig.BASE_URL, tokens)
     val location = Location(app, prefs)
     val reminders = Reminders(app)
@@ -151,6 +152,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var showCreate by mutableStateOf(false)
     var editingTrip by mutableStateOf<Trip?>(null)
     var editStep by mutableStateOf<Int?>(null)
+    /** m196: the last "How long should I stay?" answer, with what was asked (the screenshots hand one in). */
+    var tripLength by mutableStateOf<Pair<TripLengthRequest, TripLength>?>(null)
+    /** m203: the last "For your trip" answer, by stay (the screenshots hand one in). */
+    var stayCompare by mutableStateOf<Pair<String, StayCompare>?>(null)
     val book = BookState()
 
     // Build 2
@@ -163,6 +168,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var remindersOn by mutableStateOf(prefs.bool("remindersOn"))
     var reminderAsked by mutableStateOf(prefs.bool("reminderAsked"))
     var showNow by mutableStateOf(false)
+    var screenSaved = false   // screenshots only (m228): "Now" opens with what's saved on this phone
     var nowIndex by mutableStateOf(0)
 
     var why by mutableStateOf<List<String>>(emptyList())
@@ -198,11 +204,19 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var lastRequest by mutableStateOf<PlanRequest?>(null)
 
     val isVisitor: Boolean get() = profile.based == "abroad"
-    val stepTitle: String get() = if (step == Step.Places && isVisitor) "Kinds of places" else step.title
+    /** m220: who answers kinds of places rather than named London places: visitors, and everyone once the Brain says
+     *  "kinds" (after the friends' round). Only the places step follows this; the cohort stays [isVisitor]. */
+    val usesKinds: Boolean get() = isVisitor || onboarding?.placesMode == "kinds"
+    val stepTitle: String get() = if (step == Step.Places && usesKinds) "Kinds of places" else step.title
 
     init {
         if (client.token == null) {
             route = Route.Welcome
+            // m226: trips belong to the traveller. With no token (one that can't be read, e.g. a lost Keystore key)
+            // the trips on this phone are still theirs: kept in memory, so the next save adds to them instead of
+            // replacing the file. "Delete my data" removes the file first, so it isn't this.
+            trips = files.load(ListSerializer(Trip.serializer()), "trips.json") ?: emptyList()
+            currentTripId = trips.firstOrNull()?.id
         } else {
             route = if (prefs.bool("onboardingDone")) Route.Home else Route.Onboarding
             step = prefs.int("onboardingStep")?.let { Step.values().getOrNull(it) } ?: Step.Based
@@ -299,7 +313,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     private fun questionsIn(s: Step): Int = when (s) {
         Step.Based, Step.BestHour, Step.Why -> 1
-        Step.Places -> if (isVisitor) (onboarding?.categoryCards?.size ?: 0) else (onboarding?.swipePlaces?.size ?: 0)
+        Step.Places -> if (usesKinds) (onboarding?.categoryCards?.size ?: 0) else (onboarding?.swipePlaces?.size ?: 0)
         Step.ThisOrThat -> onboarding?.conjointTasks?.size ?: 0
         Step.Learned -> 0
     }
@@ -538,7 +552,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val done = current.stops.take(upTo).filter { it.rateable }.map { it.momentId }
         val skip = done.toMutableList()
         if (reason == "closed" && nowIndex < current.stops.size) skip += current.stops[nowIndex].momentId
-        val left = current.stops.size - upTo
+        // m200: the person's own time isn't one of the stops to plan; it comes back from `mine` if it's still ahead
+        val left = current.stops.drop(upTo).count { it.mine == null }
         val fromHere = if (location.usable) location.roundedHere() else null
         val at = if (nowIndex < current.stops.size) current.stops[nowIndex] else current.stops.lastOrNull()
         val request = PlanRequest(
@@ -548,6 +563,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             stops = maxOf(2, minOf(6, if (reason == "tired") left - 1 else left)), familiar = false,
             exclude = (old.exclude + skip).toSet().sorted(), feelings = old.feelings,
             conditions = if (reason == "rain") PlanConditions(0.9) else null,
+            mine = old.mine, relaxed = old.relaxed,
         )
         val tripId = currentTripDay()?.first?.id
         fetchPlan(request, sameDay = false)
@@ -800,8 +816,9 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun clearLocal() {
         for (k in listOf("onboardingDone", "improved", "morePlacesDone", "moreTasksDone", "onboardingStep", "ratedOnce",
             "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone", "testerCode",
-            "testBPlanId")) prefs.remove(k)
-        for (k in prefs.keys()) if (k.startsWith("ratings.") || k.startsWith("nowIndex.") || k.startsWith("arrived.")) prefs.remove(k)
+            "testBPlanId", "refCode.joined")) prefs.remove(k)   // SEC-15 (audit): a share code they joined through
+        for (k in prefs.keys()) if (k.startsWith("ratings.") || k.startsWith("nowIndex.") || k.startsWith("arrived.") ||
+            k.startsWith("dayFeedback.")) prefs.remove(k)   // SEC-15 (audit): each day's "worth it" and "again" answers
         for (f in listOf("plan.json", "request.json", "profile.json", "trips.json", "pending_ratings.json", "handoff.json")) {
             files.delete(f)
         }
@@ -917,6 +934,13 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     val currentTrip: Trip? get() = trips.firstOrNull { it.id == currentTripId } ?: trips.firstOrNull()
 
+    /** m228: the trip happening today (first day to last), else the current one: whose stay and journey the offline
+     *  view shows. */
+    val tripForToday: Trip? get() {
+        val today = Dates.today()
+        return trips.firstOrNull { it.startDate <= today && today <= it.endDate } ?: currentTrip
+    }
+
     fun findTrip(id: String): Trip? = trips.firstOrNull { it.id == id }
 
     fun save(trip: Trip) {
@@ -1012,7 +1036,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val (arrive, leave) = trip.ends
         return TripDaysRequest(trip.destination, trip.start, trip.nights, trip.feelings, trip.stay?.point,
             if (trip.stay == null) null else "your stay", days, exclude, hours?.first ?: trip.dayFrom,
-            hours?.second ?: trip.dayTo, hours?.third ?: trip.placesPerDay, trip.travelLight, arrive, leave)
+            hours?.second ?: trip.dayTo, hours?.third ?: trip.placesPerDay, trip.travelLight, arrive, leave,
+            personal = (trip.personal ?: emptyList()).filter { !it.isEmpty })
     }
 
     /** "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and plan again. */
@@ -1022,7 +1047,9 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val window = day.window ?: DayWindow("10:00", "18:00", dayPlan.stops.size)
         val request = PlanRequest(trip.stay?.point ?: AppConfig.START, trip.daysFrom ?: AppConfig.START_NAME,
             window.start, window.end, day.date, maxOf(2, minOf(window.stops, 6)), false,
-            exclude = trip.used.filter { it !in mine }, feelings = trip.feelings.ifEmpty { null })
+            exclude = trip.used.filter { it !in mine }, feelings = trip.feelings.ifEmpty { null },
+            // m200: the day's own time and pace come too, so swapping a stop or planning again never loses them
+            mine = trip.own(day.index).mine.ifEmpty { null }, relaxed = trip.own(day.index).relaxed.takeIf { it })
         plan = dayPlan
         lastRequest = request
         val r = prefs.ratings(dayPlan.id)
@@ -1101,12 +1128,16 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** One day planned again at the hours the person is free and with their places. */
-    suspend fun changeTripDay(tripId: String, index: Int, from: String, to: String, places: Int): Boolean {
-        val trip = findTrip(tripId) ?: return false
+    suspend fun changeTripDay(tripId: String, index: Int, from: String, to: String, places: Int,
+                              own: DayTime? = null): Boolean {
+        val found = findTrip(tripId) ?: return false
+        // m200: the day's own time is kept with the trip, so a re-plan of every day keeps it too
+        val trip = if (own == null) found else found.copy(
+            personal = (found.personal ?: emptyList()).filter { it.day != index } + listOfNotNull(own.takeIf { !it.isEmpty }))
         val old = trip.days.firstOrNull { it.index == index }
-        val own = ((old?.plan?.stops ?: emptyList()) + (old?.before?.stops ?: emptyList()))
+        val kept = ((old?.plan?.stops ?: emptyList()) + (old?.before?.stops ?: emptyList()))
             .filter { it.rateable }.map { it.base }.toSet()
-        val request = daysRequest(trip, listOf(index), trip.used.filter { it !in own }, Triple(from, to, places))
+        val request = daysRequest(trip, listOf(index), trip.used.filter { it !in kept }, Triple(from, to, places))
         var ok = false
         run {
             val out = client.tripDays(request)
@@ -1117,7 +1148,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             val was = old?.plan
             if (was != null && plan?.id == was.id && new.plan != null) useDay(t, new)
             client.event("trip_day_changed", mapOf("day" to "${index + 1}", "from" to from, "to" to to,
-                "places" to "$places"))
+                "places" to "$places",
+                // m200: whether the day keeps time for them, never what for
+                "own_time" to "${own?.mine?.size ?: 0}", "free_day" to "${own?.freeDay ?: false}",
+                "relaxed" to "${own?.relaxed ?: false}"))
             ok = true
         }
         return ok

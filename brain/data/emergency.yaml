@@ -1,0 +1,78 @@
+# m236 (Abram, m234): each country's emergency numbers, from that country's own official pages, with the date they
+# were read. The offline pack shows the trip's country; a country that isn't here says plainly that ODYS hasn't checked
+# its numbers, and never borrows another country's. Read 10 Nov 2026.
+#
+# GB keeps Help & safety's own words (both apps bundle them), so the pack and Help & safety say the same thing.
+countries:
+  GB:
+    name: the UK
+    checked: "2026-11-10"
+    lines:
+      - title: Emergency
+        line: "If you or someone else is in danger or hurt, call 999."
+        number: "999"
+        source: https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-call-999/
+        note: "The NHS page: \"999 is for life-threatening emergencies\". Its review date (3 Feb 2026) has passed."
+      - title: Urgent medical help that isn't an emergency
+        line: "NHS 111, by phone or online."
+        number: "111"
+        source: https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-use-111/
+        note: "\"Call 111 and ask for an interpreter.\" Its review date (14 Nov 2025) has passed."
+      - title: If you need to talk
+        line: "Samaritans, free, 24 hours: 116 123."
+        number: "116 123"
+        source: https://www.samaritans.org/how-we-can-help/contact-samaritan/
+        note: "\"call us free any time, from any phone, on 116 123\""
+  FR:
+    name: France
+    checked: "2026-11-10"
+    lines:
+      - title: Emergency, anywhere in the EU
+        line: "112: the European emergency number, free."
+        number: "112"
+        source: https://digital-strategy.ec.europa.eu/en/policies/112
+        note: "\"available everywhere in the EU, free of charge\" (page updated 5 Nov 2026)"
+      - title: Medical emergency
+        line: "15: SAMU, emergency medical help."
+        number: "15"
+        source: https://www.service-public.gouv.fr/particuliers/actualites/A17758?lang=en
+        note: "Service-Public's list of free emergency numbers (updated 18 Oct 2024; the French page is authoritative)"
+      - title: Police
+        line: "17: police or gendarmerie."
+        number: "17"
+        source: https://www.service-public.gouv.fr/particuliers/actualites/A17758?lang=en
+      - title: Fire
+        line: "18: firefighters."
+        number: "18"
+        source: https://www.service-public.gouv.fr/particuliers/actualites/A17758?lang=en
+      - title: Deaf or hard of hearing
+        line: "114: by text, app or online."
+        number: "114"
+        source: https://www.service-public.gouv.fr/particuliers/actualites/A17758?lang=en
+  NL:
+    name: the Netherlands
+    checked: "2026-11-10"
+    lines:
+      - title: Emergency
+        line: "112: when every second counts (police, fire, ambulance)."
+        number: "112"
+        source: https://www.politie.nl/en/information/i-am-on-holiday-in-the-netherlands-and-i-want-to-inform-the-police.html
+        note: "Dutch police: \"Emergency: 112\". The EU page: 112 is free everywhere in the EU"
+      - title: Police, not urgent
+        line: "0900-8844: the police's general number."
+        number: "0900-8844"
+        source: https://www.politie.nl/en/information/i-am-on-holiday-in-the-netherlands-and-i-want-to-inform-the-police.html
+  BE:
+    name: Belgium
+    checked: "2026-11-10"
+    lines:
+      - title: Ambulance or fire
+        line: "112: ambulance and fire service."
+        number: "112"
+        source: https://securitecivile.be/en/what-do-emergency-centres-112-do
+        note: "\"112 for ambulance and fire department\"; police.be refused automated reading (403)"
+      - title: Police
+        line: "101: police."
+        number: "101"
+        source: https://securitecivile.be/en/what-do-emergency-centres-112-do
+        note: "\"101 for police\""

@@ -24,6 +24,13 @@
 5. **The whole cost and the whole day.** The cheapest flight or the nearest hotel isn't always the best for this trip.
 6. **Say what we don't know.** No invented facts: unverified halal status, prices or opening hours are labelled as such. No price predictions.
 
+**Every major recommendation is checked three ways (Abram, 6 Nov; m199).** Automated tests answer only part of the first.
+1. **Is it logically reasonable?** Run it on realistic simulated people and look at the spread of results, not one output. Read what a person would see.
+2. **Do people prefer it?** Tested with real users against an alternative, as Test B does for day plans.
+3. **Does it lead to a better real experience?** Measured afterwards: the ratings, "worth what you spent", "would you do it again".
+
+Trip length is at step 1. The 75% "strong match" line and the suggested lengths still need steps 2 and 3.
+
 ## A. What works today (code on `main`, 6 Nov)
 
 - **A day out in London:** a short onboarding (where you're based, a great moment, feelings, 6 places, 5 this-or-that choices) builds a personal plan from **49 checked London moment cards**. Each card has the way in, best time, what to notice, cost and why it was picked. Swap a stop, plan again, map view, free time shown in the plan.
@@ -60,8 +67,18 @@ Not doing: price forecasts, a chat that writes itineraries, a social feed, handl
 | 0 | Test B: add "which plan would be easier to actually do?"; list who chose the generic plan, with their reasons, in the report; then freeze `main` | ~2 h | 0.25 h | Before the round starts |
 | 1 | Trip length | ~8 h | 0.5 h | Nothing new |
 | 2 | Personal time in a day | ~5 h | 0.5 h | Nothing new |
-| 3 | Stay prices across dates; watched stays; school holidays | ~10 h | 0.5 h + adding the live LiteAPI key in Render | Live prices (sandbox ones aren't real) |
+| 3 | Stay prices across dates; watched stays; school holidays | ~10 h | 0.5 h + the live LiteAPI key in a **separate staging Brain**, never the frozen one | Live prices (sandbox ones aren't real) |
 | 4 | Food preferences | research ~2 h, consent and DPIA draft ~2 h, then build | decides the lawful basis and signs off the DPIA | See below |
+
+**Revised order (Abram, 7 Nov; m201):** 1 finish free time and its visual review (done 7 Nov: where the plans are, the meal question, the same grouping on both phones); 2 hotel prices across nearby dates and watched stays; 3 the food preference architecture and halal-data research; 4 a review of the trip-length screen; 5 the foundation for several places in one trip; 6 coverage of destinations and experiences worldwide, place by place where the data is checked; 7 budget across the whole trip. The friends' round runs on the frozen builds meanwhile.
+
+**Travel timing (Abram, 7 Nov; m202, m203):** stay prices are one part of a wider feature that shows how the choice of dates changes the trip, in three parts: **your calendar** (your home country's school and public holidays, and when you're free), **the destination's calendar** (its holidays, festivals, major events and seasons), and **travel costs** (stays and flights on your dates and the dates around them, and what's available). **Bank holidays and school holidays are separate kinds of data**: a bank holiday doesn't say when schools are closed. **Two calendars, never mixed:** the traveller's home calendar (a family from England meets more demand in English school holidays) and the destination's (its own holidays, festivals and events). Each entry carries its country, its region or local authority, its dates, its source, when it was last checked, and its exceptions (academies and some schools set their own dates). England first (Abram's own trip), then elsewhere. Official sources found (7 Nov): GOV.UK's bank holidays as data (https://www.gov.uk/bank-holidays.json: England and Wales, Scotland, Northern Ireland, 2019-2028); term dates only from each council (https://www.gov.uk/school-term-holiday-dates gives none itself).
+
+**Order from here (Abram, 7 Nov, second review):** 1 free time finished, with visual parity; 2 the stay comparison screens; 3 the bank holiday calendar; 4 LiteAPI's written clarification (Abram reviews the email, then sends it); 5 food preferences and halal-data research; 6 the architecture for several places in one trip; 7 discovering destinations worldwide. No price-index calls (they cost money) and no production dependency on LiteAPI until Nuitée replies. The friends' round stays separate (`validation/friends-round.md`, "Open before the first invite").
+
+**The stay comparison is about the trip, not a search (Abram, 7 Nov):** a stay is judged against the person's own dates and days: how far it is from each day's places, the whole cost (the total plus anything payable there), and its cancellation terms, beside the same stay on nearby dates. That's what a booking site's list can't show.
+
+**Stay prices (Abram, 7 Nov):** compare the same stay across nearby dates (Friday £200, Saturday £180, Monday £60: illustrative), and watch a saved stay: the last price seen, the price now, the change, when it was checked, and alternatives. A price is only ever compared like for like: the same length of stay, guests, room, board, cancellation terms and taxes included, wherever the provider says so; anything that differs is said. Observed prices only, never a forecast. The live key goes into a separate staging Brain on the branch; the frozen production Brain keeps its sandbox key until the round ends.
 
 **Before food preferences:** an Article 6 lawful basis and an Article 9 condition (explicit consent, done properly: specific, separate, easy to withdraw); a DPIA; a privacy-notice update. It is used only for the person's own restaurant suggestions: never for matching people, advertising or anything else. Halal is offered as a food choice, never as a question about religion. A source of checked halal data must exist before any venue is labelled: certified (with the certifier), halal menu, halal options, unknown, or not suitable, each with its source and the date it was checked. The ICO pages are to be read and cited in the research step (UNVERIFIED here).
 
@@ -69,9 +86,14 @@ Not doing: price forecasts, a chat that writes itineraries, a social feed, handl
 
 "Works for any place" means the code makes no London-only assumptions (the list in A). It does not mean coverage. A place is offered only when its moments, travel times and opening hours are checked, and the app says plainly when something is unknown. Next places come after the friends' round, chosen with Abram. Each needs a source of place data: free (OpenStreetMap, Wikidata) or paid (a money decision).
 
+## Technical debt and open questions (Abram, 6 Nov)
+
+- **Card attributes:** the five shopping cards are listed by ID in `brain/src/brain/triplength.py`, because the cards have no category. Before the next city, every card gets structured attributes: category, experience type, duration, location, opening hours, price level, and the preference tags. Then no destination-specific lists spread through the Brain.
+- **Trip length:** an estimate of experience coverage, not a recommended holiday length. The 75% "strong match" line is the model's, awaiting validation against real ratings. A later version checks feasibility: travel time, opening hours, durations, arriving and leaving, and pace.
+
 ## F. Testing during the build
 
-- **`main` is the test build** while the friends' round runs: no pushes that change the apps or the Brain. New work stays on `claude/vigilant-cannon-my82dj`. Its iPhone checks run as simulator screenshots only, never TestFlight uploads; Android runs as local tests, not the published APK.
+- **`main` is the test build** while the friends' round runs: no commits to it at all, notes included (m198). The round's manifest is `validation/friends-round.md`. New work stays on `claude/vigilant-cannon-my82dj`. Its iPhone checks run as simulator screenshots only, never TestFlight uploads; Android runs as local tests, not the published APK.
 - **What the round collects:** the gut choice, "this plan fits me" for each plan (how personal it felt), which would be easier to actually do (added in step 0), and why. Testers who chose the generic plan are listed with their reasons.
 - **Formative, not proof:** friends are a first usability group; the 7-of-10 signal and the paired fit difference are read as direction, not as evidence for the wider market (D127).
 - **Before it starts:** the Apple check for external TestFlight (D60, D94). The free database lasts until 6 Dec 2026 (m195): the round, or a move to a paid database, has to fit before then.

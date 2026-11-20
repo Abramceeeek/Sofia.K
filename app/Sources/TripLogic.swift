@@ -2,6 +2,19 @@ import Foundation
 import Observation
 import SwiftUI
 
+/// SEC-16 (audit, Abram, 12 Nov 2026): a link that comes from the Brain (a booking site, a stay's photo) is used only
+/// if it is https with a host. Today the Brain builds every such link from fixed addresses, so nothing changes; if the
+/// Brain or a provider's data were ever compromised, a link could not dial a number, open another app or load a page
+/// in the clear. Links the app makes itself (Apple Maps, 999) don't go through this.
+enum SafeLink {
+    static func https(_ text: String?) -> URL? {
+        guard let text, let c = URLComponents(string: text.trimmingCharacters(in: .whitespaces)),
+              c.scheme?.lowercased() == "https", let host = c.host, !host.isEmpty, c.user == nil, c.password == nil,
+              let url = c.url else { return nil }
+        return url
+    }
+}
+
 /// D131 (shape A): what the home leads with: what's next, the day itself, or what you rated.
 enum HomePhase {
     case before, today, after
@@ -165,6 +178,13 @@ extension AppModel {
 
     var currentTrip: Trip? { trips.first { $0.id == currentTripId } ?? trips.first }
 
+    /// m228: the trip happening today (its first day to its last), else the current one: whose stay and journey the
+    /// offline view shows.
+    var tripForToday: Trip? {
+        let today = Calendar.london.startOfDay(for: .now)
+        return trips.first { $0.startDate <= today && today <= $0.endDate } ?? currentTrip
+    }
+
     func findTrip(_ id: UUID) -> Trip? { trips.first { $0.id == id } }
 
     func save(_ trip: Trip) {
@@ -287,7 +307,8 @@ extension AppModel {
                                feelings: trip.feelings, stay: trip.stay?.point, stayName: trip.stay == nil ? nil : "your stay",
                                days: days, exclude: exclude, dayStart: hours?.from ?? trip.dayFrom,
                                dayEnd: hours?.to ?? trip.dayTo, stopsPerDay: hours?.places ?? trip.placesPerDay,
-                               travelLight: trip.travelLight, arrive: ends.arrive, leave: ends.leave)
+                               travelLight: trip.travelLight, arrive: ends.arrive, leave: ends.leave,
+                               personal: (trip.personal ?? []).filter { !$0.isEmpty })
     }
 
     /// "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and regenerate.
@@ -300,6 +321,10 @@ extension AppModel {
                                   endTime: window.end, date: day.date, stops: max(2, min(window.stops, 6)), familiar: false)
         request.exclude = trip.used.filter { !mine.contains($0) }   // the trip's other days
         request.feelings = trip.feelings.isEmpty ? nil : trip.feelings   // journey round 2: as the trip planned it
+        // m200: the day's own time and pace come too, so swapping a stop or planning again never loses them
+        let own = trip.own(day.index)
+        request.mine = own.mine.isEmpty ? nil : own.mine
+        request.relaxed = own.relaxed ? true : nil
         plan = dayPlan
         lastRequest = request
         (rated, myRatings) = AppModel.savedRatings(for: dayPlan)   // a day used before keeps its ratings
@@ -386,12 +411,16 @@ extension AppModel {
     /// Abram's comment (8 Oct): one day planned again at the hours the person is free and with their places, around
     /// plans they've made. The trip's other days keep their places; this day may keep some of its own. If it was
     /// "your day", the new plan becomes your day.
-    func changeTripDay(_ tripId: UUID, _ index: Int, from: String, to: String, places: Int) async -> Bool {
+    func changeTripDay(_ tripId: UUID, _ index: Int, from: String, to: String, places: Int,
+                       own: DayTime? = nil) async -> Bool {
         guard var trip = findTrip(tripId) else { return false }
+        if let own {   // m200: the day's own time is kept with the trip, so a re-plan of every day keeps it too
+            trip.personal = (trip.personal ?? []).filter { $0.day != index } + (own.isEmpty ? [] : [own])
+        }
         let old = trip.days.first { $0.index == index }
         let base = { (p: Plan?) in (p?.stops ?? []).filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] } }
-        let own = Set(base(old?.plan) + base(old?.before))
-        let request = daysRequest(trip, days: [index], exclude: trip.used.filter { !own.contains($0) },
+        let kept = Set(base(old?.plan) + base(old?.before))
+        let request = daysRequest(trip, days: [index], exclude: trip.used.filter { !kept.contains($0) },
                                   hours: (from, to, places))
         var ok = false
         await run {
@@ -405,7 +434,11 @@ extension AppModel {
             self.save(trip)
             if let was = old?.plan, self.plan?.id == was.id, new.plan != nil { self.useDay(trip, new) }
             await self.client.event("trip_day_changed", ["day": "\(index + 1)", "from": from, "to": to,
-                                                         "places": "\(places)"])
+                                                         "places": "\(places)",
+                                                         // m200: whether the day keeps time for them, never what for
+                                                         "own_time": "\(own?.mine.count ?? 0)",
+                                                         "free_day": "\(own?.freeDay ?? false)",
+                                                         "relaxed": "\(own?.relaxed ?? false)"])
             ok = true
         }
         return ok
@@ -449,7 +482,8 @@ extension AppModel {
               let i = trip.days.firstIndex(where: { $0.plan?.id == old.id }) else { return }
         let d = trip.days[i]
         trip.days[i] = TripDayOut(index: d.index, date: d.date, kind: d.kind, title: d.title, plan: new,
-                                  window: d.window, before: d.before, legs: d.legs)
+                                  window: d.window, before: d.before, legs: d.legs, freeDay: d.freeDay,
+                                  relaxed: d.relaxed, mine: d.mine)
         let base = { (p: Plan) in Set(p.stops.filter(\.rateable).map { $0.momentId.components(separatedBy: "#")[0] }) }
         trip.used = Array(Set(trip.used).subtracting(base(old)).union(base(new))).sorted()
         save(trip)
@@ -559,6 +593,13 @@ extension AppModel {
         t.days = days.days
         t.used = days.used
         t.daysFrom = days.start
+        // m200: the screenshots of a day with the person's own time (25c, 25d): that day, from the real Brain
+        if ["tripdaymine", "daychangemine"].contains(AppConfig.screen ?? ""),
+           let mine: TripDayOut = try? BrainClient.bundled("demo_trip_day_mine"),
+           let i = t.days.firstIndex(where: { $0.index == mine.index }) {
+            t.days[i] = mine
+            t.personal = [DayTime(day: mine.index, mine: (mine.mine ?? []).map { MyTime(kind: $0.kind, start: $0.start, end: $0.end) })]
+        }
         if let flights: FlightResults = try? BrainClient.bundled("demo_flights"), let f = flights.results.first {
             t.flight = TripChoice(kind: "flight", title: "\(f.airline) · \(f.outbound.departTime) → \(f.outbound.arriveTime)",
                                   provider: "Skyscanner", price: f.price, booked: false, arriveTime: f.outbound.arriveTime,

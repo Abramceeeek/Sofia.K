@@ -1,0 +1,8 @@
+# m248: local date, time and number formats per destination locale, from Unicode CLDR (read through Babel 2.16.0 in
+# a scratch environment on 11 Nov 2026; Babel is not a dependency of the Brain). For the readiness checklist and,
+# later, the apps' formatting of a destination's own dates and prices.
+source: "Unicode CLDR, via Babel 2.16.0 (format_date, format_time, format_decimal, format_currency), 2026-11-11"
+locales:
+  en-GB: {date_short: "11/11/2026", date_long: "11 November 2026", time: "18:30", number: "1,234.5", money: "£1,234.50"}
+  fr-FR: {date_short: "11/11/2026", date_long: "11 novembre 2026", time: "18:30", number: "1 234,5", money: "1 234,50 €",
+          note: "a decimal comma; a narrow no-break space between thousands; the euro sign after the amount"}

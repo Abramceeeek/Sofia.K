@@ -109,6 +109,8 @@ SCREENS = [
     ("tripdays", "22a", "Trips (Abram's ODYS Trips design)", "Your days",
      "Out from and back by, places a day (plus lunch), and travelling light on day 1."),
     ("tripfeel", "23", "Trips (Abram's ODYS Trips design)", "How should the trip feel?", "One or two feelings; they shape every day of this trip."),
+    ("triplength", "23b", "Trips (branch, m196)", "How long should I stay?",
+     "\"Around 3 days\": how many of your strong matches there are at your pace, each length with what it covers or leaves out, and what longer could add. An estimate, never a limit: your dates stay unless you pick another."),
     ("trip", "24", "Trips (Abram's ODYS Trips design)", "The trip",
      "A checklist in the order you'd do it, each with its status, then your days and a running total of real numbers only."),
     ("tripday", "25", "Trips (Abram's ODYS Trips design)", "The first day",
@@ -117,6 +119,10 @@ SCREENS = [
      "The day, back to the stay for the bags, then when to leave for the airport, with Directions."),
     ("daychange", "25b", "Trips (Abram's ODYS Trips design)", "Change this day (new)",
      "\"Made other plans?\" The hours they're free and their places, then the day planned again around them; the other days stay as they are."),
+    ("tripdaymine", "25c", "Trips (branch, m200)", "A day with your own time",
+     "\"Your plans\" and \"Free time\" in the day at their own times, near one of the day's places (it says which), never rated; the places go around them."),
+    ("daychangemine", "25d", "Trips (branch, m200)", "Change this day: time for yourself",
+     "Keep the day free, a relaxed day (one place fewer, longer at each), or up to two blocks of your plans or free time."),
     ("flights", "26", "Trips (Abram's ODYS Trips design)", "Flights",
      "The search pinned at the top; Best, Cheapest and Fastest with their tops; one-tap chips. Sample prices until the keys are in."),
     ("flightfilters", "27", "Trips (Abram's ODYS Trips design)", "Flight filters",
@@ -131,6 +137,8 @@ SCREENS = [
     ("stayfilters", "31", "Trips (Abram's ODYS Trips design)", "Stay filters",
      "Most per night, type of place, guest rating, free cancellation and breakfast, with a live count."),
     ("stay", "32", "Trips (Abram's ODYS Trips design)", "A place to stay", "The rating, the distance, the room and rate, the price found, and where to book."),
+    ("stayfortrip", "32c", "Trips (branch, m203)", "A stay, for your trip",
+     "How far it is from each planned day, the whole cost and cancellation terms, and the same stay on nearby dates, like for like (sample prices, labelled)."),
     ("you", "33", "Trips (Abram's ODYS Trips design)", "You", "999 first, then a person; what you've told us, in plain words; your data."),
 ]
 N_SCREENS = len({s[1].rstrip("abcdefghij") for s in SCREENS})

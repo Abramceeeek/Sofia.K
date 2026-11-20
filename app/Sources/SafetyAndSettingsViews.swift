@@ -365,6 +365,7 @@ struct DemoScreen: View {
         case "error", "waking", "mustinclude", "planend", "swap", "nowahead", "ratingpicked":
             StateDemoScreen(name: name)                                         // 30 Oct: the states in between
         case "plan2": DayScreen(scroll: "stops")                                // 9b: further down, the stops
+        case "planbudget": DayScreen()                                          // 9g (m217): the day against a budget
         case "planmap": DayScreen(layout: "map")                                // 9d
         case "reveal": DayScreen(reveal: 0.45)                                  // 9c: the plan reveal, part-way (D117)
         case "stop":                                                            // 10
@@ -375,6 +376,17 @@ struct DemoScreen: View {
         case "stop2":                                                           // 10a: further down the card
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
+            }
+        case "stopwhy":                                                         // 10o (m230): "Why this stop?" open
+            if let stop = demoStop {
+                NavigationStack { StopView(stop: stop, demoScroll: "body", demoWhy: true) }
+            }
+        case "nowoffline", "offlinesaved":                                      // 10m, 10n (m228): no signal
+            DayScreen().onAppear {
+                if let plan = model.plan { model.plan = plan.dated(Dates.isoDay.string(from: .now)) }
+                model.connectivity.pin(online: false)
+                model.nowIndex = 1
+                model.showNow = true
             }
         case "now", "nowlocation", "replan":                                    // 10b (D119, D130): today, on the way
             // to the second stop (not a look ahead); 10g the location ask under it, 10h "Re-plan the rest of today?"

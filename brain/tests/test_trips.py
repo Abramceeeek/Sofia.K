@@ -97,7 +97,8 @@ def test_flight_filters_and_sorts():
     assert [f.id for f in trips.filter_flights(fl, trips.FlightFilters(airlines=["Turkish Airlines"]))] == ["off_2"]
     assert trips.filter_flights(fl, trips.FlightFilters(max_price=300)) == []
     facets = trips.flight_facets(fl)
-    assert facets["stops"] == [{"stops": 0, "min_price": 512.4}, {"stops": 1, "min_price": 389.0}]
+    assert facets["stops"] == [{"stops": 0, "min_price": 512.4, "currency": "GBP"},   # m218: each says its currency
+                               {"stops": 1, "min_price": 389.0, "currency": "GBP"}]
     assert facets["tabs"]["cheapest"]["price"] == 389.0 and facets["price"] == [389.0, 512.4]
 
 
@@ -471,3 +472,172 @@ def test_journeys_past_midnight_say_so():
     assert tripdays.NIGHT_NOTE in dawn.leave_leg.note
     day = _frame(2, 3, leave=tripdays.End("flight", "LHR", "18:00"))
     assert "next day" not in day.leave_leg.title and tripdays.NIGHT_NOTE not in (day.leave_leg.note or "")
+
+
+def test_trip_length_comes_from_the_persons_matches_and_names_what_each_length_leaves_out(client):
+    """m196: "How long should I stay?" from the person's own good matches, at their places a day."""
+    h, _ = install(client)
+    r = client.post("/v1/me/trips/length", headers=h, json={"nights": 9, "stops_per_day": 3})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    need, yours = d["suggested_days"], d["your_days"]
+    assert 1 <= need <= 14 and yours == 9 and d["places_per_day"] == 3
+    assert d["checked"] > 0 and "London" in d["why"] and d["headline"] == f"Around {need} day{'s' if need != 1 else ''}"
+    assert "not a limit" in d["note"] and "3 places a day" in d["note"]
+    lengths = [o["days"] for o in d["options"]]
+    assert lengths == sorted(lengths) and need in lengths and yours in lengths
+    by_days = {o["days"]: o for o in d["options"]}
+    assert by_days[need]["suggested"] and by_days[need]["covers"] == by_days[need]["of"]
+    assert by_days[yours]["yours"]
+    for o in d["options"]:
+        assert o["line"] and o["covers"] + len(o["leaves_out"]) == o["of"]
+        assert not o["adds"] or o["days"] > need                 # extra good matches only come with more days
+        if o["days"] < need:   # a shorter trip says what it leaves out, by name
+            assert o["label"] == "Highlights" and "leave out" in o["line"] and o["leaves_out"]
+    if yours > need:
+        assert d["spare_days"] == yours - need and {"slower", "free"} <= {e["kind"] for e in d["extra"]}
+    else:
+        assert d["short"]
+    # a short day holds fewer places: the person's hours cap their places a day
+    short_day = client.post("/v1/me/trips/length", headers=h,
+                            json={"nights": 2, "stops_per_day": 6, "day_start": "10:00", "day_end": "12:30"}).json()
+    assert short_day["places_per_day"] == 2
+    assert client.post("/v1/me/trips/length", headers=h,
+                       json={"day_start": "10:00", "day_end": "10:30"}).status_code == 422
+
+
+def test_days_for_keeps_the_days_shape():
+    from types import SimpleNamespace
+
+    from brain import triplength
+    card = lambda hist=0, kind="moment": SimpleNamespace(tag=lambda n: hist if n == "history_culture" else 0, kind=kind)
+    assert triplength.days_for([], 3) == 0
+    assert triplength.days_for([card() for _ in range(7)], 3) == 3                 # 7 places at 3 a day
+    assert triplength.days_for([card(2) for _ in range(6)], 4) == 3                # at most 2 history a day
+    assert triplength.days_for([card(kind="area") for _ in range(3)], 4) == 3      # at most 1 wander a day
+    six = [card() for _ in range(6)]
+    assert triplength._covered(six, 1, 4) == 4 and triplength._covered(six, 2, 4) == 6
+
+
+def test_trip_length_names_each_place_once_on_the_page():
+    from types import SimpleNamespace
+
+    from brain import triplength
+    cards = [SimpleNamespace(id=f"m{i}", title=f"Place {i}: a line") for i in range(8)]
+    seen: set[str] = set()
+    first = triplength._names(cards, 2, seen)
+    second = triplength._names(cards, 2, seen)
+    assert first == "Place 0, Place 1 and 6 more"
+    assert second == "Place 2, Place 3 and 6 more"     # the next ones, and the count still covers all eight
+    assert triplength._names(cards[:2], 2, seen) == "Place 0, Place 1"   # nothing new left: the named ones again
+
+
+def test_the_persons_own_time_is_planned_around(client):
+    """m200 (product direction, step 2): "I have plans 13:00-14:00" and free time are stops of their own, at their
+    times, never rated and never one of the day's places; a relaxed day has one place fewer; a free day has no plan."""
+    h, _ = install(client)
+    start = date.today() + timedelta(days=4)
+    body = {"start_date": start.isoformat(), "nights": 3, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 3,
+            "personal": [{"day": 1, "mine": [{"kind": "plans", "start": "13:00", "end": "14:00"},
+                                             {"kind": "free", "start": "07:00", "end": "08:00"}]},   # before the day
+                         {"day": 2, "relaxed": True}, {"day": 3, "free_day": True}]}
+    r = client.post("/v1/me/trips/days", headers=h, json=body)
+    assert r.status_code == 201, r.text
+    days = {d["index"]: d for d in r.json()["days"]}
+    one = days[1]
+    assert [(b["kind"], b["planned"]) for b in one["mine"]] == [("plans", True), ("free", False)]
+    mine = [st for st in one["plan"]["stops"] if st["mine"]]
+    assert len(mine) == 1 and (mine[0]["arrive"], mine[0]["depart"]) == ("13:00", "14:00")
+    assert mine[0]["title"] == "Your plans" and not mine[0]["rateable"] and mine[0]["feel_word"] == "Your time"
+    assert mine[0]["cost_text"] == "" and mine[0]["what"].startswith("Where isn't decided yet")   # m201: the default
+    assert mine[0]["pin"] is None
+    places = [st for st in one["plan"]["stops"] if st["rateable"] and not st["lunch"]]   # a food card can be lunch
+    # m201, m202: plans not decided yet keep the cautious allowance either side: 45 min (GUESS)
+    assert "45 min before and 45 min after" in mine[0]["what"]
+    assert 1 <= len(places) <= 3 and all(st["depart"] <= "12:15" or st["arrive"] >= "14:45" for st in places)
+    assert "your own plans" in one["title"].lower()
+    assert not any(m.startswith("mine") for m in r.json()["used"])         # never kept as a place of the trip
+    assert days[2]["relaxed"] and sum(st["rateable"] for st in days[2]["plan"]["stops"]) <= 2
+    assert days[3]["free_day"] and days[3]["plan"] is None and days[3]["title"] == "A day that's yours"
+    home = client.post("/v1/me/trips/days", headers=h, json={**body, "days": [3], "leave": {
+        "mode": "train", "place": "KGX", "time": "17:00"}}).json()["days"][0]
+    assert home["free_day"] and home["plan"] is None and [x["slot"] for x in home["legs"]] == ["leave"]   # still home
+    bad = {**body, "personal": [{"day": 1, "mine": [{"kind": "plans", "start": "1pm", "end": "14:00"}]}]}
+    assert client.post("/v1/me/trips/days", headers=h, json=bad).status_code == 422
+    three = [{"kind": "free", "start": f"1{k}:00", "end": f"1{k}:30"} for k in range(3)]
+    assert client.post("/v1/me/trips/days", headers=h,
+                       json={**body, "personal": [{"day": 1, "mine": three}]}).status_code == 422
+
+
+def test_a_block_is_pinned_to_its_time_and_isnt_a_place():
+    """m200: the planner keeps the person's own time at its times, near a place, without counting it as a stop."""
+    from brain.moments import Point
+    from brain.planner import Candidate, LegWeights, plan_day
+    from brain.travel import LondonEstimate
+    p = lambda lat, lon: Point(lat=lat, lon=lon)
+    places = [Candidate(f"m{k}", p(51.50 + k / 200, -0.12), p(51.50 + k / 200, -0.12), 45, ((600, 1080),), 1.0)
+              for k in range(4)]
+    slot = lambda mid, at: Candidate(mid, at, at, 60, ((780, 840),), 0.0, mine="mine0")
+    cands = places + [slot(f"mine0@{c.moment_id}", c.end) for c in places] + [slot("mine0@start", p(51.5, -0.12))]
+    plan = plan_day(cands, p(51.5, -0.12), 600, 1080, LondonEstimate(), LegWeights(0.0, 0.0), max_stops=2)
+    ids = [s.moment_id for s in plan.stops]
+    mine = [s for s in plan.stops if s.moment_id.startswith("mine0@")]
+    assert len(mine) == 1 and (mine[0].arrive_min, mine[0].depart_min) == (780, 840)
+    assert len([i for i in ids if not i.startswith("mine")]) == 2          # still two places
+    assert plan.peak_moment_id and not plan.peak_moment_id.startswith("mine")
+
+
+def test_swap_and_regenerate_keep_the_persons_own_time(client):
+    """m200: once a trip day is "my day", swapping a stop or planning again goes through /v1/me/plans; the person's
+    own time comes too, so it's never lost."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "your stay", "start_time": "10:00",
+            "end_time": "18:00", "stops": 4, "familiar": False,
+            "mine": [{"kind": "plans", "start": "15:00", "end": "16:00"}]}
+    first = client.post("/v1/me/plans", headers=h, json=body)
+    assert first.status_code == 201, first.text
+    stops = first.json()["stops"]
+    own = [st for st in stops if st["mine"]]
+    assert [(st["arrive"], st["depart"], st["mine"]) for st in own] == [("15:00", "16:00", "plans")]
+    out = next(st for st in stops if st["rateable"])
+    keep = [st["key"] for st in stops if st is not out]
+    again = client.post("/v1/me/plans", headers=h, json={**body, "keep": keep, "exclude": [out["moment_id"]]})
+    assert again.status_code == 201, again.text
+    new = again.json()["stops"]
+    assert [(st["arrive"], st["depart"]) for st in new if st["mine"]] == [("15:00", "16:00")]
+    assert out["moment_id"] not in {st["moment_id"] for st in new}
+
+
+def test_where_the_plans_are_and_whether_they_include_a_meal(client):
+    """m201 (Abram, 7 Nov): plans near the day's places sit beside one, with no time added; plans somewhere else get
+    time to get there and back and no pin; plans the person eats during take the place of the lunch stop."""
+    h, _ = install(client)
+    base = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "your stay", "start_time": "10:00",
+            "end_time": "18:00", "stops": 4, "familiar": False}
+    plan = lambda **b: client.post("/v1/me/plans", headers=h, json={**base, "mine": [
+        {"kind": "plans", "start": "12:30", "end": "14:00", **b}]}).json()["stops"]
+    near = plan(location="near")
+    block = next(st for st in near if st["mine"])
+    assert block["what"].startswith("Your own time, ") and block["pin"] is not None
+    away = plan(location="elsewhere")
+    i = next(k for k, st in enumerate(away) if st["mine"])
+    assert (away[i]["arrive"], away[i]["depart"]) == ("12:30", "14:00") and away[i]["pin"] is None
+    assert away[i]["what"].startswith("Somewhere else: we've left 30 min before and 30 min after")
+    if i + 1 < len(away):
+        assert away[i + 1]["travel_text"].startswith("Getting there: from your plans") and away[i + 1]["arrive"] >= "14:30"
+    assert any(st["lunch"] for st in near)                                   # no meal said: lunch stays
+    eaten = plan(location="near", meal=True)
+    assert not any(st["lunch"] for st in eaten) and "no lunch stop" in next(st for st in eaten if st["mine"])["what"]
+
+
+def test_plans_that_leave_no_room_for_lunch_say_so(client):
+    """m202: midday plans not decided yet keep 45 min either side; when that leaves no room for lunch, the plans say so
+    rather than lunch disappearing silently, and no extra place takes lunch's slot."""
+    h, _ = install(client)
+    body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "your stay", "start_time": "10:00",
+            "end_time": "18:00", "stops": 4, "familiar": False,
+            "mine": [{"kind": "plans", "start": "12:00", "end": "14:00"}]}
+    stops = client.post("/v1/me/plans", headers=h, json=body).json()["stops"]
+    assert not any(st["lunch"] for st in stops)
+    assert "no room for a lunch stop" in next(st for st in stops if st["mine"])["what"]
+    assert len([st for st in stops if st["rateable"]]) <= 3                  # never a 4th place instead of lunch

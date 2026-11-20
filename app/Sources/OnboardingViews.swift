@@ -15,7 +15,7 @@ struct OnboardingView: View {
                 // m176: a way back to the step before (places and this-or-that also step back one at a time inside)
                 HStack {
                     Button { withAnimation(Motion.settle) { model.back() } } label: {
-                        Text("‹ \(previous == .places && model.isVisitor ? "Kinds of places" : previous.title)")
+                        Text("‹ \(previous == .places && model.usesKinds ? "Kinds of places" : previous.title)")
                             .font(.subheadline)
                             .foregroundStyle(Theme.accent)
                             .frame(minHeight: 44)
@@ -32,7 +32,7 @@ struct OnboardingView: View {
                     case .bestHour: BestHourStep()
                     case .why: WhyStep()
                     case .places:
-                        if model.isVisitor, let cards = onboarding.categoryCards, !cards.isEmpty {
+                        if model.usesKinds, let cards = onboarding.categoryCards, !cards.isEmpty {   // m220
                             CategoryStep(cards: cards) { await model.finishCategories() }   // D116
                         } else {
                             PlacesStep(places: onboarding.swipePlaces) { await model.finishPlaces() }
@@ -1140,7 +1140,7 @@ struct ImproveView: View {
             PageTitle(text: "Thank you.")
             Text("Your next plans will use your budget and interests.")
                 .foregroundStyle(Theme.inkSoft)
-            let later = model.isVisitor ? [] : (model.onboarding?.swipePlacesLater ?? [])   // D116: not London places
+            let later = model.usesKinds ? [] : (model.onboarding?.swipePlacesLater ?? [])   // D116, m220: not London places
             let laterTasks = model.onboarding?.conjointTasksLater ?? []
             if !later.isEmpty || !laterTasks.isEmpty {
                 Text("Want to go further? About 2 minutes more.")

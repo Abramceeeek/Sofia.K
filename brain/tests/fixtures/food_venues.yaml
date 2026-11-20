@@ -1,0 +1,19 @@
+# SYNTHETIC (WS2, m208): made-up venues for tests only. No real business, certifier listing or claim is described.
+# Certifier names are used only as labels; the URLs are example.org placeholders, never a real listing.
+venues:
+  Example Grill:
+    halal: {status: certified, evidence: certifier_directory, certifier: "Halal Monitoring Committee",
+            source: "https://example.org/hmc-listing", verified_on: 2026-10-20}
+    vegetarian: {status: some_dishes, evidence: venue_own, source: "https://example.org/grill-menu",
+                 dishes: ["halloumi wrap", "falafel plate"]}
+  Example Bistro:
+    halal: {status: whole_menu, evidence: venue_own, source: "https://example.org/bistro-about",
+            venue_says: "All our meat is halal"}
+    vegetarian: {status: some_dishes, evidence: venue_own, source: "https://example.org/bistro-menu"}
+  Example Old Listing:
+    halal: {status: certified, evidence: certifier_directory, certifier: "Halal Food Authority",
+            source: "https://example.org/hfa-listing", verified_on: 2026-03-01}
+  Example Pub:
+    halal: {status: not_suitable, evidence: venue_own, source: "https://example.org/pub-faq"}
+  Halal Example Kitchen:    # "Halal" in the name is not evidence: nothing is known
+    {}

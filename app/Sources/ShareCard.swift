@@ -12,7 +12,7 @@ struct ShareCardView: View {
     var reason = true                // D127: "Include the reason" on the preview; off leaves the line out
 
     var body: some View {
-        let found = CardPhotos.photo(for: stop.momentId)
+        let found = CardPhotos.sharePhoto(for: stop.momentId)   // m258: only a photo cleared for sharing
         let word = Labels.feel[max(0, min(4, rating - 1))]
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topLeading) {
@@ -61,10 +61,10 @@ struct ShareCardView: View {
                         .foregroundStyle(Theme.creamSoft)
                 }
                 if let photo = found?.0 {
-                    Text("Photo: \(photo.author), \(photo.licence), Wikimedia Commons (cropped)")
+                    Text(photo.shareCredit)
                         .font(.system(size: 8))
                         .foregroundStyle(Theme.creamSoft)
-                        .lineLimit(2)
+                        .lineLimit(3)
                 }
             }
             .padding(20)

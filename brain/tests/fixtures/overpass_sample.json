@@ -1,0 +1,10 @@
+{"_note": "SYNTHETIC: made-up Overpass API elements in the documented JSON shape, for tests only. Not real OSM data.",
+ "elements": [
+  {"type": "node", "id": 1001, "lat": 51.5101, "lon": -0.1340,
+   "tags": {"name": "Example Café", "amenity": "cafe", "opening_hours": "Mo-Fr 08:00-18:00",
+            "wheelchair": "limited", "diet:halal": "yes", "diet:vegetarian": "only", "website": "https://example.org",
+            "wikidata": "Q0000001"}},
+  {"type": "way", "id": 2002, "center": {"lat": 51.5007, "lon": -0.1246},
+   "tags": {"name": "Example Museum", "tourism": "museum", "fee": "no"}},
+  {"type": "node", "id": 3003, "lat": 51.52, "lon": -0.10, "tags": {"amenity": "restaurant", "cuisine": "turkish"}}
+ ]}

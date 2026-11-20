@@ -1,5 +1,9 @@
 package com.odys.app
 
+import androidx.compose.material.icons.filled.People
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.RowScope
@@ -472,9 +476,9 @@ private fun KnowItem(title: String, text: String, links: List<Pair<String, Strin
     }
 }
 
-// ---- Plan a trip: where, when, getting there, your days, how it should feel ------------------------------------
+// ---- Plan a trip: where, when, getting there, your days, how it should feel, how long ---------------------------
 
-private const val TRIP_QUESTIONS = 5
+private const val TRIP_QUESTIONS = 6
 
 /** Journey round 2: who's going and the airport you fly from change the searches, not the days. */
 fun onlySearchChanged(old: Trip, new: Trip): Boolean {
@@ -557,7 +561,8 @@ fun TripCreateFlow(model: AppModel) {
                         1 -> WhenStep(trip) { trip = it }
                         2 -> FromStep(trip, { trip = it }) { showAirports = true }
                         3 -> DaysStep(trip) { trip = it }
-                        else -> FeelStep(trip) { trip = it }
+                        4 -> FeelStep(trip) { trip = it }
+                        else -> LengthStep(model, trip) { trip = it }   // m196: last, as it uses the hours, places a day and feelings
                     }
                 }
             }
@@ -845,6 +850,70 @@ fun FeelStep(trip: Trip, onChange: (Trip) -> Unit) {
     }
 }
 
+/** m196: what "How long should I stay?" asks the Brain: the trip as it is when the question opens. */
+fun Trip.lengthRequest() = TripLengthRequest(destination, nights, feelings, dayFrom, dayTo, placesPerDay)
+
+/**
+ * m196: "How long should I stay?" From the person's top-ranked places at their pace (brain/src/brain/triplength.py), as
+ * on the iPhone. An estimate of how much there is for them, never a limit: their dates stay unless they pick another
+ * length. Asked once, with the dates they chose; picking a length only changes the nights.
+ */
+@Composable
+fun LengthStep(model: AppModel, trip: Trip, onChange: (Trip) -> Unit) {
+    val request = remember { trip.lengthRequest() }
+    var answer by remember { mutableStateOf(model.tripLength?.takeIf { it.first == request }?.second) }
+    var failed by remember { mutableStateOf(false) }
+    LaunchedEffect(request) {
+        if (answer != null) return@LaunchedEffect
+        runCatching { model.client.tripLength(request) }
+            .onSuccess { answer = it; model.tripLength = request to it }
+            .onFailure { failed = true }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Eyebrow("Your time in ${trip.city}")
+        val a = answer
+        when {
+            a != null -> {
+                PageTitle(a.headline)
+                Text(a.why, style = Theme.body.copy(color = Theme.inkSoft))
+                val spare = a.spareDays ?: 0
+                if (a.short != null) Text(a.short, style = Theme.body.copy(color = Theme.accent))
+                else if (spare > 0) Text("Your dates give you $spare more day${if (spare == 1) "" else "s"} than this, to use as you like.",
+                    style = Theme.body.copy(color = Theme.accent))
+                SectionLabel("How long?", Modifier.padding(top = 8.dp))
+                for (o in a.options) {
+                    OptionTile("${o.days} day${if (o.days == 1) "" else "s"} · ${o.label}${if (o.yours) " · your dates" else ""}",
+                        o.line, trip.nights == o.days, offFill = Theme.surface, offStroke = Color.Transparent) {
+                        onChange(trip.copy(nights = o.days))
+                    }
+                }
+                if (a.extra.isNotEmpty()) {
+                    SectionLabel("With longer, you could", Modifier.padding(top = 8.dp))
+                    Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        for (e in a.extra) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(e.title, style = Theme.subheadline.copy(fontWeight = FontWeight.SemiBold))
+                                Text(e.line, style = Theme.subheadline.copy(color = Theme.inkSoft))
+                            }
+                        }
+                    }
+                }
+                Text(a.note + " Your arrival and departure days count as one between them.", style = Theme.footnote,
+                    modifier = Modifier.padding(top = 4.dp))
+            }
+            failed -> {
+                PageTitle("How long?")
+                Text("We couldn't work this out just now. Your dates stay as they are.",
+                    style = Theme.body.copy(color = Theme.inkSoft))
+            }
+            else -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.CircularProgressIndicator(Modifier.size(20.dp), color = Theme.accent, strokeWidth = 2.dp)
+                Text("Looking at what there is for you…", style = Theme.body.copy(color = Theme.muted))
+            }
+        }
+    }
+}
+
 @Composable
 fun Hairline() = Box(Modifier.fillMaxWidth().height(1.dp).background(Theme.hairline))
 
@@ -999,10 +1068,10 @@ fun TripOverview(model: AppModel, tripId: String, onHelp: () -> Unit, onBack: ()
             val f = trip.flight
             val sub = when {
                 f != null && !trip.fits(f) -> "Chosen for other dates: check it on ${f.provider}, or choose again"
-                f != null -> "${f.provider} · ${Money.whole(f.price)}" + if (f.sample == true) " · a sample price, not a real fare" else ""
+                f != null -> "${f.provider} · ${f.money}" + if (f.sample == true) " · a sample price, not a real fare" else ""
                 trip.origin == null -> "Choose where you're flying from"
                 results && model.book.flights?.facets?.price?.firstOrNull() != null ->
-                    "From ${Money.whole(model.book.flights!!.facets.price!!.first())} · ${model.book.flights!!.total} options from ${trip.origin.city}"
+                    "From ${model.book.flights!!.facets.money(model.book.flights!!.facets.price!!.first())} · ${model.book.flights!!.total} options from ${trip.origin.city}"
                 else -> "Search flights from ${trip.origin.city}"
             }
             TripStepCard("1 · Getting there", { ChoiceStatus(f, trip.fits(f)) }, f?.title ?: "Choose your flight", sub) {
@@ -1014,9 +1083,9 @@ fun TripOverview(model: AppModel, tripId: String, onHelp: () -> Unit, onBack: ()
             val s = trip.stay
             val sub = when {
                 s != null && !trip.fits(s) -> "Chosen for other dates: check it on ${s.provider}, or choose again"
-                s != null -> "${s.provider} · ${Money.whole(s.price)} for ${trip.lengthLabel}" + if (s.sample == true) " · a sample price" else ""
+                s != null -> "${s.provider} · ${s.money} for ${trip.lengthLabel}" + if (s.sample == true) " · a sample price" else ""
                 results && model.book.stays?.facets?.priceNight?.firstOrNull() != null ->
-                    "From ${Money.whole(model.book.stays!!.facets.priceNight!!.first())} a night · ${model.book.stays!!.total} places"
+                    "From ${model.book.stays!!.facets.money(model.book.stays!!.facets.priceNight!!.first())} a night · ${model.book.stays!!.total} places"
                 else -> "Hotels, flats and hostels, from where your days happen"
             }
             TripStepCard("${if (trip.needFlight) 2 else 1} · Where you'll stay", { ChoiceStatus(s, trip.fits(s)) },
@@ -1115,8 +1184,10 @@ fun TripTotal(trip: Trip, flights: FlightResults?, stays: StayResults?) {
         val low = flights?.facets?.price?.firstOrNull()
         rows += when {
             f != null && !trip.fits(f) -> Triple("Flight", "for other dates", null)
-            f != null -> Triple("Flight", Money.whole(f.price), f.price)
-            low != null -> Triple("Flight", "from ${Money.whole(low)}", low)
+            // m218: a fare in another currency is shown, never added to the pounds total
+            f != null -> Triple("Flight", f.money, if (f.inPounds) f.price else null)
+            low != null -> Triple("Flight", "from ${flights?.facets?.money(low) ?: Money.whole(low)}",
+                if ((flights?.facets?.currency ?: "GBP") == "GBP") low else null)
             else -> Triple("Flight", "not chosen yet", null)
         }
     }
@@ -1126,8 +1197,9 @@ fun TripTotal(trip: Trip, flights: FlightResults?, stays: StayResults?) {
         val label = "Stay · ${trip.lengthLabel}"
         rows += when {
             s != null && !trip.fits(s) -> Triple(label, "for other dates", null)
-            s != null -> Triple(label, Money.whole(s.price), s.price)
-            low != null -> Triple(label, "from ${Money.whole(low * trip.nights)}", low * trip.nights)
+            s != null -> Triple(label, s.money, if (s.inPounds) s.price else null)
+            low != null -> Triple(label, "from ${stays?.facets?.money(low * trip.nights) ?: Money.whole(low * trip.nights)}",
+                if ((stays?.facets?.currency ?: "GBP") == "GBP") low * trip.nights else null)
             else -> Triple(label, "not chosen yet", null)
         }
     }
@@ -1145,6 +1217,13 @@ fun TripTotal(trip: Trip, flights: FlightResults?, stays: StayResults?) {
         }
         if (trip.flight?.sample == true || trip.stay?.sample == true || flights?.source == "sample" || stays?.source == "sample") {
             Text("Includes sample prices: the real ones show once live search is on.", style = Theme.footnote)
+        }
+        // m218: a price in another currency is listed, never added to the pounds total
+        val chosen = listOfNotNull(trip.flight.takeIf { trip.needFlight }, trip.stay.takeIf { trip.needStay })
+        val searched = (trip.needFlight && trip.flight == null && (flights?.facets?.currency ?: "GBP") != "GBP") ||
+            (trip.needStay && trip.stay == null && (stays?.facets?.currency ?: "GBP") != "GBP")
+        if (chosen.any { trip.fits(it) && !it.inPounds } || searched) {
+            Text("Prices in another currency are listed below, not added to this total.", style = Theme.footnote)
         }
         for ((label, value, _) in rows) {
             Row {
@@ -1193,10 +1272,15 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
         val plan = day?.plan
         if (day != null && plan != null) {
             if (day.before != null || day.journeys("arrive").isNotEmpty()) SectionLabel("From your stay", Modifier.padding(top = 4.dp))
-            for (stop in plan.stops) TripDayStop(stop)
+            for (stop in plan.stops) if (stop.mine != null) MyTimeRow(stop) else TripDayStop(stop)
+            for (t in day.mine.orEmpty().filter { !it.planned }) {   // m200
+                Text("${if (t.kind == "plans") "Your plans" else "Free time"} at ${t.start}–${t.end} fall outside the hours planned for this day, so the plan doesn't go around them.",
+                    style = Theme.footnote)
+            }
             val end = day.window?.end
             val last = plan.stops.lastOrNull()
-            if (end != null && last != null && Dates.minutes(end) - Dates.minutes(last.depart) >= 60) {   // journey round 2
+            if (end != null && last != null && last.mine == null &&
+                Dates.minutes(end) - Dates.minutes(last.depart) >= 60) {   // journey round 2
                 FreeTimeRow(model, last.depart, end, trip.placesPerDay < 6) {
                     scope.launch {
                         model.changeTripDay(trip.id, index, day.window.start, end, minOf(6, trip.placesPerDay + 1))
@@ -1215,6 +1299,12 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
             PrimaryButton(if (model.busy) "Planning…" else "Plan this day", enabled = !model.busy) {
                 scope.launch { model.planDay(tripId, index) }
             }
+        } else if (day.freeDay == true) {   // m200: "a day that's yours"
+            Text("Nothing is planned, as you chose. Rest, meet someone, wander: it's your time.",
+                style = Theme.body.copy(color = Theme.inkSoft),
+                modifier = Modifier.fillMaxWidth().border(1.dp, Theme.outline, RoundedCornerShape(20.dp)).padding(20.dp))
+            day.journeys("leave").forEach { JourneyCard(it) }
+            SecondaryButton("Change this day", icon = Icons.Filled.Schedule) { changing = day }
         } else {
             day.journeys("leave").forEach { JourneyCard(it) }
             if (day.before == null) {
@@ -1244,16 +1334,27 @@ fun ChangeDaySheet(model: AppModel, trip: Trip, day: TripDayOut, onClose: () -> 
     var from by remember { mutableStateOf(if (day.kind == "arrive") trip.dayFrom else day.window?.start ?: trip.dayFrom) }
     var to by remember { mutableStateOf(if (day.kind == "leave") trip.dayTo else day.window?.end ?: trip.dayTo) }
     var places by remember { mutableIntStateOf(trip.placesPerDay) }
+    var own by remember { mutableStateOf(trip.own(day.index)) }   // m200: time for yourself
     val tooShort = Dates.minutes(to) - Dates.minutes(from) < 60
+    val badTimes = !own.freeDay && own.mine.any { Dates.minutes(it.end) <= Dates.minutes(it.start) }
+    fun add(kind: String) {   // m200: plans in the early afternoon, free time at the end of the day, inside the hours
+        val lo = Dates.minutes(from)
+        val hi = Dates.minutes(to)
+        val start = if (kind == "plans") minOf(maxOf(lo, 13 * 60), maxOf(lo, hi - 60)) else maxOf(lo, hi - 90)
+        val end = if (kind == "plans") minOf(hi, start + 120) else hi
+        own = own.copy(mine = own.mine + MyTime(kind, Dates.hhmm(start), Dates.hhmm(end)))
+    }
     val note = when (day.kind) {
-        "arrive" -> "This day still starts once you've arrived. Busy in the middle of the day? Choose the part that's free."
-        "leave" -> "This day still ends in time for your journey home. Busy in the middle of the day? Choose the part that's free."
-        else -> "Busy in the middle of the day? Choose the part that's free. Once it's your day, you can also swap a stop."
+        // m200: plans in the middle of the day go in "Time for yourself", so there's no need to pick a part
+        "arrive" -> "This day still starts once you've arrived."
+        "leave" -> "This day still ends in time for your journey home."
+        else -> "Once it's your day, you can also swap a stop."
     }
     FullSheet(model, onClose) {
         PageWithBottom(spacing = 14, bottom = {
-            PrimaryButton(if (model.busy) "Planning…" else "Plan this day again", enabled = !model.busy && !tooShort) {
-                scope.launch { if (model.changeTripDay(trip.id, day.index, from, to, places)) onClose() }
+            PrimaryButton(if (model.busy) "Planning…" else if (own.freeDay) "Keep this day free" else "Plan this day again",
+                enabled = !model.busy && (!tooShort || own.freeDay) && !badTimes) {
+                scope.launch { if (model.changeTripDay(trip.id, day.index, from, to, places, own)) onClose() }
             }
         }) {
             CloseLink("Cancel", onClose)   // 19 Oct review: Android's ✕
@@ -1269,7 +1370,85 @@ fun ChangeDaySheet(model: AppModel, trip: Trip, day: TripDayOut, onClose: () -> 
             Stepper("Places", "$places place${if (places == 1) "" else "s"}, plus lunch", places <= 1, places >= 6,
                 "One place fewer", "One place more", { places -= 1 }) { places += 1 }
             if (tooShort) Text("Leave at least an hour between the two times.", style = Theme.subheadline.copy(color = Theme.accent))
+            // m200 (product direction, step 2): time that's theirs, alongside the places
+            SectionLabel("Time for yourself", Modifier.padding(top = 8.dp))
+            SwitchRow("Keep this day free", "Nothing planned: rest, meet someone, or wander.", own.freeDay) {
+                own = own.copy(freeDay = it)
+            }
+            if (!own.freeDay) {
+                SwitchRow("A relaxed day", "One place fewer, with longer at each.", own.relaxed) { own = own.copy(relaxed = it) }
+                own.mine.forEachIndexed { k, t ->
+                    MyTimeEditor(t, from, to, { v -> own = own.copy(mine = own.mine.mapIndexed { j, x -> if (j == k) v else x }) }) {
+                        own = own.copy(mine = own.mine.filterIndexed { j, _ -> j != k })
+                    }
+                }
+                if (own.mine.size < 2) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Chip("+ Your plans", false, Modifier.weight(1f), height = 44.dp) { add("plans") }
+                        Chip("+ Free time", false, Modifier.weight(1f), height = 44.dp) { add("free") }
+                    }
+                    Text("Meeting someone, a booking, or an hour to yourself: the day is planned around it.", style = Theme.footnote)
+                }
+            }
             Text(note, style = Theme.footnote)
+        }
+    }
+}
+
+/** m200: one block of the person's own time: what it is, from when, until when. */
+@Composable
+fun MyTimeEditor(time: MyTime, dayFrom: String, dayTo: String, onChange: (MyTime) -> Unit, onRemove: () -> Unit) {
+    Column(Modifier.fillMaxWidth().surfaceCard(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("${time.start}–${time.end}", style = Theme.serif(19.sp), modifier = Modifier.weight(1f))
+            QuietButton("Remove", color = Theme.accent, onClick = onRemove)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Chip("Your plans", time.kind == "plans", Modifier.weight(1f), height = 40.dp) { onChange(time.copy(kind = "plans")) }
+            Chip("Free time", time.kind == "free", Modifier.weight(1f), height = 40.dp) { onChange(time.copy(kind = "free")) }
+        }
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.background)) {
+            TimeMenu("From", time.start, HalfHours.from(6, 23)) { onChange(time.copy(start = it)) }
+            Hairline()
+            TimeMenu("Until", time.end, HalfHours.from(6, 23)) { onChange(time.copy(end = it)) }
+        }
+        if (time.kind == "plans") {   // m201 (Abram, 7 Nov): optional; not said means we leave time either side
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.background)) {
+                PickMenu("Where are your plans?", MyTime.places.first { it.first == (time.location ?: "unknown") }.second,
+                    MyTime.places) { onChange(time.copy(location = it)) }
+            }
+            if (time.overlapsLunch) {
+                SwitchRow("Will you eat during this time?", "Then there's no separate lunch stop.", time.meal ?: false) {
+                    onChange(time.copy(meal = it))
+                }
+            }
+        }
+        if (Dates.minutes(time.end) <= Dates.minutes(time.start)) {
+            Text("It needs to end after it starts.", style = Theme.subheadline.copy(color = Theme.accent))
+        } else if (Dates.minutes(time.start) < Dates.minutes(dayFrom) || Dates.minutes(time.end) > Dates.minutes(dayTo)) {
+            Text("Outside $dayFrom–$dayTo, so the plan won't go around it.", style = Theme.footnote)
+        }
+    }
+}
+
+/** m200: the person's own time in a trip day: its times, what it is, and where we've assumed it is. */
+@Composable
+fun MyTimeRow(stop: Stop) {
+    val outline = Theme.outline
+    Row(Modifier.fillMaxWidth()
+        .drawBehind {
+            drawRoundRect(outline, cornerRadius = CornerRadius(20.dp.toPx()),
+                style = Stroke(1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx()))))
+        }
+        .padding(16.dp)
+        .semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Icon(if (stop.mine == "plans") Icons.Filled.People else Icons.Filled.WbSunny, null, tint = Theme.accent,
+            modifier = Modifier.size(24.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("${stop.arrive}–${stop.depart}", style = Theme.subheadline.copy(color = Theme.muted))
+            Text(stop.title, style = Theme.serif(19.sp))
+            Text(stop.what, style = Theme.subheadline.copy(color = Theme.inkSoft))
         }
     }
 }

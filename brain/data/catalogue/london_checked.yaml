@@ -1,0 +1,162 @@
+# m245 (destination quality, WS1): facts read from each London place's OFFICIAL site on 11 Nov 2026 (Claude, by
+# web fetch), layered over the cards by catalogue.load_catalogue. Only what a page itself said: a quote or its exact
+# wording, and its URL. Nothing is inferred:
+# - step_free is "yes", "partial" or "no" only where the page says so; a page that lists features (a ramp, a hoist)
+#   without saying the visit is step-free is "partial"; a page that says nothing leaves it unknown, never "no";
+# - an area is recorded only where the official page itself names it;
+# - hours are the page's own words; conflicting pages, seasonal or "dusk" hours stay text (no weekly table);
+# - a price is recorded where the page states one; where the card differs, the card is listed under card_differs
+#   for Abram (the planner still reads the cards: nothing in a plan changes until he agrees);
+# - notices are dated things the page announced (closures, seasonal changes, events that change the visit).
+# not_read: pages that refused (403), failed (404, 503, header overflow) or hid the answer (collapsed text). They are
+# never filled from another source.
+checked: "2026-11-11"
+cards:
+  a_covent_garden_soho:
+    area: {value: Covent Garden, quote: "across the Covent Garden neighbourhood", source: "https://www.coventgarden.london/"}
+    notices:
+      - {what: "Christmas snowfall on the Piazza, on the hour from midday to 21:00", from: "2026-12-04", to: "2026-12-31", source: "https://www.coventgarden.london/"}
+  a_soho_chinatown_evening:
+    area: {value: Soho, quote: "Soho's Chinatown", source: "https://www.chinatown.co.uk/en/nightime/"}
+  a_west_end_outdoor_dining:
+    area: {value: West End, quote: "heart of London's West End", source: "https://www.regentstreetonline.com/"}
+    hours: {text: "Restaurants and bars generally weekdays 12:00-22:00, Saturday 12:00-23:00, Sunday and public holidays 12:00-22:00; each venue has its own hours", source: "https://www.regentstreetonline.com/plan-your-visit", status: general}
+  a_old_spitalfields_market:
+    hours: {text: "Mon, Tue, Wed, Fri 10:00 to 18:00 or 20:00 (the official site's two pages differ); Thu 08:00-18:00; Sat 10:00-18:00; Sun 10:00-17:00", source: "https://oldspitalfieldsmarket.com/visitor-information", status: conflicting}
+  a_portobello_saturday:
+    area: {value: Portobello, quote: "Portobello is home to one of the most famous", source: "https://www.visitportobello.com/"}
+    hours: {text: "Mon-Sun 08:00-19:00, traders usually 08:30-18:00; Saturday is the full market; the antiques arcades open on Saturdays only, most from 07:00 till about 16:00; no Sunday street market outside summer and December; closed on bank holidays except Good Friday until 17:00", source: "https://www.visitportobello.com/where/", status: general}
+  m_bank_of_england_gold:
+    step_free: {value: partial, quote: "three steps up to the museum entrance ... three more steps into the museum; portable ramps, but cannot guarantee safe access in all circumstances", source: "https://www.bankofengland.co.uk/museum/plan-your-visit/accessibility"}
+    hours: {text: "Mon-Fri 10:00-17:00 (last entry 16:30); every third Thursday of the month until 20:00; closed bank holidays and weekends", source: "https://www.bankofengland.co.uk/museum"}
+    price: {amount: 0, kind: free, quote: "Free to visit", source: "https://www.bankofengland.co.uk/museum"}
+    notices:
+      - {what: "Closed from 15:00", from: "2026-11-27", to: "2026-11-27", source: "https://www.bankofengland.co.uk/museum"}
+  m_courtauld_gallery:
+    step_free: {value: yes, quote: "Somerset House entrance step free with ramp access; 5 steps to the main lift, with a platform lift nearby; the gallery lift serves all levels", source: "https://courtauld.ac.uk/gallery/plan-your-visit/accessibility/"}
+    hours: {text: "Daily 10:00-18:00, last entry 17:15; 24 and 31 Dec 10:00-15:00; closed 25-26 Dec; 1 Jan 12:00-18:00", parse: "Daily 10:00-18:00", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
+    notices:
+      - {what: "Closes at 15:00 (last entry 14:00)", from: "2026-12-24", to: "2026-12-24", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
+      - {what: "Closed", from: "2026-12-25", to: "2026-12-26", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
+      - {what: "Closes at 15:00 (last entry 14:00)", from: "2026-12-31", to: "2026-12-31", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
+      - {what: "Opens at 12:00", from: "2027-01-01", to: "2027-01-01", source: "https://courtauld.ac.uk/gallery/plan-your-visit/"}
+    price: {amount: 16, kind: entry, quote: "adult (19+): £16 and £14 listed, not labelled which includes a donation; under-18s free", source: "https://courtauld.ac.uk/gallery/plan-your-visit/", status: unclear}
+    card_differs: "The card plans £12 (read 27 Sep). On 12 Nov the plan-your-visit page lists two unlabelled adult (19+) prices, £16 and £14, and the collection page says 'Gallery Entry from £14'. No day or channel difference, no booking fee"
+  m_national_gallery:
+    step_free: {value: yes, quote: "The Sainsbury Wing is the main entrance for everyone ... It has step-free access. Lifts throughout", source: "https://www.nationalgallery.org.uk/visiting/access"}
+    hours: {text: "Daily 10:00-18:00, Friday until 21:00; closed 24-26 December and 1 January", parse: "Daily 10:00-18:00, Fri to 21:00; closed 24-26 December and 1 January", source: "https://www.nationalgallery.org.uk/visiting/plan-your-visit"}
+    price: {amount: 0, kind: free, quote: "General admission free", source: "https://www.nationalgallery.org.uk/visiting/plan-your-visit"}
+    notices:
+      - {what: "Some east-wing rooms close from 16:00; building work is moving some paintings", from: "2026-11-17", to: "2026-11-17", source: "https://www.nationalgallery.org.uk/visiting/plan-your-visit"}
+  m_nhm_whale_hall:
+    step_free: {value: partial, quote: "wheelchair accessible, with lifts and step-free access to most areas; lifts may be out of service", source: "https://www.nhm.ac.uk/visit/access-at-south-kensington.html"}
+    hours: {text: "Daily 10:00-17:50 (last entry 17:30); closed 24-26 December", source: "https://www.nhm.ac.uk/visit.html"}
+    price: {amount: 0, kind: free, quote: "Our galleries are free to explore", source: "https://www.nhm.ac.uk/visit.html"}
+  m_soane_museum:
+    step_free: {value: partial, quote: "internal and external platform lift for step-free access; arrange by phone 24 hours ahead; some spaces too narrow; wheelchairs over 41cm transfer", source: "https://www.soane.org/visit/accessibility"}
+    hours: {text: "Wed-Sun 10:00-17:00, last admission usually 16:30; closed Mon and Tue; open on bank holidays", parse: "Wed-Sun 10:00-17:00", source: "https://www.soane.org/your-visit"}
+    price: {amount: 0, kind: free, quote: "Entry is free", source: "https://www.soane.org/your-visit"}
+  m_horizon_22:
+    area: {value: City of London, quote: "the tallest building in the City of London", source: "https://www.horizon22.co.uk/visit"}
+    hours: {text: "Mon-Fri 10:00-18:00, Sat 10:00-17:00, Sun 10:00-16:00", source: "https://www.horizon22.co.uk/"}
+    price: {amount: 0, kind: free, quote: "Visiting Horizon 22 is free", source: "https://www.horizon22.co.uk/visit"}
+  m_evensong_st_pauls:
+    hours: {text: "Choral Evensong 15-29 Nov 2026: 17:00 Monday to Saturday, 15:00 on Sundays; none listed on Wed 18 or Sat 28 Nov", source: "https://www.stpauls.co.uk/resources/our-service-schedule", checked: "2026-11-12", status: general}
+    notices:
+      - {what: "No Choral Evensong listed", from: "2026-11-18", to: "2026-11-18", source: "https://www.stpauls.co.uk/resources/our-service-schedule"}
+      - {what: "No Choral Evensong listed", from: "2026-11-28", to: "2026-11-28", source: "https://www.stpauls.co.uk/resources/our-service-schedule"}
+    step_free: {value: partial, quote: "North Transept entrance has ramped access ... Other parts of the Cathedral are step-access only; the Crypt and Quire are step-free", source: "https://www.stpauls.co.uk/accessibility-cathedral"}
+  m_borough_market_graze:
+    step_free: {value: yes, quote: "public spaces are laid out on a single ground-floor level, so have no need for lifts or stairs; some cobbles", source: "https://www.boroughmarket.org.uk/visit-us/"}
+    hours: {text: "Mon closed; Tue-Fri 10:00-17:00; Sat 09:00-17:00; Sun 10:00-16:00; festive and bank holiday hours vary", source: "https://www.boroughmarket.org.uk/visit-us/"}
+  m_burlington_arcade:
+    area: {value: Mayfair, quote: "a landmark retail destination in the heart of Mayfair", source: "https://www.burlingtonarcade.com/location/"}
+    hours: {text: "Mon-Fri 08:00-19:00, Sat 09:00-19:00, Sun 11:00-18:00", source: "https://www.burlingtonarcade.com/location/"}
+  m_leadenhall_market:
+    area: {value: City of London, quote: "in the heart of the City of London", source: "https://leadenhallmarket.co.uk/"}
+    hours: {text: "Public areas open 24/7; shops, bars and restaurants vary", source: "https://leadenhallmarket.co.uk/visit/"}
+    notices:
+      - {what: "Scaffolding for maintenance; the market remains fully open", from: "2026-11-11", to: null, source: "https://leadenhallmarket.co.uk/visit/"}
+  m_beigel_bake_late:
+    hours: {text: "Open 24 hours, 7 days a week", source: "https://www.beigelbake.co.uk/pages/contact-us"}
+  m_open_kitchen_steakhouse:
+    area: {value: Paddington, quote: "Meet Bros Paddington ... near Paddington Station", source: "https://www.meetbros.co.uk/"}
+    hours: {text: "Sat-Thu 12:00-23:00; Fri 15:00-23:00", source: "https://www.meetbros.co.uk/"}
+    menu: {quote: "steaks £28.95-£45.95; lunch menu £27.95 two courses, £31.95 three; prices include VAT, exclude a 10% service charge", source: "https://meetbros.co.uk/menu/"}
+  m_chinatown_dim_sum:
+    area: {value: Chinatown, quote: "Centred around Gerrard Street ... between Soho and Leicester Square", source: "https://chinatown.co.uk/en/visit/faqs/"}
+    step_free: {value: partial, quote: "public streets are generally accessible ... accessibility varies between individual businesses, particularly older buildings and venues with basement or upstairs seating", source: "https://chinatown.co.uk/en/visit/faqs/"}
+  m_park_bike_loop_hyde:
+    hours: {text: "Pedestrian gates 05:00 to midnight (no cycling hours stated)", source: "https://www.royalparks.org.uk/visit/parks/hyde-park", status: general}
+  m_park_break_hyde:
+    hours: {text: "Pedestrian gates 05:00 to midnight", source: "https://www.royalparks.org.uk/visit/parks/hyde-park"}
+  m_park_break_regents:
+    hours: {text: "Pedestrian gates 05:00-16:30 as shown on 11 Nov (winter); Primrose Hill closed 22:00-06:00 during British Summer Time", source: "https://www.royalparks.org.uk/visit/parks/regents-park-primrose-hill", status: seasonal}
+  m_park_break_st_james:
+    hours: {text: "Some pedestrian gates 05:00 to midnight (the page doesn't say which)", source: "https://www.royalparks.org.uk/visit/parks/st-jamess-park", status: general}
+  m_greenwich_wolfe_view:
+    hours: {text: "Pedestrian gates 06:00-18:00 as shown on 11 Nov (times change with the season)", source: "https://www.royalparks.org.uk/visit/parks/greenwich-park", status: seasonal}
+    notices:
+      - {what: "Rose Garden closed for renovation", from: "2026-11-10", to: "2026-11-23", source: "https://www.royalparks.org.uk/visit/parks/greenwich-park"}
+  m_richmond_park_view:
+    hours: {text: "Pedestrian gates 07:30-20:00; during the deer cull, locked nightly 20:00-07:30 except Friday and Saturday nights", source: "https://www.royalparks.org.uk/visit/parks/richmond-park", status: seasonal}
+    notices:
+      - {what: "Deer cull for six weeks: pedestrian gates locked 20:00-07:30 except Friday and Saturday nights", from: "2026-11-02", to: "2026-12-13", source: "https://www.royalparks.org.uk/visit/parks/richmond-park"}
+  m_park_break_embankment:
+    area: {value: Victoria Embankment, quote: "part of the chain of open spaces along Victoria Embankment", source: "https://www.westminster.gov.uk/parks-and-open-spaces/victoria-embankment-gardens", checked: "2026-11-12"}
+    hours: {text: "Open every day from 08:00; closing times vary by the time of year", source: "https://www.westminster.gov.uk/parks-and-open-spaces/victoria-embankment-gardens", checked: "2026-11-12", status: seasonal}
+    access_note: {quote: "This park has disabled access (no step-free statement, so step-free stays unknown)", source: "https://www.westminster.gov.uk/parks-and-open-spaces/victoria-embankment-gardens"}
+  m_park_break_battersea:
+    hours: {text: "08:00 until dusk; park gates 06:30-22:30 for the facilities", source: "https://www.wandsworth.gov.uk/battersea-park", checked: "2026-11-12", status: seasonal}
+    notices:
+      - {what: "The Cascades waterfall is being restored", from: null, to: null, source: "https://www.wandsworth.gov.uk/battersea-park"}
+  m_park_break_holland_kyoto:
+    area: {value: Holland Park, quote: "Holland Park and Kensington High Street", source: "https://www.rbkc.gov.uk/parks-leisure-and-culture/parks/your-local-park"}
+    step_free: {value: partial, quote: "Level access ... at North Abbotsbury Road, Ilchester Place, Duchess of Bedford Walk and High Street Kensington; two entrances on a steep incline", source: "https://www.rbkc.gov.uk/parks-leisure-and-culture/parks/your-local-park/holland-park"}
+    hours: {text: "07:30 until dusk; some gates close up to 20 minutes earlier", source: "https://www.rbkc.gov.uk/parks-leisure-and-culture/parks/your-local-park/holland-park", status: seasonal}
+  m_park_break_olympic:
+    step_free: {value: yes, quote: "good step-free access, hard-standing surfaces, regular seating", source: "https://www.queenelizabetholympicpark.co.uk/plan-your-visit/access-and-safety/access"}
+    hours: {text: "Open every day (no gate hours stated)", source: "https://www.queenelizabetholympicpark.co.uk/plan-your-visit/visitor-information", status: general}
+    price: {amount: 0, kind: free, quote: "free to visit every day of the week", source: "https://www.queenelizabetholympicpark.co.uk/"}
+    notices:
+      - {what: "South Park fountains closed for the winter", from: "2026-10-30", to: "2027-03-31", source: "https://www.queenelizabetholympicpark.co.uk/plan-your-visit/visitor-information"}
+      - {what: "Boat tours and swan pedalos closed for the winter, reopening in April", from: "2026-11-11", to: "2027-04-01", source: "https://www.queenelizabetholympicpark.co.uk/plan-your-visit/visitor-information"}
+      - {what: "South Park fountain pathway closed for resurfacing", from: "2026-11-01", to: "2026-11-20", source: "https://www.queenelizabetholympicpark.co.uk/plan-your-visit/visitor-information"}
+  m_garden_at_120:
+    step_free: {value: yes, quote: "Entrance ... via the lifts only; Level 15 opens directly into the garden; paving not perfectly flat", source: "https://fen-court.com/accessibility/"}
+    hours: {text: "1 Oct-31 Mar daily 10:00-18:30, weekends until 17:00; 1 Apr-30 Sep daily 10:00-21:00, weekends until 17:00; closed on bank holidays", source: "https://fen-court.com/", status: seasonal}
+    price: {amount: 0, kind: free, quote: "free and open to everyone", source: "https://fen-court.com/"}
+  m_greenwich_peninsula_walk:
+    area: {value: Greenwich Peninsula, quote: "Greenwich Peninsula's free art trail", source: "https://www.greenwichpeninsula.co.uk/whats-here/art-trail"}
+  m_london_fields_lido:
+    area: {value: London Fields, quote: "in the heart of London Fields Park", source: "https://www.better.org.uk/leisure-centre/london/hackney/london-fields-lido"}
+    step_free: {value: partial, quote: "lists Ramp Access, Poolside hoist, Accessible Changing, Disabled toilet (no step-free statement)", source: "https://www.better.org.uk/leisure-centre/london/hackney/london-fields-lido"}
+    hours: {text: "Mon-Sun 06:30-21:00 (week of 9 Nov 2026)", source: "https://www.better.org.uk/leisure-centre/london/hackney/london-fields-lido"}
+  m_go_karting_canary_wharf:
+    hours: {text: "Mon-Fri 12:00-21:00; Sat 08:30-22:00; Sun 08:30-21:00", source: "https://www.k1speed.com/uk/canary-wharf.html"}
+    price: {amount: 35, kind: ticket, quote: "1 race £29; Racer's Pack £6, compulsory to all drivers", source: "https://www.k1speed.com/uk/canary-wharf/pricing.html"}
+    age: {quote: "Adult karting is for ages 14 and older", source: "https://www.k1speed.com/uk/canary-wharf/pricing.html"}
+  m_to_river_somerset:
+    step_free: {value: partial, quote: "step free access to the terrace bar ... and the Strand level of the South Wing; cobble stone paving into the courtyard with a flat pavement around the edges", source: "https://www.somersethouse.org.uk/visit-us/accessibility"}
+    hours: {text: "Strand entrance 08:00-23:00 (courtyard hours not stated separately)", source: "https://somersethouse.org.uk/", status: general}
+    notices:
+      - {what: "Skate at Somerset House: the ice rink fills the courtyard", from: "2026-11-11", to: "2027-01-10", source: "https://somersethouse.org.uk/"}
+  m_uber_boat_west_day:
+    step_free: {value: yes, quote: "All our piers are step-free and wheelchair accessible except for Cadogan, London Bridge City and Wandsworth Riverside Quarter; all our boats are wheelchair accessible by ramp", source: "https://thamesclippers.com/"}
+    hours: {text: "Daily except Christmas Day and Boxing Day, every 10-20 minutes (winter timetable from 9 Nov 2026)", source: "https://www.thamesclippers.com/plan-your-journey/ticket-information", status: general}
+    card_differs: "The card plans £22.90, which matches the 'All Zones, Peak Adult' Oyster/contactless single; the page says those fares were effective until 31 Oct 2026 and revised fares would follow. Neither the ticket page nor the route map says which zone Greenwich or Battersea Power Station pier is in, so the fare for this journey is unconfirmed (12 Nov)"
+  m_uber_boat_west_night:
+    step_free: {value: yes, quote: "All our piers are step-free ... except Cadogan, London Bridge City and Wandsworth Riverside Quarter; all our boats ... accessible by ramp", source: "https://thamesclippers.com/"}
+    hours: {text: "Daily except Christmas Day and Boxing Day (evening sailings not shown on the page read)", source: "https://www.thamesclippers.com/plan-your-journey/timetable", status: general}
+    card_differs: "The card plans £13.70, which matches no fare on the page read on 12 Nov (Central and East: £12.20 online, £16.00 at the pier, £11.40/£12.40 off-peak/peak Oyster until 31 Oct); Westminster pier's zone isn't stated, so the fare is unconfirmed"
+not_read:   # each tried again on 12 Nov at another official address (m252); still unread
+  - {card: m_bm_great_court, url: "https://www.britishmuseum.org", why: "403"}
+  - {card: m_national_portrait_gallery, url: "https://www.npg.org.uk", why: "403"}
+  - {card: m_liberty_timber_galleries, url: "https://www.libertylondon.com", why: "header overflow"}
+  - {card: m_st_martin_crypt_lunch, url: "https://www.stmartin-in-the-fields.org", why: "403"}
+  - {card: m_rfh_foyers_rest, url: "https://www.southbankcentre.co.uk", why: "403"}
+  - {card: a_kings_cross_canal, url: "https://www.kingscross.co.uk", why: "403"}
+  - {card: m_canary_wharf_towers, url: "https://www.canarywharf.com/", why: "empty page"}
+  - {card: m_horizon_22, url: "https://www.horizon22.co.uk/faq", why: "the disabled-access answer is collapsed and wasn't in the page text; /accessibility returned 404 (12 Nov)"}
+  - {card: m_st_dunstan_garden, url: "https://www.cityoflondon.gov.uk/things-to-do/city-gardens/find-a-garden/st-dunstan-in-the-east-church-garden", why: "the official page states no hours or access"}
+  - {card: m_millennium_bridge_dome, url: "https://www.cityoflondon.gov.uk/", why: "no visitor page for the bridge found"}

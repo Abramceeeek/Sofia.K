@@ -151,6 +151,12 @@ class ScreensTest {
     @Test fun categories() = show("06b-categories") {
         route = Route.Onboarding; step = Step.Places; profile = profile.copy(based = "abroad")
     }
+    // m220: after the friends' round, a Londoner gets the kinds of places too, and stays a resident (Test B cohort)
+    @Test fun categoriesEveryone() = show("06c-categories-everyone") {
+        route = Route.Onboarding; step = Step.Places; profile = profile.copy(based = "london")
+        onboarding = onboarding!!.copy(placesMode = "kinds")
+        check(usesKinds && !isVisitor) { "a Londoner with kinds of places must stay a resident" }
+    }
     @Test fun thisOrThat() = show("07-thisorthat") { route = Route.Onboarding; step = Step.ThisOrThat }
     @Test fun learnedStep() = show("07b-learned") { route = Route.Onboarding; step = Step.Learned }
     @Test fun survey() = show("15-survey") { surveyDone = false }
@@ -162,10 +168,17 @@ class ScreensTest {
     @Test fun tripHome() = show("19-triphome")
     @Test fun planForm() = show("08-planform") { plan = null; tripPath += Dest.Day }
     @Test fun planDay() = show("09-plan") { tripPath += Dest.Day }
+    // m217: the day against a budget, from the demo plan's own stops (brain.daybudget.block)
+    @Test fun planBudget() = showThen("09g-planbudget", {
+        plan = plan!!.copy(budget = demo("demo_budget", DayBudget.serializer())); tripPath += Dest.Day
+    }, { reach("Your budget") })
     @Test fun planMap() = show("09d-planmap") { prefs.set("planLayout", "map"); tripPath += Dest.Day }
     @Test fun stop() = show("10-stop") { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }
     @Test fun now() = show("10b-now") { today(1); showNow = true }   // today, on the way (as the iPhone's)
     @Test fun nowAhead() = show("10k-nowahead") { nowIndex = 1; showNow = true }   // a later day: a look ahead
+    // m228: no signal on "Now": the note, and what's saved on this phone (today's day, the stay, the journey, help)
+    @Test fun nowOffline() = show("10m-nowoffline") { today(1); connectivity.pin(false); showNow = true }
+    @Test fun offlineSaved() = show("10n-offlinesaved") { today(1); connectivity.pin(false); screenSaved = true; showNow = true }
     @Test fun trip() = show("24-trip") { tripPath += Dest.TripOverview(trips.first().id) }
     @Test fun tripDay() = show("25-tripday") { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.TripDay(trips.first().id, 0) }
     @Test fun tripCreate() = show("20-tripcreate") { showCreate = true }
@@ -174,15 +187,45 @@ class ScreensTest {
     @Test fun tripDays() = show("22a-tripdays") { editingTrip = trips.first(); editStep = 3; showCreate = true }
     // 20 Oct (round 2): a new trip on its last question, as on the iPhone ("Make my trip", not "Plan the trip again")
     @Test fun tripFeel() = show("23-tripfeel") { editingTrip = trips.first().copy(id = "draft"); editStep = 4; showCreate = true }
+    // m196 (branch only): "How long should I stay?", the last question, with the Brain's answer for this trip handed in
+    private fun AppModel.lengthStep() {
+        val t = trips.first().copy(id = "draft")
+        tripLength = t.lengthRequest() to demo("demo_trip_length", TripLength.serializer())
+        editingTrip = t; editStep = 5; showCreate = true
+    }
+    @Test fun tripLength() = show("23b-triplength") { lengthStep() }
+    @Test fun tripLengthMore() = showThen("23c-triplength2", { lengthStep() }, { reach("Your arrival and departure days") })
     // D131: flights and stays open inside the trip, and You from the home's menu
     private fun AppModel.openBook() { tripPath += Dest.TripOverview(trips.first().id); tripPath += Dest.Book }
     @Test fun flights() = show("26-flights") { openBook(); book.segment = "flights" }
+    // m218: three fares in euros, compared at a dated ECB rate: the estimate beside each fare, never instead of it
+    @Test fun flightsCurrency() = show("26b-flightscurrency") {
+        book.flights = demo("demo_flights_mixed", FlightResults.serializer()); openBook(); book.segment = "flights"
+    }
     @Test fun flightFilters() = showThen("27-flightfilters", { openBook(); book.segment = "flights"; book.showFilters = true },
         {}, layers = true)
     @Test fun flight() = show("28-flight") { openBook(); bookPath += BookDest.FlightDetail(book.flights!!.results.first()) }
     @Test fun stays() = show("29-stays") { openBook(); book.segment = "stays" }
-    @Test fun stay() = show("32-stay") { openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
+    // m203: "For your trip" comes from the Brain; the screenshots hand in its sample answer for the first stay
+    private fun AppModel.stayAnswer() {
+        stayCompare = book.stays!!.results.first().id to demo("demo_stay_compare", StayCompare.serializer())
+    }
+    @Test fun stay() = show("32-stay") { stayAnswer(); openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first()) }
+    @Test fun stayForTrip() = showThen("32c-stayfortrip", {
+        stayAnswer(); openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first())
+    }, { reach("Your dates stay as they are") })
     @Test fun you() = show("33-you") { tripPath += Dest.You }
+
+    // WS8 (m213): the newest screens on a small phone with large text (font scale 1.6), so nothing is cut off
+    @Config(qualifiers = "w320dp-h568dp-xhdpi", fontScale = 1.6f)
+    @Test fun stayForTripLargeText() = showThen("90-stayfortrip-large", {
+        stayAnswer(); openBook(); bookPath += BookDest.StayDetail(book.stays!!.results.first())
+    }, { reach("Day 1: you arrive") })
+    @Config(qualifiers = "w320dp-h568dp-xhdpi", fontScale = 1.6f)
+    @Test fun tripDayMineLargeText() = showThen("91-tripdaymine-large", {
+        val trip = ownTime()
+        tripPath += Dest.TripOverview(trip.id); tripPath += Dest.TripDay(trip.id, 1)
+    }, { reach("Your plans") })
 
     // D131 (shape A): the home on the day (part-way through) and after it (everything rated)
     private fun AppModel.today(at: Int) {
@@ -263,6 +306,27 @@ class ScreensTest {
         shoot("25b-changeday")
     }
 
+    // m200 (branch only): a trip day with the person's own time, from the same sample day as the iPhone's (made by the
+    // Brain: brain/scripts, demo_trip_day_mine.json), and "Change this day" with its "Time for yourself"
+    private fun AppModel.ownTime(): Trip {
+        val mine = demo("demo_trip_day_mine", TripDayOut.serializer())
+        val t = trips.first()
+        val trip = t.copy(days = t.days.map { if (it.index == mine.index) mine else it },
+            personal = listOf(DayTime(mine.index, mine = mine.mine.orEmpty().map { MyTime(it.kind, it.start, it.end) })))
+        trips = listOf(trip)
+        return trip
+    }
+    @Test fun tripDayMine() = showThen("25c-tripdaymine", {
+        val trip = ownTime()
+        tripPath += Dest.TripOverview(trip.id); tripPath += Dest.TripDay(trip.id, 1)
+    }, { reach("Your plans") })
+    @Test fun changeDayMine() {
+        val trip = model.ownTime()
+        compose.setContent { RootView(model); ChangeDaySheet(model, trip, trip.days[1]) {} }
+        reach("you can also swap a stop")
+        shoot("25d-daychangemine")
+    }
+
     @Test fun airports() {
         compose.setContent { RootView(model); AirportPicker(model, {}) {} }
         shoot("22b-airports")
@@ -330,6 +394,10 @@ class ScreensTest {
     @Test fun planEnd() = showThen("09f-planend", { tripPath += Dest.Day }, { reach("Another day") })
     @Test fun stopMore() = showThen("10a-stop2",
         { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }, { reach("Best time and light") })
+    // m230: "Why this stop?" tapped open, on the stop the iPhone shows (one with a best-light window)
+    @Test fun stopWhy() = showThen("10o-stopwhy",
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { !it.bestWindow.isNullOrEmpty() && it.rateable }) },
+        { reach("Why this stop?", tap = true); reach("From the plan's own inputs") })
     @Test fun nowLocation() = showThen("10g-nowlocation", { today(1); showNow = true },
         { reach("No thanks") })
     @Test fun replan() = showThen("10h-replan", { today(1); showNow = true },

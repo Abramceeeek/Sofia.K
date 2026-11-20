@@ -28,6 +28,7 @@ struct Onboarding: Codable {
     let based: BasedQuestion?                     // D116: "Where are you based?", the first question
     let categoryCards: [CategoryCard]?            // D116: visitors from abroad get these instead of the London places
     let categories: CategoriesPrompt?
+    var placesMode: String? = nil                 // m220: "kinds" gives everyone the category cards (after the round)
     let conjointWords: [PatternWords]?            // D117: "So far you've picked less walking every time"
     let summary: SummaryText?                     // D117: "So far, I've learned…"
     let testb: TestBText?                         // Build 2: the blind Plan 1 / Plan 2 pair
@@ -243,13 +244,37 @@ struct Plan: Codable, Hashable, Identifiable {
     let basis: Basis?              // D115: what the reasons rest on so far
     let blind: Bool?               // D115: the blind Test B comparison: no reasons, no feeling line, no worth
     let weather: Weather?          // Stage 1: the Met Office forecast the plan was made with, if any
+    var budget: DayBudget? = nil   // m217: the day's money against the person's budget, line by line
+    var createdAt: String? = nil   // m228: when the Brain made it, for "saved on this phone"
 
     var isBlind: Bool { blind == true }
 
     /// The same plan on another day (CI screenshots: the home on the day, D131).
     func dated(_ day: String) -> Plan {
         Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
-             basis: basis, blind: blind, weather: weather)
+             basis: basis, blind: blind, weather: weather, budget: budget, createdAt: createdAt)
+    }
+}
+
+/// m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out.
+struct DayBudget: Codable, Hashable {
+    let budgetGbp: Double
+    let foodInBudget: Bool
+    let lunchChoice: String
+    let lines: [Line]
+    let totalGbp: Double
+    let leftGbp: Double
+    let status: String                 // fits | tight | over
+    let message: String
+    let options: [String]
+    let note: String
+
+    struct Line: Codable, Hashable {
+        let label: String
+        let gbp: Double?               // nil: none planned (said in `note`)
+        let kind: String               // estimate | price | missing
+        let note: String
+        let inBudget: Bool
     }
 }
 
@@ -323,7 +348,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let chosenFor: [String]
     let card: Card?
     let worthGbp: Double?          // the model's £V (D88): kept for the day's curve, no longer shown (D127)
-    let match: String?             // D127: "A strong match for you" / "A good match for you" / "Worth a try"
+    let match: String?             // m275: "Recommended because of your lean towards views and awe" (never a chance)
     let approachSteps: [ApproachStep]?   // from where, the way in, where you arrive: the card's own text (D112)
     let bestLight: String?         // the card's light line
     let bestWindow: String?        // "16:12–17:12" on the plan's date
@@ -334,17 +359,33 @@ struct Stop: Codable, Hashable, Identifiable {
     let bookAhead: String?         // journey audit: a booking the visit needs, from the card's checked source
     let hours: String?             // m176: opening hours as people read them, from the card's checked source
     let checked: String?           // journey round 2: when the card's facts were last checked ("2026-10-08")
+    let mine: String?              // m200: "plans" or "free": the person's own time, planned around (never rated)
+    var explain: StopExplain? = nil  // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
 
     var id: String { momentId + "@" + arrive }
 
-    /// D127 (algorithm reviews): the price, then how well it matches, in words. The £ figure overclaimed: after the short
-    /// onboarding its 95% range spans about 20 times, so it stays inside the model.
+    /// D127 (algorithm reviews): the price, then why it's recommended. The £ figure overclaimed: after the short
+    /// onboarding its 95% range spans about 20 times, so it stays inside the model. m275: the factors from the person's
+    /// answers, never a chance of "Good" (not yet checked against real ratings).
     var matchLine: String? {
         match.map { (costGbp == 0 ? "Free entry." : "Costs \(Money.text(costGbp)).") + " \($0)." }
     }
 
     /// The word for this stop on "How the day moves" and its line.
     var word: String { feelWord ?? (rateable ? "Easy" : "Lunch") }
+}
+
+/// m230 (Abram, m224): "Why this stop?". At most three reasons, each from an input the planner really used
+/// (brain/src/brain/explain.py, why_this_stop), with no model score or percentage. "against" is the one trade-off.
+struct WhyLine: Codable, Hashable {
+    let kind: String
+    let effect: String
+    let text: String
+}
+
+/// Only the reasons are read here: the factors behind them stay in the Brain's answer.
+struct StopExplain: Codable, Hashable {
+    let why: [WhyLine]?
 }
 
 // ---- requests ---------------------------------------------------------------------------------
@@ -414,7 +455,6 @@ struct Profile: Codable, Equatable {
     var chronotype: String?
     var activity: String?
     var grewUp: String?
-    var foodsAvoided: String?
     var photosMatter: Int?
     var shotCardAppeal: Int?
     var fields: [String] = []
@@ -436,6 +476,24 @@ struct PlanRequest: Codable, Hashable {
     var intent: [String: String]? = nil    // m176: {"must_do": card id}, a place they want in the day
     var feelings: [String]? = nil          // journey round 2: a trip day's feelings, so swaps plan it like the trip
     var conditions: PlanConditions? = nil  // journey round 2: "it's raining" when re-planning the rest of today
+    var mine: [MyTime]? = nil              // m200: a trip day's own time, so swap and re-plan keep it
+    var relaxed: Bool? = nil               // m200: a relaxed trip day
+}
+
+/// m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free".
+struct MyTime: Codable, Hashable {
+    var kind: String                       // plans | free
+    var start: String
+    var end: String
+    var location: String? = nil            // m201: near | elsewhere | unknown (nil: not said, the same as unknown)
+    var meal: Bool? = nil                  // m201: they'll eat during these plans, so no separate lunch stop
+
+    var title: String { kind == "plans" ? "Your plans" : "Free time" }
+
+    /// m201: plans that cover part of lunchtime (a lunch stop starts 11:30-13:30 and lasts 45 min, as in the Brain).
+    var overlapsLunch: Bool {
+        kind == "plans" && ChangeDaySheet.minutes(start) < 14 * 60 + 15 && ChangeDaySheet.minutes(end) > 11 * 60 + 30
+    }
 }
 
 /// The weather the planner should assume (rain makes the rain swaps win).

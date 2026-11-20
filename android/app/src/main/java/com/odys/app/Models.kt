@@ -28,6 +28,7 @@ data class Onboarding(
     val based: BasedQuestion? = null,                         // D116
     val categoryCards: List<CategoryCard>? = null,            // D116
     val categories: CategoriesPrompt? = null,
+    val placesMode: String? = null,                           // m220: "kinds" gives everyone the category cards
     val conjointWords: List<PatternWords>? = null,            // D117
     val summary: SummaryText? = null,                         // D117
     val testb: TestBText? = null,                             // Build 2
@@ -182,8 +183,29 @@ data class Plan(
     val basis: Basis? = null,
     val blind: Boolean? = null,
     val weather: Weather? = null,     // Stage 1: the Met Office forecast the plan was made with, if any
+    val budget: DayBudget? = null,    // m217: the day's money against the person's budget, line by line
+    val createdAt: String? = null,    // m228: when the Brain made it, for "saved on this phone"
 ) {
     val isBlind: Boolean get() = blind == true
+}
+
+/** m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out. */
+@Serializable
+data class DayBudget(
+    val budgetGbp: Double,
+    val foodInBudget: Boolean = true,
+    val lunchChoice: String = "usual",
+    val lines: List<Line> = emptyList(),
+    val totalGbp: Double = 0.0,
+    val leftGbp: Double = 0.0,
+    val status: String = "fits",          // fits | tight | over
+    val message: String = "",
+    val options: List<String> = emptyList(),
+    val note: String = "",
+) {
+    @Serializable
+    data class Line(val label: String, val gbp: Double? = null, val kind: String = "estimate", val note: String = "",
+                    val inBudget: Boolean = true)
 }
 
 /** Stage 1: the forecast for the plan's hours (brain.weather.Outlook). */
@@ -246,7 +268,7 @@ data class Stop(
     val chosenFor: List<String> = emptyList(),
     val card: Card? = null,
     val worthGbp: Double? = null,     // the model's £V (D88): kept for the day's curve, no longer shown (D127)
-    val match: String? = null,        // D127: "A strong match for you" / "A good match for you" / "Worth a try"
+    val match: String? = null,        // m275: "Recommended because of your lean towards views and awe" (never a chance)
     val approachSteps: List<ApproachStep>? = null,
     val bestLight: String? = null,
     val bestWindow: String? = null,
@@ -257,10 +279,13 @@ data class Stop(
     val bookAhead: String? = null,
     val hours: String? = null,
     val checked: String? = null,
+    val mine: String? = null,         // m200: "plans" or "free": the person's own time, planned around (never rated)
+    val explain: StopExplain? = null, // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
 ) {
     val id: String get() = "$momentId@$arrive"
 
-    /** D127 (algorithm reviews): the price, then how well it matches, in words. The £ figure overclaimed. */
+    /** D127 (algorithm reviews): the price, then why it's recommended. The £ figure overclaimed. m275: the factors from
+     *  the person's answers, never a chance of "Good" (not yet checked against real ratings). As on the iPhone. */
     val matchLine: String?
         get() = match?.let { (if (costGbp == 0.0) "Free entry." else "Costs ${Money.text(costGbp)}.") + " $it." }
 
@@ -272,6 +297,17 @@ data class Stop(
 
     val base: String get() = momentId.substringBefore("#")
 }
+
+/**
+ * m230 (Abram, m224): one reason on "Why this stop?". At most three, each from an input the planner really used
+ * (brain/src/brain/explain.py, why_this_stop), with no model score or percentage; "against" is the one trade-off.
+ */
+@Serializable
+data class WhyLine(val kind: String, val effect: String, val text: String)
+
+/** Only the reasons are read here: the factors behind them stay in the Brain's answer. */
+@Serializable
+data class StopExplain(val why: List<WhyLine>? = null)
 
 // ---- requests ---------------------------------------------------------------------------------
 
@@ -324,7 +360,6 @@ data class Profile(
     val chronotype: String? = null,
     val activity: String? = null,
     val grewUp: String? = null,
-    val foodsAvoided: String? = null,
     val photosMatter: Int? = null,
     val shotCardAppeal: Int? = null,
     val fields: List<String> = emptyList(),
@@ -347,10 +382,34 @@ data class PlanRequest(
     val intent: Map<String, String>? = null,
     val feelings: List<String>? = null,
     val conditions: PlanConditions? = null,
+    val mine: List<MyTime>? = null,       // m200: a trip day's own time, so swap and re-plan keep it
+    val relaxed: Boolean? = null,         // m200: a relaxed trip day
 )
 
 @Serializable
 data class PlanConditions(val rainProb: Double? = null)
+
+/** m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free". */
+@Serializable
+data class MyTime(
+    val kind: String,
+    val start: String,
+    val end: String,
+    val location: String? = null,   // m201: near | elsewhere | unknown (null: not said, the same as unknown)
+    val meal: Boolean? = null,      // m201: they'll eat during these plans, so no separate lunch stop
+) {
+    val title: String get() = if (kind == "plans") "Your plans" else "Free time"
+
+    /** m201: plans that cover part of lunchtime (a lunch stop starts 11:30-13:30 and lasts 45 min, as in the Brain). */
+    val overlapsLunch: Boolean
+        get() = kind == "plans" && Dates.minutes(start) < 14 * 60 + 15 && Dates.minutes(end) > 11 * 60 + 30
+
+    companion object {
+        /** m201 (Abram, 7 Nov): where the plans are, if they say. Not decided leaves time either side. */
+        val places = listOf("near" to "Near one of the day's places", "elsewhere" to "Somewhere else",
+            "unknown" to "Not decided yet")
+    }
+}
 
 @Serializable
 data class MomentSummary(val id: String, val title: String, val status: String, val plannable: Boolean? = null)

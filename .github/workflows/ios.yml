@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       upload:
-        description: "Sign and upload to TestFlight (needs the secrets)"
+        description: "Sign and upload to TestFlight (needs the secrets; from main only)"
         type: boolean
         default: true
 
@@ -41,9 +41,11 @@ jobs:
         shell: bash
         working-directory: app
     env:
-      WANT_UPLOAD: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.upload) }}
+      # m197: only `main` ever reaches TestFlight. A run started by hand on any other branch builds for the simulator,
+      # whatever the upload box says (before, a branch run with the box ticked would have uploaded its build)
+      WANT_UPLOAD: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.upload)) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
 
       - name: Tools
         env:
@@ -104,7 +106,7 @@ jobs:
           xcrun simctl launch "$UDID" "$BID" -demo YES -screen plan >/dev/null
           sleep 25
           # D130 (Daylight): every screen at night (demo mode is night unless `-sky` says otherwise) ...
-          for s in intro welcome example examplecard founder consent based besthour why places categories thisorthat learned learnedchange planform error waking mustinclude plan plan2 planend reveal planmap stop stop2 swap now nowlocation replan nowahead nowend rating ratingpicked ratingdone sharecard improve improveq safety safetysend safetyreply settings delete survey pairintent pair pair2 pairreveal triphome tripwhere tripwhen tripfrom airports tripdays tripfeel trip tripday tripdaylast daychange flights flightfilters flight handoff handoffback stays staysmap stayfilters stay you hometoday homeafter nowarrived; do
+          for s in intro welcome example examplecard founder consent based besthour why places categories thisorthat learned learnedchange planform error waking mustinclude plan plan2 planbudget planend reveal planmap stop stop2 swap now nowlocation replan nowoffline offlinesaved stopwhy nowahead nowend rating ratingpicked ratingdone sharecard improve improveq safety safetysend safetyreply settings delete survey pairintent pair pair2 pairreveal triphome tripwhere tripwhen tripfrom airports tripdays tripfeel triplength triplength2 trip tripday tripdaylast daychange tripdaymine daychangemine flights flightfilters flightscurrency flight flightcurrency handoff handoffback stays staysmap stayfilters stay stayfortrip you hometoday homeafter nowarrived; do
             xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" >/dev/null
             sleep 5
             xcrun simctl io "$UDID" screenshot "shots/$s.png" >/dev/null
@@ -118,11 +120,18 @@ jobs:
           xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen hometoday -sky golden >/dev/null
           sleep 5
           xcrun simctl io "$UDID" screenshot "shots/hometoday-golden.png" >/dev/null
+          # WS8 (m213): the newest screens with large text (Accessibility Large), so nothing is cut off or squeezed
+          for s in stayfortrip tripdaymine; do
+            xcrun simctl launch --terminate-running-process "$UDID" "$BID" -demo YES -screen "$s" \
+              -UIPreferredContentSizeCategoryName UICTContentSizeCategoryAccessibilityL >/dev/null
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "shots/$s-largetext.png" >/dev/null
+          done
           ls shots
 
       - name: Upload the screenshots
         if: steps.secrets.outputs.ready != 'true' || env.WANT_UPLOAD != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: screenshots
           path: app/shots

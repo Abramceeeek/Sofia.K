@@ -94,11 +94,24 @@ struct Flight: Codable, Hashable, Identifiable {
     let stops: Int
     let durationMin: Int
     let tags: [String]?
+    var estimate: PriceEstimate? = nil     // m218: in pounds, beside a fare in another currency; never instead of it
+}
+
+/// m218: a price in another currency converted to pounds at a dated rate (the ECB's): an estimate, shown beside the
+/// price, which stays in its own currency.
+struct PriceEstimate: Codable, Hashable {
+    let amount: Double
+    let currency: String
+    let line: String                       // "ECB rate of 6 Nov 2026"
+    var total: Double? = nil               // a stay's whole price, converted
+
+    var text: String { "≈ \(Money.whole(amount, currency)) · \(line)" }
 }
 
 struct StopFacet: Codable, Hashable {
     let stops: Int
     let minPrice: Double
+    var currency: String? = nil            // m218: each price says its own currency
 }
 
 struct AirlineFacet: Codable, Hashable {
@@ -106,6 +119,7 @@ struct AirlineFacet: Codable, Hashable {
     let code: String
     let minPrice: Double
     let count: Int
+    var currency: String? = nil
 }
 
 struct FlightFacets: Codable, Hashable {
@@ -113,11 +127,19 @@ struct FlightFacets: Codable, Hashable {
     let airlines: [AirlineFacet]
     let price: [Double]?
     let legMinutes: [Int]?
+    var currency: String? = nil            // m218: the price slider's currency
+    var estimated: Bool? = nil             // and whether its figures are converted estimates
+
+    /// "£389", or "≈ £334" when the figure is converted.
+    func money(_ amount: Double) -> String {
+        (estimated == true ? "≈ " : "") + Money.whole(amount, currency ?? "GBP")
+    }
 }
 
 struct FlightTab: Codable, Hashable {
     let price: Double
     let durationMin: Int
+    var currency: String? = nil
 }
 
 struct FlightResults: Codable, Hashable {
@@ -130,6 +152,7 @@ struct FlightResults: Codable, Hashable {
     let tabs: [String: FlightTab?]?
     let links: [TripLink]
     let searchedAt: String?
+    var compareNotes: [String]? = nil      // m218: how the prices compare (currencies), and whether bags differ
 }
 
 // ---- stays (POST /v1/trips/stays) -------------------------------------------------------------------------------
@@ -181,6 +204,9 @@ struct StayResult: Codable, Hashable, Identifiable {
     let priceNight: Double
     let links: [TripLink]
     let tags: [String]?
+    var estimate: PriceEstimate? = nil     // m218
+    var payThere: Double? = nil            // m203: taxes or fees paid at the property, in the stay's currency
+    var payThereOther: String? = nil       // m209: such fees in another currency, said, never added
 
     var point: Point? { lat.flatMap { la in lon.map { Point(lat: la, lon: $0) } } }
 }
@@ -194,12 +220,19 @@ struct StayFacets: Codable, Hashable {
     let priceNight: [Double]?
     let kinds: [KindFacet]
     let maxKm: Double?
+    var currency: String? = nil            // m218
+    var estimated: Bool? = nil
+
+    func money(_ amount: Double) -> String {
+        (estimated == true ? "≈ " : "") + Money.whole(amount, currency ?? "GBP")
+    }
 }
 
 struct StayTab: Codable, Hashable {
     let priceNight: Double
     let rating: Double?
     let distanceKm: Double?
+    var currency: String? = nil
 }
 
 struct StayResults: Codable, Hashable {
@@ -213,6 +246,7 @@ struct StayResults: Codable, Hashable {
     let links: [TripLink]
     let centre: String
     let searchedAt: String?
+    var compareNotes: [String]? = nil      // m218
 }
 
 // ---- days (POST /v1/me/trips/days) ------------------------------------------------------------------------------
@@ -222,6 +256,115 @@ struct TripEnd: Codable, Hashable {
     let mode: String                       // flight | train | car
     let place: String?
     let time: String                       // "09:40": landing or arriving; on the way home, leaving
+}
+
+/// m203: a stay judged against the trip (POST /v1/trips/stays/compare). Nothing about it is stored by asking.
+struct StayCompareRequest: Encodable {
+    let destination: String
+    let checkin: String
+    let checkout: String
+    let adults: Int
+    let stay: StayRef
+    let days: [DayEnds]
+
+    struct StayRef: Encodable {
+        let id: String
+        let name: String
+        let lat: Double?
+        let lon: Double?
+        let priceTotal: Double
+        let nights: Int
+        let currency: String
+        let room: String
+        let board: String
+        let refundable: Bool?
+        let sample: Bool
+    }
+
+    struct DayEnds: Encodable {
+        let index: Int
+        let first: Point?
+        let last: Point?
+    }
+}
+
+struct StayCompare: Decodable, Hashable {
+    let source: String                     // sample | liteapi
+    let note: String?
+    let holidaysNote: String?              // m211: the destination's holidays (or these years) aren't known: said
+    let fit: Fit
+    let cost: Cost
+    let dates: [DateOption]
+
+    struct Fit: Decodable, Hashable {
+        let days: [Row]
+        let line: String?
+        struct Row: Decodable, Hashable {
+            let index: Int; let toFirst: Int; let back: Int
+            let text: String?   // m209: the Brain's words, e.g. the arrival day has no morning leg from the stay
+        }
+    }
+
+    struct Cost: Decodable, Hashable {
+        let whole: Double
+        let perNight: Double
+        let line: String
+        let cancel: String
+        let board: String?
+    }
+
+    struct DateOption: Decodable, Hashable {
+        let checkin: String
+        let label: String
+        let whole: Double?
+        let perNight: Double?
+        let sameTerms: Bool
+        let differs: [String]
+        let yours: Bool
+        let lowest: Bool
+        let holidays: [String]?            // m204: the destination's bank holidays in these dates, as facts
+    }
+}
+
+/// m196: "How long should I stay?" (POST /v1/me/trips/length). Nothing is planned or stored by asking.
+struct TripLengthRequest: Encodable {
+    let destination: String
+    let nights: Int?
+    let feelings: [String]
+    let dayStart: String
+    let dayEnd: String
+    let stopsPerDay: Int
+}
+
+/// The Brain's answer: an estimate of how much there is for the person at their pace, never a limit (Abram, 6 Nov).
+struct TripLength: Decodable, Hashable {
+    let place: String
+    let strongMatches: Int
+    let goodMatches: Int
+    let placesPerDay: Int
+    let suggestedDays: Int
+    let yourDays: Int?
+    let spareDays: Int?
+    let headline: String
+    let why: String
+    let note: String
+    let short: String?
+    let options: [Option]
+    let extra: [Extra]
+
+    struct Option: Decodable, Hashable {
+        let days: Int
+        let label: String
+        let line: String
+        let yours: Bool
+        let suggested: Bool
+    }
+
+    struct Extra: Decodable, Hashable {
+        let kind: String
+        let title: String
+        let line: String
+    }
 }
 
 struct TripDaysRequest: Encodable {
@@ -240,6 +383,7 @@ struct TripDaysRequest: Encodable {
     let travelLight: Bool
     let arrive: TripEnd?
     let leave: TripEnd?
+    var personal: [DayTime] = []          // m200
 }
 
 struct TripDayOut: Codable, Hashable {
@@ -251,8 +395,29 @@ struct TripDayOut: Codable, Hashable {
     let window: DayWindow?                 // the day's times, so "Swap this stop" and "Regenerate" work on it
     let before: Plan?                      // D122: travelling light, one place on the way from the airport or station
     let legs: [TripLeg]?                   // D122: the journeys at each end of the trip
+    var freeDay: Bool? = nil               // m200: "a day that's yours": nothing planned
+    var relaxed: Bool? = nil               // m200: one place fewer, longer at each
+    var mine: [PlannedTime]? = nil         // m200: the person's own time that day, and whether the plan holds it
 
     func journeys(_ slot: String) -> [TripLeg] { (self.legs ?? []).filter { $0.slot == slot } }
+}
+
+/// m200: one block of the person's own time, as the Brain planned it (or couldn't: outside the day's hours).
+struct PlannedTime: Codable, Hashable {
+    let kind: String
+    let start: String
+    let end: String
+    let planned: Bool
+}
+
+/// m200: how one day of a trip leaves room for the person. Kept with the trip, and sent with every plan of its days.
+struct DayTime: Codable, Hashable {
+    var day: Int
+    var freeDay = false
+    var relaxed = false
+    var mine: [MyTime] = []
+
+    var isEmpty: Bool { !freeDay && !relaxed && mine.isEmpty }
 }
 
 /// D122: a journey at one end of the trip ("Heathrow → your stay", "Leave for Gatwick by 15:20"). Times are the Brain's
@@ -343,6 +508,10 @@ struct TripChoice: Codable, Hashable {
     var forNights: Int? = nil
     var sample: Bool? = nil                // journey round 2: a sample result (no search keys yet), never a real price
     var landsNextDay: Bool? = nil          // journey round 2: an overnight flight; the trip starts the day it lands
+    var currency: String? = nil            // m218: the price's own currency; older saved choices are in pounds
+
+    var money: String { Money.whole(price, currency ?? "GBP") }
+    var inPounds: Bool { (currency ?? "GBP") == "GBP" }
 }
 
 struct Trip: Codable, Hashable, Identifiable {
@@ -375,6 +544,9 @@ struct Trip: Codable, Hashable, Identifiable {
     var ownFlight: Bool?
     var flightAirport: String?
     var changedDays: [Int]?                // journey round 2: days changed by hand, kept when the trip is re-planned
+    var personal: [DayTime]?               // m200: the person's own time, by day
+
+    func own(_ index: Int) -> DayTime { personal?.first { $0.day == index } ?? DayTime(day: index) }
 
     var dayFrom: String { hoursFrom ?? "10:00" }
     var dayTo: String { hoursTo ?? "18:00" }
@@ -530,6 +702,10 @@ extension Dates {
 }
 
 extension Money {
-    /// £398, or £1,318: rounded to the pound for prices that aren't ours to promise.
-    static func whole(_ gbp: Double) -> String { "£" + Int(gbp.rounded()).formatted(.number.grouping(.automatic)) }
+    /// £398, or £1,318: rounded to the pound for prices that aren't ours to promise. WS8 (m213): an amount in another
+    /// currency keeps its own code ("1,318 EUR", as the Brain writes it), never a pound sign it doesn't have.
+    static func whole(_ amount: Double, _ currency: String = "GBP") -> String {
+        let n = Int(amount.rounded()).formatted(.number.grouping(.automatic).locale(Locale(identifier: "en_GB")))
+        return currency == "GBP" ? "£" + n : currency.isEmpty ? n : "\(n) \(currency)"
+    }
 }

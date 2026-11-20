@@ -7,12 +7,14 @@ plugins {
 
 android {
     namespace = "com.odys.app"
-    compileSdk = 35
+    // SEC-13 (audit, Abram, 12 Nov 2026): Google Play requires API 36 for new apps and updates from 31 Aug 2026
+    // (Play Console Help, "Target API level requirements", read 11 Nov 2026)
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.odys.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // CI sets the build number to the workflow run number, as for iOS
         versionCode = (System.getenv("BUILD_NUMBER") ?: "1").toInt()
         versionName = "0.1.0"
@@ -81,7 +83,7 @@ dependencies {
 
     testImplementation(composeBom)
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("org.robolectric:robolectric:4.16.1")   // the first with API 36 (its own source)
     testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.work:work-testing:2.10.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

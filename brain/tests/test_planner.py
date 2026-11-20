@@ -1,3 +1,4 @@
+import pytest
 from brain.features import Conditions
 from brain.moments import Point
 from brain.planner import Candidate, LegWeights, plan_day
@@ -60,6 +61,30 @@ def test_the_floor_never_leaves_a_day_short_of_its_places(pop, test_moments):
     plan = plan_day(candidates(pop, test_moments, util=fine), START, 600, 1080, WalkingEstimate(), LEGS,
                     max_stops=2, min_stops=2, time_limit_s=0.5)
     assert "t_pricey" not in [s.moment_id for s in plan.stops]
+
+
+def test_a_lowered_floor_lets_in_spares_when_the_best_cards_cannot_fit_together():
+    """m206 (WS7 benchmark): someone who'd enjoy nothing much, on a 17:00-22:00 evening. Their three best cards all
+    close at 18:00, so at most one fits; the floor used to let in only those three, and the day had one place."""
+    near = lambda k: Point(lat=51.5081 + 0.001 * k, lon=-0.1281)
+    early = [Candidate(f"early{k}", near(k), near(k), 40, ((600, 1080),), -2.0 - 0.1 * k) for k in range(3)]
+    late = [Candidate(f"late{k}", near(k + 3), near(k + 3), 40, ((1020, 1320),), -4.0 - 0.1 * k) for k in range(3)]
+    plan = plan_day(early + late, START, 1020, 1320, WalkingEstimate(), LEGS, max_stops=3, min_stops=3,
+                    time_limit_s=0.5)
+    assert len(plan.stops) == 3 and plan.status == "ok"
+    assert sum(s.moment_id.startswith("early") for s in plan.stops) == 1   # still the best one that fits
+
+
+def test_a_dislike_of_packed_days_never_makes_the_choice_of_places_by_distance_alone():
+    """m206 (WS7 benchmark): with the stop count fixed, the pace term is the same for every plan. It used to push the
+    prizes of low-scoring places to zero, so the nearest won: here the worse card, 3 min away, over the better one."""
+    near, far = Point(lat=51.5083, lon=-0.1281), Point(lat=51.5110, lon=-0.1281)
+    worse = Candidate("worse_near", near, near, 40, ((600, 1080),), -0.4)
+    better = Candidate("better_far", far, far, 40, ((600, 1080),), 0.0)
+    relaxed = LegWeights(transfer_15_30=-0.7, transfer_30_plus=-1.3, packed_pace=-1.5)
+    plan = plan_day([worse, better], START, 600, 780, WalkingEstimate(), relaxed, max_stops=1, min_stops=1,
+                    time_limit_s=0.5)
+    assert [s.moment_id for s in plan.stops] == ["better_far"]
 
 
 def test_best_moment_is_kept_when_only_one_fits(pop, test_moments):
@@ -181,3 +206,42 @@ def test_no_more_than_two_history_stops_and_never_two_in_a_row():
     ids = [s.moment_id for s in plan.stops]
     assert len(ids) == 4 and sum(i.startswith("h") for i in ids) == 2
     assert not any(a.startswith("h") and b.startswith("h") for a, b in zip(ids, ids[1:]))
+
+
+def test_two_stage_planning_keeps_every_rule_and_the_persons_own_time():
+    """m216: the seeded search (a valid day built step by step, then improved) on a day with a block. Off by default
+    (dayplan.SEEDED_WITH_BLOCKS), so it stays correct for when it's switched on."""
+    from brain.planner import _greedy_route  # noqa: F401  (imported: the seed exists)
+    near = lambda k: Point(lat=51.5081 + 0.002 * k, lon=-0.1281)
+    places = [Candidate(f"p{k}", near(k), near(k), 45, ((600, 1080),), 1.0 - 0.1 * k) for k in range(6)]
+    block = [Candidate(f"mine0@p{k}", near(k), near(k), 90, ((840, 930),), 0.0, mine="mine0") for k in range(6)]
+    for seeded in (False, True):
+        plan = plan_day(places + block, START, 600, 1080, WalkingEstimate(), LEGS, max_stops=3, min_stops=3,
+                        time_limit_s=0.3, seeded=seeded)
+        ids = [s.moment_id for s in plan.stops]
+        assert plan.status == "ok" and sum(i.startswith("mine0@") for i in ids) == 1, (seeded, ids)
+        held = next(s for s in plan.stops if s.moment_id.startswith("mine0@"))
+        assert (held.arrive_min, held.depart_min) == (840, 930)
+        t = 600
+        for s in plan.stops:
+            assert s.arrive_min >= t
+            t = s.depart_min
+
+
+def test_a_day_without_personal_time_never_uses_the_seed(monkeypatch, pop, test_moments):
+    """m216: ordinary days and Test B plan exactly as before, whatever the switch says."""
+    from brain import dayplan, planner
+    monkeypatch.setattr(dayplan, "SEEDED_WITH_BLOCKS", True)
+
+    def boom(*a, **k):
+        raise AssertionError("the seed was used on a day without personal time")
+    monkeypatch.setattr(planner, "_greedy_route", boom)
+    from brain.personal import prior_only
+    from brain.travel import LondonEstimate
+    brief = dayplan.Brief("Start", START, "10:00", "18:00", 3, time_limit_s=0.3)
+    plan, _, _, _ = dayplan.personal_plan(pop, prior_only(pop.delta_prior_sd), test_moments, brief, LondonEstimate())
+    assert plan.stops                                               # planned, and the seed never ran
+    with_block = dayplan.Brief("Start", START, "10:00", "18:00", 3, time_limit_s=0.3,
+                               mine=(dayplan.Block("free", 840, 900),))
+    with pytest.raises(AssertionError, match="the seed was used"):   # and on a day with a block, it does
+        dayplan.personal_plan(pop, prior_only(pop.delta_prior_sd), test_moments, with_block, LondonEstimate())

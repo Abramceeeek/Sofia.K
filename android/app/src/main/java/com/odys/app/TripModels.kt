@@ -90,13 +90,23 @@ data class Flight(
     val stops: Int = 0,
     val durationMin: Int = 0,
     val tags: List<String>? = null,
+    val estimate: PriceEstimate? = null,   // m218: in pounds, beside a fare in another currency; never instead of it
 )
 
+/** m218: a price in another currency converted to pounds at a dated rate (the ECB's): an estimate, shown beside the
+ *  price, which stays in its own currency. */
 @Serializable
-data class StopFacet(val stops: Int, val minPrice: Double)
+data class PriceEstimate(val amount: Double, val currency: String = "GBP", val line: String = "",
+                         val total: Double? = null) {
+    val text: String get() = "≈ ${Money.whole(amount, currency)} · $line"
+}
 
 @Serializable
-data class AirlineFacet(val name: String, val code: String, val minPrice: Double, val count: Int)
+data class StopFacet(val stops: Int, val minPrice: Double, val currency: String? = null)   // m218: its own currency
+
+@Serializable
+data class AirlineFacet(val name: String, val code: String, val minPrice: Double, val count: Int,
+                        val currency: String? = null)
 
 @Serializable
 data class FlightFacets(
@@ -104,10 +114,15 @@ data class FlightFacets(
     val airlines: List<AirlineFacet> = emptyList(),
     val price: List<Double>? = null,
     val legMinutes: List<Int>? = null,
-)
+    val currency: String? = null,          // m218: the price slider's currency
+    val estimated: Boolean? = null,        // and whether its figures are converted estimates
+) {
+    /** "£389", or "≈ £334" when the figure is converted. */
+    fun money(amount: Double): String = (if (estimated == true) "≈ " else "") + Money.whole(amount, currency ?: "GBP")
+}
 
 @Serializable
-data class FlightTab(val price: Double, val durationMin: Int)
+data class FlightTab(val price: Double, val durationMin: Int, val currency: String? = null)
 
 @Serializable
 data class FlightResults(
@@ -120,6 +135,7 @@ data class FlightResults(
     val tabs: Map<String, FlightTab?>? = null,
     val links: List<TripLink> = emptyList(),
     val searchedAt: String? = null,
+    val compareNotes: List<String>? = null,   // m218: how the prices compare (currencies), and whether bags differ
 )
 
 // ---- stays (POST /v1/trips/stays) -------------------------------------------------------------------------------
@@ -167,6 +183,9 @@ data class StayResult(
     val priceNight: Double,
     val links: List<TripLink> = emptyList(),
     val tags: List<String>? = null,
+    val estimate: PriceEstimate? = null,   // m218
+    val payThere: Double? = null,          // m203: taxes or fees paid at the property, in the stay's currency
+    val payThereOther: String? = null,     // m209: such fees in another currency, said, never added
 ) {
     val point: Point? get() = if (lat != null && lon != null) Point(lat, lon) else null
 }
@@ -176,10 +195,13 @@ data class KindFacet(val kind: String, val count: Int)
 
 @Serializable
 data class StayFacets(val priceNight: List<Double>? = null, val kinds: List<KindFacet> = emptyList(),
-                      val maxKm: Double? = null)
+                      val maxKm: Double? = null, val currency: String? = null, val estimated: Boolean? = null) {
+    fun money(amount: Double): String = (if (estimated == true) "≈ " else "") + Money.whole(amount, currency ?: "GBP")
+}
 
 @Serializable
-data class StayTab(val priceNight: Double, val rating: Double? = null, val distanceKm: Double? = null)
+data class StayTab(val priceNight: Double, val rating: Double? = null, val distanceKm: Double? = null,
+                   val currency: String? = null)
 
 @Serializable
 data class StayResults(
@@ -193,6 +215,7 @@ data class StayResults(
     val links: List<TripLink> = emptyList(),
     val centre: String = "",
     val searchedAt: String? = null,
+    val compareNotes: List<String>? = null,   // m218
 )
 
 // ---- days (POST /v1/me/trips/days) ------------------------------------------------------------------------------
@@ -216,6 +239,7 @@ data class TripDaysRequest(
     val travelLight: Boolean,
     val arrive: TripEnd?,
     val leave: TripEnd?,
+    val personal: List<DayTime> = emptyList(),   // m200
 )
 
 @Serializable
@@ -228,8 +252,26 @@ data class TripDayOut(
     val window: DayWindow? = null,
     val before: Plan? = null,
     val legs: List<TripLeg>? = null,
+    val freeDay: Boolean? = null,          // m200: "a day that's yours": nothing planned
+    val relaxed: Boolean? = null,          // m200: one place fewer, longer at each
+    val mine: List<PlannedTime>? = null,   // m200: the person's own time that day, and whether the plan holds it
 ) {
     fun journeys(slot: String): List<TripLeg> = (legs ?: emptyList()).filter { it.slot == slot }
+}
+
+/** m200: one block of the person's own time, as the Brain planned it (or couldn't: outside the day's hours). */
+@Serializable
+data class PlannedTime(val kind: String, val start: String, val end: String, val planned: Boolean)
+
+/** m200: how one day of a trip leaves room for the person. Kept with the trip, and sent with every plan of its days. */
+@Serializable
+data class DayTime(
+    val day: Int,
+    val freeDay: Boolean = false,
+    val relaxed: Boolean = false,
+    val mine: List<MyTime> = emptyList(),
+) {
+    val isEmpty: Boolean get() = !freeDay && !relaxed && mine.isEmpty()
 }
 
 @Serializable
@@ -277,6 +319,88 @@ data class DayWindow(val start: String, val end: String, val stops: Int)
 @Serializable
 data class TripDaysResponse(val totalDays: Int, val days: List<TripDayOut>, val start: String, val used: List<String>)
 
+/** m203: a stay judged against the trip (POST /v1/trips/stays/compare). Nothing about it is stored by asking. */
+@Serializable
+data class StayCompareRequest(
+    val destination: String,
+    val checkin: String,
+    val checkout: String,
+    val adults: Int,
+    val stay: StayRef,
+    val days: List<DayEnds>,
+) {
+    @Serializable
+    data class StayRef(
+        val id: String, val name: String, val lat: Double?, val lon: Double?, val priceTotal: Double, val nights: Int,
+        val currency: String, val room: String, val board: String, val refundable: Boolean?, val sample: Boolean,
+    )
+
+    @Serializable
+    data class DayEnds(val index: Int, val first: Point?, val last: Point?)
+}
+
+@Serializable
+data class StayCompare(
+    val source: String,
+    val note: String? = null,
+    val holidaysNote: String? = null,      // m211: the destination's holidays (or these years) aren't known: said
+    val fit: Fit,
+    val cost: Cost,
+    val dates: List<DateOption>,
+) {
+    @Serializable
+    data class Fit(val days: List<Row> = emptyList(), val line: String? = null) {
+        @Serializable
+        data class Row(val index: Int, val toFirst: Int, val back: Int, val text: String? = null)   // m209: the Brain's words
+    }
+
+    @Serializable
+    data class Cost(val whole: Double, val perNight: Double, val line: String, val cancel: String, val board: String? = null)
+
+    @Serializable
+    data class DateOption(
+        val checkin: String, val label: String, val whole: Double? = null, val perNight: Double? = null,
+        val sameTerms: Boolean = true, val differs: List<String> = emptyList(), val yours: Boolean = false,
+        val lowest: Boolean = false,
+        val holidays: List<String> = emptyList(),   // m204: the destination's bank holidays in these dates, as facts
+    )
+}
+
+/** m196: "How long should I stay?" (POST /v1/me/trips/length). Nothing is planned or stored by asking. */
+@Serializable
+data class TripLengthRequest(
+    val destination: String,
+    val nights: Int?,
+    val feelings: List<String>,
+    val dayStart: String,
+    val dayEnd: String,
+    val stopsPerDay: Int,
+)
+
+/** The Brain's answer: an estimate of how much there is for the person at their pace, never a limit (Abram, 6 Nov). */
+@Serializable
+data class TripLength(
+    val place: String,
+    val strongMatches: Int,
+    val goodMatches: Int,
+    val placesPerDay: Int,
+    val suggestedDays: Int,
+    val yourDays: Int? = null,
+    val spareDays: Int? = null,
+    val headline: String,
+    val why: String,
+    val note: String,
+    val short: String? = null,
+    val options: List<Option>,
+    val extra: List<Extra>,
+) {
+    @Serializable
+    data class Option(val days: Int, val label: String, val line: String, val yours: Boolean, val suggested: Boolean)
+
+    @Serializable
+    data class Extra(val kind: String, val title: String, val line: String)
+}
+
 // ---- the trip, kept on the phone (trips.json) -------------------------------------------------------------------
 
 @Serializable
@@ -295,7 +419,11 @@ data class TripChoice(
     val forNights: Int? = null,
     val sample: Boolean? = null,
     val landsNextDay: Boolean? = null,
-)
+    val currency: String? = null,          // m218: the price's own currency; older saved choices are in pounds
+) {
+    val money: String get() = Money.whole(price, currency ?: "GBP")
+    val inPounds: Boolean get() = (currency ?: "GBP") == "GBP"
+}
 
 @Serializable
 data class Trip(
@@ -326,7 +454,9 @@ data class Trip(
     val ownFlight: Boolean? = null,
     val flightAirport: String? = null,
     val changedDays: List<Int>? = null,
+    val personal: List<DayTime>? = null,   // m200: the person's own time, by day
 ) {
+    fun own(index: Int): DayTime = personal?.firstOrNull { it.day == index } ?: DayTime(index)
     val dayFrom: String get() = hoursFrom ?: "10:00"
     val dayTo: String get() = hoursTo ?: "18:00"
     val placesPerDay: Int get() = places ?: 3
@@ -482,6 +612,10 @@ object Money {
     fun text(gbp: Double): String =
         if (gbp == Math.rint(gbp)) "£${gbp.toLong()}" else String.format(Locale.UK, "£%.2f", gbp)
 
-    /** £398, or £1,318: rounded to the pound for prices that aren't ours to promise. */
-    fun whole(gbp: Double): String = "£" + String.format(Locale.UK, "%,d", gbp.roundToInt())
+    /** £398, or £1,318: rounded to the pound for prices that aren't ours to promise. WS8 (m213): an amount in another
+     *  currency keeps its own code ("1,318 EUR", as the Brain writes it), never a pound sign it doesn't have. */
+    fun whole(amount: Double, currency: String = "GBP"): String {
+        val n = String.format(Locale.UK, "%,d", amount.roundToInt())
+        return if (currency == "GBP") "£$n" else if (currency.isEmpty()) n else "$n $currency"
+    }
 }

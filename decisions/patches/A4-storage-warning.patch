@@ -1,0 +1,124 @@
+diff --git a/.github/workflows/ops.yml b/.github/workflows/ops.yml
+index b93ce49..d6e2354 100644
+--- a/.github/workflows/ops.yml
++++ b/.github/workflows/ops.yml
+@@ -94,7 +94,7 @@ jobs:
+           mkdir -p out
+           f="out/odys-brain-$(date -u +%Y%m%d).odysbk"
+           code=$(curl -sS --max-time 150 --retry 1 --retry-delay 20 -H "Authorization: Bearer $TOKEN" \
+-                 -o "$f" -w "%{http_code}" "$BRAIN/v1/admin/backup") || true
++                 -D "$RUNNER_TEMP/backup-headers.txt" -o "$f" -w "%{http_code}" "$BRAIN/v1/admin/backup") || true
+           if [ "$code" != "200" ]; then
+             echo "::error::The backup request answered $code."
+             [ -f "$f" ] && head -c 300 "$f" | tr -cd '[:print:]\n' && echo
+@@ -116,6 +116,21 @@ jobs:
+           path: out/
+           retention-days: 30
+           if-no-files-found: error
++      # A4 (Abram, 20 Nov): a warning long before the database is full, so no storage is ever bought without his
++      # click. The repository's logs are public, so a run prints only "under 50%", never the size.
++      - name: Check the database's size
++        if: steps.fetch.outputs.made == 'yes'
++        env:
++          LIMIT_MB: "1024"   # the database's storage. If it is ever increased in Render, change this to match
++          WARN_PCT: "50"
++        run: |
++          bytes=$(tr -d '\r' < "$RUNNER_TEMP/backup-headers.txt" | awk -F': ' 'tolower($1)=="x-database-bytes" {print $2}' | tail -n 1)
++          case "$bytes" in ''|*[!0-9]*) echo "::warning::The Brain didn't say how big its database is."; exit 0;; esac
++          if [ $(( bytes * 100 / (LIMIT_MB * 1048576) )) -ge "$WARN_PCT" ]; then
++            echo "::error::The database is at or over ${WARN_PCT}% of its ${LIMIT_MB} MB. Nothing has been bought: see 'Storage' in decisions/database-before-6-dec.md."
++            exit 1
++          fi
++          echo "The database is under ${WARN_PCT}% of its ${LIMIT_MB} MB."
+       - name: Tell a person
+         if: failure()
+         env:
+@@ -123,5 +138,5 @@ jobs:
+         run: |
+           if [ -z "$HOOK" ]; then exit 0; fi
+           curl -fsS --max-time 20 -X POST -H "Content-Type: application/json" \
+-            -d '{"text": "ODYS Brain: last night'"'"'s backup failed (not a safety alert). GitHub, Actions, ops."}' \
++            -d '{"text": "ODYS Brain: last night'"'"'s backup job needs a look, the backup or the storage check (not a safety alert). GitHub, Actions, ops."}' \
+             "$HOOK" > /dev/null
+diff --git a/brain/src/brain/api.py b/brain/src/brain/api.py
+index b2584d3..11c71b5 100644
+--- a/brain/src/brain/api.py
++++ b/brain/src/brain/api.py
+@@ -1179,9 +1179,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+         except backup.BackupError as e:
+             raise HTTPException(503, str(e))
+         ops.log.info("backup sealed: %d rows, %d bytes", sum(counts.values()), len(blob))
++        size = backup.database_bytes(app.state.engine)   # A4: read by the nightly job's storage warning
+         return Response(blob, media_type="application/octet-stream",
+                         headers={"Content-Disposition": "attachment; filename=odys-brain.odysbk",
+-                                 "Cache-Control": "no-store"})
++                                 "Cache-Control": "no-store",
++                                 **({"X-Database-Bytes": str(size)} if size is not None else {})})
+ 
+     return app
+ 
+diff --git a/brain/src/brain/backup.py b/brain/src/brain/backup.py
+index f81e8da..f4fd9a5 100644
+--- a/brain/src/brain/backup.py
++++ b/brain/src/brain/backup.py
+@@ -172,6 +172,20 @@ def sealed_backup(engine: Engine, public_key_b64: str) -> tuple[bytes, dict[str,
+     return seal(json.dumps(data, separators=(",", ":")).encode(), public_key_b64), counts
+ 
+ 
++def database_bytes(engine: Engine) -> int | None:
++    """A4 (Abram, 20 Nov): the database's size on disk, for the nightly storage warning. A number only, nothing from
++    any row. None if it can't be read: the backup matters more than the size."""
++    try:
++        with engine.connect() as c:
++            if engine.dialect.name == "postgresql":
++                return int(c.execute(text("select pg_database_size(current_database())")).scalar())
++            if engine.dialect.name == "sqlite":
++                return int(c.execute(text("pragma page_count")).scalar()) * int(c.execute(text("pragma page_size")).scalar())
++    except Exception:  # noqa: BLE001
++        return None
++    return None
++
++
+ # ---- Abram's commands ------------------------------------------------------------------------------------------
+ 
+ def main(argv: list[str] | None = None) -> int:
+diff --git a/brain/tests/test_storage_warning.py b/brain/tests/test_storage_warning.py
+new file mode 100644
+index 0000000..7ab354b
+--- /dev/null
++++ b/brain/tests/test_storage_warning.py
+@@ -0,0 +1,34 @@
++"""A4 (Abram, 20 Nov): the nightly backup reports the database's size, for a warning long before it is full."""
++from dataclasses import replace
++
++from brain import backup, db
++
++from test_api import ADMIN, client, install  # noqa: F401 - the frozen suite's app fixture
++
++
++def test_the_backup_reports_the_database_size_and_nothing_else_new(client):
++    public, _ = backup.keygen()
++    install(client)
++    client.app.state.settings = replace(client.app.state.settings, backup_key=public)
++    r = client.get("/v1/admin/backup", headers=ADMIN)
++    assert r.status_code == 200 and r.content.startswith(backup.MAGIC)
++    size = r.headers["X-Database-Bytes"]
++    assert size.isdigit() and int(size) > 0
++
++
++def test_the_size_is_a_number_or_nothing():
++    assert backup.database_bytes(db.make_engine("sqlite://")) >= 0
++
++    class Broken:
++        dialect = type("D", (), {"name": "postgresql"})()
++
++        def connect(self):
++            raise OSError("down")
++    assert backup.database_bytes(Broken()) is None
++
++
++def test_the_route_still_needs_its_token(client):
++    public, _ = backup.keygen()
++    client.app.state.settings = replace(client.app.state.settings, backup_key=public)
++    r = client.get("/v1/admin/backup", headers={"Authorization": "Bearer wrong"})
++    assert r.status_code == 403 and "X-Database-Bytes" not in r.headers

@@ -24,6 +24,16 @@ class Settings:
     backup_key: str | None = None       # Stage 1: the public key nightly backups are encrypted to (backup.py)
     backup_token: str | None = None     # Stage 1: unlocks the encrypted backup only (the nightly GitHub job)
     ops_webhook_url: str | None = None  # Stage 1: where error alerts go; unset = the safety webhook, marked (ops.py)
+    # m203: live prices for a stay's nearby dates. Off until Nuitée confirms its terms in writing (Abram, 7 Nov):
+    # decisions/liteapi-clarification.md. Off means labelled sample prices.
+    stay_dates_live: bool = False
+    # m218: the ECB's daily euro reference rates (free, no key), to compare prices in different currencies. Off until
+    # Abram switches it on (decisions/currency-comparison.md). Off means: one currency is compared as before; several
+    # are grouped by currency, never ranked against each other.
+    fx_rates_live: bool = False
+    # Audit SEC-07: the interactive API pages (/docs, /redoc, /openapi.json) list every route, the admin ones too.
+    # Off unless BRAIN_API_DOCS=1, which is for a developer's own machine and never set in Render.
+    api_docs: bool = False
 
 
 def driver_url(raw: str) -> str:
@@ -77,4 +87,5 @@ def get_settings() -> Settings:
         backup_key=_first("BRAIN_BACKUP_PUBLIC_KEY") or _file(DATA_DIR / "backup_public_key.txt"),
         backup_token=_first("BRAIN_BACKUP_TOKEN"),
         ops_webhook_url=_first("BRAIN_OPS_WEBHOOK_URL"),
+        api_docs=os.environ.get("BRAIN_API_DOCS", "") == "1",
     )

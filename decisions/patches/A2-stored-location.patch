@@ -1,0 +1,141 @@
+diff --git a/brain/src/brain/api.py b/brain/src/brain/api.py
+index b2584d3..40033bc 100644
+--- a/brain/src/brain/api.py
++++ b/brain/src/brain/api.py
+@@ -90,6 +90,37 @@ def _plain(description: str) -> str:
+     return re.sub(r"longest transfer (\d+) min", r"up to \1 min between stops", description)
+ 
+ 
++# A2 (Abram, 19-20 Nov; SEC-06). The start point and the stay's name are sent by the app and processed to plan the
++# day, and the reply gives the person their own copy; neither is retained in the stored plan after the request.
++HERE_NAMES = {"where you are"}   # what both frozen apps send as the start's name for "Start from where I am"
++
++
++def kept_stops(stops: list[dict], *, drop_start_pin: bool = False, hide: str | None = None,
++               shown_as: str = "your stay") -> list[dict]:
++    """The copy of a plan's stops that is kept in the database.
++
++    - `drop_start_pin`: the day started from the person's own position. The notice says that point is "sent once,
++      rounded to about 100 metres ... and it isn't kept", but lunch near the start carried it as its map pin.
++    - `hide`: the name of the person's stay. The notice says a stay is kept by "its location, never its name"; the
++      first stop's "from …" and "Lunch near …" carried it. The kept copy says `shown_as` instead."""
++    def clean(v):
++        if isinstance(v, str):
++            return v.replace(hide, shown_as) if hide else v
++        if isinstance(v, list):
++            return [clean(x) for x in v]
++        if isinstance(v, dict):
++            return {k: clean(x) for k, x in v.items()}
++        return v
++
++    out = []
++    for st in stops:
++        st = clean(st) if hide else dict(st)
++        if drop_start_pin and str(st.get("moment_id", "")).endswith("@start"):
++            st["pin"] = None
++        out.append(st)
++    return out
++
++
+ def create_app(settings: Settings | None = None) -> FastAPI:
+     settings = settings or get_settings()
+ 
+@@ -581,10 +612,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+         if outlook:   # kept with the plan, so the results can tell weather-shaped plans apart
+             intent["weather"] = outlook.out()
+             head["weather"] = outlook.out()
+-        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
++        here = body.start_name.strip().lower() in HERE_NAMES   # SEC-06: processed to plan, not retained
++        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent,
++                      stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
+         s.add(row)
+         s.commit()
+-        return {**plan_out(row), **head}
++        return {**plan_out(row), "stops": out, **head}   # SEC-06: the person's own copy, not the kept one
+ 
+     @app.get("/v1/example-day")
+     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
+@@ -970,6 +1003,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+             raise HTTPException(422, "a day needs at least an hour between its start and end")
+         start = body.stay or Point(lat=dest.lat, lon=dest.lon)
+         start_name = (body.stay_name or "").strip() or dest.centre_name
++        stay_named = (body.stay_name or "").strip() or None   # SEC-06: processed to plan, never retained by name
++        if stay_named and (len(stay_named) < 3 or stay_named == dest.centre_name):
++            stay_named = None   # too short to tell apart from ordinary words, or simply the public centre
+         # D122: how the trip starts and ends; the older app sends only the flight times
+         end_of = lambda e, t: (tripdays.End(e.mode, (e.place or "").upper() or None, e.time) if e
+                                else tripdays.End("flight", None, t) if t else None)
+@@ -1003,12 +1039,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
+                     continue
+                 used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
+-                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
++                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
++                              stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
+                               intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
+                                       **({"weather": outlook.out()} if outlook else {})})
+                 s.add(row)
+                 s.flush()
+-                return {**plan_out(row), **head}, stops
++                return {**plan_out(row), "stops": stops, **head}, stops   # SEC-06: the person's own copy
+             return None
+ 
+         for i in wanted:
+diff --git a/brain/tests/test_stored_location.py b/brain/tests/test_stored_location.py
+new file mode 100644
+index 0000000..1777531
+--- /dev/null
++++ b/brain/tests/test_stored_location.py
+@@ -0,0 +1,52 @@
++"""Category A privacy patch (Abram, 19 Nov; SEC-06): a day from "where you are" is planned with the point and kept
++without it, and a trip's plans never keep the stay's name. What the person is sent is unchanged."""
++import json
++
++from sqlalchemy import select
++
++from brain import api, db
++from test_api import client, install  # noqa: F401  (the client fixture)
++
++PLAN = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_time": "10:00", "end_time": "16:00", "stops": 4,
++        "date": "2026-12-05"}
++
++
++def _kept(client, uid) -> str:
++    with client.app.state.Session() as s:
++        return json.dumps([[p.stops, p.intent] for p in s.scalars(select(db.Plan).where(db.Plan.user_id == uid))])
++
++
++def test_a_day_from_where_you_are_is_planned_with_the_point_and_kept_without_it(client):
++    h, uid = install(client)
++    sent = client.post("/v1/me/plans", headers=h, json={**PLAN, "start_name": "where you are"}).json()
++    at_start = [st for st in sent["stops"] if st["moment_id"].endswith("@start")]
++    assert at_start and all(st["pin"] == PLAN["start"] for st in at_start)   # the person still sees lunch on the map
++    assert "51.5081" not in _kept(client, uid)                                 # before: kept as that stop's pin
++
++
++def test_a_named_start_keeps_its_pin(client):
++    h, uid = install(client)
++    client.post("/v1/me/plans", headers=h, json={**PLAN, "start_name": "Charing Cross station"})
++    assert "51.5081" in _kept(client, uid)      # a station isn't the person's position: unchanged
++
++
++def test_a_trip_s_plans_never_keep_the_name_of_the_stay(client):
++    h, uid = install(client)
++    r = client.post("/v1/me/trips/days", headers=h, json={
++        "start_date": "2026-12-05", "nights": 1, "days": [1], "stay": {"lat": 51.5123, "lon": -0.1357},
++        "stay_name": "The Private Stay Name", "day_start": "10:00", "day_end": "17:00"})
++    assert r.status_code == 201
++    day = r.json()["days"][0]
++    assert day["plan"] is not None
++    assert "The Private Stay Name" in json.dumps(day["plan"]["stops"])     # the person sees it
++    kept = _kept(client, uid)
++    assert "The Private Stay Name" not in kept and "your stay" in kept    # before: kept in "from …" and "Lunch near …"
++
++
++def test_kept_stops_changes_only_what_it_says():
++    stops = [{"moment_id": "t_boat", "pin": {"lat": 1, "lon": 2}, "lines": ["from Hotel X."]},
++             {"moment_id": "lunch@start", "pin": {"lat": 3, "lon": 4}, "title": "Lunch near Hotel X"}]
++    kept = api.kept_stops(stops, drop_start_pin=True, hide="Hotel X")
++    assert kept == [{"moment_id": "t_boat", "pin": {"lat": 1, "lon": 2}, "lines": ["from your stay."]},
++                    {"moment_id": "lunch@start", "pin": None, "title": "Lunch near your stay"}]
++    assert stops[1]["pin"] == {"lat": 3, "lon": 4}     # the person's own copy is untouched

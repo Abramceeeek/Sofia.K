@@ -50,7 +50,7 @@ Founder's example: you come out of South Kensington tube and walk out to the Nat
   - social pull ("I need to bring people here");
   - cost in £.
 - **Feeling per pound is computed, not tagged** (tagging it would double-count cost). *Amended (D88): no raw S ÷ cost ratio. It depends on utility's arbitrary zero, and free moments divide by zero.*
-  - **The app shows "worth about £V to you":** V = the non-cost part of S ÷ the person's cost weight (per £), next to the price. *Amended (D127): no longer shown. After the short onboarding the cost weight's 95% range spans about 20 times, so £V overclaimed. The app shows the price and words from the rating model: "A strong match for you" (≥75% chance of Good or better), "A good match for you" (≥50%), else "Worth a try". £V stays inside the model and the day's curve.*
+  - **The app shows "worth about £V to you":** V = the non-cost part of S ÷ the person's cost weight (per £), next to the price. *Amended (D127): no longer shown. After the short onboarding the cost weight's 95% range spans about 20 times, so £V overclaimed. The app shows the price and words from the rating model: "A strong match for you" (≥75% chance of Good or better), "A good match for you" (≥50%), else "Worth a try". £V stays inside the model and the day's curve.* *Amended (m275, Abram 12 Nov; branch only): no chance or match words either, until real ratings check them. The line names the factors from the person's own answers ("Recommended because of your lean towards views and awe"); the bands stay inside the Brain for ranking and the calibration check.*
   - **Ranking is by V − price**, which is the same as ranking by S, so the planner doesn't change.
   - **The person's cost weight is constrained to stay negative:** it is fitted on a log scale (β_cost = b_pop · e^δ), so V never explodes.
 - **Seed moments come from Abram's own experience.** Five to start. Batch 1 (11 cards, D72) is in `brain/data/moments/`.
@@ -138,7 +138,7 @@ The same profile matches **people**, not just places. Compatible trip-mates make
 
 ## v0 build (D50–D52)
 
-- **Product direction (m196, 6 Nov):** a personal travel and entertainment platform for any trip; Trips are the main product, with the day planner inside every trip day (`decisions/product-direction.md`). **While the friends' round runs, `main` is the frozen test build:** new work stays on the branch, with iPhone simulator screenshots only and no TestFlight uploads. Build order: trip length, then personal time, then stay prices across dates and watched stays. Food preferences (halal included) come after consent, a DPIA and a checked data source. No price forecasts.
+- **Product direction (m196, 6 Nov):** a personal travel and entertainment platform for any trip; Trips are the main product, with the day planner inside every trip day (`decisions/product-direction.md`). **`main` becomes the friends' round build (m315, 20 Nov):** Abram moved everything to `main` before any invite (`decisions/release-to-main.md`). The round's fixed version is the release's merge commit, with the TestFlight build it uploads. The tag `friends-round-1` goes on that commit, and the manifest is in `validation/friends-round.md`. Android publishes nothing until Abram's own release key exists. **Once the round starts, no commits to `main` again (m198).** New work stays on the branch, with iPhone simulator screenshots only (only `main` can upload) and no change to `render.yaml`. Render deploys `main` only by hand (Auto-Deploy off): check `/v1/health` `version`. Build order: trip length, then personal time, then stay prices across dates and watched stays. Food preferences (halal included) come after consent, a DPIA and a checked data source. No price forecasts.
 
 - **v0 is a native iOS app (SwiftUI)**, tested through TestFlight, then released on the App Store once it passes (after the D53 gate). It replaces the Telegram bot.
 - **Brain** (`brain/`): FastAPI on Python 3.12. It holds the moment database, scoring as `S = x·(b_population + δ_person)` with δ kept separate and portable, and the OR-Tools planner. Claude Code builds and tests it in this repo.
@@ -172,6 +172,16 @@ The same profile matches **people**, not just places. Compatible trip-mates make
   - **The 16 onboarding swipe places** come from an anonymous swipe page (D70c: `brain/src/brain/calibration.py`, Render free tier). It has no login and no personal questions, and no IP address is stored.
 - **Plan, hours and the accepted cuts (D59):** `decisions/v0-ios-plan.md`. **Screens and design scope (D81):** `design/v0-screens.md`. **Founder briefing:** `decisions/founder-briefing.md`. **Roadmap to a real product (6 Oct):** `decisions/roadmap.md`: Stage 1 "real for testers" before strangers (live flights and hotels, TfL times, Met Office weather, a paid server), then the tests, then a public release only if Checkpoint 3 says go. **Stage 1 go (D126, 19 Oct):** Claude's steps are built: TfL times and the Met Office forecast (never for the Test B pair), logs without personal data, error alerts, rate limits, and nightly backups sealed to Abram's key (`brain/README.md`, Stage 1). TestFlight text and the gates: `decisions/testflight-external.md`. The paid server, live keys, backup keys and the ops workflow on `main` are Abram's. **Journey audit (7 Oct):** `decisions/journey-audit.md`, from onboarding to the flight home and against the free alternatives. Its findings are fixed (m175, m176), and decisions 1–3 are done (D123). **Round 2 (8 Oct):** `decisions/journey-audit-2.md`: 28 more fixes (m178); its open items are fixed too (m179), with "Re-plan the rest of today", "Checked" on stops and a fresh start after a reinstall (D124). The paid server is still Abram's. **Location while out (D123):** asked on "Now", when in use only, on the phone; only a "Start from where I am" point leaves it, rounded to ~100 m and not kept. **Closing the gaps with other apps:** `decisions/competitor-gaps-plan.md` (proposed; new ideas wait for Checkpoint 3). **UX checklist (9 Oct):** `decisions/ux-checklist.md`: the 327 questions of five pasted checklists, merged into 120 and answered for ODYS; its failures are fixed (m181).
 - **Economics work is paused** unless a decision needs it (D52).
+
+## The ODYS quality standard (m234)
+
+Every recommendation is judged from four perspectives. A place doesn't rank highly just because the person might like it:
+1. **Personal relevance:** will this person genuinely enjoy it?
+2. **Practicality:** can they realistically do it at this time and place?
+3. **Financial suitability:** does it make sense within their actual budget?
+4. **Trustworthiness:** are the information, prices, timings and restrictions verified well enough?
+
+This matters most where ODYS's data is new: it is in code as `brain/src/brain/quality.py`.
 
 ## Non-negotiable guardrails
 

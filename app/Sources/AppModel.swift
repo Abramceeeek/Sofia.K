@@ -108,9 +108,12 @@ final class AppModel {
 
     /// D116: visiting from abroad: category cards instead of the London places, and a separate cohort
     var isVisitor: Bool { profile.based == "abroad" }
+    /// m220: who answers kinds of places rather than named London places: visitors, and everyone once the Brain says
+    /// "kinds" (after the friends' round). Only the places step follows this; the cohort stays `isVisitor`.
+    var usesKinds: Bool { isVisitor || onboarding?.placesMode == "kinds" }
 
-    /// Screen titles follow the person's path: visitors see "Kinds of places" where others see the London places.
-    var stepTitle: String { step == .places && isVisitor ? "Kinds of places" : step.title }
+    /// Screen titles follow the person's path: kinds of places where others see the London places.
+    var stepTitle: String { step == .places && usesKinds ? "Kinds of places" : step.title }
     var why: [String] = []
     var reactions: [Int: String] = [:]
     var choices: [Int: String] = [:]
@@ -129,6 +132,7 @@ final class AppModel {
     let client: BrainClient
     let screen: String?
     let location: Location                 // D123: where they are while out, on the phone only
+    let connectivity = Connectivity()      // m228: whether there's signal, for "what's saved on this phone"
 
     init() {
         location = Location()
@@ -140,14 +144,18 @@ final class AppModel {
         if demo {
             route = .home
             onboarding = try? BrainClient.bundled("demo_onboarding")
-            let demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
+            var demoPlan: Plan? = try? BrainClient.bundled("demo_plan")
+            if screen == "planbudget" { demoPlan?.budget = try? BrainClient.bundled("demo_budget") }   // m217
             plan = demoPlan
             surveyDone = true
             pairDone = true
             if let trip = AppModel.demoTrip() {
                 trips = [trip]
                 currentTripId = trip.id
-                book.flights = try? BrainClient.bundled("demo_flights")
+                // m218: "flightscurrency": three fares in euros, compared at a dated ECB rate (sample results)
+                // m231: "flightcurrency" opens one of those fares, to show the estimate line under its price
+                book.flights = try? BrainClient.bundled(["flightscurrency", "flightcurrency"].contains(screen ?? "")
+                                                        ? "demo_flights_mixed" : "demo_flights")
                 book.stays = try? BrainClient.bundled("demo_stays")
                 book.resultsFor = trip.id
             }
@@ -165,6 +173,11 @@ final class AppModel {
             route = .welcome
         } else if brain.token == nil {
             route = .welcome
+            // m226: trips belong to the traveller. With no token (a restore that didn't bring the Keychain item, or
+            // a token that can't be read) the trips on this phone are still theirs: kept in memory, so the next save
+            // adds to them instead of replacing the file. "Delete my data" removes the file first, so it isn't this.
+            trips = AppModel.loadCached([Trip].self, "trips.json") ?? []
+            currentTripId = trips.first?.id
         } else {
             UserDefaults.standard.set(true, forKey: "installMarker")   // older builds: mark this install as known
             route = UserDefaults.standard.bool(forKey: "onboardingDone") ? .home : .onboarding
@@ -287,7 +300,7 @@ final class AppModel {
     private func questions(in step: Step) -> Int {
         switch step {
         case .based, .bestHour, .why: return 1
-        case .places: return isVisitor ? (onboarding?.categoryCards?.count ?? 0) : (onboarding?.swipePlaces.count ?? 0)
+        case .places: return usesKinds ? (onboarding?.categoryCards?.count ?? 0) : (onboarding?.swipePlaces.count ?? 0)
         case .thisOrThat: return onboarding?.conjointTasks.count ?? 0
         case .learned: return 0
         }
@@ -550,7 +563,8 @@ final class AppModel {
         request = PlanRequest(start: request.start, startName: request.startName, startTime: request.startTime,
                               endTime: request.endTime, date: request.date, stops: request.stops + 1,
                               familiar: request.familiar, keep: current.stops.map { $0.key ?? $0.momentId },
-                              exclude: request.exclude, intent: request.intent, feelings: request.feelings)
+                              exclude: request.exclude, intent: request.intent, feelings: request.feelings,
+                              mine: request.mine, relaxed: request.relaxed)   // m200
         await fetchPlan(request, swap: true)
         await client.event("add_place", ["stops": "\(request.stops)"])
     }
@@ -569,7 +583,8 @@ final class AppModel {
         let done = current.stops.prefix(min(nowIndex, current.stops.count)).filter(\.rateable).map(\.momentId)
         var skip = done
         if reason == "closed", nowIndex < current.stops.count { skip.append(current.stops[nowIndex].momentId) }
-        let left = current.stops.count - min(nowIndex, current.stops.count)
+        // m200: the person's own time isn't one of the stops to plan; it comes back from `mine` if it's still ahead
+        let left = current.stops.dropFirst(min(nowIndex, current.stops.count)).filter { $0.mine == nil }.count
         let fromHere = location.usable ? location.roundedHere : nil
         let at = nowIndex < current.stops.count ? current.stops[nowIndex] : current.stops.last
         var request = PlanRequest(start: fromHere ?? at?.pin ?? old.start,
@@ -577,7 +592,8 @@ final class AppModel {
                                   startTime: String(format: "%02d:%02d", start / 60, start % 60), endTime: old.endTime,
                                   date: Dates.isoDay.string(from: .now),
                                   stops: max(2, min(6, reason == "tired" ? left - 1 : left)), familiar: false,
-                                  exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings)
+                                  exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings,
+                                  mine: old.mine, relaxed: old.relaxed)
         if reason == "rain" { request.conditions = PlanConditions(rainProb: 0.9) }
         let tripId = currentTripDay?.trip.id
         await fetchPlan(request, sameDay: false)   // the trip keeps the day as planned; this is today's version
@@ -830,7 +846,9 @@ final class AppModel {
         guard let referral, var link = URLComponents(url: AppConfig.baseURL.appendingPathComponent("r/\(referral.code)"),
                                                      resolvingAgainstBaseURL: false) else { return }
         link.queryItems = [URLQueryItem(name: "m", value: CardPhotos.cardId(stop.momentId) ?? stop.momentId)]
-        var items: [Any] = ["\(referral.text): \(link.url?.absoluteString ?? "")"]
+        var text = "\(referral.text): \(link.url?.absoluteString ?? "")"
+        if let photo = CardPhotos.sharePhoto(for: stop.momentId)?.0 { text += "\n\n" + photo.shareLines }   // m258
+        var items: [Any] = [text]
         if let card = ShareCardView.render(stop: stop, rating: rating, reason: reason) { items.insert(card, at: 0) }
         await client.event("share_sheet", ["moment": stop.momentId, "rating": "\(rating)", "reason": reason ? "1" : "0"])
         ShareSheet.present(items) { to, sent in
@@ -917,8 +935,9 @@ final class AppModel {
         self.reaction = nil
         self.saidPatterns = []
         UserDefaults.standard.removeObject(forKey: "onboardingStep")
+        // SEC-15 (audit): also the Test B plan's id, a share code they joined through, and an unsent video note
         for key in ["ratedOnce", "remindersOn", "reminderAsked", "safetySent", "safetySeen", "surveyDone", "pairDone",
-                    "testerCode"] {
+                    "testerCode", "testBPlanId", "refCode.joined", "founderVideo"] {
             UserDefaults.standard.removeObject(forKey: key)
         }
         Reminders.clear()
@@ -938,7 +957,8 @@ final class AppModel {
         self.step = .based
         self.route = .welcome
         for key in UserDefaults.standard.dictionaryRepresentation().keys
-        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") || key.hasPrefix("arrived.") {
+        where key.hasPrefix("ratings.") || key.hasPrefix("nowIndex.") || key.hasPrefix("arrived.")
+            || key.hasPrefix("dayFeedback.") {   // SEC-15: each day's "worth it" and "again" answers
             UserDefaults.standard.removeObject(forKey: key)
         }
         self.myRatings = [:]
@@ -946,6 +966,7 @@ final class AppModel {
         AppModel.cache(nil as [RatingRequest]?, "pending_ratings.json")
         AppModel.cache(nil as SavedHandoff?, "handoff.json")
         self.location.forget()                 // D123: the location choice goes too
+        URLCache.shared.removeAllCachedResponses()   // SEC-15: e.g. stay photos fetched while searching
     }
 
     // ---- the current plan and its request stay on the phone ("Your plan is saved on this phone") -------

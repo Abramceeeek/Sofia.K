@@ -15,6 +15,12 @@ Two rules for the seed moments (D72):
 - "area vibe" entries (a Soho wander, outdoor dining streets) are capped at `max_areas` per day
   (default 1) and are never reported as the day's peak, because they fill a day rather than make it.
 
+The person's own time (m200, product direction step 2): "Your plans 13:00-15:00" or "Free time 16:00-18:00" is a
+block the plan goes around. It comes as one slot beside each place (and the start), pinned to its times; at most one
+of a block's slots is in a plan, and a large bonus (`MINE_BONUS`, as lunch's) brings one in whenever the day allows,
+so the block sits beside one of the day's places (wherever the travel is least). It isn't one of the day's places. (An "exactly one" rule left the
+solver's first, greedy solution with nothing to aim for, and days with a block went unplanned: 6 Nov.)
+
 One rule for the day's shape (D127, from the algorithm review, 20 Oct): at most `max_theme` (2) history-and-culture
 stops a day, and never two of them in a row, so a day isn't three museums back to back (35% of simulated personal
 plans had two in a row). Lunch doesn't count, and a lunch between two of them breaks the run.
@@ -32,6 +38,8 @@ from .moments import Moment, Point
 from .travel import TravelTimes
 
 SCALE = 1000  # utility units → integer solver cost; travel adds 1 per minute as a tie-breaker
+MINE_BONUS = 50.0   # m200: the person's own time outweighs any place (lunch's bonus is 5)
+FLOOR_SPARES = 3    # m206 (GUESS): when the floor is lowered to fill a day, this many more of the best cards come in
 
 
 @dataclass(frozen=True)
@@ -47,6 +55,7 @@ class Candidate:
     kind: str = "moment"                    # "moment" or "area" (area vibe)
     lunch: bool = False                     # D102: a meal stop; a plan holds at most one, and `lunch_bonus` pulls one in
     theme: str | None = None                # D127: "history" for a history-and-culture stop (at most 2, never in a row)
+    mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
 
 
 def candidate_for(m: Moment, utility: float) -> Candidate:
@@ -85,6 +94,7 @@ class DayPlan:
     end_bonus_applied: bool
     dropped: list[str] = field(default_factory=list)
     status: str = "ok"
+    objective: int | None = None      # the solver's own cost (lower is better): compares two searches of one model
 
 
 def hhmm(minutes: int) -> str:
@@ -118,7 +128,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            min_stops: int | None = None, budget_gbp: float | None = None,
            must_include: frozenset[str] = frozenset(), stop_bonus: float = 0.0,
            max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
-           lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2) -> DayPlan | None:
+           lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2,
+           max_places: int | None = None, fixed_count: bool = False,
+           strategy: str = "PARALLEL_CHEAPEST_INSERTION", seeded: bool = False) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -137,7 +149,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     if buffer_walk_min or buffer_transit_min:
         for i in range(1, n + 1):
             for j in range(1, n + 1):
-                if i != j:
+                if i != j and not (cands[i - 1].mine or cands[j - 1].mine):   # m202: the person's own time has
+                    # its own allowance either side (or sits where they are), so no extra gap beside it
                     transit = mode is not None and mode(cands[i - 1].end, cands[j - 1].start) != "walk"
                     B[i][j] = buffer_transit_min if transit else buffer_walk_min
 
@@ -163,11 +176,16 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
 
     routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(cost_cb))
 
-    count_idx = routing.RegisterUnaryTransitCallback(
-        lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n else 0)
+    count_idx = routing.RegisterUnaryTransitCallback(   # m200: the person's own time isn't one of the places
+        lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine else 0)
     routing.AddDimension(count_idx, 0, max_stops, True, "Stops")
     if min_stops:
         routing.GetDimensionOrDie("Stops").CumulVar(routing.End(0)).SetMin(min(min_stops, max_stops))
+    if max_places is not None:   # m202: lunch that can't fit is never replaced by a place the person didn't ask for
+        places_idx = routing.RegisterUnaryTransitCallback(
+            lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine
+            and not cands[manager.IndexToNode(fi) - 1].lunch else 0)
+        routing.AddDimension(places_idx, 0, max_places, True, "Places")
     if budget_gbp is not None:
         cost_idx = routing.RegisterUnaryTransitCallback(
             lambda fi: (math.ceil(cands[manager.IndexToNode(fi) - 1].cost_gbp)
@@ -175,6 +193,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         routing.AddDimension(cost_idx, 0, int(math.floor(budget_gbp)), True, "Budget")
 
     pace_bonus = legs.packed_pace / 2.0
+    prizes = [0.0] * (n + 2)   # what the solver gains by visiting each node (utility units), for the seed
     for j in range(1, n + 1):
         idx = manager.NodeToIndex(j)
         r = ranges[j - 1]
@@ -188,7 +207,16 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
             continue  # mandatory: no disjunction
         if cands[j - 1].moment_id in must_include:
             continue  # a must-do stop (trip intent): mandatory
-        prize = cands[j - 1].utility - floor + pace_bonus + stop_bonus + (lunch_bonus if cands[j - 1].lunch else 0.0)
+        if cands[j - 1].mine:   # m200: one slot of the block, pulled in by its bonus (at most one, below)
+            prizes[j] = MINE_BONUS
+            routing.AddDisjunction([idx], int(round(SCALE * MINE_BONUS)))
+            continue
+        # m206 (WS7 benchmark): when the day's number of stops is fixed, the pace term is the same for every plan, so
+        # it stays out of the prize. Added in, a dislike of packed days pushed the prizes of several places to the
+        # zero clamp, and the solver then chose among them by travel time alone, not by the person's tastes.
+        pace = 0.0 if fixed_count else pace_bonus
+        prize = cands[j - 1].utility - floor + pace + stop_bonus + (lunch_bonus if cands[j - 1].lunch else 0.0)
+        prizes[j] = max(0.0, prize)
         routing.AddDisjunction([idx], int(round(SCALE * max(0.0, prize))))
 
     solver = routing.solver()
@@ -199,6 +227,12 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     for members in groups.values():
         if len(members) > 1:
             solver.Add(solver.Sum([routing.ActiveVar(i) for i in members]) <= 1)
+    blocks: dict[str, list[int]] = {}
+    for j, c in enumerate(cands, start=1):
+        if c.mine:
+            blocks.setdefault(c.mine, []).append(manager.NodeToIndex(j))
+    for members in blocks.values():   # m200: the person's own time is in the plan once
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in members]) <= 1)
     meals = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.lunch]
     if len(meals) > 1:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in meals]) <= 1)
@@ -219,10 +253,24 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
                 solver.Add(routing.NextVar(a) != b)
 
     params = pywrapcp.DefaultRoutingSearchParameters()
-    params.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PARALLEL_CHEAPEST_INSERTION
+    params.first_solution_strategy = getattr(routing_enums_pb2.FirstSolutionStrategy, strategy)
     params.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
     params.time_limit.FromMilliseconds(int(time_limit_s * 1000))
-    sol = routing.SolveWithParameters(params)
+    sol = None
+    if seeded and forced_last is None:
+        # m216 (Abram, 7 Nov): stage 1, a valid day built step by step; stage 2, the solver improves it within the
+        # time limit. The search no longer depends on finding a good start itself (on a busy machine it sometimes
+        # didn't), and if it can't improve the seed, the seed is the plan. An invalid seed falls back to the old way.
+        route = _greedy_route(cands, T, B, service, ranges, day_start, max_wait_min, prizes, legs,
+                              max_stops=max_stops, max_places=max_places, budget_gbp=budget_gbp,
+                              max_areas=max_areas, max_theme=max_theme, lunch_not_first=lunch_not_first,
+                              must=must_include)
+        routing.CloseModelWithParameters(params)
+        initial = routing.ReadAssignmentFromRoutes([[manager.NodeToIndex(j) for j in route]], True) if route else None
+        if initial is not None:
+            sol = routing.SolveFromAssignmentWithParameters(initial, params) or initial
+    if sol is None:
+        sol = routing.SolveWithParameters(params)
     if sol is None:
         return None
 
@@ -239,12 +287,111 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
                                      round(c.utility, 3), round(pen, 3)))
             prev = node
     visited = {s.moment_id for s in stops}
-    value = sum(s.utility - floor + pace_bonus - s.leg_penalty for s in stops)
+    own = {c.moment_id for c in cands if c.mine}
+    value = sum((0.0 if s.moment_id in own else s.utility - floor + pace_bonus) - s.leg_penalty for s in stops)
     kind = {c.moment_id: c.kind for c in cands}
-    peaks = [s for s in stops if kind[s.moment_id] != "area"] or stops
+    peaks = [s for s in stops if kind[s.moment_id] != "area" and s.moment_id not in own] or \
+        [s for s in stops if s.moment_id not in own]
     peak = max(peaks, key=lambda s: s.utility).moment_id if peaks else None
     return DayPlan(stops, round(value, 3), peak, False,
-                   dropped=[c.moment_id for c in cands if c.moment_id not in visited])
+                   dropped=[c.moment_id for c in cands if c.moment_id not in visited], objective=sol.ObjectiveValue())
+
+
+def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]], service: list[int],
+                  ranges: list[list[tuple[int, int]]], day_start: int, max_wait: int, prizes: list[float],
+                  legs: LegWeights, *, max_stops: int, max_places: int | None, budget_gbp: float | None,
+                  max_areas: int, max_theme: int, lunch_not_first: bool, must: frozenset[str]) -> list[int]:
+    """m216, stage 1: a valid day built one stop at a time, keeping every rule the solver keeps (hours, waits, budget,
+    one of a group, one lunch, one area, history at most twice and never in a row, the stop and place counts) and
+    never taking a stop that would make one of the person's own blocks unreachable. Each step takes the stop worth
+    most to the solver (its prize less the leg's penalty). Returns node numbers in order (1-based); may be short or
+    empty, in which case the solver starts on its own as before."""
+    n = len(cands)
+    budget = None if budget_gbp is None else int(math.floor(budget_gbp))
+
+    def start_at(j: int, frm: int, ready: int) -> int | None:
+        arrive = ready + T[frm][j] + B[frm][j]
+        for lo, hi in ranges[j - 1]:
+            s = max(arrive, lo)
+            if s <= hi:
+                return s if s - arrive <= max_wait else None
+        return None
+
+    blocks: dict[str, list[int]] = {}
+    for j, c in enumerate(cands, start=1):
+        if c.mine:
+            blocks.setdefault(c.mine, []).append(j)
+    route, used = [], set()
+    prev, ready = 0, day_start
+    groups, done_blocks = set(), set()
+    meals = areas = hist = spent = stops = places = 0
+    last_hist = False
+    while True:
+        best = None
+        for j in range(1, n + 1):
+            c = cands[j - 1]
+            if j in used or (c.group and c.group in groups) or (c.mine and c.mine in done_blocks):
+                continue
+            if c.lunch and (meals or (lunch_not_first and not route)):
+                continue
+            if c.kind == "area" and areas >= max_areas:
+                continue
+            themed = c.theme == "history" and not c.lunch
+            if themed and (hist >= max_theme or last_hist):
+                continue
+            cost = math.ceil(c.cost_gbp)
+            if budget is not None and spent + cost > budget:
+                continue
+            if not c.mine and (stops >= max_stops or (max_places is not None and not c.lunch and places >= max_places)):
+                continue
+            if not c.mine and prizes[j] <= 0 and c.moment_id not in must:
+                continue
+            s = start_at(j, prev, ready)
+            if s is None:
+                continue
+            end = s + service[j]
+            if any(k != c.mine and k not in done_blocks and not any(start_at(x, j, end) is not None for x in slots)
+                   for k, slots in blocks.items()):
+                continue   # it would leave one of the person's own blocks out of reach
+            score = SCALE * (prizes[j] - legs.penalty(T[prev][j])) - T[prev][j]
+            if best is None or score > best[0]:
+                best = (score, j, end, themed, cost)
+        if best is None:
+            return route
+        _, j, end, themed, cost = best
+        c = cands[j - 1]
+        route.append(j)
+        used.add(j)
+        prev, ready = j, end
+        if c.group:
+            groups.add(c.group)
+        if c.mine:
+            done_blocks.add(c.mine)
+        else:
+            stops += 1
+            places += 0 if c.lunch else 1
+        meals += c.lunch
+        areas += c.kind == "area"
+        hist += themed
+        last_hist = themed
+        spent += cost
+
+
+PORTFOLIO_SPLIT = 0.8   # m216 (GUESS, benchmarked): the share of the time limit the usual search gets on a seeded day
+
+
+def _solve_best(usable: list[Candidate], args: dict) -> DayPlan | None:
+    """m216: on a seeded day, two searches of the same model share the time limit: the usual one (the solver's own
+    first solution) and the two-stage one (a valid day built step by step, then improved). The plan with the lower
+    solver cost wins, so the day is never worse than either search finds, and the total time is unchanged. Any other
+    day is one usual search, exactly as before."""
+    if not args.get("seeded"):
+        return _solve(usable, forced_last=None, **args)
+    limit = args["time_limit_s"]
+    plans = [_solve(usable, forced_last=None, **{**args, "seeded": False, "time_limit_s": limit * PORTFOLIO_SPLIT}),
+             _solve(usable, forced_last=None, **{**args, "seeded": True, "time_limit_s": limit * (1 - PORTFOLIO_SPLIT)})]
+    found = [p for p in plans if p is not None]
+    return min(found, key=lambda p: p.objective) if found else None
 
 
 def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
@@ -254,7 +401,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              peak_end: bool = False, end_bonus: float = 0.5, n_end_candidates: int = 5,
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
-             lunch_not_first: bool = False, max_theme: int = 2) -> DayPlan:
+             lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None,
+             seeded: bool = False) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -268,11 +416,13 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         # never leave a day short of its places. In simulation about 1 person in 8 had only 0-2 cards above it, so
         # their day had 0-2 places (and Test B's pair would differ in length). Then the person's own best cards come
         # in instead. A place they said they didn't enjoy never does: dayplan leaves those out before this.
-        places = sorted((c.utility for c in cands if not c.lunch and _start_ranges(c, day_start, day_end)),
+        places = sorted((c.utility for c in cands if not c.lunch and not c.mine and _start_ranges(c, day_start, day_end)),
                         reverse=True)
+        # m206 (WS7 benchmark): with spares. Letting in exactly `min_stops` cards left a day short whenever those
+        # couldn't fit together (an evening after three places that close at 18:00 gave one place, not three).
         if places and sum(u > floor for u in places) < min_stops:
-            floor = min(floor, places[min(min_stops, len(places)) - 1] - 1e-6)
-    usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch)
+            floor = min(floor, places[min(min_stops + FLOOR_SPARES, len(places)) - 1] - 1e-6)
+    usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch or c.mine)
               and _start_ranges(c, day_start, day_end)]
     skipped = [c.moment_id for c in cands if c not in usable]
     missing_must = sorted(must - {c.moment_id for c in usable})
@@ -284,15 +434,16 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 max_wait_min=max_wait_min, budget_gbp=budget_gbp, must_include=must & {c.moment_id for c in usable},
                 min_stops=min_stops, max_areas=max_areas,
                 buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
-                lunch_not_first=lunch_not_first, max_theme=max_theme)
+                lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places,
+                fixed_count=bool(min_stops) and min_stops >= max_stops, seeded=seeded)
     status = "ok"
-    best = _solve(usable, forced_last=None, **args)
+    best = _solve_best(usable, args)
     if best is None and min_stops:
         # The hard minimum can defeat the first-solution heuristic. Drop it and instead add a
         # growing per-stop bonus (in utility units) until the plan has enough stops.
         args["min_stops"] = None
         for bonus in (0.0, 0.5, 1.0, 2.0, 4.0):
-            best = _solve(usable, forced_last=None, stop_bonus=bonus, **args)
+            best = _solve_best(usable, {**args, "stop_bonus": bonus})
             if best is not None and len(best.stops) >= min_stops:
                 break
         if best is not None and len(best.stops) >= min_stops:
@@ -301,7 +452,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
             status = f"could not fit {min_stops} stops"
     if best is None and args["must_include"]:
         args["must_include"] = frozenset()
-        best = _solve(usable, forced_last=None, **args)
+        best = _solve_best(usable, args)
         status = "could not fit the must-do stop"
 
     if peak_end:
@@ -310,7 +461,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 return -math.inf
             return p.value + end_bonus * (p.stops[-1].utility - floor)
 
-        top = sorted(range(len(usable)), key=lambda k: usable[k].utility, reverse=True)[:n_end_candidates]
+        top = sorted((k for k in range(len(usable)) if not usable[k].mine), key=lambda k: usable[k].utility,
+                     reverse=True)[:n_end_candidates]
         best_score = with_bonus(best)
         for k in top:
             p = _solve(usable, forced_last=k + 1, **args)

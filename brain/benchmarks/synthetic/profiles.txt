@@ -1,0 +1,82 @@
+SYNTHETIC PEOPLE ONLY. 11 travellers, the Brain's ranking (quality.rank) of the ready experiences:
+London 49, Paris 19 (development only). Top 5 on Tue 24 and Sat 28 Nov 2026.
+EUR prices enter the model's cost term at ECB 6 Nov 2026 (EUR 1 = GBP 0.83415), an assumption.
+
+profile                    city     p(Good)   lift practical  money  trust kinds own kind Δ cost Δ access
+museum enthusiast          London      0.91  +0.14      100%   100%   100%     1     100%      0        0
+museum enthusiast          Paris       0.87  +0.09       80%   100%   100%     2      80%      2        0
+architecture enthusiast    London      0.98  +0.10      100%   100%   100%     2     100%      0        0
+architecture enthusiast    Paris       0.82  +0.04       80%   100%   100%     2      80%      2        0
+nature enthusiast          London      0.66  +0.08      100%   100%   100%     4      20%      0        0
+nature enthusiast          Paris       0.74  +0.16       60%   100%   100%     3      40%      2        0
+food-experience enthusiast London      0.84  +0.05      100%   100%   100%     5       0%      0        0
+food-experience enthusiast Paris       0.72  -0.02       80%   100%   100%     3      20%      3        0
+shopping enthusiast        London      0.72  +0.07      100%   100%   100%     4       0%      0        0
+shopping enthusiast        Paris       0.66  +0.00       80%   100%   100%     3      20%      3        0
+entertainment enthusiast   London      0.89  +0.10      100%   100%   100%     2      40%      0        0
+entertainment enthusiast   Paris       0.72  +0.01       80%   100%   100%     3       0%      3        0
+budget-conscious           London      0.65  +0.11      100%   100%   100%     4        —      0        0
+budget-conscious           Paris       0.67  +0.13       40%   100%   100%     4        —      3        0
+relaxed                    London      0.57  +0.16      100%   100%   100%     4        —      0        0
+relaxed                    Paris       0.57  +0.10       40%   100%   100%     5        —      3        0
+active                     London      0.77  +0.10      100%   100%   100%     4      60%      0        0
+active                     Paris       0.67  +0.02       80%   100%   100%     3      20%      3        0
+family                     London      0.73  +0.08      100%   100%   100%     4        —      0        0
+family                     Paris       0.63  +0.04       60%   100%   100%     4        —      3        0
+accessibility-focused      London      0.65  +0.05       60%   100%   100%     3        —      0        2
+accessibility-focused      Paris       0.68  +0.07        0%   100%   100%     4        —      3        0
+
+The ranking rule, averaged over the 11 profiles (own kind: over the 8 with a signature kind):
+rule                      city     p(Good) own kind practical  money  trust  kinds
+doubts first (today)      London      0.76      46%       96%   100%   100%    3.4
+doubts first (today)      Paris       0.70      37%       62%   100%   100%    3.3
+match less 0.05 a doubt   London      0.81      54%       69%    96%   100%    3.0
+match less 0.05 a doubt   Paris       0.77      51%       40%    87%    82%    3.5
+match less 0.10 a doubt   London      0.80      51%       75%    98%   100%    3.1
+match less 0.10 a doubt   Paris       0.76      46%       45%    95%    93%    3.5
+
+Transfer: the profile's own kind in its top 5, London and Paris, under today's rule and at 0.10 a doubt:
+profile                     today L today P  0.10 L  0.10 P
+museum enthusiast              100%     80%    100%     80%
+architecture enthusiast        100%     80%    100%     80%
+nature enthusiast               20%     40%     40%     40%
+food-experience enthusiast       0%     20%     20%     40%
+shopping enthusiast              0%     20%      0%     20%
+entertainment enthusiast        40%      0%     40%     20%
+active                          60%     20%     60%     40%
+
+Δ cost: of the top 5, how many change when an unknown price is imputed at the city's median.
+Δ access: for the accessibility traveller, how many change when every step-free fact is hidden.
+own kind: share of the top 5 in the profile's signature categories (— when it has none).
+
+Top 5 on the Tuesday (first title each):
+- museum enthusiast / London: Lift a real gold bar at the Bank of En; From Trafalgar Square into the quiet o; Centuries of British faces at the Nati; Climb aboard old buses and Tube trains; Egypt galleries, the Great Court, then
+- museum enthusiast / Paris: The history of Paris, free, in two Mar; Rodin's sculptures in his house and it; Down 131 steps into the ossuary under ; A glass-roofed 1820s shopping passage; Under the Panthéon's dome, with Foucau
+- architecture enthusiast / London: Egypt galleries, the Great Court, then; Into the whale hall; Waterloo Bridge at sunset, both ways; Across the Millennium Bridge towards S; Level 58
+- architecture enthusiast / Paris: A glass-roofed 1820s shopping passage; Rodin's sculptures in his house and it; Down 131 steps into the ossuary under ; The history of Paris, free, in two Mar; The upper chapel's walls of stained gl
+- nature enthusiast / London: A calm walk round the Greenwich Penins; A heated outdoor swim at London Fields; A rest in the Royal Festival Hall's fr; Van Gogh's bandaged ear and Manet's ba; Canal steps and Coal Drops Yard at Kin
+- nature enthusiast / Paris: A glass-roofed 1820s shopping passage; Rodin's sculptures in his house and it; The history of Paris, free, in two Mar; Cliffs, a lake and a hilltop temple in; A garden walk on an old railway viaduc
+- food-experience enthusiast / London: Canal steps and Coal Drops Yard at Kin; A calm walk round the Greenwich Penins; Lift a real gold bar at the Bank of En; A heated outdoor swim at London Fields; Level 58
+- food-experience enthusiast / Paris: A glass-roofed 1820s shopping passage; The history of Paris, free, in two Mar; Down 131 steps into the ossuary under ; Rodin's sculptures in his house and it; A cheap traditional French meal in a 1
+- shopping enthusiast / London: A calm walk round the Greenwich Penins; A rest in the Royal Festival Hall's fr; Canal steps and Coal Drops Yard at Kin; Lift a real gold bar at the Bank of En; A heated outdoor swim at London Fields
+- shopping enthusiast / Paris: A glass-roofed 1820s shopping passage; The history of Paris, free, in two Mar; Down 131 steps into the ossuary under ; Rodin's sculptures in his house and it; A garden walk on an old railway viaduc
+- entertainment enthusiast / London: Climb aboard old buses and Tube trains; A heated outdoor swim at London Fields; Lift a real gold bar at the Bank of En; Race electric karts at Canary Wharf; Into the whale hall
+- entertainment enthusiast / Paris: The history of Paris, free, in two Mar; Rodin's sculptures in his house and it; A glass-roofed 1820s shopping passage; Down 131 steps into the ossuary under ; Along the canal's locks and swing brid
+- budget-conscious / London: A calm walk round the Greenwich Penins; A rest in the Royal Festival Hall's fr; Canal steps and Coal Drops Yard at Kin; Lift a real gold bar at the Bank of En; Burlington Arcade
+- budget-conscious / Paris: A glass-roofed 1820s shopping passage; The history of Paris, free, in two Mar; Cliffs, a lake and a hilltop temple in; A garden walk on an old railway viaduc; The view over all Paris from the Belle
+- relaxed / London: A rest in the Royal Festival Hall's fr; A calm walk round the Greenwich Penins; Lift a real gold bar at the Bank of En; Burlington Arcade; Level 58
+- relaxed / Paris: A glass-roofed 1820s shopping passage; The history of Paris, free, in two Mar; A garden walk on an old railway viaduc; The view over all Paris from the Belle; Along the canal's locks and swing brid
+- active / London: A heated outdoor swim at London Fields; Climb aboard old buses and Tube trains; Race electric karts at Canary Wharf; A calm walk round the Greenwich Penins; Canal steps and Coal Drops Yard at Kin
+- active / Paris: A glass-roofed 1820s shopping passage; The history of Paris, free, in two Mar; Down 131 steps into the ossuary under ; Rodin's sculptures in his house and it; Cliffs, a lake and a hilltop temple in
+- family / London: Lift a real gold bar at the Bank of En; Level 58; A calm walk round the Greenwich Penins; Canal steps and Coal Drops Yard at Kin; Waterloo Bridge at sunset, both ways
+- family / Paris: A glass-roofed 1820s shopping passage; The history of Paris, free, in two Mar; Rodin's sculptures in his house and it; Along the canal's locks and swing brid; A garden walk on an old railway viaduc
+- accessibility-focused / London: A calm walk round the Greenwich Penins; From Trafalgar Square into the quiet o; Van Gogh's bandaged ear and Manet's ba; Tower Bridge at sunset from Alderman S; A rooftop garden among the City towers
+- accessibility-focused / Paris: Cliffs, a lake and a hilltop temple in; A garden walk on an old railway viaduc; The view over all Paris from the Belle; Along the canal's locks and swing brid; A glass-roofed 1820s shopping passage
+
+What the model can't represent (limitations, said rather than guessed):
+- architecture enthusiast: no architecture feature: iconic, awe, photos and reveal stand in
+- shopping enthusiast: no shopping taste in the model (m229): it can't be represented
+- entertainment enthusiast: no entertainment feature: absorption and social pull stand in
+- family: no child-suitability data, and none is inferred: a stated preference only
+
+Accessibility traveller: places marked not step-free in the top 5: London 0, Paris 0 (a stated need is a rule).

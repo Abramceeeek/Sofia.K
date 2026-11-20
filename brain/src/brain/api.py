@@ -1,6 +1,6 @@
 """The brain's HTTP API, used by the SwiftUI app (the face) and by Abram's admin tools.
 
-Run locally:  uvicorn brain.api:app --app-dir src --reload     (docs at /docs)
+Run locally:  BRAIN_API_DOCS=1 uvicorn brain.api:app --app-dir src --reload     (docs at /docs)
 """
 
 from __future__ import annotations
@@ -16,13 +16,15 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+import numpy as np
 import yaml
-from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Response
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, Query, Request, Response
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import backup, dayplan, db, notify, ops, reasons, share, summary, testb, trips, tripdays
+from . import (backup, daybudget, dayplan, db, explain, food, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+               trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
 from .config import DATA_DIR, Settings, get_settings
@@ -33,9 +35,12 @@ from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
-                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StaySearchIn, SurveyIn, SwipesIn, TripDaysIn)
+                      ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StayCompareIn, StaySearchIn, SurveyIn, SwipesIn,
+                      TripDaysIn,
+                      TripLengthIn)
 from .scoring import conjoint_observation, named_weights, rating_observation, swipe_observation, update_person
 from .sun import sunset
+from .places import load_destinations
 from .travel import LondonEstimate
 from .tfl import TflTravel, TravelStore, next_weekday_1pm
 from .ghoidc import GithubOIDC
@@ -90,6 +95,60 @@ def _plain(description: str) -> str:
     return re.sub(r"longest transfer (\d+) min", r"up to \1 min between stops", description)
 
 
+HERE_NAMES = {"where you are"}   # what the apps call the person's own position (AppModel: "where you are")
+
+
+def kept_stops(stops: list[dict], *, drop_start_pin: bool = False, hide: str | None = None,
+               shown_as: str = "your stay") -> list[dict]:
+    """The copy of a plan's stops that is kept in the database (audit SEC-06). What the person is sent is unchanged.
+
+    - `drop_start_pin`: the day started from the person's own position ("Start from where I am"), which the app and
+      the privacy notice say is "sent once, rounded to about 100 metres ... and it isn't kept". Lunch near the start
+      (and the person's own time placed at the start) carried that point as its map pin, so it was kept. Not now.
+    - `hide`: the name of the person's stay, which the notice says is never kept ("its location, never its name").
+      The first stop's "from …" and "Lunch near …" carried it. The kept copy says `shown_as` instead."""
+    def clean(v):
+        if isinstance(v, str):
+            return v.replace(hide, shown_as) if hide else v
+        if isinstance(v, list):
+            return [clean(x) for x in v]
+        if isinstance(v, dict):
+            return {k: clean(x) for k, x in v.items()}
+        return v
+
+    out = []
+    for st in stops:
+        st = clean(st) if hide else dict(st)
+        if drop_start_pin and str(st.get("moment_id", "")).endswith("@start"):
+            st["pin"] = None
+        out.append(st)
+    return out
+
+
+# m276 (audit, 16 Nov): each stop's prediction before the visit (the model's utility, `predicted`) is kept with the
+# stored plan, so ratings can be checked against what was predicted (evaluation.py). The m260 framework assumed it was
+# kept; it wasn't. It's the person's own derived score, kept beside the score terms (`why`) the plan already holds,
+# and never sent to the app (Abram, m224: no raw model scores).
+PRIVATE_STOP_KEYS = ("predicted",)
+
+
+def public(stops: list[dict]) -> list[dict]:
+    """A plan's stops as the app is sent them: without the prediction kept for the evaluation."""
+    return [{k: v for k, v in st.items() if k not in PRIVATE_STOP_KEYS} for st in stops]
+
+
+def _finite(v):
+    """A value JSON can carry: a number that isn't one (an infinity, a NaN) becomes null, at any depth. One such
+    number in one row used to make the whole admin export fail (audit SEC-04)."""
+    if isinstance(v, float):
+        return v if v == v and v not in (float("inf"), float("-inf")) else None
+    if isinstance(v, dict):
+        return {k: _finite(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_finite(x) for x in v]
+    return v
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
 
@@ -125,8 +184,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.tester_codes = (yaml.safe_load(f) or {}).get("codes") or {}   # Build 2
         places = settings.data_dir / "airports.yaml"
         airports, dests = trips.load_places(places if places.exists() else DATA_DIR / "airports.yaml")
+        app.state.destinations = load_destinations(settings.data_dir / "destinations.yaml")   # WS1 registry
         app.state.trips = trips.TripSearch(airports, dests, duffel_token=settings.duffel_token,   # D120
                                            liteapi_key=settings.liteapi_key)
+        app.state.rates = fx.EcbRates() if settings.fx_rates_live else None   # m218: off by default
         arr = settings.data_dir / "arrivals.yaml"
         app.state.arrivals = tripdays.load_arrivals(arr if arr.exists() else DATA_DIR / "arrivals.yaml")   # D122
         with app.state.Session() as s:   # D116: sync the card files on every start, so a deploy brings new cards
@@ -145,7 +206,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.travel.stop()
         engine.dispose()
 
-    app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan)
+    # audit SEC-07: /docs, /redoc and /openapi.json listed every route, the admin ones included, to anyone. They are
+    # for development: set BRAIN_API_DOCS=1 to have them (never in Render)
+    docs = settings.api_docs
+    app = FastAPI(title="Brain: moment planner API", version="0.1.0", lifespan=lifespan,
+                  docs_url="/docs" if docs else None, redoc_url="/redoc" if docs else None,
+                  openapi_url="/openapi.json" if docs else None)
     app.state.settings = settings
     app.state.oidc = GithubOIDC()   # Stage 1: lets the nightly backup job in without a shared secret (ghoidc.py)
     # Stage 1: the request log (no personal data), rate limits and error alerts (ops.py)
@@ -194,6 +260,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def refit(s: Session, user: db.User, p: PopulationModel) -> DeltaPosterior:
         """Rebuild δ_person from everything this person has told us (swipes, choices, ratings)."""
         post = update_person(p, observations(s, user, p))
+        if not (np.all(np.isfinite(post.mean)) and np.all(np.isfinite(post.precision))):
+            # audit (Postgres in CI): a non-number can't be stored in a JSON column there, and would fail the person's
+            # request. Keep their last good fit and say so in the log (the error kind only, nothing about them).
+            ops.errors.warning("a person's fit gave a non-finite result; their previous fit is kept")
+            return posterior(user, p)
         user.delta, user.population_version = post.to_json(), p.version
         return post
 
@@ -246,7 +317,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     def plan_out(plan: db.Plan) -> dict:
         return {"id": plan.id, "kind": plan.kind, "label": plan.label, "date": plan.date, "intent": plan.intent,
-                "stops": plan.stops, "value": plan.value, "status": plan.status,
+                "stops": public(plan.stops), "value": plan.value, "status": plan.status,
                 "fit_rating": plan.fit_rating, "created_at": plan.created_at.isoformat()}
 
     # ---- public -------------------------------------------------------------------
@@ -317,7 +388,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
              "reactions": {**summary.place_reactions(c.phrase),                                  # D117
                            "want_yes": f"Noted: you'd like to try {c.phrase}."}}
             for c in cats.items.values()]
+        mode = app.state.onboarding.get("places_mode", "named")
         return {**app.state.onboarding,
+                # m220: "kinds" gives everyone the category cards (after the friends' round); else visitors only
+                "places_mode": mode if mode in ("named", "kinds") else "named",
                 # D116: visitors from abroad get kinds of place instead of the London places
                 "category_cards": kinds,
                 "categories": None if cats is None else {"prompt": cats.prompt, "note": cats.note,
@@ -334,7 +408,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/swipes", status_code=204)
     def post_swipes(body: SwipesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
                     p: PopulationModel = Depends(pop)):
-        for it in body.items:
+        # audit SEC-02: the last answer for a place wins inside one request too (the same place sent 50,000 times
+        # in one request used to make 50,000 rows)
+        for it in {it.item: it for it in body.items}.values():
             if it.item not in app.state.swipe_items:
                 raise HTTPException(422, f"unknown swipe place {it.item}")
             # m176: one answer per place; answering again (onboarding's Back) replaces it, so it isn't counted twice
@@ -352,7 +428,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                         p: PopulationModel = Depends(pop)):
         """D116: a visitor's answers to the category cards."""
         cats = app.state.categories
-        for it in body.items:
+        for it in {it.key: it for it in body.items}.values():   # the last answer for a kind wins (as for swipes)
             if cats is None or it.key not in cats.items:
                 raise HTTPException(422, f"unknown category {it.key}")
             for old in [a for a in user.categories if a.key == it.key]:   # m176: one answer per kind of place
@@ -368,7 +444,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/v1/me/conjoint", status_code=204)
     def post_choices(body: ChoicesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
                      p: PopulationModel = Depends(pop)):
-        for it in body.items:
+        for it in {it.task: it for it in body.items}.values():   # the last choice for a task wins (as for swipes)
             if it.task not in app.state.tasks:
                 raise HTTPException(422, f"unknown task {it.task}")
             for old in [c for c in user.choices if c.task == it.task]:   # m176: one choice per made-up day
@@ -382,7 +458,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/v1/me/answers", status_code=204)
     def post_answers(body: AnswersIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
-        for it in body.items:
+        for it in {it.question: it for it in body.items}.values():
             for old in [a for a in user.answers if a.question == it.question]:   # journey round 2: one per question
                 s.delete(old)
             s.add(db.Answer(user_id=user.id, question=it.question, text=it.text, input_mode=it.input_mode))
@@ -395,7 +471,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         amap = app.state.amap
         if amap is not None and (bad := [f for f in body.fields if f not in amap.fields]):
             raise HTTPException(422, f"unknown fields {bad}")
-        new = body.model_dump(exclude_none=True)
+        new = body.model_dump(exclude_none=True, exclude={"foods_avoided"})   # m223: never stored (schemas.py)
+        if body.foods_avoided is not None:   # m251, m257: an old app sent the retired field. Only an aggregate count
+            app.state.retired_food_saves = getattr(app.state, "retired_food_saves", 0) + 1   # is kept: no log line,
+            # no user, no value (Abram, m252: "Prefer an aggregate counter or privacy-preserving metric")
         for key in ("based", "home_city"):   # D116: a later save without them keeps them (the Test B cohort)
             if key not in new and key in (user.profile or {}):
                 new[key] = user.profile[key]
@@ -507,8 +586,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # Stage 1: the chosen Tube and bus legs, asked of TfL for that day; if one is well off, plan once more
         if hasattr(travel, "check") and travel.check():
             plan, stops, notes = solve()
+        # m217: the day's money. Fares count towards the budget too, and lunch stays in it unless the person left food
+        # out. If the finished day goes over: plan once more with the fares set aside first; if it's still over, step
+        # down to a cheaper lunch (usual, cheaper, bring lunch) and plan again. Keep the cheapest day found. Lunch is
+        # never dropped to make a day fit, and never for the blind Test B pair.
+        money = None
+        if not blind and brief.budget_gbp is not None:
+            full = brief.budget_gbp
+            expected = brief.lunch and dayplan.spans_lunch(dayplan.parse_hhmm(brief.start_time),
+                                                           dayplan.parse_hhmm(brief.end_time))
+            lunch = daybudget.lunch_of(brief.lunch_gbp) if brief.food_in_budget else daybudget.LUNCHES[0]
+            block = lambda sts, ln: daybudget.block(full, sts, ln, food_in_budget=brief.food_in_budget,
+                                                    lunch_expected=expected)
+            # a day that kept its lunch always beats one that lost it; then one within budget; then the cheaper
+            rank = lambda b, sts: (not expected or any(st.get("lunch") for st in sts), b["status"] != "over",
+                                   -b["total_gbp"])
+            best = (block(stops, lunch), plan, stops, notes, lunch)
+            fares_tried = False
+            for _ in range(5):   # at most: fares, a cheaper lunch, fares again, bring lunch, fares again
+                if best[0]["status"] != "over":
+                    break
+                fares = dayplan.transport_gbp(best[2])
+                keeps_lunch = not expected or not brief.food_in_budget or full - fares >= lunch.gbp
+                if fares > 0 and not fares_tried and keeps_lunch:
+                    brief, fares_tried = replace(brief, budget_gbp=max(0.0, full - fares)), True
+                elif expected and brief.food_in_budget and (cheaper := daybudget.next_lunch(lunch)) is not None:
+                    lunch, fares_tried = cheaper, False
+                    brief = replace(brief, budget_gbp=full, lunch_gbp=lunch.gbp)
+                else:
+                    break
+                p2, s2, n2 = solve()
+                b2 = block(s2, lunch)
+                if p2.stops and rank(b2, s2) > rank(best[0], best[2]):
+                    best = (b2, p2, s2, n2, lunch)
+            _, plan, stops, notes, lunch = best
+            brief = replace(brief, budget_gbp=full, lunch_gbp=lunch.gbp if brief.food_in_budget else 0.0)
+            money = lambda sts: block(sts, lunch)
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
+        for st, inner in zip(out, stops):   # m276: kept with the stored plan for the evaluation, never sent
+            st["predicted"] = inner.get("predicted")
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
         ms = moments_by_id(s)
         if feelings is None:
@@ -524,20 +641,37 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         n_choices = sum(ch.choice in ("A", "B") for ch in user.choices)
         amap, fields = app.state.amap, person_fields(user)
         taken: set[str] = set()   # m187: what earlier stops said, so the day's reasons don't repeat
+        budget_block = money(stops) if money else None
+        # m219: where the travel times come from (TfL's for the day where it has the pair, else the estimate)
+        legs_from = "TfL journey times where known, else a distance estimate" if hasattr(travel, "check") else \
+            "a distance estimate"
+        taste = {n for n in p.names if p.spec(n).group in ("place", "moment", "person")}   # m230: tastes only
+        for st, inner in zip(out, stops):
+            if not blind and not st.get("mine"):   # m219: why this stop, from the planner's own inputs
+                card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
+                u = inner.get("predicted")
+                prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
+                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows() if card_m else [],
+                                             hours_text=inner.get("hours") or "", budget=budget_block,
+                                             travel_source=legs_from, labels=dayplan.APP_LABELS,
+                                             taste=taste)
         for st in out:
             base = st["moment_id"].split("#")[0]
             if st["rateable"] and base in by_id:
                 st["card"] = card(by_id[base])
                 m = by_id[base]
+                mine = amap.labels(amap.fields_of(m) & fields) if amap else []
                 st["reasons"] = [] if blind else reasons.stop_reasons(
                     p, post.mean, m, loved=loved_places, feelings=feelings, rated=rated,
-                    loved_kinds=loved_kinds, wanted=wanted,
-                    interests=amap.labels(amap.fields_of(m) & fields) if amap else [], n_choices=n_choices,
-                    taken=taken)
+                    loved_kinds=loved_kinds, wanted=wanted, interests=mine, n_choices=n_choices, taken=taken)
+                # m275 (Abram, 12 Nov): the factors from the person's answers, never a chance of "Good"
+                st["match"] = None if blind else reasons.factor_line(
+                    p, post.mean, m, loved=loved_places, feelings=feelings, interests=mine, n_choices=n_choices)
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
+                "budget": budget_block,   # m217: the day's money, line by line
                 "solver_status": plan.status, "blind": blind,
                 "feel_line": None if blind else reasons.feel_line(stops, by_id, feelings),   # D118: their words
                 "basis": None if blind else reasons.basis(
@@ -563,7 +697,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             weekday=day.strftime("%a").lower() if day else None,
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
-            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None)
+            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
+            mine=(own := tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end), b.location,
+                                              b.kind == "plans" and b.meal) for b in body.mine
+                               if tripdays.mins(b.start) < tripdays.mins(b.end))),   # m200, m201
+            lunch=not any(b.meal and dayplan.overlaps_lunch(b) for b in own),
+            relaxed=body.relaxed,
+            # m217: lunch is chosen to fit the budget (usual, cheaper or brought), and left out of it only if asked
+            lunch_gbp=(daybudget.choose_lunch(budget, body.food_in_budget).gbp if body.food_in_budget else 0.0)
+            if not body.blind else 15.0,
+            food_in_budget=body.food_in_budget)
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]   # checked cards only (D72)
         must_do = body.intent.get("must_do") if body.intent.get("must_do") in {m.id for m in ready} else None
         feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]
@@ -581,10 +724,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if outlook:   # kept with the plan, so the results can tell weather-shaped plans apart
             intent["weather"] = outlook.out()
             head["weather"] = outlook.out()
-        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
+        # audit SEC-06: a day that starts from the person's own position is planned with it, then kept without it
+        here = body.start_is_here or body.start_name.strip().lower() in HERE_NAMES
+        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent,
+                      stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
         s.add(row)
         s.commit()
-        return {**plan_out(row), **head}
+        return {**plan_out(row), "stops": public(out), **head}
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -807,7 +953,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if contact:   # D118: only to reply to this message; deleted when resolved
             s.add(db.SafetyContact(alert_id=alert.id, contact=contact))
         s.commit()
-        alert.notified = notify.send_alert(settings.alert_webhook_url, alert.id, user.id, body.message, contact)
+        alert.notified = notify.send_alert(settings.alert_webhook_url, alert.id, alert.created_at)   # SEC-09
         s.commit()
         return {"alert_id": alert.id, "message": notify.USER_MESSAGE}
 
@@ -870,6 +1016,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except trips.ProviderError as e:
             if str(e) == "too_many":
                 raise HTTPException(429, "That's a lot of searches in an hour. Try again in a few minutes.")
+            if str(e) == "too_many_today":   # the install's share of the day's searches (audit, 12 Nov)
+                raise HTTPException(429, "That's a lot of searches for one day. The booking sites' own links still "
+                                         "work; searching here starts again tomorrow.")
             _trip_event(s, user, "flights", "unavailable", 0, 0, f.sort, [])
             return {"source": "unavailable", "note": "Flights couldn't be searched just now. The links below search "
                     "for real.", "total": 0, "shown": 0, "results": [], "facets": trips.flight_facets([]),
@@ -878,8 +1027,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             max_stops=f.max_stops, stops=f.stops, out_times=f.out_times, in_times=f.in_times, out_depart=f.out_depart,
             in_depart=f.in_depart, max_leg_min=f.max_leg_min, airlines=f.airlines, max_price=f.max_price,
             checked_bag=f.checked_bag, refundable=f.refundable, sort=f.sort)
-        shown = trips.filter_flights(found, ff)
-        tabs, tags = trips.flight_tops(found, ff)
+        px = trips.flight_pricing(found, app.state.rates.get() if app.state.rates else None,   # m218
+                                  display=body.display_currency)                         # m238
+        shown = trips.filter_flights(found, ff, px)
+        tabs, tags = trips.flight_tops(found, ff, px)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "flights", source, len(found), len(shown), f.sort, used)
         note = {"sample": trips.SAMPLE_NOTE,
@@ -890,9 +1041,80 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "duffel": "Some low-cost airlines, such as Ryanair, sell only on their own sites and a few partners, so "
                           "they may be missing here. Skyscanner, below, shows them."}.get(source)
         return {"source": source, "note": note, "total": len(found), "shown": len(shown),
-                "results": [{**trips.flight_out(x), "tags": tags.get(x.id, [])} for x in shown[:60]],
-                "facets": trips.flight_facets(found), "tabs": tabs, "links": links,
+                "results": [{**trips.flight_out(x), "tags": tags.get(x.id, []),
+                             "estimate": px.estimate(x.price, x.currency)} for x in shown[:60]],
+                "facets": trips.flight_facets(found, px), "tabs": tabs, "links": links,
+                # m218: how the prices compare (currencies), and whether the fares include the same bags
+                "compare_notes": [n for n in (px.note("flights"), trips.bags_note(shown, ff)) if n],
                 "searched_at": datetime.now(timezone.utc).isoformat()}
+
+    @app.get("/v1/travel-timing/bank-holidays")
+    def bank_holidays_out(division: str = Query(default="england-and-wales", max_length=40),
+                          start: date = Query(alias="from"), end: date = Query(alias="to")):
+        """m204: official UK bank holidays for a division and a date range, with where they come from. Bank holidays
+        only: school holidays are a separate kind of data (traveltiming.py)."""
+        meta, _ = traveltiming.load_bank_holidays()
+        if division not in meta["names"]:
+            raise HTTPException(422, f"division is one of {', '.join(meta['names'])}")
+        if (end - start).days > 400 or end < start:
+            raise HTTPException(422, "a range of up to about a year")
+        span = traveltiming.covered(division)
+        return {"kind": "bank_holidays", "division": division, "name": meta["names"][division],
+                "source": meta["source"], "fetched": meta["fetched"],
+                "covers": {"from": span[0].isoformat(), "to": span[1].isoformat()} if span else None,
+                "holidays": [h.out() for h in traveltiming.bank_holidays(division, start, end)]}
+
+    @app.post("/v1/trips/stays/compare")
+    def trip_stay_compare(body: StayCompareIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m203: one stay judged against the person's trip (Abram, 7 Nov): how far it is from each planned day, the
+        whole cost and cancellation terms, and the same stay on nearby dates, like for like. Sample prices for nearby
+        dates until Nuitée confirms its terms (stayprices.py); nothing about the trip is stored."""
+        dest = _destination(body.destination)
+        today = datetime.now(timezone.utc).date()
+        nights = (body.checkout - body.checkin).days
+        if not 1 <= nights <= 30 or body.checkin < today:
+            raise HTTPException(422, "a stay is 1 to 30 nights, from today")
+        st = body.stay
+        terms = stayprices.StayTerms(st.id, st.name, st.lat, st.lon, st.price_total, nights, st.currency, st.room,
+                                     st.board, st.refundable, st.pay_there, st.sample)
+        q = trips.StayQuery(city=dest.name, country_code=dest.country_code, lat=dest.lat, lon=dest.lon,
+                            checkin=body.checkin, checkout=body.checkout, adults=body.adults,
+                            children=tuple(body.children), rooms=min(body.rooms, body.adults))
+        options = stayprices.nearby(body.checkin, nights, today)
+        ts = app.state.trips
+        live = settings.stay_dates_live and ts.liteapi_key and not st.sample
+        if live:   # off until Nuitée replies; every date counts against the person's hourly searches
+            try:
+                dates = ts._cached(f"dates:{st.id}:{q.key()}", user.id, lambda: stayprices.liteapi_dates(
+                    terms, q, options, ts.liteapi_key, ts.fetch))
+            except trips.ProviderError:
+                dates, live = [], False
+        if not live:
+            dates = stayprices.sample_dates(terms, (body.checkin, body.checkout), options)
+        stayprices.mark_lowest(dates)
+        for d in dates:   # m204: the destination's bank holidays, as facts (never "busier" or "dearer")
+            d.holidays = traveltiming.stay_holidays(dest.key, d.checkin, d.checkout)
+        # m209: day 1 is the check-in day (the morning comes from the journey), the day after the last night the
+        # check-out day (the evening goes to the journey home): one stay for the trip, as trips are today
+        fit = stayprices.trip_fit(Point(lat=st.lat, lon=st.lon),
+                                  [stayprices.DayEnds(d.index, d.first, d.last, arrive=d.index == 0,
+                                                      leave=d.index == nights) for d in body.days], app.state.travel) \
+            if st.lat is not None and st.lon is not None else {"days": [], "line": None, "to_first": None, "back": None}
+        s.add(db.Event(user_id=user.id, name="stay_compare",
+                       props={"nights": nights, "days": len(body.days), "live": bool(live)}))   # never the stay or dates
+        s.commit()
+        cost = stayprices.cost_lines(terms, sample=st.sample)
+        yours = next((d for d in dates if d.yours), None)
+        return {"source": "liteapi" if live else "sample",
+                "note": None if live else "Sample prices: real prices for other dates come later. Your dates' price "
+                                          "is the one the search found.",
+                # m219: why this stay suits the trip (or doesn't), from the fit and the cost above
+                "explain": explain.stay_for_trip(fit, cost, st.currency, st.refundable, yours.holidays if yours else []),
+                "fit": fit, "cost": cost,
+                "dates": [d.out(nights) for d in dates],
+                # m211: when the destination's holidays (or these years) aren't known, say so: never read as "none"
+                "holidays_note": travelcalendar.stay_note(app.state.destinations.get(dest.key), dest.key,
+                                                          options[0][0], options[-1][1])}
 
     @app.post("/v1/trips/stays")
     def trip_stays(body: StaySearchIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
@@ -915,6 +1137,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except trips.ProviderError as e:
             if str(e) == "too_many":
                 raise HTTPException(429, "That's a lot of searches in an hour. Try again in a few minutes.")
+            if str(e) == "too_many_today":   # the install's share of the day's searches (audit, 12 Nov)
+                raise HTTPException(429, "That's a lot of searches for one day. The booking sites' own links still "
+                                         "work; searching here starts again tomorrow.")
             _trip_event(s, user, "stays", "unavailable", 0, 0, f.sort, [])
             return {"source": "unavailable", "note": "Places to stay couldn't be searched just now. The links below "
                     "search for real.", "total": 0, "shown": 0, "results": [], "facets": trips.stay_facets([]),
@@ -923,21 +1148,60 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         sf = trips.StayFilters(
             max_night=f.max_night, min_night=f.min_night, min_stars=f.min_stars, min_rating=f.min_rating,
             kinds=f.kinds, refundable=f.refundable, breakfast=f.breakfast, max_km=f.max_km, sort=f.sort)
-        shown = trips.filter_stays(found, sf)
-        tabs, tags = trips.stay_tops(found, sf)
+        px = trips.stay_pricing(found, app.state.rates.get() if app.state.rates else None,   # m218
+                                display=body.display_currency)                         # m238
+        shown = trips.filter_stays(found, sf, px)
+        tabs, tags = trips.stay_tops(found, sf, px)
         used = [k for k, v in f.model_dump(exclude={"sort"}).items() if v not in (None, False, [])]
         _trip_event(s, user, "stays", source, len(found), len(shown), f.sort, used)
         results = []
+        ranked = explain.stay_rank(found, px, dest.centre_name)   # m219: the ranking's own parts
         for x in shown[:60]:
             d = trips.stay_out(x)
+            d["explain"] = ranked.get(x.id)
             d["links"] = trips.stay_links(q, stay=x)
             d["tags"] = tags.get(x.id, [])
+            d["estimate"] = trips.stay_estimate(px, x)   # m218: beside the price in its own currency, never instead
             results.append(d)
         note = {"sample": trips.SAMPLE_STAY_NOTE, "liteapi_sandbox": trips.SANDBOX_STAY_NOTE}.get(source)
         return {"source": source, "note": note,
-                "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found),
+                "total": len(found), "shown": len(shown), "results": results, "facets": trips.stay_facets(found, px),
                 "tabs": tabs, "links": links, "centre": dest.centre_name,
+                "compare_notes": [n for n in (px.note("places to stay"),) if n],   # m218
                 "searched_at": datetime.now(timezone.utc).isoformat()}
+
+    @app.post("/v1/me/trips/length")
+    def trip_length(body: TripLengthIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                    p: PopulationModel = Depends(pop)):
+        """m196: "How long should I stay?" From the person's good matches among the checked cards, at their places a
+        day (as many as their hours fit), keeping the day's shape. Each length says what it covers and leaves out;
+        days beyond the suggestion are offered as choices (triplength.py). Nothing is planned or stored."""
+        dest = _destination(body.destination)
+        if not dest.day_plans:
+            raise HTTPException(422, "day plans aren't ready for that destination yet")
+        span = tripdays.mins(body.day_end) - tripdays.mins(body.day_start)
+        if span < 60:
+            raise HTTPException(422, "a day needs at least an hour between its start and end")
+        feelings = [f for f in dict.fromkeys(body.feelings) if f in reasons.FEELINGS]
+        mine = set((user.profile or {}).get("why_travel", []))
+        post = update_person(p, observations(s, user, p) + [o for f in feelings if f not in mine
+                                                             if (o := reasons.feeling_observation(p, f))])
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        fixed = corrected(user)
+        cards_at = app.state.swipe_cards
+        disliked = {cid for sw in user.swipes if f"place:{sw.item}" not in fixed and sw.reaction == "didnt_enjoy"
+                    and sw.item in cards_at for cid in cards_at[sw.item][1]}
+        fields = person_fields(user)
+        asp = {m.id: (app.state.amap.match(m, fields) if app.state.amap else 0.0) for m in ready}
+        per_day = max(1, min(body.stops_per_day, span // tripdays.MIN_PER_STOP))
+        out = triplength.suggest(p, post, ready, asp=asp, skip=disliked, per_day=per_day, nights=body.nights,
+                                 place=dest.name)
+        out["explain"] = explain.trip_length(out)   # m219: the counts the suggestion rests on
+        s.add(db.Event(user_id=user.id, name="trip_length",
+                       props={"nights": body.nights, "suggested": out["suggested_days"], "good": out["good_matches"],
+                              "per_day": per_day}))
+        s.commit()
+        return out
 
     @app.post("/v1/me/trips/days", status_code=201)
     def trip_days(body: TripDaysIn, user: db.User = Depends(current_user), s: Session = Depends(session),
@@ -970,6 +1234,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(422, "a day needs at least an hour between its start and end")
         start = body.stay or Point(lat=dest.lat, lon=dest.lon)
         start_name = (body.stay_name or "").strip() or dest.centre_name
+        stay_named = (body.stay_name or "").strip() or None   # the person's own stay: never kept (audit SEC-06)
+        if stay_named and (len(stay_named) < 3 or stay_named == dest.centre_name):
+            stay_named = None   # too short to tell apart from ordinary words, or simply the public centre
         # D122: how the trip starts and ends; the older app sends only the flight times
         end_of = lambda e, t: (tripdays.End(e.mode, (e.place or "").upper() or None, e.time) if e
                                else tripdays.End("flight", None, t) if t else None)
@@ -981,8 +1248,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         budget = BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
         out = []
 
-        def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str) -> tuple[dict, list[dict]] | None:
-            """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all."""
+        own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
+
+        def blocks_for(i: int) -> tuple[dayplan.Block, ...]:
+            d = own_days.get(i)
+            return tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end), b.location,
+                                       b.kind == "plans" and b.meal)
+                         for b in (d.mine if d else []) if tripdays.mins(b.start) < tripdays.mins(b.end))
+
+        def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str,
+                 mine: tuple[dayplan.Block, ...] = (), relaxed: bool = False) -> tuple[dict, list[dict]] | None:
+            """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all. m200: `mine` is
+            the person's own time, planned around."""
             for n in dict.fromkeys((part.stops, part.stops - 1)):
                 if n < 1:
                     continue
@@ -990,9 +1267,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
-                                      sunset=sunset(day), lunch=part.lunch,
+                                      sunset=sunset(day), mine=mine, relaxed=relaxed,
+                                      # m201: plans they'll eat during take lunch's place, when they fall in this stretch
+                                      lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
                                       temp_c=outlook.temp_c if outlook else None,
-                                      rain_prob=outlook.rain_prob if outlook else None)
+                                      rain_prob=outlook.rain_prob if outlook else None,
+                                      lunch_gbp=daybudget.choose_lunch(budget).gbp)   # m217: lunch fits the budget
                 view = est.for_day(day, part.start_time) if isinstance(est, TflTravel) else est
                 pool = ready if part.toward is None else [   # D122: the place on the way really is on the way
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
@@ -1003,43 +1283,60 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
                 used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
-                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), stops=stops, value=plan.value,
+                # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
+                # location, never its name")
+                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
+                              stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
                               intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
                                       **({"weather": outlook.out()} if outlook else {})})
                 s.add(row)
                 s.flush()
-                return {**plan_out(row), **head}, stops
+                return {**plan_out(row), "stops": public(stops), **head}, stops
             return None
 
         for i in wanted:
             day = body.start_date + timedelta(days=i)
             label = f"{day:%A} {day.day} {day:%B}"
+            own = own_days.get(i)
+            blocks = blocks_for(i)
+            # m200: a relaxed day has one place fewer (never none), so each stays longer
+            places = max(1, body.stops_per_day - (1 if own and own.relaxed else 0))
             fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name, stay_chosen=body.stay is not None,
-                                    day_start=body.day_start, day_end=body.day_end, stops=body.stops_per_day,
+                                    day_start=body.day_start, day_end=body.day_end, stops=places,
                                     arrive=arrive, leave=leave, travel_light=body.travel_light)
             legs = list(fr.legs)
             entry = {"index": i, "date": day.isoformat(), "kind": fr.kind, "plan": None, "before": None,
-                     "window": None, "title": fr.title}
+                     "window": None, "title": fr.title, "free_day": bool(own and own.free_day),
+                     "relaxed": bool(own and own.relaxed),
+                     "mine": [{"kind": b.kind, "start": tripdays.hhmm(b.start_min), "end": tripdays.hhmm(b.end_min),
+                               "planned": False} for b in blocks]}
+            if own and own.free_day:   # m200: nothing planned; the journeys at the ends of the trip still apply
+                fr.before, fr.main = None, None
+                entry["title"] = "A day that's yours"
             if fr.before and (got := fill(fr.before, day, i, label, "before")):
                 entry["before"] = got[0]
                 leg = tripdays.to_stay_leg(est, got[1][-1], start, start_name, cfg.check_in_min if cfg else 20)
                 legs.append(leg)
                 ready_at = tripdays.up5(tripdays.mins(leg.arrive) + (cfg.check_in_min if cfg else 20))
                 end = tripdays.mins(fr.main.end_time) if fr.main else tripdays.mins(body.day_end)
-                n = tripdays.stops_for(ready_at, end, body.stops_per_day - 1)
+                n = tripdays.stops_for(ready_at, end, places - 1)
                 fr.main = tripdays.Part(start, start_name, tripdays.hhmm(ready_at), tripdays.hhmm(end), n) if n else None
             elif fr.before:   # nothing fitted on the way: go to the stay first, as with bags
                 fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name,
                                         stay_chosen=body.stay is not None, day_start=body.day_start,
-                                        day_end=body.day_end, stops=body.stops_per_day, arrive=arrive, leave=leave,
+                                        day_end=body.day_end, stops=places, arrive=arrive, leave=leave,
                                         travel_light=False)
                 legs = list(fr.legs)
                 entry["title"] = fr.title
             if fr.main:
                 entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
-                if got := fill(fr.main, day, i, label, "main"):
+                if got := fill(fr.main, day, i, label, "main", blocks, relaxed=bool(own and own.relaxed)):
                     entry["plan"] = got[0]
                     entry["title"] = got[0]["feel_line"] or label
+                    planned = {int(st["moment_id"][4:st["moment_id"].index("@")])
+                               for st in got[1] if st["moment_id"].startswith("mine")}
+                    for k, b in enumerate(entry["mine"]):
+                        b["planned"] = k in planned
                     if fr.leave_leg and not fr.day_trip:   # the last day: back for the bags, then away
                         legs.append(tripdays.back_leg(est, got[1][-1], start, start_name))
             if not entry["title"]:
@@ -1053,7 +1350,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                               "stay": body.stay is not None, "feelings": ",".join(feelings),
                               # D122: how the person shapes their days (never where or when they travel)
                               "by": arrive.mode if arrive else "none", "light": body.travel_light,
-                              "places": body.stops_per_day, "hours": mins_between(body.day_start, body.day_end)}))
+                              "places": body.stops_per_day, "hours": mins_between(body.day_start, body.day_end),
+                              # m200: how many days keep time for the person (never what for, or when)
+                              "own_time": sum(bool(d.mine) for d in body.personal),
+                              "free_days": sum(d.free_day for d in body.personal),
+                              "relaxed": sum(d.relaxed for d in body.personal)}))
         s.commit()
         return {"total_days": total, "days": out, "start": start_name,
                 "used": sorted(used)}   # sent back as `exclude` when planning the later days
@@ -1085,7 +1386,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.delete("/v1/me", status_code=204)
     def delete_me(user: db.User = Depends(current_user), s: Session = Depends(session)):
-        """Delete everything about this install (App Review 5.1.1(v); UK GDPR erasure)."""
+        """Delete everything about this install (App Review 5.1.1(v); UK GDPR erasure). SEC-10: one row is kept, a
+        one-way code made from the install's id, so restoring an older backup can't bring the person back."""
+        s.add(db.Deletion(user_hash=backup.deleted_key(user.id)))
         s.delete(user)
         s.commit()
         return Response(status_code=204)
@@ -1140,6 +1443,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.commit()
         return plan_out(plan)
 
+    @app.get("/v1/admin/client-address", dependencies=[Depends(admin)])
+    def client_address(request: Request):
+        """SEC-05: what the server sees of the caller's own address, header by header, and which one the limits use.
+        For checking once on a staging service: call it, then call it again with a made-up `X-Forwarded-For` and a
+        made-up `CF-Connecting-IP`. If `cf_connecting_ip` stays your real address, the edge overwrites it and it can
+        be trusted. It shows only the caller's own address, to the admin, and keeps nothing."""
+        h = request.headers
+        fwd = [x.strip() for x in h.get("x-forwarded-for", "").split(",") if x.strip()]
+        return {"cf_connecting_ip": h.get("cf-connecting-ip"), "true_client_ip": h.get("true-client-ip"),
+                "x_forwarded_for": fwd, "peer": request.client.host if request.client else None,
+                "cf_ray_present": "cf-ray" in h, "counted_as": ops._address(request)}
+
     @app.get("/v1/admin/referrals", dependencies=[Depends(admin)])
     def referrals(s: Session = Depends(session)):
         """D114: the share funnel for Test C's K: shared → opened → installed → onboarded → first plan."""
@@ -1149,7 +1464,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def export(s: Session = Depends(session)):
         """Everything needed for the Phase 3 read-out, keyed by user id (no names are stored)."""
         def rows(model):
-            return [{c.name: (v.isoformat() if isinstance(v := getattr(r, c.name), datetime) else v)
+            return [{c.name: (v.isoformat() if isinstance(v := getattr(r, c.name), datetime) else _finite(v))
                      for c in model.__table__.columns if c.name != "token_hash"}
                     for r in s.scalars(select(model))]
         return {name: rows(model) for name, model in [
@@ -1160,6 +1475,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ("safety_replies", db.SafetyReply), ("day_feedback", db.DayFeedback)]} | {   # D118: never the contacts people left
             # D116: visitors from abroad are their own group, left out of the Test B analysis
             "cohorts": {u.id: cohort(u.profile) for u in s.scalars(select(db.User))}}
+
+    @app.get("/v1/admin/audit/foods-avoided", dependencies=[Depends(admin)])
+    def audit_foods_avoided(s: Session = Depends(session)):
+        """m233 (Abram, m224): how many profiles still hold the old free-text food field. Counts only, never a value."""
+        counts = food.audit_profiles(u.profile for u in s.scalars(select(db.User)))
+        ops.log.info("foods_avoided audit: %d of %d profiles hold the key, %d non-empty",
+                     counts["with_key"], counts["profiles"], counts["non_empty"])
+        # m257: profile saves from old apps that carried the field (dropped), since this server last started
+        return {**counts, "old_app_saves_dropped_since_start": getattr(app.state, "retired_food_saves", 0)}
+
+    @app.post("/v1/admin/audit/foods-avoided/delete", dependencies=[Depends(admin)])
+    def delete_foods_avoided(body: dict = Body(...), s: Session = Depends(session)):
+        """m233: removes the old field from every profile. Destructive, so it needs {"confirm": "delete"}; Abram runs
+        it (m224 approves deleting any that exist). Answers with counts before and after, never a value."""
+        if body.get("confirm") != "delete":
+            raise HTTPException(400, 'send {"confirm": "delete"} to remove the field from every profile')
+        users = list(s.scalars(select(db.User)))
+        before = food.audit_profiles(u.profile for u in users)
+        for u in users:
+            if u.profile and any(k in u.profile for k in food.RETIRED_PROFILE_KEYS):
+                u.profile = food.scrub_profile(u.profile)
+        s.commit()
+        after = food.audit_profiles(u.profile for u in s.scalars(select(db.User)))
+        ops.log.info("foods_avoided deleted: %d profiles held the key; %d now", before["with_key"], after["with_key"])
+        return {"before": before, "after": after}
 
     @app.get("/v1/admin/backup")
     def backup_now(authorization: str = Header(default="")):
@@ -1179,9 +1519,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except backup.BackupError as e:
             raise HTTPException(503, str(e))
         ops.log.info("backup sealed: %d rows, %d bytes", sum(counts.values()), len(blob))
+        size = backup.database_bytes(app.state.engine)   # A4: read by the nightly job's storage warning
         return Response(blob, media_type="application/octet-stream",
                         headers={"Content-Disposition": "attachment; filename=odys-brain.odysbk",
-                                 "Cache-Control": "no-store"})
+                                 "Cache-Control": "no-store",
+                                 **({"X-Database-Bytes": str(size)} if size is not None else {})})
 
     return app
 
