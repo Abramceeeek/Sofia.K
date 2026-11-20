@@ -1,4 +1,4 @@
-# The food field, price ages and availability, checked against Abram's specs (20 Nov 2026; m307–m309)
+# The food field, price ages and availability, checked against Abram's specs (20 Nov 2026; m309)
 
 Abram's decisions of 20 Nov, §5 to §7.
 - **All of this is on the development branch only.** Nothing here reaches production or the frozen round.

@@ -1,8 +1,29 @@
-# Stage 2: the sample size, and the analysis agreed before any data (19 Nov 2026)
+# Stage 2: the sample size, and the analysis agreed before any data (19 Nov 2026; provisionally approved 20 Nov)
 
-Abram's decision of 19 Nov, §7: provisionally 76 completed observations, if the assumptions support it, with the ten points below written down before the larger experiment starts. **76 is the number of people who complete the blind choice, not the number recruited.**
+Abram's decisions:
+- **19 Nov §7:** provisionally 76 completed observations, if the assumptions support it, with the ten points below written down before the larger experiment starts.
+- **20 Nov §9:** provisionally approved: 76 completers, 46 to pass, 65% expected, about 109 recruited at 70%.
 
-Every number here is exact: binomial tails summed, not a normal approximation. It was computed for this document on 19 Nov and can be re-run with the script at the end.
+**76 is the number of people who complete the blind choice, not the number recruited.**
+
+**The friends' round is not statistical proof.** It is a usability run of the same build, read as direction only (D127). Its numbers feed only two inputs here: the completion rate (point 7) and σ_d (H2). They never count towards the 46.
+
+## The record, in one place (Abram, 20 Nov §9)
+
+| | |
+|---|---|
+| **Test** | one-sided exact binomial test |
+| **Unit** | **one independent primary choice per completer:** the first, and only, blind gut choice of each install. The Brain gives one pair per install (point 8) |
+| **H₀** | π ≤ 0.5: no preference for the personal plan |
+| **H₁** | π > 0.5: the personal plan is preferred |
+| **Primary outcome** | the gut choice ("Plan 1 or Plan 2?"), recorded before the reveal: personal or generic |
+| **Sample** | **76 completers.** H₀ is rejected when **46 or more** choose the personal plan |
+| **False-positive probability** | **0.0423** (exactly P(X ≥ 46 \| n = 76, π = 0.5); the nominal α is 0.05) |
+| **Power** | **0.826 at π = 0.65**, the design point. 0.512 at π = 0.60, and 0.971 at π = 0.70 |
+| **Dropout** | planning assumption: 70% of installs reach the gut choice, so **109 recruited**. 95 at 80%, 127 at 60%. **The friends' round's measured rate replaces the 70% before recruiting starts** |
+| **Recomputed** | 20 Nov, with the command at the end: it prints `46 0.0423 0.826`, and 76 is the first n whose power stays at least 0.80 for ten n in a row |
+
+**Freezing it.** This file, with the final completion rate and size filled in, is committed before the first Stage 2 invite. **Its commit id goes into the Stage 2 manifest.** Any change after that is a deviation, listed in the report with its reason. Until then, the numbers are provisional.
 
 ## The ten points
 
@@ -72,6 +93,7 @@ It prints `46 0.0423 0.826`.
 | Item | Who | Hours |
 |---|---|---|
 | This document | Claude | done |
+| The record above (20 Nov) | Claude | done |
 | Filling in Stage 1's σ_d and completion rate | Claude | 0.5, after the friends' round |
 | Confirming the 0.65 design point and δ = 0.5 | Abram | 0.25 |
 | Recruiting about 110 strangers | Abram | the main cost; set at the checkpoint |

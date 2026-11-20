@@ -4,33 +4,35 @@ Abram's review of the audit, parts 10–12 (12 Nov). This is the plan, the check
 
 **Nothing is deployed, bought or migrated, and the frozen friends' round is untouched.** Passing automated tests is not readiness: every criterion below that matters is about real phones, real people or real money decisions.
 
-## 0. The operational checklist after Abram's decisions of 19 Nov
+## 0. The operational checklist after Abram's decisions of 20 Nov
 
-**Abram's priorities, in his order:**
-1. preserve the database;
-2. resolve the alert webhook;
-3. the frozen-experiment preflight;
-4. merge PR #1 into the development branch after the iPhone build;
-5. start the friends' round on the frozen builds;
-6. let its findings set what comes next.
+**The order before the first invite** is the table at the top of `validation/friends-round.md`:
+1. the database and server;
+2. the privacy hotfixes, if approved;
+3. the Android decision;
+4. the rehearsal on the final configuration;
+5. the seven tag conditions;
+6. the tag;
+7. Apple's check and TestFlight's review;
+8. the invites.
 
 **ABRAM** marks a step only he can take.
 
-| # | Item | His decision (19 Nov) | Status now | Next step | Who | Document |
+| # | Item | His decision | Status (20 Nov) | Next step | Who | Document |
 |---|---|---|---|---|---|---|
-| 1 | **The repository is public** (new, 19 Nov) | — | GitHub reports `visibility: public`. Anyone can read every decision document, the security audit (production's open findings SEC-01/02 included), the tester codes `FRIENDS` and `FAMILY`, and the Android debug key | **Decide:**<br>• keep it public;<br>• or make it private (then Android friends need another way to get the APK, and macOS CI minutes are billed).<br>**If it stays public:** consider the A1/A2 patches plus SEC-01/02 for production sooner, and a new unpublished tester code for the round (`tester_codes.yaml` is on `main`: a change before the round starts, not during) | **ABRAM** | this table |
-| 2 | Database upgrade | approved in principle; final go after the evidence | runbook ready, `export_counts.py` built | the export on 29 Nov; backup check and restore test; **his "go" by 1 Dec**; upgrade by 3 Dec | **ABRAM** (Claude reads the counts) | `database-upgrade-runbook.md` |
-| 3 | Backup and restore verification | required before the upgrade | nightly backups green (latest 19 Nov 10:30 UTC); never opened with his key since 6 Nov | `verify`, then a restore into a scratch database on his computer, then compare the counts | **ABRAM** | runbook steps 2c–3 |
-| 4 | Server cost | 1 CPU ($25) for the round, $31.30 a month in all; 0.5 CPU only after the planner change and a Render benchmark | **the live server is free (0.1 CPU) today**, not 1 CPU | change `moments-brain` to `1c-2g` **before the first invite**; check `/v1/health` still says `80a0da3` | **ABRAM** | `infrastructure-decision.md` |
-| 5 | Alert webhook privacy | check now; smallest fix separately | the live Brain posts the whole message and the contact to the webhook, if one is set. Patch A1 is ready and tested against `80a0da3` | check `BRAIN_ALERT_WEBHOOK_URL`, and look for `notified: true` alerts; approve or decline A1 | **ABRAM** | `production-privacy-patch.md` |
-| 6 | Security fixes and deployment status | Category A only during the round; B waits | A1 (alert) and A2 (stored location) ready and tested on the frozen code (209 tests). Everything else is Category B | approve A1/A2 separately, or neither | **ABRAM** | `production-privacy-patch.md`, `security-release-proposal.md` |
-| 7 | Android signing key | made on his own computer; never in GitHub | runbook ready; not needed for the round | make the key; send **only** the fingerprint; Claude then makes CI build release unsigned (3 h, after the round) | **ABRAM**, then Claude | `android-signing-key-runbook.md` |
-| 8 | iPhone privacy manifest | before public release; no invented answers | every declaration listed. `UserDefaults` → `CA92.1` (decided by the facts); 9 answers are his | the nine answers | **ABRAM**, then Claude (2 h) | `ios-privacy-manifest.md` |
-| 9 | Mobile rehearsal | before the tag | waiting | the 25 steps on TestFlight 91 and Android 21 | **ABRAM** | `validation/friends-round-rehearsal.md` |
-| 10 | Friends' round preflight | tag at exactly `80a0da3`, pushed by him | 6 of 8 checks hold; the backup check (needs his key) and the rehearsal remain | items 3 and 9, then push the tag | **ABRAM** | `validation/friends-round-preflight.md` |
-| 11 | Stage 2 sample size | 76 completers, provisionally | the ten points written. Exact: 46 of 76 to pass, α 0.042, power 0.826 at 0.65; about 109 installs at 70% completion | confirm 0.65 and δ = 0.5 points; Stage 1 fills in σ_d and the completion rate | **ABRAM** (0.25 h), then Claude | `validation/stage2-sample-size.md` |
-| 12 | Post-experiment planner work | in the backlog; frozen planner untouched | proven in a 0.5 CPU limit: the same plans | after the round: build it (about 7 h), then benchmark on Render, concurrency, p50/p95, memory, validity, against 1 CPU, before any downgrade | Claude, then **ABRAM** for any downgrade | `performance-study.md` |
-| 13 | PR #1 into the development branch | approved after the iPhone build on `474eca1` | see the pull request | merged by Claude once the iPhone run on `474eca1` is green | Claude | PR #1 |
+| 1 | Database upgrade | approved in principle (19 Nov); one schedule, before the first invite (20 Nov) | **one schedule**, with a single read-only `backup preflight` command for his seven conditions (tested). Storage measured: about 79 KB per tester. Autoscaling **off**, with a nightly warning (A4) | steps 0–5 of the schedule, then **his "go"** | **ABRAM** | `database-before-6-dec.md` |
+| 2 | Server: 1 CPU for the round | approved (19 Nov) | the live server is still free (0.1 CPU) | step 8 of the same evening; check `/v1/health` | **ABRAM** | `database-before-6-dec.md` |
+| 3 | Production hotfixes A1–A4 | prepare; deploy only on his final approval (20 Nov) | **prepared and tested:** each alone and together on `80a0da3` (202 → 217 tests), Test B identical. A bundle and patches, with release and rollback steps | approve the set and the procedure, or not | **ABRAM** | `production-privacy-patch.md` |
+| 4 | Plans stored before A2 | report whether a deletion step is needed (20 Nov) | `python -m brain.storedplaces count` built and tested; only his and the rehearsal's plans can be affected | run `count`; if not 0, the five-step clean | **ABRAM** | `production-privacy-patch.md` |
+| 5 | Android build 21 | if it uses the exposed key, don't distribute it (20 Nov) | **it does:** certificate `a07dae0c…cfb9` = the committed debug key, and it is debuggable | choose option A (iPhone only) or B (a re-signed release build of `80a0da3`) | **ABRAM** | `android-signing-key-runbook.md` |
+| 6 | The repository's visibility | his recommendation: private; don't change it without him (20 Nov) | public, 0 forks, 0 stars (20 Nov). The facts for the choice are in §15 | decide | **ABRAM** | §15 |
+| 7 | Rehearsal and the tag | all 19 blocking steps; seven conditions; he pushes the tag (20 Nov) | the seven conditions are one table, with commands | after items 1–5 | **ABRAM** | `validation/friends-round.md` |
+| 8 | The food field | the seven-step procedure, his to run (20 Nov) | checked against all seven requirements | run it, as step 0 of the database schedule | **ABRAM** | `foods-avoided-audit.md`, `specs-20-nov-check.md` |
+| 9 | Price ages, estimates, availability | as specified (20 Nov) | matched; budgets now treat old or undated prices as estimates and never add two currencies; a missing service no longer closes a place | read; the availability ranking change after the round | Abram (read) | `specs-20-nov-check.md` |
+| 10 | London ranks 3–18 | about 2 h of official pages (20 Nov) | done. **Proposals only, nothing changed:** 6 areas from printed addresses, St Dunstan's hours downgraded to "claimed", safe-side hours for Greenwich and Spitalfields | yes or no to the proposals; NPG in a browser | **ABRAM** | `validation/manual-verification.md` §3 |
+| 11 | Stage 2 | provisionally approved: 76 / 46 / 0.65 / ~109 (20 Nov) | the record written; it is frozen by commit before the first Stage 2 invite | after the friends' round: the completion rate and σ_d | Claude, then **ABRAM** | `validation/stage2-sample-size.md` |
+| 12 | Seville | a read-only check; don't activate it (20 Nov) | **not ready:** no destination, no cards, UK emergency text, London-fixed time zone and sunset | none for 22 Nov; a new-city decision later | — | `seville-readiness.md` |
+| 13 | PR #2 into the development branch | separate until CI, the diff and the tests pass (20 Nov) | pushed; CI running | merged only on his word | **ABRAM** | PR #2 |
 
 ## 1. Where things stand (16 Nov)
 
@@ -229,8 +231,8 @@ It runs on real exports only, and a row is exploratory under 30 rated stops. The
 |---|---|---|---|
 | **This week** | check the alert webhook in Render; push the tag; decide the server size before the round (or leave it); start the round | Abram | 1 |
 | This week | review the audit branch's full diff and merge it into the development branch (§14) | Abram | 1 |
-| During the round | if approved, the privacy patch from `80a0da3` | Claude, then Abram | 3 + 0.5 |
-| By 29 Nov | the final export; then the database upgrade (m266's steps), and the checks | Abram, then Claude | 0.5 + 0.5 |
+| Before the first invite | if approved, the hotfixes A1–A4 from `80a0da3` (prepared and tested, 20 Nov) | Abram | 1.25 |
+| **Before the first invite** (20 Nov: replaces "by 29 Nov") | the database schedule with the preflight, the server to 1 CPU, the approved hotfixes, then the rehearsal and the tag (`validation/friends-round.md`) | Abram, then Claude | 1.25 + 0.5 |
 | Early December | the security release to the live Brain, with the planner fix and the server size | Claude (Abram approves the deploy) | 7 + 1 |
 | Early December | the Stage 1 read-out; fix its blockers and majors | Claude | 3 + per issue |
 | December | the next app builds: m275, SEC-13, SEC-15, SEC-16, the map tiles, SEC-12 (after Abram's key), SEC-14 (after his answers); A1–A3 | Claude | 6 + 3 + 2 + 11 |
@@ -251,40 +253,68 @@ Abram asked for its complete diff to be reviewed first, confirming two things: i
 - that Test B's own files are unchanged: `brain/data/testb/`, `testb.py`, and the blind-pair code paths (the pair still shows nothing personal, with tests);
 - every non-security change, each with the founder decision behind it.
 
-## 15. Decisions for Abram
+## 15. Decisions for Abram: the open ones, in five groups (20 Nov)
 
-*As of 16 Nov. **Abram decided most of these on 19 Nov** (decision log m298). Where they overlap, §0 above is current: the database, the server, the tag, the webhook, the privacy patch, the iPhone manifest, the Android key, Stage 2's size and the merge. Still open: the decisions in §0's "Next step" column, and items 3, 10–12 and 14–16 below.*
+The 16 Nov list had 17 items.
+- **Settled by Abram on 19 and 20 Nov, so not asked again:**
+  - the database (in place, Basic-256mb);
+  - the server (1 CPU for the round);
+  - the tag (he pushes it, on `80a0da3`);
+  - preparing the privacy patch;
+  - the Android key (made on his computer, never in GitHub);
+  - Stage 2's size (provisionally 76);
+  - the merge of PR #1 (done).
+- **Re-asked only where something new is needed:** his final "go" and the hotfix approval.
 
-**Money:**
-1. **The database:** upgrade in place to Render's `0.1c-256mb` ($6 + $0.30 a month), after the final export, before 6 Dec.
-2. **The server:**
-   - 1 CPU ($25 a month) now;
-   - or stay free until the planner fix, then 0.5 CPU ($7 a month);
-   - and **when**: before the round starts, or after it ends.
-3. Later: a domain for the Brain's address, so it can move without new app builds (a few pounds a year); and Google Play or Firebase for Android testers.
+### A. Before the friends' round
 
-**Production and the round:**
-4. Push `friends-round-1` (the session's proxy can't).
-5. The privacy patch during the round: yes or no. If yes, approve the merge into `main` when it's ready. Also decide whether to clean the start points already stored (SEC-06): destructive, on the live database.
-6. Look in Render at `BRAIN_ALERT_WEBHOOK_URL` today.
-7. The SEC-05 staging check (a separate free service, deleted afterwards).
+| # | Decision | The facts for it | Document |
+|---|---|---|---|
+| A1 | **The database: "go"**, after the preflight passes. **Autoscaling off** (recommended), or on | off: no storage is ever bought without him; a fill means a suspension, not lost data. On: +$1.20 a month per step, permanent, with no warning | `database-before-6-dec.md` |
+| A2 | **The hotfixes:** all of A1–A4, a subset, or none; and the release procedure | each stands alone; Test B is unchanged; the rollback is written. **And:** keep SEC-01/02 (the size limits) for after the round, or ask for them as a fifth hotfix (about 1 h) | `production-privacy-patch.md` |
+| A3 | **Android:** option A, iPhone only (recommended for the first invites), or B, a re-signed release build of `80a0da3` (~1.5 h of his) | build 21 can't be used | `android-signing-key-runbook.md` |
+| A4 | **The repository's visibility** | **Private** stops new readers of the audit, the decision log and the operational details. It doesn't undo what was public: the debug key stays compromised. It costs:<br>• **Android downloads:** the `android-latest` link stops working for anyone without access, so option B needs another channel;<br>• **Actions:** private repositories draw on the plan's included compute, "$12 USD" a month on GitHub Free, with macOS at "$0.062" a minute and Linux at "$0.006" (docs.github.com/en/billing/concepts/product-billing/github-actions, read 20 Nov). That is about 190 macOS minutes if nothing else ran. Without a payment method, "usage is blocked once you consume the included compute usage";<br>• **stars and watchers** are erased (none today); a fork would stay public (none today).<br>**Recommendation:** private, after the round's Android channel is settled. The round's builds are already made, so its CI needs no minutes | GitHub's docs, read 20 Nov |
+| A5 | **The alert webhook:** what Render's `BRAIN_ALERT_WEBHOOK_URL` holds (set or not), and the channel's readers and retention, if set | without his look, A1's urgency is unknown | `production-privacy-patch.md` |
+| A6 | **The Stage 1 debrief calls:** within the round's consent, or a separate yes from each friend | — | `friends-round-plan.md` |
 
-**Privacy and the apps:**
-8. **SEC-14:** the App Store privacy answers for each item in the inventory. The manifest is written from them.
-9. **SEC-12:** make the release key on his own computer, put it in GitHub Secrets, and choose how Android testers get the app.
-10. **m276:** whether the privacy notice says plans keep "how well each stop was expected to suit you".
-11. **The post-experience tap** (`post-experience-feedback-proposal.md`): build after the round, and confirm the notice line.
-12. **The map tiles provider:** OpenFreeMap now, with our own tiles later. This also changes the privacy notice's map line.
+**Also before the round:** Apple's outside-activities check and TestFlight's external review. These are his checks, already in the round's order, not new decisions.
 
-**Evidence and validation:**
-13. **Stage 2's design point:** 65% (76 completers) or another. And δ = 0.5 points for "fits me".
-14. The Stage 1 debrief calls: whether they fall within the round's consent.
-15. **Test D's prices,** and Test E's quote figure (£350 a month, the project's GUESS).
-16. The one-borough data trial (4 h, read-only, £0).
-17. Merge this branch into the development branch, after reading §14's review.
+### B. Before public release (and before Stage 2 with strangers)
 
-**Not decided, by design:**
-- the payment provider (after the business bank account);
-- a marketplace (needs legal advice and commercial evidence);
-- more cities;
-- 3D (closed).
+| # | Decision | Document |
+|---|---|---|
+| B1 | **SEC-14:** the nine App Store privacy answers | `ios-privacy-manifest.md` |
+| B2 | **m276:** whether the notice says plans keep "how well each stop was expected to suit you" | `recommendation-honesty-and-learning.md` |
+| B3 | **The map tiles provider:** OpenFreeMap now, our own tiles later; it changes the notice's map line | `map-tiles-and-place-data.md` |
+| B4 | **The SEC-05 staging check** (a separate free service, deleted afterwards) | `security-release-proposal.md` |
+| B5 | **Stage 2:** δ = 0.5 points for "fits me", and the 0.65 design point confirmed as his smallest worthwhile share | `validation/stage2-sample-size.md` |
+| B6 | **The London proposals** (§10 of the checklist): yes or no | `validation/manual-verification.md` |
+| B7 | **The post-experience tap:** build after the round, and its notice line | `post-experience-feedback-proposal.md` |
+| B8 | **A domain for the Brain** (a few pounds a year), and **Google Play or Firebase** for Android testers | `infrastructure-decision.md` |
+
+### C. Before accepting payments
+
+| # | Decision | Document |
+|---|---|---|
+| C1 | **Test D's prices, and Test E's quote figure** (£350 a month, a GUESS) | `commercial-experiments.md` |
+| C2 | **The payment provider**, after the business bank account (not decided, by design) | `commercial-experiments.md` |
+| C3 | **The legal gates in CLAUDE.md:** incorporation, the ICO fee re-check, insurance, the contributors agreement. His checks, already listed there | CLAUDE.md |
+| C4 | **A marketplace:** needs legal advice and commercial evidence first (not decided, by design) | — |
+
+### D. Before international expansion
+
+| # | Decision | Document |
+|---|---|---|
+| D1 | **The next city, and its bar.** Seville is not ready (no cards, UK emergency text, a fixed London time zone and sunset) | `seville-readiness.md` |
+| D2 | **Per-country emergency and help text** in both apps (112 in Spain, per GOV.UK), before any non-UK destination | `seville-readiness.md` |
+| D3 | **Travel, weather and holiday sources per city**, and whether to switch on dated currency conversion (the ECB conditions) | `display-currency-and-price-providers.md` |
+
+### E. Longer-term product
+
+| # | Decision | Document |
+|---|---|---|
+| E1 | **The fixed-effort planner**, then any move to 0.5 CPU after a Render benchmark | `performance-study.md` |
+| E2 | **The availability ranking change:** leave a session card out of a day whose session isn't on; label a "might be open" session "Check the listing" | `specs-20-nov-check.md` |
+| E3 | **The one-borough data trial** (4 h, read-only, £0) | `map-tiles-and-place-data.md` |
+| E4 | **Food preferences**, only after consent, a DPIA and a checked data source | `dpia-food-needs.md` |
+| E5 | **3D:** closed | — |
