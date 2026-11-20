@@ -2,6 +2,15 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-20 — Food discovery and Seville sprint (the audit branch)
+
+Abram's message of 20 Nov, "Same-Day Food Discovery and Seville Destination Sprint". Report: `food-and-seville-pilot-2026-11-20.md`. **Nothing deployed, merged into `main`, uploaded or published.**
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m318 | **Seville is a development destination** (`brain/data/dev/seville.yaml`), and stays **Development**.<br>• 20 ready places from official pages read on 20 Nov, including 4 municipal markets and 2 restaurants. 3 food drafts have no printed hours.<br>• It fails variety (5 kinds, 6 needed) and transport (no official planner readable).<br>• **Spain's 112 is added to `emergency.yaml`**, from the Spanish government and EU pages.<br>• **`parse_hours` keeps split sessions** ("09:00-15:00, 17:30-20:30"). Before, the second replaced the first. "-00:00" closes at midnight. 0 London or Paris places change.<br>• **Food stays a category plus `FoodFacet`, with no new entity.** A market is told apart from a restaurant by kind and service. **No dietary field**: a test fails if one appears.<br>• **The default ranking is unchanged.** The benchmark found that "doubts first" hides every food place from a food lover; that is proposal P1, after the round | `seville-readiness.md` (no destination and no cards) | Abram, 20 Nov; official pages only |
+| m319 | **No in-app Seville pilot on 22 Nov.**<br>• Builds 112 and Android send `london` for every trip, and print 999.<br>• Seville in the app needs a new build from the frozen `main`, a Brain deploy and Apple's review.<br>• **Instead, a draft preview sheet** (`decisions/seville-preview-draft.md`, generated from the same data). It gives 112, "don't rely on this alone", and the state of each place for each day from 22 to 28 Nov.<br>• **It goes to the friend only if Abram reviews it and sends it himself.** Nothing is collected; it is not Test B evidence | — | Release rules: no deploy, no upload, no Seville exposed to customers |
+
 ## 2026-11-20 — Abram's review of the 19 Nov progress: one schedule, production hotfixes, the round's conditions (the audit branch)
 
 Abram's message of 20 Nov, "Review of 19 November Development and Infrastructure Progress", is cited as "Abram, 20 Nov §N".

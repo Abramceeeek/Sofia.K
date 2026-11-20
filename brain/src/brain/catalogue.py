@@ -359,14 +359,20 @@ def parse_hours(text: str | None) -> dict[str, list[tuple[int, int]]] | None:
             days = _days(c[: r.start()] if r else (c[: to.start()] if to else c))
             if r:
                 target = pending + (days or [])
-                if not target:
+                second = not target                  # a range with no days of its own: the same days' second session
+                if second:
                     if last_days is None:
                         return None
                     target = last_days
                 lo = int(r.group(1)) * 60 + int(r.group(2))
                 hi = int(r.group(3)) * 60 + int(r.group(4))
+                if hi == 0:
+                    hi = 1440                         # "…-00:00" closes at midnight
+                elif hi <= lo:
+                    return None                       # past midnight: the table can't hold it, so keep only the text
                 for d in target:
-                    table[d] = [(lo, hi)]
+                    # m318: "Mon-Fri 09:00-15:00, 17:30-20:30" is two sessions; before, the second replaced the first
+                    table[d] = sorted(table.get(d, []) + [(lo, hi)]) if second else [(lo, hi)]
                 last_days, last_open, pending = target, lo, []
             elif to and (days or pending):
                 hi = int(to.group(1)) * 60 + int(to.group(2))

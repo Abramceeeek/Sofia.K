@@ -64,12 +64,14 @@ def test_the_first_provider_that_has_a_part_wins_and_is_named():
 
 def test_each_country_has_its_own_emergency_numbers_with_sources():
     e = load_emergency()
-    assert set(e) == {"GB", "FR", "NL", "BE"}
+    assert set(e) == {"GB", "FR", "NL", "BE", "ES"}           # m318: Spain added (development destination Seville)
     nums = {cc: {x.number for x in v.lines} for cc, v in e.items()}
     assert nums["GB"] == {"999", "111", "116 123"} and {"112", "15", "17", "18"} <= nums["FR"]
     assert {"112", "0900-8844"} == nums["NL"] and {"112", "101"} == nums["BE"]
-    for v in e.values():
-        assert v.checked == "2026-11-10" and all(x.source.startswith("https://") for x in v.lines)
+    assert nums["ES"] == {"112"}
+    for cc, v in e.items():
+        assert v.checked == ("2026-11-20" if cc == "ES" else "2026-11-10")
+        assert all(x.source.startswith("https://") for x in v.lines)
 
 
 def test_the_offline_pack_shows_the_trips_own_country_never_another():
