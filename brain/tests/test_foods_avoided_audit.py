@@ -87,7 +87,7 @@ def test_the_operator_command_counts_deletes_only_the_key_and_prints_no_value(cl
     _, uid_a = install(client)
     _, uid_b = install(client)
     _legacy(client, uid_a, SECRET)
-    url = str(client.app.state.engine.url)
+    url = client.app.state.engine.url.render_as_string(hide_password=False)   # str() masks the password (Postgres CI)
     assert foodfield.main(["count", "--database-url", url]) == 0
     assert foodfield.main(["delete", "--database-url", url]) == 1                  # no --confirm: nothing changes
     assert foodfield.count(client.app.state.engine)["with_key"] == 1
