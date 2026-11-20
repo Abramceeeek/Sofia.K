@@ -1,0 +1,65 @@
+diff --git a/brain/src/brain/db.py b/brain/src/brain/db.py
+index 0dd35b0..0a5d343 100644
+--- a/brain/src/brain/db.py
++++ b/brain/src/brain/db.py
+@@ -231,3 +231,4 @@ def make_engine(url: str):
+     kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {}
+-    engine = create_engine(url, **kwargs)
++    # A3 (Abram, 20 Nov): a failed write's error, which the server logs, never carries the values it was writing.
++    engine = create_engine(url, hide_parameters=True, **kwargs)
+     if url.startswith("sqlite"):
+diff --git a/brain/src/brain/notify.py b/brain/src/brain/notify.py
+index d2ec73a..c52d5a6 100644
+--- a/brain/src/brain/notify.py
++++ b/brain/src/brain/notify.py
+@@ -24,3 +24,5 @@ USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. A pe
+ def send_alert(webhook_url: str | None, alert_id: int, user_id: str, message: str, contact: str | None = None) -> bool:
+-    log.warning("SAFETY ALERT %s from user %s: %s", alert_id, user_id, message)   # the contact is never logged
++    # A3 (Abram, 20 Nov): the log says only that a message arrived. The message, who sent it and the contact stay in
++    # the database (committed before this runs), read with GET /v1/admin/safety.
++    log.warning("SAFETY ALERT %s received", alert_id)
+     if not webhook_url:
+diff --git a/brain/tests/test_log_minimal.py b/brain/tests/test_log_minimal.py
+new file mode 100644
+index 0000000..117ac31
+--- /dev/null
++++ b/brain/tests/test_log_minimal.py
+@@ -0,0 +1,38 @@
++"""A3 (Abram, 20 Nov): the server's log never holds a safety message, who sent it, or a failed write's values."""
++import logging
++
++import pytest
++from sqlalchemy import text
++from sqlalchemy.exc import IntegrityError
++
++from brain import db, notify
++
++from test_api import client, install  # noqa: F401 - the frozen suite's app fixture
++
++
++def test_the_safety_log_line_names_only_the_message_number(monkeypatch, caplog):
++    with caplog.at_level(logging.INFO, logger="brain"):
++        notify.send_alert(None, 42, "user-abcdef123456", "I feel unsafe near the bridge", "07700 900123")
++    assert "SAFETY ALERT 42 received" in caplog.text
++    for private in ("I feel unsafe", "bridge", "user-abcdef", "07700"):
++        assert private not in caplog.text
++
++
++def test_a_safety_message_sent_through_the_app_stays_out_of_the_log(client, caplog):
++    h, uid = install(client)
++    with caplog.at_level(logging.INFO, logger="brain"):
++        r = client.post("/v1/me/safety", headers=h, json={"message": "PRIVATE lost near the river", "contact": "07700 900123"})
++    assert r.status_code == 201
++    assert "PRIVATE" not in caplog.text and uid not in caplog.text and "07700" not in caplog.text
++    mine = client.get("/v1/me/safety", headers=h).json()   # the person still sees their own message
++    assert "PRIVATE lost near the river" in str(mine)
++
++
++def test_a_failed_write_never_shows_its_values():
++    engine = db.make_engine("sqlite://")
++    with engine.begin() as c:
++        c.execute(text("create table t (k text primary key)"))
++        c.execute(text("insert into t values (:k)"), {"k": "PRIVATE-VALUE"})
++    with pytest.raises(IntegrityError) as e, engine.begin() as c:
++        c.execute(text("insert into t values (:k)"), {"k": "PRIVATE-VALUE"})
++    assert "PRIVATE-VALUE" not in str(e.value)

@@ -1,12 +1,13 @@
 diff --git a/brain/src/brain/api.py b/brain/src/brain/api.py
-index b2584d3..0824711 100644
+index b2584d3..40033bc 100644
 --- a/brain/src/brain/api.py
 +++ b/brain/src/brain/api.py
-@@ -90,6 +90,36 @@ def _plain(description: str) -> str:
+@@ -90,6 +90,37 @@ def _plain(description: str) -> str:
      return re.sub(r"longest transfer (\d+) min", r"up to \1 min between stops", description)
  
  
-+# Category A privacy patch (Abram, 19 Nov; SEC-06). What the person is sent is unchanged; only the kept copy differs.
++# A2 (Abram, 19-20 Nov; SEC-06). The start point and the stay's name are sent by the app and processed to plan the
++# day, and the reply gives the person their own copy; neither is retained in the stored plan after the request.
 +HERE_NAMES = {"where you are"}   # what both frozen apps send as the start's name for "Start from where I am"
 +
 +
@@ -39,12 +40,12 @@ index b2584d3..0824711 100644
  def create_app(settings: Settings | None = None) -> FastAPI:
      settings = settings or get_settings()
  
-@@ -581,10 +611,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+@@ -581,10 +612,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
          if outlook:   # kept with the plan, so the results can tell weather-shaped plans apart
              intent["weather"] = outlook.out()
              head["weather"] = outlook.out()
 -        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent, stops=out, value=plan.value)
-+        here = body.start_name.strip().lower() in HERE_NAMES   # SEC-06: planned with the point, kept without it
++        here = body.start_name.strip().lower() in HERE_NAMES   # SEC-06: processed to plan, not retained
 +        row = db.Plan(user_id=user.id, kind="personal", date=body.date, intent=intent,
 +                      stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
          s.add(row)
@@ -54,17 +55,17 @@ index b2584d3..0824711 100644
  
      @app.get("/v1/example-day")
      def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
-@@ -970,6 +1002,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+@@ -970,6 +1003,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
              raise HTTPException(422, "a day needs at least an hour between its start and end")
          start = body.stay or Point(lat=dest.lat, lon=dest.lon)
          start_name = (body.stay_name or "").strip() or dest.centre_name
-+        stay_named = (body.stay_name or "").strip() or None   # SEC-06: the person's own stay is never kept by name
++        stay_named = (body.stay_name or "").strip() or None   # SEC-06: processed to plan, never retained by name
 +        if stay_named and (len(stay_named) < 3 or stay_named == dest.centre_name):
 +            stay_named = None   # too short to tell apart from ordinary words, or simply the public centre
          # D122: how the trip starts and ends; the older app sends only the flight times
          end_of = lambda e, t: (tripdays.End(e.mode, (e.place or "").upper() or None, e.time) if e
                                 else tripdays.End("flight", None, t) if t else None)
-@@ -1003,12 +1038,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
+@@ -1003,12 +1039,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                  if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                      continue
                  used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])

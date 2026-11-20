@@ -1,52 +1,35 @@
 diff --git a/brain/src/brain/notify.py b/brain/src/brain/notify.py
-index d2ec73a..e257d97 100644
+index d2ec73a..8d781b1 100644
 --- a/brain/src/brain/notify.py
 +++ b/brain/src/brain/notify.py
-@@ -10,6 +10,8 @@ from __future__ import annotations
- import json
- import logging
- import urllib.request
-+from datetime import datetime, timezone
-+from zoneinfo import ZoneInfo
+@@ -23,2 +23,6 @@ USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. A pe
  
- log = logging.getLogger("brain.safety")
- 
-@@ -21,13 +23,20 @@ USER_MESSAGE = ("If you or someone else is in danger or hurt, call 999 now. A pe
-                 "watched through the night: a message sent late is answered the next morning.")
- 
- 
-+def alert_text(alert_id: int, at: datetime | None = None) -> str:
-+    """Category A privacy patch (Abram, 19 Nov; SEC-09): the channel learns only that a message is waiting. Never the
-+    message, the contact, who sent it, or where they are: they stay in the database, read with GET /v1/admin/safety."""
-+    when = (at or datetime.now(timezone.utc)).astimezone(ZoneInfo("Europe/London")).strftime("%d %b %H:%M")
-+    return (f"ODYS Help & safety: message #{alert_id} is waiting (received {when}, London time). Read it and reply "
-+            f"with GET /v1/admin/safety; it isn't copied here.")
++def alert_text(alert_id: int) -> str:
++    return f"Safety message #{alert_id} is waiting"
 +
 +
  def send_alert(webhook_url: str | None, alert_id: int, user_id: str, message: str, contact: str | None = None) -> bool:
--    log.warning("SAFETY ALERT %s from user %s: %s", alert_id, user_id, message)   # the contact is never logged
-+    # The log keeps the message, as the privacy notice says ("a contact you leave never is"); no longer who sent it.
-+    log.warning("SAFETY ALERT %s: %s", alert_id, message)
-     if not webhook_url:
+@@ -27,5 +31,5 @@ def send_alert(webhook_url: str | None, alert_id: int, user_id: str, message: st
          return False
 -    reach = (f"Reply to: {contact}" if contact
 -             else f"No contact left: reply in the app (POST /v1/admin/safety/{alert_id}/reply with text)")
 -    body = json.dumps({"text": f"Safety alert #{alert_id} (user {user_id[:8]}): {message} | {reach}"}).encode()
++    # A1 (Abram, 19-20 Nov): the channel learns only that a message is waiting. The message, the contact, who sent it
++    # and where they are stay in the database, read with GET /v1/admin/safety.
 +    body = json.dumps({"text": alert_text(alert_id)}).encode()
      req = urllib.request.Request(webhook_url, data=body, headers={"Content-Type": "application/json"})
-     try:
-         with urllib.request.urlopen(req, timeout=5) as resp:
 diff --git a/brain/tests/test_alert_minimal.py b/brain/tests/test_alert_minimal.py
 new file mode 100644
-index 0000000..cf8b78a
+index 0000000..3048470
 --- /dev/null
 +++ b/brain/tests/test_alert_minimal.py
-@@ -0,0 +1,43 @@
-+"""Category A privacy patch (Abram, 19 Nov; SEC-09): the alert channel gets only that a message is waiting."""
+@@ -0,0 +1,51 @@
++"""A1 (Abram, 19-20 Nov): the alert channel learns only that a safety message is waiting."""
 +import json
-+import logging
 +
 +from brain import notify
++
++from test_api import client, install  # noqa: F401 - the frozen suite's app fixture
 +
 +
 +class _Resp:
@@ -59,20 +42,21 @@ index 0000000..cf8b78a
 +        return False
 +
 +
-+def test_the_alert_carries_no_message_contact_or_person(monkeypatch, caplog):
++def test_the_alert_says_only_that_a_message_is_waiting(monkeypatch):
 +    sent = []
 +    monkeypatch.setattr(notify.urllib.request, "urlopen", lambda req, timeout: sent.append(req.data) or _Resp())
-+    with caplog.at_level(logging.WARNING, logger="brain.safety"):
-+        ok = notify.send_alert("https://hooks.example.invalid/x", 42, "user-abcdef123456",
-+                               "I feel unsafe near the bridge", "07700 900123")
++    ok = notify.send_alert("https://hooks.example.invalid/x", 42, "user-abcdef123456",
++                           "I feel unsafe near the bridge at 51.5072, -0.1276", "07700 900123")
 +    assert ok and len(sent) == 1
-+    text = json.loads(sent[0])["text"]
-+    assert text.startswith("ODYS Help & safety: message #42 is waiting (received ")
-+    for private in ("I feel unsafe", "bridge", "07700", "900123", "user-abc", "abcdef"):
-+        assert private not in text
-+    logged = caplog.text
-+    assert "I feel unsafe near the bridge" in logged          # as the privacy notice says
-+    assert "07700" not in logged and "user-abcdef" not in logged
++    assert json.loads(sent[0]) == {"text": "Safety message #42 is waiting"}
++
++
++def test_the_alert_is_the_same_with_or_without_a_contact(monkeypatch):
++    sent = []
++    monkeypatch.setattr(notify.urllib.request, "urlopen", lambda req, timeout: sent.append(req.data) or _Resp())
++    notify.send_alert("https://hooks.example.invalid/x", 7, "u1", "first", None)
++    notify.send_alert("https://hooks.example.invalid/x", 7, "u2", "second", "someone@example.com")
++    assert sent[0] == sent[1]
 +
 +
 +def test_no_webhook_means_nothing_is_posted(monkeypatch):
@@ -85,3 +69,9 @@ index 0000000..cf8b78a
 +        raise OSError("down")
 +    monkeypatch.setattr(notify.urllib.request, "urlopen", boom)
 +    assert notify.send_alert("https://hooks.example.invalid/x", 7, "u", "m") is False
++
++
++def test_the_person_still_gets_the_same_reply(client):
++    h, _ = install(client)
++    r = client.post("/v1/me/safety", headers=h, json={"message": "lost near the river", "contact": "07700 900123"})
++    assert r.status_code == 201 and r.json()["message"] == notify.USER_MESSAGE
