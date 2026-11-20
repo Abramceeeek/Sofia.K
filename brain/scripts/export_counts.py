@@ -15,28 +15,8 @@ import json
 import sys
 from pathlib import Path
 
-PERSON_TABLES = ("swipes", "conjoint_choices", "answers", "plans", "ratings", "events", "safety_alerts",
-                 "category_answers", "corrections", "day_feedback")
-
-
-def counts(export: dict) -> dict[str, int]:
-    return {k: len(v) for k, v in sorted(export.items()) if isinstance(v, list)}
-
-
-def problems(export: dict) -> list[str]:
-    out = []
-    users = {u.get("id") for u in export.get("users", [])}
-    for table in PERSON_TABLES:
-        orphans = sum(1 for row in export.get(table, []) if row.get("user_id") not in users)
-        if orphans:
-            out.append(f"{table}: {orphans} rows name a person who isn't in users")
-    plans = {p.get("id") for p in export.get("plans", [])}
-    lost = sum(1 for r in export.get("ratings", []) if r.get("plan_id") is not None and r["plan_id"] not in plans)
-    if lost:
-        out.append(f"ratings: {lost} rows name a plan that isn't in plans")
-    if not export.get("users"):
-        out.append("users: none (an empty export, or the wrong file)")
-    return out
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from brain.exportcheck import counts, problems  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:

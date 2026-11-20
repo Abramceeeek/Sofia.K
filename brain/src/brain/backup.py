@@ -322,6 +322,88 @@ def _counts(path: Path, key: str | None) -> int:
     return 0
 
 
+def _pk(t: Table) -> list[str]:
+    return [c.name for c in t.primary_key.columns]
+
+
+def _ids(rows: list[dict], keys: list[str]) -> str:
+    """A digest of which rows a table holds (their keys, never their contents): equal digests, the same rows."""
+    joined = "\n".join(sorted("|".join(str(r.get(k)) for k in keys) for r in rows))
+    return hashlib.sha256(joined.encode()).hexdigest()[:16]
+
+
+def preflight(backup_path: Path, key: str | None, export_path: Path | None = None) -> int:
+    """Abram, 20 Nov: the evidence before the database moves, from his own computer, writing nothing to disk.
+
+    1. The sealed backup opens with his private key (the seal's authentication holds: one changed byte fails).
+    2. It is structurally valid (`check`).
+    3. It restores into an isolated database held only in memory, with the restore code a real recovery uses, and the
+       restored tables hold the same rows as the backup (counts and row keys).
+    4. With `export_path`: the admin export, taken minutes before, holds the same rows per table (counts and keys).
+    5. Every exported row that names a person names one who exists (`exportcheck`).
+    6. The record to keep: the file's sha256 and size, and each table's count and key digest. Never a value.
+    A same file size is not evidence of the same contents; the checksum and the per-table keys are."""
+    ok = True
+    raw = backup_path.read_bytes()
+    print("ODYS backup preflight (read-only: nothing is written to disk, and no value from a row is printed)")
+    print(f"backup {backup_path.name}: {len(raw)} bytes, sha256 {hashlib.sha256(raw).hexdigest()}")
+    try:
+        data = _load(str(backup_path), key)
+    except Exception as e:  # noqa: BLE001 - a wrong key, a damaged seal or a cut-short file all stop here
+        print(f"1. Opened with your key: FAIL ({e})")
+        print("Result: NOT READY. Don't upgrade: take a fresh backup and run this again.")
+        return 1
+    print(f"1. Opened with your key: PASS (made at {data.get('made_at', '?')})")
+    problems, notes = check(data)
+    print("2. Structure: " + ("PASS" if not problems else "FAIL: " + "; ".join(problems)))
+    for n in notes:
+        print("   note: " + n)
+    ok &= not problems
+    defs = {t.name: t for t in tables()}
+    backup_tables = {k: v for k, v in data.get("tables", {}).items() if isinstance(v, list)}
+    if not problems:
+        engine = db.make_engine("sqlite://")       # in memory only: gone when this command ends
+        try:
+            restore(engine, data)
+            back = dump(engine)["tables"]
+        finally:
+            engine.dispose()
+        differ = [n for n, rows in backup_tables.items() if n in defs and (
+            len(back.get(n, [])) != len(rows) or _ids(back.get(n, []), _pk(defs[n])) != _ids(rows, _pk(defs[n])))]
+        print("3. Restored in an isolated database: " + (
+            f"PASS ({sum(len(v) for v in back.values())} rows in {len(back)} tables, the same rows as the backup)"
+            if not differ else "FAIL: restored rows differ in " + ", ".join(differ)))
+        ok &= not differ
+    else:
+        print("3. Restored in an isolated database: not tried (the structure failed)")
+    if export_path is not None:
+        from . import exportcheck
+        export = json.loads(export_path.read_text(encoding="utf-8-sig"))
+        common = sorted(set(backup_tables) & {k for k, v in export.items() if isinstance(v, list)} & set(defs))
+        mismatch = [f"{n}: backup {len(backup_tables[n])}, export {len(export[n])}" if
+                    len(backup_tables[n]) != len(export[n]) else f"{n}: same count, different rows"
+                    for n in common if len(backup_tables[n]) != len(export[n])
+                    or _ids(backup_tables[n], _pk(defs[n])) != _ids(export[n], _pk(defs[n]))]
+        print(f"4. Export against backup ({len(common)} tables in both): " + (
+            "PASS (the same rows in every table)" if not mismatch else "FAIL: " + "; ".join(mismatch)))
+        only = sorted(set(backup_tables) - set(common))
+        if only:
+            print("   note: only in the backup (the export leaves them out): " + ", ".join(only))
+        owned = exportcheck.problems(export)
+        print("5. Every exported row belongs to an existing person: " + ("PASS" if not owned else
+                                                                       "FAIL: " + "; ".join(owned)))
+        ok &= not mismatch and not owned
+    else:
+        print("4-5. Export: not checked (add --export <the admin export's file>)")
+        ok = False
+    print("6. Record (keep these lines; they hold no personal data):")
+    for n, rows in sorted(backup_tables.items()):
+        print(f"   {n} {len(rows)} {_ids(rows, _pk(defs[n])) if n in defs else '-'}")
+    print("Result: " + ("ALL CHECKS PASS: this is the evidence for your go." if ok else
+                        "NOT READY: don't upgrade yet. Take a fresh export and backup together, and run this again."))
+    return 0 if ok else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m brain.backup", description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -347,7 +429,14 @@ def main(argv: list[str] | None = None) -> int:
     n = sub.add_parser("counts", help="rows per table in a backup: numbers only, to check an export against")
     n.add_argument("file")
     n.add_argument("--key", help="the private key, for a sealed backup")
+    pf = sub.add_parser("preflight", help="Abram, 20 Nov: open, check, restore in memory and compare with an export "
+                                          "before the database moves; writes nothing")
+    pf.add_argument("file")
+    pf.add_argument("--key", help="the private key, for a sealed backup")
+    pf.add_argument("--export", help="the admin export taken just before the backup")
     a = ap.parse_args(argv)
+    if a.cmd == "preflight":
+        return preflight(Path(a.file), a.key, Path(a.export) if a.export else None)
     if a.cmd == "count-food":
         return _count_food(Path(a.file), a.key, a.after_restore)
     if a.cmd == "counts":

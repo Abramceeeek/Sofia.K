@@ -275,3 +275,55 @@ def test_the_export_check_counts_tables_and_finds_rows_without_a_person(client, 
     f.write_text(_json.dumps(export))
     assert ec.main([str(f)]) == 1
     assert "swipes: 1 rows name a person who isn't in users" in capsys.readouterr().err
+
+
+# ---- Abram, 20 Nov: the evidence before the database moves (`backup preflight`) ------------------------------
+
+def _preflight_files(client, tmp_path, private):
+    export = tmp_path / "export.json"
+    export.write_text(json.dumps(client.get("/v1/admin/export", headers=ADMIN).json()), encoding="utf-8")
+    r = client.get("/v1/admin/backup", headers={"Authorization": "Bearer nightly"})
+    sealed, key = tmp_path / "b.odysbk", tmp_path / "k.key"
+    sealed.write_bytes(r.content)
+    key.write_text(private, encoding="utf-8")
+    return sealed, key, export
+
+
+def test_preflight_opens_checks_restores_and_compares_without_printing_a_value(client, tmp_path, capsys):
+    private = _with_backups(client)
+    _someone(client)
+    sealed, key, export = _preflight_files(client, tmp_path, private)
+    assert backup.main(["preflight", str(sealed), "--key", str(key), "--export", str(export)]) == 0
+    out = capsys.readouterr().out
+    import hashlib
+    assert f"sha256 {hashlib.sha256(sealed.read_bytes()).hexdigest()}" in out      # the checksum to record
+    for step in ("1. Opened with your key: PASS", "2. Structure: PASS", "3. Restored in an isolated database: PASS",
+                 "4. Export against backup", "5. Every exported row belongs to an existing person: PASS",
+                 "6. Record", "ALL CHECKS PASS"):
+        assert step in out
+    assert "PRIVATE ANSWER" not in out and "someone@example.com" not in out and "a worry" not in out
+
+
+def test_preflight_fails_when_the_export_and_the_backup_hold_different_rows(client, tmp_path, capsys):
+    private = _with_backups(client)
+    h, _ = _someone(client)
+    sealed, key, export = _preflight_files(client, tmp_path, private)
+    client.post("/v1/me/ratings", headers=h, json={"moment_id": "t_view", "rating": 2})   # after the export
+    r = client.get("/v1/admin/backup", headers={"Authorization": "Bearer nightly"})
+    sealed.write_bytes(r.content)
+    assert backup.main(["preflight", str(sealed), "--key", str(key), "--export", str(export)]) == 1
+    out = capsys.readouterr().out
+    assert "4. Export against backup" in out and "FAIL: ratings: backup 2, export 1" in out and "NOT READY" in out
+
+
+def test_preflight_fails_with_the_wrong_key_or_without_an_export(client, tmp_path, capsys):
+    private = _with_backups(client)
+    _someone(client)
+    sealed, key, export = _preflight_files(client, tmp_path, private)
+    _, other = backup.keygen()
+    wrong = tmp_path / "wrong.key"
+    wrong.write_text(other, encoding="utf-8")
+    assert backup.main(["preflight", str(sealed), "--key", str(wrong), "--export", str(export)]) == 1
+    assert "1. Opened with your key: FAIL" in capsys.readouterr().out
+    assert backup.main(["preflight", str(sealed), "--key", str(key)]) == 1      # the export is required for a go
+    assert "NOT READY" in capsys.readouterr().out
