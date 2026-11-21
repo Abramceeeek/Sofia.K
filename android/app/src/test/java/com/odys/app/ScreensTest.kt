@@ -216,6 +216,23 @@ class ScreensTest {
     }, { reach("Your dates stay as they are") })
     @Test fun you() = show("33-you") { tripPath += Dest.You }
 
+    // m320: the Seville preview (opened with a code), and You with its row
+    private fun AppModel.withPreview() {
+        previews = demo("demo_previews", PreviewList.serializer()).previews
+        previewDemo = demo("demo_preview", PreviewContent.serializer())
+    }
+    @Test fun youPreview() = show("33c-you-preview") { withPreview(); tripPath += Dest.You }
+    @Test fun preview() {
+        model.withPreview()
+        compose.setContent { RootView(model); PreviewScreen(model, "seville") {} }
+        shoot("34-preview")
+    }
+    @Test fun safetyPreview() {
+        model.withPreview()
+        compose.setContent { RootView(model); SafetyView(model) {} }
+        shoot("13d-safety-preview")
+    }
+
     // WS8 (m213): the newest screens on a small phone with large text (font scale 1.6), so nothing is cut off
     @Config(qualifiers = "w320dp-h568dp-xhdpi", fontScale = 1.6f)
     @Test fun stayForTripLargeText() = showThen("90-stayfortrip-large", {
