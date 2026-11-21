@@ -1,0 +1,396 @@
+# m318: Seville, a DEVELOPMENT destination (Abram, 20 Nov 2026: "a trustworthy Seville Preview ... do not claim full
+# Seville support"). This file is not in data/destinations.yaml or data/airports.yaml, so no route, trip or plan can
+# offer Seville (tested). It is read only by tests, the coverage and benchmark scripts, and the pilot pack.
+#
+# Every fact was read on 20 Nov 2026 by Claude (web fetch), from the place's OFFICIAL site, the City of Seville
+# (visitasevilla.es, the city tourism office; mercadosdesevilla.es, the city's markets platform linked from
+# sevilla.org), the Spanish government or the operator. Each says where it came from. Nothing is filled from memory:
+# - status ready: a checked location, address and hours. A missing price or access stays unknown and is said.
+# - status draft: something essential couldn't be read (usually the hours); never recommended.
+# - point: OpenStreetMap (ODbL, Nominatim on the official address or name) or Wikidata (CC0).
+# - The city tourism office's leaflet "Monumentos de Sevilla" is dated June 2025 (file Monumentos-ES-27062025.pdf).
+#   Hours taken from it carry `checked: 2025-06-27`, so they are older than the 180-day freshness bar and are never
+#   shown as "confirmed open".
+# - minutes, setting and features (the recommendation tags) are Claude's judgement (GUESS), as for London and Paris.
+# - No photos: none is added until each is checked one by one.
+# - Dietary claims are NOT data here (FoodFacet; DPIA): a venue's own words about vegetarian food are kept only as a
+#   comment and in the pilot report, quoted, never as a field a plan filters or ranks on.
+#
+# Sundays: the four municipal markets are closed (Mon-Sat only), which matters for a visitor arriving on a Sunday.
+#
+# Not included or draft (never filled from elsewhere):
+# - Hospital de los Venerables (hospitalvenerables.es, 503 twice), Cruceros Torre del Oro (503 twice),
+#   Mercado Lonja del Barranco (lonjadelbarranco.com, 503 twice), Plaza de Toros visits (hours on another host, not
+#   read), Antiquarium (no independent location found).
+# - El Rinconcillo, Espacio Eslava, Bodeguitas Antonio Romero: their own sites state no opening hours (draft).
+# - Torre del Oro: the Navy's page (footer 1996-2021: Tue-Fri 09:30-18:00, Sat and holidays 10:30-18:00, EUR 3, free
+#   on Mondays) and the city's June 2025 leaflet (Mon-Fri 09:30-19:00, weekends 10:30-19:00, free with a EUR 3
+#   donation) disagree (draft).
+checked: "2026-11-20"
+destination:
+  name: Seville
+  country: ES
+  region: Andalusia
+  region_code: null            # the ISO 3166-2 code wasn't checked from an official source
+  timezone: Europe/Madrid      # IANA; CET (UTC+1) in winter, CEST (UTC+2) from the last Sunday of March
+  currency: EUR
+  languages: [es]
+  centre: {lat: 37.38861, lon: -5.995, source: "wikidata:Q8717"}
+holidays:                      # the BOE's national and regional list (Andalusia's column), read 20 Nov 2026
+  source_2026: "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2025-21667"
+  source_2027: "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-21254"
+  days: ["2026-01-01", "2026-01-06", "2026-02-28", "2026-04-02", "2026-04-03", "2026-05-01", "2026-08-15", "2026-10-12",
+         "2026-11-02", "2026-12-07", "2026-12-08", "2026-12-25", "2027-01-01", "2027-01-06", "2027-03-01", "2027-03-25",
+         "2027-03-26", "2027-05-01", "2027-08-16", "2027-10-12", "2027-11-01", "2027-12-06", "2027-12-08", "2027-12-25"]
+  note: "Seville city's two local holidays are not included: they are published in the provincial bulletin, which was not read. The BOE annex's table was read as text; check it against the BOE PDF before relying on a date."
+school_holidays: missing
+emergency: ES                  # data/emergency.yaml: 112, from administracion.gob.es and the EU's 112 page
+weather:
+  provider: AEMET (Agencia Estatal de Meteorología)
+  page: "https://www.aemet.es/es/eltiempo/prediccion/municipios/sevilla-id41091"
+  offers: "7-day table (rain probability, min/max temperature and feels-like, wind, gusts, humidity, UV) and 48 hours by hour"
+  issue_time: "the page's 7-day view prints no issue time; the hourly view refers to the models' nominal updates (00, 06, 12 and 18 UTC)"
+  licence: "© AEMET. Autorizado el uso de la información y su reproducción citando a AEMET como autora de la misma."
+  open_data: "AEMET OpenData is free ('gratuitamente', https://www.aemet.es/es/datos_abiertos/AEMET_OpenData); its key and usage terms were not readable (opendata.aemet.es returned no text)"
+  status: not integrated       # weather.py is the Met Office (UK). No Seville forecast is shown anywhere
+transport:
+  status: missing              # no official journey planner was readable
+  operators:
+    - {name: "TUSSAM (city buses)", url: "https://www.tussam.es", read: "403, not read"}
+    - {name: "Metro de Sevilla", url: "https://www.metro-sevilla.es", read: "the page states no fares or hours; it has a metro-only 'Calcula tu trayecto'"}
+    - {name: "Consorcio de Transportes del Área de Sevilla", url: "https://ctas.ctan.es", read: "did not resolve (DNS)"}
+  airport:
+    source: "https://www.aena.es/es/sevilla/como-llegar/autobus.html and https://www.aena.es/es/sevilla/como-llegar/taxi.html (Aena, the airport operator)"
+    bus: "Línea EA 'Especial Aeropuerto' (TUSSAM). To Seville 4:30-00:05; to the airport 5:22-1:00. Single 6 €, return 8 €; card payment on board ('pagar directamente en el autobús mediante tarjeta bancaria')"
+    taxi: "Fixed airport fares: 'Tarifa 4: 26 €' Mon-Fri 7:00-21:00; 'Tarifa 5: 29 €' other times, weekends and holidays; 0,57 € per bag over 10 kg (max four)"
+not_read:
+  - {what: "TUSSAM fares, timetables and the tourist network map", url: "https://www.tussam.es", why: "403"}
+  - {what: "Metro de Sevilla fares and hours", url: "https://www.metro-sevilla.es", why: "not stated on the page read; subpages not reached"}
+  - {what: "Consorcio de Transportes journey planner", url: "https://ctas.ctan.es", why: "DNS failure"}
+  - {what: "Hospital de los Venerables", url: "https://www.hospitalvenerables.es/", why: "503 twice"}
+  - {what: "Cruceros Torre del Oro", url: "https://www.crucerostorredeloro.com/", why: "503 twice"}
+  - {what: "Mercado Lonja del Barranco", url: "https://www.lonjadelbarranco.com/", why: "503 twice"}
+  - {what: "Museo de Bellas Artes (Junta de Andalucía page)", url: "https://www.museosdeandalucia.es/web/museodebellasartesdesevilla", why: "503; the city's page was read instead"}
+experiences:
+  alcazar:
+    name: Real Alcázar de Sevilla
+    title: "Palace courtyards and gardens of the Royal Alcázar"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 37.38321, lon: -5.99018, source: "osm:way/22747187 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Santa Cruz, Casco Antiguo)"}
+    hours: {text: "1 Oct-31 Mar daily 09:30-17:00 (clearing from 17:45); 1 Apr-30 Sep 09:30-19:00; closed 1 and 6 Jan, Good Friday and 25 Dec", parse: "Daily 09:30-17:00", source: "https://alcazarsevilla.org/prepara-la-visita/"}
+    price: {amount: 15.5, kind: entry, quote: "Entrada General: 15,50 €; Cuarto Real Alto 5,50 €; reduced 8,00 € (over 65, students 14-30); free for people born or resident in the city, children up to 13 with an adult (a free ticket is still needed)", source: "https://alcazarsevilla.org/prepara-la-visita/"}
+    facet: {booking: {value: "online, or the box office at Patio de Banderas from 09:00 (card only)", source: "https://alcazarsevilla.org/prepara-la-visita/"}}
+    notices:
+      - {what: "The shops are temporarily without service (reopening to be announced)", from: null, to: null, source: "https://alcazarsevilla.org/noticia/cierre-temporal-de-las-tiendas-del-real-alcazar/"}
+    minutes: [90, 150]
+    setting: mixed
+    features: {history_culture: 2, green_nature: 1, photo_potential: 2, awe: 2, iconic: 2, crowds: 2}
+  catedral:
+    name: Catedral de Sevilla y la Giralda
+    title: "The cathedral, then up the Giralda's ramps for the view"
+    category: culture
+    type: religious_site
+    status: ready
+    point: {lat: 37.38591, lon: -5.99314, source: "osm:relation/5641600 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Santa Cruz, Casco Antiguo)"}
+    hours: {text: "Mon-Sat 10:45-18:00 (box office closes 17:00); Sun 14:30-19:00 (box office closes 18:00); may change for services", parse: "Mon-Sat 10:45-18:00; Sun 14:30-19:00", source: "https://www.catedraldesevilla.es/visita-cultural/horarios-y-tarifas/"}
+    price: {amount: 13, kind: entry, quote: "Entrada general: 13,00 € ONLINE / 14,00 € TAQUILLAS; reduced 7,00 € / 8,00 € (over 65, students up to 25); free Sunday access 'según agenda litúrgica'; tariffs from 1 Jan 2026", source: "https://www.catedraldesevilla.es/visita-cultural/horarios-y-tarifas/"}
+    facet: {booking: {value: "online recommended ('Le recomendamos la compra de sus entradas ONLINE'); limited capacity", source: "https://www.catedraldesevilla.es/visita-cultural/horarios-y-tarifas/"}}
+    notices:   # the notice prints no year; the page is (c) 2026 and its tariffs date from 1 Jan 2026
+      - {what: "Only the Giralda climb and the Fons Pietatis exhibition (Congreso Internacional de Hermandades)", from: "2026-12-04", to: "2026-12-07", source: "https://www.catedraldesevilla.es/visita-cultural/horarios-y-tarifas/"}
+      - {what: "Closed to the cultural visit", from: "2026-12-08", to: "2026-12-08", source: "https://www.catedraldesevilla.es/visita-cultural/horarios-y-tarifas/"}
+    minutes: [75, 120]
+    setting: indoor
+    features: {history_culture: 2, awe: 2, iconic: 2, photo_potential: 1, walking_effort: 1, crowds: 2}
+  bellas_artes:
+    name: Museo de Bellas Artes de Sevilla
+    title: "Murillo and Zurbarán in a former convent"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 37.39265, lon: -6.00013, source: "wikidata:Q2163496"}
+    district: {value: "Casco Antiguo", source: "https://visitasevilla.es/museo-de-bellas-artes/ ('Plaza del Museo, 9, Casco Antiguo, 41001 Sevilla')"}
+    hours: {text: "Tue-Sat 09:00-21:00; Sundays and holidays 09:00-15:00; closed Mondays; August Tue-Sun 09:00-15:00", parse: "Tue-Sat 09:00-21:00; Sun 09:00-15:00", source: "https://visitasevilla.es/museo-de-bellas-artes/"}
+    step_free: {value: yes, quote: "Dispone de rampas, ascensores, aseos adaptados y zonas de descanso, permitiendo un acceso cómodo en silla de ruedas", source: "https://visitasevilla.es/museo-de-bellas-artes/"}
+    minutes: [60, 120]
+    setting: indoor
+    features: {history_culture: 2, absorption: 1, crowds: 0}
+  pilatos:
+    name: Casa de Pilatos
+    title: "Tiles, patios and gardens in a Seville palace"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 37.39024, lon: -5.98725, source: "osm:relation/2912100 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "postcode 41003 on the official page"}
+    hours: {text: "Every day 09:00-18:00", parse: "Daily 09:00-18:00", source: "https://fundacionmedinaceli.org/monumentos/casa-de-pilatos/"}
+    price: {amount: 12, kind: entry, quote: "Planta Principal 12 €; Planta alta 6 €; children up to 11 free with an adult; guide or audioguide included", source: "https://fundacionmedinaceli.org/monumentos/casa-de-pilatos/"}
+    minutes: [60, 90]
+    setting: mixed
+    features: {history_culture: 2, photo_potential: 2, green_nature: 1, awe: 1, crowds: 1}
+  duenas:
+    name: Palacio de las Dueñas
+    title: "The Alba family's palace and its orange-tree patios"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 37.39538, lon: -5.98941, source: "osm:way/37532394 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "postcode 41003 on the official page"}
+    hours: {text: "Winter (October-March) 10:00-18:00, access and box office close 17:15; summer (April-September) 10:00-19:00; closed 1 and 6 Jan and 25 Dec; may close in winds over 50 km/h", parse: "Daily 10:00-18:00", source: "https://lasduenas.es/info-al-visitante"}
+    price: {amount: 15, kind: entry, quote: "Entrada general: 15 €; reducida 11 €; Monday afternoons from 16:00 free (0 € plus 1 € booking fee), reserved online", source: "https://lasduenas.es/info-al-visitante"}
+    notices:
+      - {what: "May close fully or partly on days with wind over 50 km/h", from: null, to: null, source: "https://lasduenas.es/info-al-visitante"}
+    minutes: [60, 90]
+    setting: mixed
+    features: {history_culture: 2, green_nature: 1, photo_potential: 2, awe: 1, crowds: 1}
+  lebrija:
+    name: Palacio de la Condesa de Lebrija
+    title: "A palace floored with Roman mosaics"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 37.39215, lon: -5.9937, source: "osm:relation/6378993 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Alfalfa, Casco Antiguo)"}
+    hours: {text: "Open every day; September-June 10:00-18:00, July-August 10:00-15:00; last entry 45 minutes before closing", parse: "Daily 10:00-18:00", source: "https://palaciodelebrija.com/visita-cultural/"}
+    price: {amount: 15, kind: entry, quote: "Adultos 15 €; children 6-12 6 €; free pass Fridays at 10:00, ground floor, no booking, limited capacity", source: "https://palaciodelebrija.com/visita-cultural/"}
+    minutes: [45, 75]
+    setting: indoor
+    features: {history_culture: 2, photo_potential: 1, local_novel: 1, crowds: 0}
+  baile_flamenco:
+    name: Museo del Baile Flamenco
+    title: "Flamenco's story over four floors, with an evening show"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 37.38889, lon: -5.99111, source: "wikidata:Q2486431"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "postcode 41004 on the official page"}
+    hours: {text: "10:00-18:45, last entry 18:00; the first Monday of each month opens at 14:30; shows at 17:00, 19:00 and 20:45", parse: "Daily 10:00-18:45", source: "https://www.museodelbaileflamenco.com/"}
+    price: {amount: 6, kind: entry, quote: "Entrada general 6 €; show 'Puro Flamenco' adults 29 €; museum + show 33 €", source: "https://www.museodelbaileflamenco.com/"}
+    step_free: {value: yes, quote: "Museo 100% accesible para sillas de rueda o movilidad reducida en sus cuatro plantas a través de ascensor", source: "https://www.museodelbaileflamenco.com/accesibilidad/"}
+    minutes: [45, 120]
+    setting: indoor
+    features: {history_culture: 2, absorption: 1, local_novel: 2, social_pull: 1}
+  caac:
+    name: Centro Andaluz de Arte Contemporáneo (CAAC)
+    title: "Contemporary art in a monastery on La Cartuja"
+    category: culture
+    type: arts_centre
+    status: ready
+    point: {lat: 37.39807, lon: -6.00773, source: "osm:relation/1650453 (Nominatim)"}
+    district: {value: "Triana", trust: estimated, source: "osm (Triana)"}
+    hours: {text: "Tue-Sat 10:00-20:00; Sundays and holidays 10:00-15:30; closed Mondays and 1, 6 Jan, 3 Apr, 1 May, 15 Aug, 24, 25, 31 Dec (2026)", parse: "Tue-Sat 10:00-20:00; Sun 10:00-15:30", source: "http://www.caac.es/horarios/"}
+    price: {amount: 3.01, kind: entry, quote: "Visita completa 3,01 €; monument or temporary exhibitions 1,80 €; free Tue-Fri 18:00-20:00 and Saturdays", source: "http://www.caac.es/horarios/"}
+    notices:
+      - {what: "Closed", from: "2026-12-24", to: "2026-12-25", source: "http://www.caac.es/horarios/"}
+      - {what: "Closed", from: "2026-12-31", to: "2026-12-31", source: "http://www.caac.es/horarios/"}
+    minutes: [60, 120]
+    setting: mixed
+    features: {history_culture: 1, absorption: 1, local_novel: 2, green_nature: 1, crowds: 0}
+  archivo_indias:
+    name: Archivo General de Indias
+    title: "The archive of Spain's empire in the old exchange"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 37.38471, lon: -5.99304, source: "osm:way/18536017 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Santa Cruz, Casco Antiguo)"}
+    hours: {text: "Tue-Sat 09:30-17:00; Sundays and holidays 10:00-14:00; closed Mondays; last entry 30 minutes before closing (the city's June 2025 leaflet)", parse: "Tue-Sat 09:30-17:00; Sun 10:00-14:00", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", checked: "2025-06-27"}
+    price: {amount: 0, kind: free, quote: "Precios: Gratis (the city's June 2025 leaflet)", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", status: claimed}
+    minutes: [30, 60]
+    setting: indoor
+    features: {history_culture: 2, local_novel: 1, crowds: 0}
+  artes_costumbres:
+    name: Museo de Artes y Costumbres Populares
+    title: "Andalusian crafts and costume in a 1929 pavilion"
+    category: culture
+    type: museum
+    status: ready
+    point: {lat: 37.37217, lon: -5.98787, source: "osm:way/35781525 (Nominatim)"}
+    district: {value: "El Prado-Parque de María Luisa", trust: estimated, source: "osm"}
+    hours: {text: "Tue-Sat 09:00-21:00; Sundays and holidays 09:00-15:00; closed Mondays; summer (16 Jun-15 Sep) Tue-Sun 09:00-15:00 (the city's June 2025 leaflet)", parse: "Tue-Sat 09:00-21:00; Sun 09:00-15:00", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", checked: "2025-06-27"}
+    price: {amount: 1.5, kind: entry, quote: "General: 1,50 €; free for accredited EU citizens and students (the city's June 2025 leaflet)", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", status: claimed}
+    minutes: [45, 75]
+    setting: indoor
+    features: {history_culture: 2, local_novel: 1, crowds: 0}
+  plaza_espana:
+    name: Plaza de España
+    title: "The 1929 Plaza de España, its canal and tiled alcoves"
+    category: culture
+    type: historic_site
+    status: ready
+    point: {lat: 37.3769, lon: -5.98565, source: "osm:relation/4468922 (Nominatim)"}
+    district: {value: "El Prado-Parque de María Luisa", trust: estimated, source: "osm"}
+    hours: {text: "Winter (November-March) 08:00-22:00; summer (April-October) 08:00-24:00 (the city's June 2025 leaflet)", parse: "Daily 08:00-22:00", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", checked: "2025-06-27"}
+    price: {amount: 0, kind: free, quote: "Precios: Gratis", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", status: claimed}
+    notices:
+      - {what: "If María Luisa Park closes for the weather, the plaza is reached from Avenida de Portugal by the Aragón and Navarra gates: 'Este acceso no es accesible en silla de ruedas'", from: null, to: null, source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf"}
+    minutes: [30, 75]
+    setting: outdoor
+    features: {history_culture: 1, awe: 2, iconic: 2, photo_potential: 2, crowds: 2, outdoor_exposure: 2}
+  setas:
+    name: Setas de Sevilla (Metropol Parasol)
+    title: "Walk the wooden canopy's rooftop path at dusk"
+    category: views
+    type: viewpoint
+    status: ready
+    point: {lat: 37.39312, lon: -5.99185, source: "osm:way/138602581 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Encarnación-Regina, Casco Antiguo)"}
+    hours: {text: "Open daily from 09:30; in winter it closes at 00:00 (summer 01:00); last admission 30 minutes before closing. The Aurora light show starts about 18:00 in winter", parse: "Daily 09:30-24:00", source: "https://setasdesevilla.com/en/planifica-tu-visita", status: seasonal}
+    price: {amount: 16, kind: entry, quote: "General: from 16 €; reduced from 13 €; free for people born or registered in Seville and children 0-5", source: "https://setasdesevilla.com/en/experiencia-general"}
+    step_free: {value: yes, quote: "We have two accessible elevators.", source: "https://setasdesevilla.com/en/planifica-tu-visita"}
+    notices:
+      - {what: "The two pages disagree on cancellation (24 hours, or 2 hours, before the visit)", from: null, to: null, source: "https://setasdesevilla.com/en/planifica-tu-visita"}
+    minutes: [60, 90]
+    setting: outdoor
+    features: {movement_views: 2, photo_potential: 2, awe: 1, iconic: 1, outdoor_exposure: 1}
+  parque_maria_luisa:
+    name: Parque de María Luisa
+    title: "Shade, fountains and pavilions in María Luisa Park"
+    category: nature
+    type: park
+    status: ready
+    point: {lat: 37.37574, lon: -5.98889, source: "wikidata:Q2627907"}
+    district: {value: "El Prado-Parque de María Luisa", trust: estimated, source: "osm"}
+    hours: {text: "Every day 08:00-24:00 ('todos los días de 8:00 a 24:oo horas')", parse: "Daily 08:00-24:00", source: "https://visitasevilla.es/parque-de-maria-luisa/"}
+    price: {amount: 0, kind: free, quote: "public park; no entry charge stated on the city's page", source: "https://visitasevilla.es/parque-de-maria-luisa/", status: claimed}
+    minutes: [45, 120]
+    setting: outdoor
+    features: {green_nature: 2, walking_effort: 1, photo_potential: 1, outdoor_exposure: 2}
+  triana:
+    name: Barrio de Triana
+    title: "Across the bridge to Triana's streets and ceramics"
+    category: neighbourhood
+    type: area_walk
+    status: ready
+    point: {lat: 37.3854, lon: -6.00307, source: "osm:way/31290846 (Plaza del Altozano, Nominatim)"}
+    district: {value: "Triana", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf ('Barrio de Triana')"}
+    hours: {text: "Public streets. The neighbours' patios are private: 'no todos son visitables, se pueden admirar desde fuera'", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", status: general, checked: "2025-06-27"}
+    price: {amount: 0, kind: free, quote: "Precios: Gratis", source: "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf", status: claimed}
+    facet: {}
+    minutes: [60, 120]
+    setting: outdoor
+    features: {local_novel: 2, walking_effort: 1, food: 1, photo_potential: 1, social_pull: 1, outdoor_exposure: 2}
+  # ---- food and drink: markets are places to buy and eat, not one business; their hours are the market's, and the
+  # ---- stalls and bars inside keep their own (stated as varying). A market is never treated as a restaurant.
+  mercado_triana:
+    name: Mercado de Triana
+    title: "Triana's market by the bridge: stalls, tapas bars and a cookery school"
+    category: food_drink
+    type: market
+    status: ready
+    point: {lat: 37.38575, lon: -6.00355, source: "osm:way/696646033 (Nominatim)"}
+    district: {value: "Triana", trust: estimated, source: "postcode 41010 on the official page"}
+    hours: {text: "Mon-Sat 09:00-15:00 (the stalls); some stalls open on other days and hours; bars and the cookery class keep their own hours, not stated", parse: "Mon-Sat 09:00-15:00", source: "https://www.mercadosdesevilla.es/es-ES/triana/comercios"}
+    facet: {meals: {value: "market stalls, tapas bars and a cookery class ('Clase de cocina') inside", source: "https://www.mercadosdesevilla.es/es-ES/triana/comercios"}}
+    notices:
+      - {what: "Stall hours vary: 'algunos abren días y horas diferentes'", from: null, to: null, source: "https://www.mercadosdesevilla.es/es-ES/triana/comercios"}
+    minutes: [45, 90]
+    setting: indoor
+    features: {food: 2, local_novel: 2, crowds: 1, social_pull: 1}
+  mercado_feria:
+    name: Mercado de Feria
+    title: "The old Calle Feria market and its bars"
+    category: food_drink
+    type: market
+    status: ready
+    point: {lat: 37.39938, lon: -5.99129, source: "osm:node/2417049313 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Feria, Casco Antiguo)"}
+    hours: {text: "Mon-Sat 08:00-15:00 (stalls); the bars inside ('El Cafelito del Mercado', 'Jaleo Guadalquibeer & Tapas', 'La Cantina de Feria') keep their own hours, not stated", parse: "Mon-Sat 08:00-15:00", source: "https://www.mercadosdesevilla.es/es-ES/feria/comercios"}
+    minutes: [30, 75]
+    setting: indoor
+    features: {food: 2, local_novel: 2, social_pull: 1}
+  mercado_encarnacion:
+    name: Mercado de la Encarnación
+    title: "The market under the Setas, for a morning snack"
+    category: food_drink
+    type: market
+    status: ready
+    point: {lat: 37.3938, lon: -5.99165, source: "osm:node/9786440710 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Encarnación-Regina, Casco Antiguo)"}
+    hours: {text: "Mon-Sat 08:00-15:00", parse: "Mon-Sat 08:00-15:00", source: "https://www.mercadosdesevilla.es/es-ES/encarnacion/comercios"}
+    minutes: [30, 60]
+    setting: indoor
+    features: {food: 2, local_novel: 1}
+  mercado_arenal:
+    name: Mercado del Arenal
+    title: "A working 1947 market in El Arenal"
+    category: food_drink
+    type: market
+    status: ready
+    point: {lat: 37.38745, lon: -5.99913, source: "osm:way/444302003 (Calle Pastor y Landero, Nominatim)"}
+    district: {value: "Casco Antiguo", source: "https://www.mercadosdesevilla.es/es-ES/del-arenal/comercios ('C. Pastor y Landero, 4, Casco Antiguo')"}
+    hours: {text: "Mon-Fri 09:00-15:00 and 17:30-20:30; Sat 09:00-15:00", parse: "Mon-Fri 09:00-15:00, 17:30-20:30; Sat 09:00-15:00", source: "https://www.mercadosdesevilla.es/es-ES/del-arenal/comercios"}
+    minutes: [30, 60]
+    setting: indoor
+    features: {food: 2, local_novel: 2}
+  arte_y_sabor:
+    # The venue's own words, kept as a comment only (no dietary data, m224): "Ofrecemos platos españoles, marroquíes y de
+    # fusión internacional, con opciones veganas y vegetarianas" and "Menú adaptado a vegetarianos, veganos y personas
+    # con intolerancias alimentarias" (https://www.arteysabor.es/). Not verified; never used to filter or rank.
+    name: Arte y Sabor
+    title: "Spanish, Moroccan and fusion plates on the Alameda"
+    category: food_drink
+    type: restaurant
+    status: ready
+    point: {lat: 37.3979, lon: -5.99342, source: "osm:way/546426700 (the official address, Nominatim)"}
+    district: {value: "Casco Antiguo", source: "https://www.arteysabor.es/ ('Alameda de Hércules 85, Casco Antiguo, 41002 Sevilla')"}
+    hours: {text: "Every day 13:30-23:30 ('Todos los días - 13:30 a 23:30', printed with the Alameda restaurant)", parse: "Daily 13:30-23:30", source: "https://www.arteysabor.es/"}
+    facet:
+      cuisine: {value: "Spanish, Moroccan and international fusion (the venue's own words)", source: "https://www.arteysabor.es/"}
+      reservations: {value: "taken (online form; groups over 10 by phone or WhatsApp)", source: "https://www.arteysabor.es/reservas/"}
+    minutes: [60, 90]
+    setting: mixed
+    features: {food: 2, local_novel: 1, social_pull: 1}
+  casa_robles:
+    name: Casa Robles
+    title: "A classic Andalusian restaurant by the cathedral"
+    category: food_drink
+    type: restaurant
+    status: ready
+    point: {lat: 37.3871, lon: -5.99314, source: "osm:node/1314903580 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Santa Cruz, Casco Antiguo)"}
+    hours: {text: "Monday to Sunday 12:30-24:00", parse: "Daily 12:30-24:00", source: "https://www.casarobles.es/"}
+    facet:
+      reservations: {value: "taken; cancelling under 8 hours ahead or not showing: 20 € per person", source: "https://www.casarobles.es/"}
+    minutes: [75, 120]
+    setting: indoor
+    features: {food: 2, history_culture: 1, social_pull: 1}
+  # ---- drafts: never recommended until their hours (or a conflict) are settled from an official page
+  el_rinconcillo:
+    name: El Rinconcillo
+    title: "Tapas at the bar the house calls Seville's oldest"
+    category: food_drink
+    type: bar
+    status: draft
+    point: {lat: 37.39334, lon: -5.98829, source: "osm:node/747665815 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (Encarnación-Regina, Casco Antiguo)"}
+    facet: {reservations: {value: "restaurant only, not the tapas area", source: "https://www.elrinconcillo.es/contacto/"}}
+    minutes: [45, 75]
+    setting: indoor
+    features: {food: 2, history_culture: 1, local_novel: 1, crowds: 2, social_pull: 2}
+  eslava:
+    name: Espacio Eslava
+    title: "Modern tapas in San Lorenzo"
+    category: food_drink
+    type: restaurant
+    status: draft
+    point: {lat: 37.39755, lon: -5.99692, source: "osm:node/308970120 (Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "osm (San Lorenzo, Casco Antiguo)"}
+    minutes: [60, 90]
+    setting: indoor
+    features: {food: 2, local_novel: 1, crowds: 2, social_pull: 1}
+  antonio_romero:
+    name: Bodeguitas Antonio Romero (Origen)
+    title: "Montaditos at a family tapas bar in El Arenal"
+    category: food_drink
+    type: bar
+    status: draft
+    point: {lat: 37.38563, lon: -5.99722, source: "osm:way/411700377 (the official address, Nominatim)"}
+    district: {value: "Casco Antiguo", trust: estimated, source: "postcode 41001 on the official page"}
+    price: {amount: 4.2, kind: food, quote: "Montaditos: Pringá 4,20 €; Tortilla 2,60 €; Solomillo de Vaca (220 g) 24,00 € (the menu)", source: "https://www.bodeguitasantonioromero.com/carta/", status: claimed}
+    minutes: [45, 75]
+    setting: indoor
+    features: {food: 2, local_novel: 1, crowds: 1, social_pull: 1}

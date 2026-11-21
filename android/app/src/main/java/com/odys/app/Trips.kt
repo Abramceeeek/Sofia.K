@@ -557,7 +557,7 @@ fun TripCreateFlow(model: AppModel) {
             androidx.compose.runtime.key(step) {
                 Column(Modifier.settle(0), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     when (step) {
-                        0 -> WhereStep()
+                        0 -> WhereStep(model)
                         1 -> WhenStep(trip) { trip = it }
                         2 -> FromStep(trip, { trip = it }) { showAirports = true }
                         3 -> DaysStep(trip) { trip = it }
@@ -578,7 +578,7 @@ fun TripCreateFlow(model: AppModel) {
 }
 
 @Composable
-fun WhereStep() {
+fun WhereStep(model: AppModel) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         PageTitle("Where are you going?")
         Row(Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(16.dp)).background(Theme.surface)
@@ -590,6 +590,7 @@ fun WhereStep() {
         Text("In this test", style = Theme.subheadline.copy(color = Theme.muted), modifier = Modifier.padding(top = 6.dp))
         // D120: London now, then UK cities, then Europe, then further (Abram, 6 Oct)
         CityLine("London", "Ready to test", true)
+        PreviewCityLines(model)                                       // m320: a preview opens its places, not a trip
         CityLine("Edinburgh, Manchester and the UK", "Coming next", false)
         CityLine("Paris, Rome and Europe", "Coming later", false)
     }
@@ -1510,6 +1511,7 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         model.loadSafety()
+        model.loadPreviews()
         if (model.learned == null) model.learned = runCatching { model.client.summary() }.getOrNull()
     }
     ScrollPage(spacing = 18, top = if (onBack == null) 30 else 8, bottom = 40) {
@@ -1550,6 +1552,7 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (()
                 Hairline()
             }
         }
+        PreviewSection(model)                                         // m320: previews opened with a code
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {   // D130 (Daylight)
             SectionLabel("The light")
             Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.surface).padding(3.dp)) {

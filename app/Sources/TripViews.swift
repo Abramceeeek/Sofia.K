@@ -817,6 +817,7 @@ struct WhereStep: View {
             Text("In this test").font(.subheadline).foregroundStyle(Theme.muted).padding(.top, 6)
             // D120: London now, then UK cities, then Europe, then further (Abram, 6 Oct)
             CityLine(name: "London", note: "Ready to test", ready: true)
+            PreviewCityLines()                              // m320: a preview opens its places, not a trip
             CityLine(name: "Edinburgh, Manchester and the UK", note: "Coming next", ready: false)
             CityLine(name: "Paris, Rome and Europe", note: "Coming later", ready: false)
         }
@@ -2331,6 +2332,7 @@ struct YouView: View {
                         }
                     }
                 }
+                PreviewSection()                             // m320: previews opened with a code
                 VStack(alignment: .leading, spacing: 10) {   // D130 (Daylight)
                     SectionLabel(text: "The light")
                     HStack(spacing: 0) {
@@ -2366,6 +2368,7 @@ struct YouView: View {
         .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
         .task {
             await model.loadSafety()
+            await model.loadPreviews()
             if model.learned == nil { model.learned = try? await model.client.summary() }
         }
     }

@@ -294,6 +294,11 @@ final class BrainClient {
         return data
     }
 
+    /// m320: the preview calls (PreviewViews.swift), which send their own body.
+    func callPreview<Out: Decodable>(_ method: String, _ path: String, _ body: Data?) async throws -> Out {
+        try Self.decoder.decode(Out.self, from: try await raw(method, path, body))
+    }
+
     static func bundled<T: Decodable>(_ name: String) throws -> T {
         guard let url = Bundle.main.url(forResource: name, withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)

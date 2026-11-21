@@ -23,7 +23,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, daybudget, dayplan, db, explain, food, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+from . import (backup, daybudget, dayplan, db, explain, food, fx, notify, ops, preview, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -34,6 +34,7 @@ from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
+                      PreviewCodeIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
                       ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StayCompareIn, StaySearchIn, SurveyIn, SwipesIn,
                       TripDaysIn,
@@ -475,7 +476,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if body.foods_avoided is not None:   # m251, m257: an old app sent the retired field. Only an aggregate count
             app.state.retired_food_saves = getattr(app.state, "retired_food_saves", 0) + 1   # is kept: no log line,
             # no user, no value (Abram, m252: "Prefer an aggregate counter or privacy-preserving metric")
-        for key in ("based", "home_city"):   # D116: a later save without them keeps them (the Test B cohort)
+        for key in ("based", "home_city", "previews"):   # D116: a later save without them keeps them (the Test B
+            # cohort); m320: and the previews this install opened with a code
             if key not in new and key in (user.profile or {}):
                 new[key] = user.profile[key]
         user.profile = new
@@ -507,6 +509,37 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """D117: shown before the first plan, with "Looks right" and "Change something". No scores."""
         text = app.state.onboarding.get("summary") or {}
         return {**text, "items": learned(user)}
+
+    # ---- m320: development destinations shown read-only to installs that typed the preview's code ----------------
+
+    def _previews(user: db.User) -> list[preview.Preview]:
+        have = set((user.profile or {}).get("previews", []))
+        return [pv for k, pv in preview.load_previews().items() if k in have]
+
+    @app.get("/v1/me/previews")
+    def get_previews(user: db.User = Depends(current_user)):
+        return {"previews": [preview.info(pv) for pv in _previews(user)]}
+
+    @app.post("/v1/me/previews")
+    def post_preview(body: PreviewCodeIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """The code typed on the You screen. A code that opens nothing says so, and nothing is stored."""
+        pv = preview.by_code(_tester_code(body.code))
+        if pv is None:
+            raise HTTPException(404, "That code doesn't open a preview.")
+        prof = dict(user.profile or {})
+        if pv.key not in prof.get("previews", []):
+            prof["previews"] = [*prof.get("previews", []), pv.key]
+            user.profile = prof
+            s.add(db.Event(user_id=user.id, name="preview_opened", props={"preview": pv.key}))
+            s.commit()
+        return {"previews": [preview.info(x) for x in _previews(user)]}
+
+    @app.get("/v1/me/previews/{key}")
+    def get_preview(key: str, user: db.User = Depends(current_user)):
+        pv = next((x for x in _previews(user) if x.key == key), None)
+        if pv is None:
+            raise HTTPException(404, "That preview isn't open on this phone.")
+        return preview.content(pv)
 
     @app.post("/v1/me/corrections", status_code=204)
     def post_corrections(body: CorrectionsIn, user: db.User = Depends(current_user), s: Session = Depends(session),

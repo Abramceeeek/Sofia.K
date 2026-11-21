@@ -165,6 +165,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var showPair by mutableStateOf(false)
     var ratedOnce by mutableStateOf(prefs.bool("ratedOnce"))
     var safetyThreads by mutableStateOf<List<SafetyThread>>(emptyList())
+    var previews by mutableStateOf<List<PreviewInfo>>(emptyList())   // m320: places shown read-only, opened with a code
+    var previewDemo: PreviewContent? = null   // screenshots only: the preview drawn without a server
     var remindersOn by mutableStateOf(prefs.bool("remindersOn"))
     var reminderAsked by mutableStateOf(prefs.bool("reminderAsked"))
     var showNow by mutableStateOf(false)
@@ -753,6 +755,25 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     // ---- D118: Help & safety replies ------------------------------------------------------------------------
 
+    /** m320: the previews this phone opened with a code (kept on the Brain, so they come back after a restart). */
+    suspend fun loadPreviews() {
+        runCatching { client.previews() }.getOrNull()?.let { previews = it.previews }
+    }
+
+    /** m320: a preview code from You. Null when it opened; otherwise what to say. */
+    suspend fun openPreview(code: String): String? {
+        val typed = code.trim().take(40)
+        if (typed.isEmpty()) return null
+        return try {
+            previews = client.openPreview(typed).previews
+            null
+        } catch (e: BrainError) {
+            if (e.code == 404) "That code doesn't open a preview." else e.message
+        } catch (e: Exception) {
+            "The code couldn't be checked just now. Check your signal, then try again."
+        }
+    }
+
     suspend fun loadSafety() {
         if (!prefs.bool("safetySent")) return
         runCatching { client.mySafety() }.getOrNull()?.let { safetyThreads = it }
@@ -845,6 +866,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         remindersOn = false
         reminderAsked = false
         safetyThreads = emptyList()
+        previews = emptyList()
         tripPath.clear()
         bookPath.clear()
         trips = emptyList()

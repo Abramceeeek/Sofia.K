@@ -97,6 +97,7 @@ final class AppModel {
     var showPair = false                   // the pair for someone who already had a plan (e.g. an older build)
     var ratedOnce = UserDefaults.standard.bool(forKey: "ratedOnce")   // D118: 12a waits until the first rating
     var safetyThreads: [SafetyThread] = [] // D118: Help & safety messages and the replies to them
+    var previews: [PreviewInfo] = []       // m320: places shown read-only to this phone, opened with a code
     var remindersOn = UserDefaults.standard.bool(forKey: "remindersOn")
     var reminderAsked = UserDefaults.standard.bool(forKey: "reminderAsked")
     var showNow = false                    // D119: "Now", the quiet screen while you're out
@@ -825,6 +826,25 @@ final class AppModel {
         if let threads = try? await client.mySafety() { safetyThreads = threads }
     }
 
+    /// m320: the previews this phone opened with a code (kept on the Brain, so they come back after a restart).
+    func loadPreviews() async {
+        if let list = try? await client.previews() { previews = list.previews }
+    }
+
+    /// m320: a preview code from You. Nil when it opened; otherwise what to say.
+    func openPreview(code: String) async -> String? {
+        let typed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !typed.isEmpty else { return nil }
+        do {
+            previews = try await client.openPreview(code: String(typed.prefix(40))).previews
+            return nil
+        } catch BrainError.status(404) {
+            return "That code doesn't open a preview."
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
     /// A reply newer than the last time Help & safety was opened.
     var unreadSafety: Bool {
         let seen = UserDefaults.standard.string(forKey: "safetySeen") ?? ""
@@ -945,6 +965,7 @@ final class AppModel {
         self.remindersOn = false
         self.reminderAsked = false
         self.safetyThreads = []
+        self.previews = []
         self.path = NavigationPath()
         AppModel.cache(nil as [Trip]?, "trips.json")
         self.trips = []
