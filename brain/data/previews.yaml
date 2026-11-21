@@ -1,0 +1,12 @@
+# m320 (Abram, 21 Nov: "Seville in the app, me only"). A development destination shown read-only, as a list of places
+# with their opening days, to an install that types the preview's code on the You screen. Nothing is planned, booked
+# or searched for it: no trip days, flights or stays (its readiness is Development, readiness.py).
+# A code names the preview, never a person. Like the tester codes, codes aren't secret; they keep the preview out of
+# everyone else's way. Codes are matched in capitals, with spaces turned into hyphens.
+previews:
+  seville:
+    code: ODYS-SEVILLE
+    dev: seville                  # data/dev/seville.yaml
+    name: Seville
+    country: ES                   # the emergency numbers (emergency.yaml)
+    country_name: Spain
