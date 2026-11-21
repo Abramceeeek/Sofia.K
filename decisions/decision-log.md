@@ -2,6 +2,13 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-21 — Why food never appears in London trips, and the expansion playbook (proposed)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m321 (awaiting Abram) | **Food places never appear in London trips. The cause is the lunch rule, not the data.**<br>• The six ready London food cards are in every plan's pool. But the population's `food` weight is 0 (no evidence yet), and the cost weight is −0.25 per £10. So every food place is predicted below a free sight: Beigel Bake −0.39, Borough Market −0.78, the steakhouse −1.70; free places 0.00.<br>• **A food place can be the day's lunch only if predicted at +0.5 or more** (`LUNCH_CARD_MIN`). The generic "lunch near X" slot is scored 0, although it costs £15 too. So a food place is compared with a lunch the model treats as free, and must beat it by 0.5.<br>• **Simulated 4-day London trips** (real data, the real routes, 21 Nov): **0 food places** for a person with no answers, for one with food as an interest who travels with friends, and for one who loved Borough Market. Lunch was always the generic slot.<br>• **Proposed fix (prototyped, not committed):** count a food place's price only above the ordinary lunch it replaces, and offer it when it's at least as good as that lunch. In the same simulation: **0 / 1 / 3 food places**, no duplicates; the person with no answers is unchanged.<br>• **It changes the round's plans** (the personal plan's lunch). Brain-only, with no app build. 2–3 h with tests. **Awaits Abram's decision** | D102's lunch rule (`LUNCH_CARD_MIN` 0.5) | Abram, 21 Nov: "I don't know why it is not showing in any London trip that I created" |
+| m322 (proposed) | **The city and country playbook** (`city-expansion-playbook.md`): three layers (Listed from open data, Checked from official pages, Moments); country, city, place and food checklists; the one-time engineering (E1–E7, about 35–55 h of Claude's work); per-city costs (Preview 6–8 h, Plannable 15–20 h); and why Google and Apple listings can't be stored (their terms), with sources read 21 Nov | — | Abram, 21 Nov: a checklist to add cities and countries, and how fast |
+
 ## 2026-11-21 — The Seville preview in the app (Abram: "Seville in the app, me only")
 
 | # | Decision | Replaces | Why |
