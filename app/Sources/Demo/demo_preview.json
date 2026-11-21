@@ -1,0 +1,577 @@
+{
+ "key": "seville",
+ "name": "Seville",
+ "country": "ES",
+ "country_name": "Spain",
+ "label": "Preview: not fully supported",
+ "emergency_number": "112",
+ "timezone": "Europe/Madrid",
+ "currency": "EUR",
+ "caveat": "This is a preview: ODYS doesn't plan days, journeys or bookings here yet. Please don't rely on it alone: check each place's own site on the day for hours, prices and bookings.",
+ "read": "2026-11-20",
+ "days": [
+  {
+   "date": "2026-11-22",
+   "label": "Sun 22"
+  },
+  {
+   "date": "2026-11-23",
+   "label": "Mon 23"
+  },
+  {
+   "date": "2026-11-24",
+   "label": "Tue 24"
+  },
+  {
+   "date": "2026-11-25",
+   "label": "Wed 25"
+  },
+  {
+   "date": "2026-11-26",
+   "label": "Thu 26"
+  },
+  {
+   "date": "2026-11-27",
+   "label": "Fri 27"
+  },
+  {
+   "date": "2026-11-28",
+   "label": "Sat 28"
+  }
+ ],
+ "emergency": {
+  "number": "112",
+  "line": "112: ambulance, fire and police. Free from landlines and mobiles.",
+  "source": "https://administracion.gob.es/en/tu-espacio-europeo/derechos-obligaciones/ciudadanos/asistencia-sanitaria/numeros-urgencia",
+  "checked": "2026-11-20"
+ },
+ "places": [
+  {
+   "id": "xp:es:seville:alcazar",
+   "name": "Real Alcázar de Sevilla",
+   "title": "Palace courtyards and gardens of the Royal Alcázar",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.38321,
+   "lon": -5.99018,
+   "hours": "1 Oct-31 Mar daily 09:30-17:00 (clearing from 17:45); 1 Apr-30 Sep 09:30-19:00; closed 1 and 6 Jan, Good Friday and 25 Dec",
+   "hours_source": "https://alcazarsevilla.org/prepara-la-visita/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "€15.50",
+   "access": "Step-free access not known",
+   "notices": [
+    "The shops are temporarily without service (reopening to be announced)"
+   ]
+  },
+  {
+   "id": "xp:es:seville:catedral",
+   "name": "Catedral de Sevilla y la Giralda",
+   "title": "The cathedral, then up the Giralda's ramps for the view",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.38591,
+   "lon": -5.99314,
+   "hours": "Mon-Sat 10:45-18:00 (box office closes 17:00); Sun 14:30-19:00 (box office closes 18:00); may change for services",
+   "hours_source": "https://www.catedraldesevilla.es/visita-cultural/horarios-y-tarifas/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "€13",
+   "access": "Step-free access not known",
+   "notices": [
+    "Only the Giralda climb and the Fons Pietatis exhibition (Congreso Internacional de Hermandades) (4 Dec 2026 to 7 Dec 2026)",
+    "Closed to the cultural visit (8 Dec 2026)"
+   ]
+  },
+  {
+   "id": "xp:es:seville:bellas-artes",
+   "name": "Museo de Bellas Artes de Sevilla",
+   "title": "Murillo and Zurbarán in a former convent",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.39265,
+   "lon": -6.00013,
+   "hours": "Tue-Sat 09:00-21:00; Sundays and holidays 09:00-15:00; closed Mondays; August Tue-Sun 09:00-15:00",
+   "hours_source": "https://visitasevilla.es/museo-de-bellas-artes/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "shut",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free (the venue says)",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:pilatos",
+   "name": "Casa de Pilatos",
+   "title": "Tiles, patios and gardens in a Seville palace",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.39024,
+   "lon": -5.98725,
+   "hours": "Every day 09:00-18:00",
+   "hours_source": "https://fundacionmedinaceli.org/monumentos/casa-de-pilatos/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "€12",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:duenas",
+   "name": "Palacio de las Dueñas",
+   "title": "The Alba family's palace and its orange-tree patios",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.39538,
+   "lon": -5.98941,
+   "hours": "Winter (October-March) 10:00-18:00, access and box office close 17:15; summer (April-September) 10:00-19:00; closed 1 and 6 Jan and 25 Dec; may close in winds over 50 km/h",
+   "hours_source": "https://lasduenas.es/info-al-visitante",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "€15",
+   "access": "Step-free access not known",
+   "notices": [
+    "May close fully or partly on days with wind over 50 km/h"
+   ]
+  },
+  {
+   "id": "xp:es:seville:lebrija",
+   "name": "Palacio de la Condesa de Lebrija",
+   "title": "A palace floored with Roman mosaics",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.39215,
+   "lon": -5.9937,
+   "hours": "Open every day; September-June 10:00-18:00, July-August 10:00-15:00; last entry 45 minutes before closing",
+   "hours_source": "https://palaciodelebrija.com/visita-cultural/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "€15",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:baile-flamenco",
+   "name": "Museo del Baile Flamenco",
+   "title": "Flamenco's story over four floors, with an evening show",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.38889,
+   "lon": -5.99111,
+   "hours": "10:00-18:45, last entry 18:00; the first Monday of each month opens at 14:30; shows at 17:00, 19:00 and 20:45",
+   "hours_source": "https://www.museodelbaileflamenco.com/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "€6",
+   "access": "Step-free (the venue says)",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:caac",
+   "name": "Centro Andaluz de Arte Contemporáneo (CAAC)",
+   "title": "Contemporary art in a monastery on La Cartuja",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Triana",
+   "lat": 37.39807,
+   "lon": -6.00773,
+   "hours": "Tue-Sat 10:00-20:00; Sundays and holidays 10:00-15:30; closed Mondays and 1, 6 Jan, 3 Apr, 1 May, 15 Aug, 24, 25, 31 Dec (2026)",
+   "hours_source": "http://www.caac.es/horarios/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "check",
+    "shut",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check"
+   ],
+   "price": "€3.01",
+   "access": "Step-free access not known",
+   "notices": [
+    "Closed (24 Dec 2026 to 25 Dec 2026)",
+    "Closed (31 Dec 2026)"
+   ]
+  },
+  {
+   "id": "xp:es:seville:archivo-indias",
+   "name": "Archivo General de Indias",
+   "title": "The archive of Spain's empire in the old exchange",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "Casco Antiguo",
+   "lat": 37.38471,
+   "lon": -5.99304,
+   "hours": "Tue-Sat 09:30-17:00; Sundays and holidays 10:00-14:00; closed Mondays; last entry 30 minutes before closing (the city's June 2025 leaflet)",
+   "hours_source": "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf",
+   "hours_read": "2025-06-27",
+   "states": [
+    "check",
+    "shut",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check"
+   ],
+   "price": "Free (as printed, not confirmed)",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:artes-costumbres",
+   "name": "Museo de Artes y Costumbres Populares",
+   "title": "Andalusian crafts and costume in a 1929 pavilion",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "El Prado-Parque de María Luisa",
+   "lat": 37.37217,
+   "lon": -5.98787,
+   "hours": "Tue-Sat 09:00-21:00; Sundays and holidays 09:00-15:00; closed Mondays; summer (16 Jun-15 Sep) Tue-Sun 09:00-15:00 (the city's June 2025 leaflet)",
+   "hours_source": "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf",
+   "hours_read": "2025-06-27",
+   "states": [
+    "check",
+    "shut",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check"
+   ],
+   "price": "€1.50 (as printed, not confirmed)",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:plaza-espana",
+   "name": "Plaza de España",
+   "title": "The 1929 Plaza de España, its canal and tiled alcoves",
+   "kind": "Museums and monuments",
+   "category": "culture",
+   "district": "El Prado-Parque de María Luisa",
+   "lat": 37.3769,
+   "lon": -5.98565,
+   "hours": "Winter (November-March) 08:00-22:00; summer (April-October) 08:00-24:00 (the city's June 2025 leaflet)",
+   "hours_source": "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf",
+   "hours_read": "2025-06-27",
+   "states": [
+    "check",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check"
+   ],
+   "price": "Free (as printed, not confirmed)",
+   "access": "Step-free access not known",
+   "notices": [
+    "If María Luisa Park closes for the weather, the plaza is reached from Avenida de Portugal by the Aragón and Navarra gates: 'Este acceso no es accesible en silla de ruedas'"
+   ]
+  },
+  {
+   "id": "xp:es:seville:setas",
+   "name": "Setas de Sevilla (Metropol Parasol)",
+   "title": "Walk the wooden canopy's rooftop path at dusk",
+   "kind": "Views",
+   "category": "views",
+   "district": "Casco Antiguo",
+   "lat": 37.39312,
+   "lon": -5.99185,
+   "hours": "Open daily from 09:30; in winter it closes at 00:00 (summer 01:00); last admission 30 minutes before closing. The Aurora light show starts about 18:00 in winter",
+   "hours_source": "https://setasdesevilla.com/en/planifica-tu-visita",
+   "hours_read": "2026-11-20",
+   "states": [
+    "check",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check"
+   ],
+   "price": "€16",
+   "access": "Step-free (the venue says)",
+   "notices": [
+    "The two pages disagree on cancellation (24 hours, or 2 hours, before the visit)"
+   ]
+  },
+  {
+   "id": "xp:es:seville:parque-maria-luisa",
+   "name": "Parque de María Luisa",
+   "title": "Shade, fountains and pavilions in María Luisa Park",
+   "kind": "Parks",
+   "category": "nature",
+   "district": "El Prado-Parque de María Luisa",
+   "lat": 37.37574,
+   "lon": -5.98889,
+   "hours": "Every day 08:00-24:00 ('todos los días de 8:00 a 24:oo horas')",
+   "hours_source": "https://visitasevilla.es/parque-de-maria-luisa/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Free (as printed, not confirmed)",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:triana",
+   "name": "Barrio de Triana",
+   "title": "Across the bridge to Triana's streets and ceramics",
+   "kind": "Areas to wander",
+   "category": "neighbourhood",
+   "district": "Triana",
+   "lat": 37.3854,
+   "lon": -6.00307,
+   "hours": "Public streets. The neighbours' patios are private: 'no todos son visitables, se pueden admirar desde fuera'",
+   "hours_source": "https://visitasevilla.es/wp-content/uploads/2025/06/Monumentos-ES-27062025.pdf",
+   "hours_read": "2025-06-27",
+   "states": [
+    "check",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check",
+    "check"
+   ],
+   "price": "Free (as printed, not confirmed)",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:mercado-triana",
+   "name": "Mercado de Triana",
+   "title": "Triana's market by the bridge: stalls, tapas bars and a cookery school",
+   "kind": "Markets and food",
+   "category": "food_drink",
+   "district": "Triana",
+   "lat": 37.38575,
+   "lon": -6.00355,
+   "hours": "Mon-Sat 09:00-15:00 (the stalls); some stalls open on other days and hours; bars and the cookery class keep their own hours, not stated",
+   "hours_source": "https://www.mercadosdesevilla.es/es-ES/triana/comercios",
+   "hours_read": "2026-11-20",
+   "states": [
+    "shut",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free access not known",
+   "notices": [
+    "Stall hours vary: 'algunos abren días y horas diferentes'"
+   ]
+  },
+  {
+   "id": "xp:es:seville:mercado-feria",
+   "name": "Mercado de Feria",
+   "title": "The old Calle Feria market and its bars",
+   "kind": "Markets and food",
+   "category": "food_drink",
+   "district": "Casco Antiguo",
+   "lat": 37.39938,
+   "lon": -5.99129,
+   "hours": "Mon-Sat 08:00-15:00 (stalls); the bars inside ('El Cafelito del Mercado', 'Jaleo Guadalquibeer & Tapas', 'La Cantina de Feria') keep their own hours, not stated",
+   "hours_source": "https://www.mercadosdesevilla.es/es-ES/feria/comercios",
+   "hours_read": "2026-11-20",
+   "states": [
+    "shut",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:mercado-encarnacion",
+   "name": "Mercado de la Encarnación",
+   "title": "The market under the Setas, for a morning snack",
+   "kind": "Markets and food",
+   "category": "food_drink",
+   "district": "Casco Antiguo",
+   "lat": 37.3938,
+   "lon": -5.99165,
+   "hours": "Mon-Sat 08:00-15:00",
+   "hours_source": "https://www.mercadosdesevilla.es/es-ES/encarnacion/comercios",
+   "hours_read": "2026-11-20",
+   "states": [
+    "shut",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:mercado-arenal",
+   "name": "Mercado del Arenal",
+   "title": "A working 1947 market in El Arenal",
+   "kind": "Markets and food",
+   "category": "food_drink",
+   "district": "Casco Antiguo",
+   "lat": 37.38745,
+   "lon": -5.99913,
+   "hours": "Mon-Fri 09:00-15:00 and 17:30-20:30; Sat 09:00-15:00",
+   "hours_source": "https://www.mercadosdesevilla.es/es-ES/del-arenal/comercios",
+   "hours_read": "2026-11-20",
+   "states": [
+    "shut",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:arte-y-sabor",
+   "name": "Arte y Sabor",
+   "title": "Spanish, Moroccan and fusion plates on the Alameda",
+   "kind": "Markets and food",
+   "category": "food_drink",
+   "district": "Casco Antiguo",
+   "lat": 37.3979,
+   "lon": -5.99342,
+   "hours": "Every day 13:30-23:30 ('Todos los días - 13:30 a 23:30', printed with the Alameda restaurant)",
+   "hours_source": "https://www.arteysabor.es/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free access not known",
+   "notices": []
+  },
+  {
+   "id": "xp:es:seville:casa-robles",
+   "name": "Casa Robles",
+   "title": "A classic Andalusian restaurant by the cathedral",
+   "kind": "Markets and food",
+   "category": "food_drink",
+   "district": "Casco Antiguo",
+   "lat": 37.3871,
+   "lon": -5.99314,
+   "hours": "Monday to Sunday 12:30-24:00",
+   "hours_source": "https://www.casarobles.es/",
+   "hours_read": "2026-11-20",
+   "states": [
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open",
+    "open"
+   ],
+   "price": "Price not printed",
+   "access": "Step-free access not known",
+   "notices": []
+  }
+ ],
+ "airport": [
+  "Bus: Línea EA 'Especial Aeropuerto' (TUSSAM). To Seville 4:30-00:05; to the airport 5:22-1:00. Single 6 €, return 8 €; card payment on board ('pagar directamente en el autobús mediante tarjeta bancaria')",
+  "Taxi: Fixed airport fares: 'Tarifa 4: 26 €' Mon-Fri 7:00-21:00; 'Tarifa 5: 29 €' other times, weekends and holidays; 0,57 € per bag over 10 kg (max four)"
+ ],
+ "airport_source": "https://www.aena.es/es/sevilla/como-llegar/autobus.html and https://www.aena.es/es/sevilla/como-llegar/taxi.html (Aena, the airport operator)",
+ "not_covered": [
+  "City buses, metro and journey times: the operators' pages couldn't be read, so none are given.",
+  "Weather: no forecast here. AEMET, Spain's weather service: https://www.aemet.es/es/eltiempo/prediccion/municipios/sevilla-id41091",
+  "Restaurant prices, step-free access at most places, and dietary information: not checked.",
+  "Seville's own local holidays: not included."
+ ]
+}

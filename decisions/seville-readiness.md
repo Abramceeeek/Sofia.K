@@ -1,5 +1,7 @@
 # Seville: a read-only readiness check (20 Nov 2026; m310)
 
+> **Later the same day (m318):** Seville became a development destination with 20 ready places (`brain/data/dev/seville.yaml`). It is still not offered, and still Development. See `food-and-seville-pilot-2026-11-20.md`.
+
 Abram's decision of 20 Nov, §10. His friend travels to Seville on 22 Nov. "Do not add unverified information or activate Seville just to meet the travel date. If Seville is not ready, state that clearly."
 
 ## The answer: Seville is not ready, and nothing was added or switched on

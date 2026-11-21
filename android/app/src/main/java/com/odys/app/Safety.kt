@@ -73,6 +73,7 @@ fun SafetyView(model: AppModel, prefill: String = "", sent: String? = null, onCl
     var showSettings by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         model.loadSafety()
+        model.loadPreviews()
         model.markSafetySeen()
     }
     FullSheet(model, onClose) {
@@ -86,6 +87,7 @@ fun SafetyView(model: AppModel, prefill: String = "", sent: String? = null, onCl
                     Text("Emergency", style = Theme.headline.copy(color = Theme.emergencyTitle))
                     Text("If you or someone else is in danger or hurt, call 999 now.", style = Theme.body.copy(color = Theme.emergencyText))
                     Pill("Call 999", PillKind.Danger, height = 54.dp, icon = Icons.Filled.Phone) { dial(context, "999") }
+                    PreviewEmergencyLines(model)   // m320: Spain's 112, on a phone with the Seville preview
                 }
                 // m191 (design review, 27 Oct): the red card says one thing, call 999; NHS 111 and Samaritans, for other
                 // needs, sit in a quieter card under it. The same help, each with one clear purpose.

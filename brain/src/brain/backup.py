@@ -268,6 +268,20 @@ def sealed_backup(engine: Engine, public_key_b64: str) -> tuple[bytes, dict[str,
     return seal(json.dumps(data, separators=(",", ":")).encode(), public_key_b64), counts
 
 
+def database_bytes(engine: Engine) -> int | None:
+    """A4 (Abram, 20 Nov): the database's size on disk, for the nightly storage warning. A number only, nothing from
+    any row. None if it can't be read: the backup matters more than the size."""
+    try:
+        with engine.connect() as c:
+            if engine.dialect.name == "postgresql":
+                return int(c.execute(text("select pg_database_size(current_database())")).scalar())
+            if engine.dialect.name == "sqlite":
+                return int(c.execute(text("pragma page_count")).scalar()) * int(c.execute(text("pragma page_size")).scalar())
+    except Exception:  # noqa: BLE001
+        return None
+    return None
+
+
 # ---- Abram's commands ------------------------------------------------------------------------------------------
 
 def _count_food(path: Path, key: str | None, after_restore: bool = False) -> int:

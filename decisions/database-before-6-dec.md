@@ -84,7 +84,7 @@ Save, and add a card if asked (Render checks it with a $1 charge it refunds). Re
 
 | Check | Who | Expected |
 |---|---|---|
-| `GET https://moments-brain.onrender.com/v1/health` | Claude | `"ok":true`, and `"version"` unchanged (`80a0da3`, or the approved privacy commit if `production-privacy-patch.md` went first) |
+| `GET https://moments-brain.onrender.com/v1/health` | Claude | `"ok":true`, and `"version"` unchanged by the upgrade (`80a0da3` until the new release is deployed, then its commit: `release-to-main.md`) |
 | A new sealed backup (`ops` → `backup`), then `python -m brain.backup preflight <new file> --key <key> --export <step 2's file>` | Abram | **PASS** on 1–3 and 5. Step 4's counts and digests equal step 3's |
 | One write | Abram | An install with the code `REHEARSAL`, a plan and a rating, then "Delete my data", so nothing is left |
 | The swipe page | Abram | `london-places-swipe….onrender.com` opens: it shares the database |

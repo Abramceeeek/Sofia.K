@@ -88,6 +88,7 @@ struct SafetyView: View {
             }
             .task {
                 await model.loadSafety()
+                await model.loadPreviews()
                 model.markSafetySeen()
             }
             .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
@@ -117,6 +118,7 @@ struct SafetyView: View {
                 Label("Call 999", systemImage: "phone.fill")
             }
             .buttonStyle(PillStyle(kind: .danger, height: 54))
+            PreviewEmergencyLines()                 // m320: Spain's 112, on a phone with the Seville preview
         }
         .padding(18)
         .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
@@ -414,6 +416,7 @@ struct DemoScreen: View {
         case "improve": ImproveView()                                           // 12a
         case "improveq": ImproveView(startAt: 0)                                // 12b (D115)
         case "safety": SafetyView()                                             // 13a
+        case "preview": PreviewView(key: "seville")                            // 34 (m320): the Seville preview
         case "safetysend": SafetyView(sent: Self.sentReply)                     // 13b: just sent
         case "safetyreply": SafetyView()                                        // 13c: a reply has come (D118)
         case "settings": SettingsView()                                         // 14a

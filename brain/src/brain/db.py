@@ -239,7 +239,8 @@ class TravelTime(Base):
 
 def make_engine(url: str):
     kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {}
-    engine = create_engine(url, **kwargs)
+    # A3 (Abram, 20 Nov): a failed write's error, which the server logs, never carries the values it was writing.
+    engine = create_engine(url, hide_parameters=True, **kwargs)
     if url.startswith("sqlite"):
         from sqlalchemy import event
 

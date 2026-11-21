@@ -1,4 +1,18 @@
-# The friends' round: one fixed version (m196, m197)
+# The friends' round: one fixed version (m196, m197; moved to the new build, m315; and again, m320)
+
+> **21 Nov (m320): the round moves again, to the release that adds the Seville preview.** Abram chose "Seville in the app, me only". The preview is read-only and opens only with the code `ODYS-SEVILLE`; without it, the app is the same as build 112.
+> - **The round's fixed version is now the merge commit of the 21 Nov release, and the TestFlight build it uploads.** Read "the new `main` commit" and "the new build number" below as those.
+> - **The rehearsal on build 112 has to be redone on the new build.** The tag goes on the new commit.
+> - No friend has been invited yet, so nothing is lost.
+
+> **20 Nov (m315): the round moves to the new `main`.** Abram chose to put everything on `main` (`decisions/release-to-main.md`). No friend had been invited, so nothing is lost.
+> - **The round's fixed version is the release's merge commit**, not `80a0da3`. TestFlight gets the build the merge uploads; Android stays unpublished until Abram's release key exists.
+> - **Everything below keeps its checks and order, with three changes:**
+>   - read "`80a0da3`" as **the new `main` commit**;
+>   - read "TestFlight 91" as **the new build number**;
+>   - Android is option B only, once the release key exists.
+> - **The tag goes on the new commit.** The commands below show where to put it.
+
 
 **Decision.** The friends' round is a controlled run of Test B: every tester uses the same app and Brain, recorded below, and nothing reaches `main` until the round ends: no code, no notes. This sheet lives on the work branch. Friends are a first usability group; the results are read as direction, not proof (D127).
 
@@ -77,7 +91,9 @@ git ls-remote origin main
 #   experiment was frozen at; condition 5 shows the merge changed nothing under app/ or android/)
 git ls-remote --tags origin friends-round-1
 #   expected: nothing (no tag yet). If a line appears, stop and tell Claude.
-git tag -a friends-round-1 80a0da3d117a1898deeb5a8913fea9f5914cb390 -m "The friends' round: code 80a0da3, TestFlight 91 (the manifest records the rest)"
+git tag -a friends-round-1 <the new main commit, in full> -m "The friends' round: code <short commit>, TestFlight <build> (the manifest records the rest)"
+#   m315: since the move to main (20 Nov), the round's commit is the release's merge commit, not 80a0da3.
+#   Claude fills in the exact commit and build number in the manifest before this step.
 #   if it says "already exists": git rev-parse "friends-round-1^{commit}" must print 80a0da3d117a…; anything else, stop
 git show friends-round-1 --no-patch
 #   expected: "tag friends-round-1", your name, the message, then "commit 80a0da3d117a1898deeb5a8913fea9f5914cb390"
@@ -93,11 +109,11 @@ Then tell Claude, and Claude checks it from here (read-only).
 
 | What | Value | How to check it during the round |
 |---|---|---|
-| Code (git commit on `main`) | `80a0da3` | `git ls-remote origin main` still gives `80a0da3…` |
-| Git tag | `friends-round-1` on `80a0da3` | `git ls-remote --tags origin friends-round-1`. **Abram pushes it** (this session can't push tags): see "Before the first invite" |
-| iPhone (TestFlight build) | `91` (iOS run #91, from `80a0da3`, uploaded 6 Nov) | TestFlight shows build 91 to testers |
+| Code (git commit on `main`) | **`ca6fd69`** (`ca6fd69b3317738db55c76502f1b52e3dbf89de7`), the release merge of 20 Nov (m315). Was `80a0da3` | `git ls-remote origin main` still gives `ca6fd69…` |
+| Git tag | `friends-round-1` on **`ca6fd69`** (after the rehearsal) | `git ls-remote --tags origin friends-round-1`. **Abram pushes it** (this session can't push tags): see "Before the first invite" |
+| iPhone (TestFlight build) | **`112`** (iOS run #112, attempt 3, from `ca6fd69`, uploaded 20 Nov 14:08 UTC). Attempts 1 and 2 were refused by Apple until Abram accepted the updated agreements. Was 91 | TestFlight shows build 112 to testers; external testers only once Abram adds it to the external group |
 | Android (APK) | **Not build 21:** it is signed with the public debug key (certificate `a07dae0c…cfb9`, checked 20 Nov). Option A: none (iPhone only). Option B: the re-signed release build of `80a0da3`, its SHA-256 and certificate recorded here | Under option B: `Get-FileHash` and `apksigner verify --print-certs` on the file friends get |
-| Brain (server) | `80a0da3`, live since 6 Nov 22:54 UTC (Render: branch `main`, Auto-Deploy off, Blueprint Auto Sync off). **To be recorded:** the 1 CPU change, and the privacy commit if approved | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"` (checked 6 Nov 22:54) |
+| Brain (server) | **`ca6fd69`, live since the release merge on 20 Nov** (~10:40 UTC; checked 16:39 UTC: `ok`, `version` `ca6fd69`). **Auto-Deploy turned out to be on** (Abram, 20 Nov: "I didn't deploy it, auto-deploy was on"), so Render deployed `main` on the merge, before the planned backup check. Nothing was lost: the new code only added the empty `deletions` table, and the nightly backups from before the merge are kept 30 days. **Abram turns Auto-Deploy off** (m316). **To be recorded:** that it's off, and the 1 CPU change | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "ca6fd69"` | `GET https://moments-brain.onrender.com/v1/health` answers `"version": "80a0da3"` (checked 6 Nov 22:54) |
 | Database | **To be recorded:** Basic-256mb, 1 GB, autoscaling off, from <date> (free until then) | Render → the database's Info page |
 | Population model | `0.2` | `/v1/health` `population_version` |
 | Consent text | `app-2026-10-02` | The apps' consent version |

@@ -81,6 +81,11 @@ class CategoriesIn(BaseModel):
     items: list[CategoryItem] = Field(max_length=64)
 
 
+class PreviewCodeIn(BaseModel):
+    """m320: a preview's code, typed on the You screen ("ODYS-SEVILLE")."""
+    code: str = Field(min_length=1, max_length=40)
+
+
 class CorrectionsIn(BaseModel):
     """D117: the ids of the "So far, I've learned…" items the person marked "not right"."""
     items: list[Annotated[str, Field(max_length=48)]] = Field(max_length=20)

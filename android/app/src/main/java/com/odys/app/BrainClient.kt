@@ -101,6 +101,10 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     }
 
     suspend fun mySafety(): List<SafetyThread> = call("GET", "v1/me/safety")
+    // m320: previews opened with a code (Preview.kt)
+    suspend fun previews(): PreviewList = call("GET", "v1/me/previews")
+    suspend fun openPreview(code: String): PreviewList = call("POST", "v1/me/previews", PreviewCode(code))
+    suspend fun preview(key: String): PreviewContent = call("GET", "v1/me/previews/$key")
 
     // ---- Build 2: the survey and the blind Test B pair ----
     suspend fun survey(body: SurveyBody) = send("POST", "v1/me/survey", body)
