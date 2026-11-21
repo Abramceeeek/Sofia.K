@@ -1,4 +1,9 @@
-# The friends' round: one fixed version (m196, m197; moved to the new build, m315)
+# The friends' round: one fixed version (m196, m197; moved to the new build, m315; and again, m320)
+
+> **21 Nov (m320): the round moves again, to the release that adds the Seville preview.** Abram chose "Seville in the app, me only". The preview is read-only and opens only with the code `ODYS-SEVILLE`; without it, the app is the same as build 112.
+> - **The round's fixed version is now the merge commit of the 21 Nov release, and the TestFlight build it uploads.** Read "the new `main` commit" and "the new build number" below as those.
+> - **The rehearsal on build 112 has to be redone on the new build.** The tag goes on the new commit.
+> - No friend has been invited yet, so nothing is lost.
 
 > **20 Nov (m315): the round moves to the new `main`.** Abram chose to put everything on `main` (`decisions/release-to-main.md`). No friend had been invited, so nothing is lost.
 > - **The round's fixed version is the release's merge commit**, not `80a0da3`. TestFlight gets the build the merge uploads; Android stays unpublished until Abram's release key exists.

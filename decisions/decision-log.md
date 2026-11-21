@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-21 — The Seville preview in the app (Abram: "Seville in the app, me only")
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m320 (Abram) | **Seville is shown in both apps as a read-only preview, behind the code `ODYS-SEVILLE`, and released to `main` and TestFlight.**<br>• **Brain:** `preview.py` and `data/previews.yaml`; `GET`/`POST /v1/me/previews` and `GET /v1/me/previews/{key}`. The code opens it for that install only; it is kept in the profile across saves, and deleted with the install.<br>• **Content:** the same as the reviewed sheet. Each place's state for each of the next 7 days in Seville's own date (open / check / shut, from `quality.availability`, unchanged); the hours as printed, with the page and the date read; the price or "Price not printed"; step-free only where the venue says; notices with their dates; the airport bus and taxi; what isn't covered; 112.<br>• **It is not a trip destination.** `GET /v1/trips/destinations` still lists London only, and flights, stays and trip days still refuse Seville (tested). Readiness stays Development.<br>• **Apps:** "Got a preview code?" on You, with the preview's row; the preview under London in "Where are you going?"; Spain's 112 under 999 in Help & safety, only on a phone with the preview; the CI screenshots.<br>• **Without the code, nothing changes for anyone.** An older app never calls these routes.<br>• **The round moves** to this release's merge commit and build. The rehearsal is redone; no friend had been invited | m319 (no in-app pilot); the round's version `ca6fd69` and build 112 (m315) | Abram, 21 Nov, choosing from three options: this one, the Brain only, or nothing yet |
+
 ## 2026-11-20 — Food discovery and Seville sprint (the audit branch)
 
 Abram's message of 20 Nov, "Same-Day Food Discovery and Seville Destination Sprint". Report: `food-and-seville-pilot-2026-11-20.md`. **Nothing deployed, merged into `main`, uploaded or published.**
