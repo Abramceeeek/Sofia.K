@@ -1,41 +1,62 @@
 # London quality work: where it stands (handover, 24 Nov 2026)
 
-**Branch:** `claude/pensive-euler-fftd63`, branch only. Nothing here is on `main`, deployed, or in the friends' round build (m327: merge only once validated, and before the round starts).
+**Branch:** `claude/pensive-euler-fftd63`, branch only, on draft PR #4. Nothing here is on `main`, deployed, uploaded or in the friends' round build. It merges only once validated, before the round starts, with Abram's approval (m327).
 
-## Commits in this stretch (newest first)
+## Commits in batch 2 (newest first)
 | Commit | What |
 |---|---|
-| `de6d48a` | m331–m332: no mid-day waits, genuine extra places, loved places across a trip, one view from above, no rest first, the Wellcome Reading Room, the gate's quality measures, `tests/test_day_shape.py` |
-| `79c6ee5` | m331 checkpoint: journey costs by pace; loved places never refused for distance |
-| `d45094f` | m329–m330: the British Library card, a gentle pace keeps strenuous cards out, proportionate journeys |
-| `d16e70e` | m328: the solver's waiting cost; G2 5 → 1 |
-| `756981d` | m327: release decision; every plan records the Brain commit and the app build |
-| `b7c6159`, `326b045`, `00188fe` | m326: the London gate and its first passes |
+| `566bb27` | m334 fix: an evening food stop counts as the dinner |
+| `e9a511e` | m333 fix: a loved ride that's the day's must-do is never dropped for want of a stop near its start |
+| `041de24` | m337: a day's title names its own places; the examples show the per-person total |
+| `8624455` | m336: other places for a stop (Brain, iPhone, Android), each saying what it changes |
+| `b88ed03` | m334–m335: dinner scored by the person, named where verified; extra places strong only |
+| `fbecd6c` | m333: a day's travel against its pace's budget; rides from near their start; the gate run 3 times |
 
-## Checks, as of `de6d48a`
-- **Brain tests:** 593 passed (`pytest`, Python 3.12, 24 Nov).
-- **The London gate** (`gate.md`): G1 and G3–G8 pass for all six travellers. **G2 fails on 6 of 13 days** (64–126 min early). There are no mid-day waits, and unused time is about 1,000 min (1,321 before batch 1). **Not passed, so not ready to release** (m327).
-- **Before and after, per traveller:** `before-after-2026-11-24.md`.
-- **The apps:** nothing changed in batch 1, which is Brain only.
+Batch 1 is `de6d48a`, `79c6ee5` and `8893856` (see `before-after-2026-11-24.md`).
 
-## What a passing unit test doesn't show
-The gate's travellers are synthetic, and the judgements in `before-after-2026-11-24.md` are Claude's. The two reviews from other models (`answers/`) were of the older plans. **Next:** run the question pack (`questions-for-other-ais.md`) on the new `examples.md`, plus one fresh subagent review. Real evidence comes only from the friends' round.
+## Files changed in batch 2
+- **Brain code:**
+  - `brain/src/brain/planner.py`: travel budget, ride rule, strong extras, one dinner, late-start tie-breaker.
+  - `brain/src/brain/dayplan.py`: dinners, the no-dinner line, rides, strong extras, `plan_change`.
+  - `brain/src/brain/api.py`: the alternatives endpoint, `compare_to`, the fill loop, loved must-dos, day titles.
+  - `brain/src/brain/reasons.py` (`day_title`) and `brain/src/brain/schemas.py`.
+- **Brain data:** `brain/data/catalogue/london.yaml` (`short` names).
+- **Brain scripts:** `brain/scripts/london_gate.py` (repeat runs, audits) and `brain/scripts/london_examples.py`.
+- **Tests:** `brain/tests/test_day_shape.py` and `brain/tests/test_trip_management.py`.
+- **iPhone:** `app/Sources/Models.swift`, `BrainClient.swift`, `AppModel.swift`, `PlanViews.swift`.
+- **Android:**
+  - `Models.kt`, `BrainClient.kt`, `AppModel.kt` and `Plan.kt` in `android/app/src/main/java/com/odys/app/`;
+  - `ScreensTest.kt` in `android/app/src/test/java/com/odys/app/`.
+- **Docs:** `decisions/decision-log.md` (m333–m338), `decisions/after-9-nov.md` (#104), and this folder.
 
-## Next tasks (in order; Claude's hours are estimates)
-1. **Dinner scored by the person's liking for food**, as lunch's credit works (open issue 1). ~2 h.
-2. **A loved ride's start as a neighbourhood:** Greenwich with the boat, not a 50-min journey to the pier and away (open issue 3). ~3 h.
-3. **Titles:** shorter and less alike (the gate flags 1–3 per traveller). ~1.5 h.
-4. **Named food from verified sources only** (Overture places with a confident category, open and checked), never halal or allergen claims (m323–m325 rules). ~4 h for a London pilot.
-5. **Editing and recovery:** a single-stop swap inside a trip day, reusing "swap this stop" (D110) and "Re-plan the rest of today" (D124); a rain swap offer ("Replace stop / Keep original"). ~6 h, Brain and both apps.
-6. **Costs and directions:** each and for the party; "Tube or bus" made specific where TfL gives the line. ~3 h.
-7. **Rerun the gate, the examples and three independent reviews; then Abram decides on the release.** ~1 h for Claude; Abram ~30 min to read.
+## Checks at `566bb27`
+- **Brain:** 603 tests passed locally (Python 3.12). CI passed at `8624455`.
+- **Android:** CI built the app and ran the screen tests at `8624455`, including the new "Other places for this time".
+- **iPhone:** **not compiled.** iOS builds run only from `main` or a manual macOS run (paid, so not triggered).
+- **The London gate** (`gate.md`, 3 runs): **NOT PASSED.**
+  - **G2 fails on 7 days** in every run.
+  - G1 and G3–G8 pass.
+  - Waits mid-day: 1–3. Travel over budget: 235–264 min. Unused time: 1,230–1,375 min. Days breaking the strong-extras rule: 0.
+- **Before and after:** `before-after-batch2-2026-11-24.md`.
 
-## Decisions for Abram
-- **D127 for history lovers:** two history stops a day caps Priya's Sunday. Keep it, or allow three when history is the person's top weight?
-- **Jonas's early end:** a calm day that finishes at 16:23 (97 min early). Accept it as free time, or should Claude look for another verified, quiet, free place near King's Cross open to 18:00 on Fridays?
+## Remaining defects
+1. **Empty afternoons and evenings (G2):** Priya's Saturday ends at 14:38; the friends' Friday at 19:00; Jonas at 16:23. The cause is mostly a thin catalogue.
+2. **Loved boats come after 46–50 min journeys to Greenwich Pier.**
+3. **Sam's Sunday keeps two fair-match shops** (within his own three places).
+4. **The iPhone side of m336 has never been compiled.**
+5. **Directions say "by Tube or bus" here,** because the gate and examples use the distance estimate. With the TfL key (Stage 1) they name the line.
+
+## Next batch (Claude's hours are estimates)
+1. **Verified evening and Greenwich cards** (~4 h), from official pages (D91):
+   - Friday lates and a market by night;
+   - Greenwich Market and the Cutty Sark, to pair with the boat;
+   - live music or comedy if one is suitable.
+2. **A gentle traveller's "I prefer a shorter day"** (Abram m338), with G2 measuring against it (~2 h, both apps). This is a product decision: Abram first.
+3. **Rerun the question pack and three independent reviews on the new `examples.md`** (~1 h for Claude; Abram ~30 min to read).
+4. **Compile the iPhone change:** on Abram's approval of a macOS run, or with the next release from `main`.
 
 ## Abram's outstanding items (unchanged)
-- Render: a manual deploy of `c2513fa` for the Seville preview (Auto-Deploy stays off).
-- Database: remove the IP rule and rotate the password (it was pasted into a chat); upgrade by 2 Dec.
-- Delete the `android-latest` pre-release.
-- Fill in the friends' round version lines (`validation/friends-round.md`) at release.
+- **Render:** a manual deploy of `c2513fa` for the Seville preview. Auto-Deploy stays off.
+- **Database:** remove the IP rule and rotate the password (it was pasted into a chat); upgrade by 2 Dec.
+- **Android:** delete the `android-latest` pre-release.
+- **At release:** fill in the friends' round version lines in `validation/friends-round.md`.
