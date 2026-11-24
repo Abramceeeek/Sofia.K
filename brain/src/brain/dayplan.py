@@ -1017,6 +1017,25 @@ def _best_line(s: dict) -> str:
     return f"Best: {s['best']}" if any(lo < b and a < hi for lo, hi in s.get("best_windows") or []) else ""
 
 
+ESTIMATE_MEAL = "The price is ODYS's planning estimate for a meal nearby, not a menu price."
+ESTIMATE_FARES = (f"Fares are estimated: £{TUBE_FARE_GBP:.2f} a Tube or bus journey, at most £{DAILY_CAP_GBP:.2f} a day "
+                  "(TfL's fares, read Sep 2026). TfL charges the real fare.")
+
+
+def say_estimates(stops: list[dict]) -> None:
+    """m343 (Abram, 24 Nov: "clearly distinguish estimated costs, verified venue information, booking requirements
+    and journey trade-offs"): a meal with no named place says its price is our estimate, and the day's first Tube or
+    bus journey says how fares are estimated. A named place's own facts carry their "checked on" date already
+    (`checked`). In place, on the app's stops; never for the blind Test B pair."""
+    for st in stops:
+        key = str(st.get("key") or st["moment_id"])
+        if key.startswith(("lunch@", "dinner@")) and st.get("cost_gbp"):
+            st["lines"] = list(st.get("lines") or []) + [ESTIMATE_MEAL]
+    first = next((st for st in stops if st.get("travel_mode") not in (None, "walk") and st.get("travel_min")), None)
+    if first is not None:
+        first["lines"] = list(first.get("lines") or []) + [ESTIMATE_FARES]
+
+
 def say_no_dinner(stops: list[dict], brief: Brief) -> None:
     """m334: a day that runs into the evening (to DINNER_FROM_END or later) with no dinner in it says so on its last
     stop, and why when it's the budget, never leaving it out silently. In place, on the app's stops."""

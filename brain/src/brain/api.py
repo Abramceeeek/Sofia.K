@@ -672,6 +672,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                for pst, st in zip(plan.stops, stops)]
         if not blind:
             dayplan.say_no_dinner(out, brief)   # m334: never a missing dinner left unsaid
+            dayplan.say_estimates(out)          # m343: estimates said as estimates
         for st, inner in zip(out, stops):   # m276: kept with the stored plan for the evaluation, never sent
             st["predicted"] = inner.get("predicted")
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison

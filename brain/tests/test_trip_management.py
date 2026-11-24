@@ -96,3 +96,16 @@ def test_a_stop_with_a_rain_option_names_it_for_the_one_tap_swap(client):
         swap = {**_swap(body, plan, st), "intent": {"must_do": st["rain_swap_id"]}}
         new = client.post("/v1/me/plans", headers=h, json=swap).json()
         assert st["rain_swap_id"] in {s["moment_id"] for s in new["stops"]} and new["change"]["text"]
+
+
+def test_estimates_are_said_as_estimates():
+    """m343 (Abram: "clearly distinguish estimated costs, verified venue information, booking requirements")."""
+    stops = [{"moment_id": "m_a", "key": "m_a", "cost_gbp": 22.0, "travel_min": 20, "travel_mode": "transit", "lines": []},
+             {"moment_id": "lunch@m_a", "key": "lunch@m_a", "cost_gbp": 15.0, "travel_min": 0, "travel_mode": "walk",
+              "lines": []}]
+    dayplan.say_estimates(stops)
+    assert stops[0]["lines"] == [dayplan.ESTIMATE_FARES] and "TfL charges the real fare" in dayplan.ESTIMATE_FARES
+    assert stops[1]["lines"] == [dayplan.ESTIMATE_MEAL]
+    named = [{"moment_id": "m_padella_borough", "key": "m_padella_borough#lunch", "cost_gbp": 15.0, "lines": []}]
+    dayplan.say_estimates(named)
+    assert named[0]["lines"] == []                                        # a named place's price is its menu's
