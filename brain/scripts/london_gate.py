@@ -45,7 +45,10 @@ KIND = {k: v.get("type") for k, v in
 from brain.moments import load_moments  # noqa: E402
 
 WINDOWS = {m.id: m.windows() for m in load_moments(DATA_DIR / "moments")}
-TRAVEL_BUDGET = {"gentle": 60, "medium": 90, "full_on": 120, None: 90}   # m331: travel a day, by pace (minutes)
+from brain.planner import PACE_TRAVEL_BUDGET  # noqa: E402
+from brain.dayplan import EXTRA_MIN_P  # noqa: E402
+# m331, m333: travel a day, by pace (minutes): the planner's own budget, so the gate measures what the planner aims at
+TRAVEL_BUDGET = {**{k: v for k, v in PACE_TRAVEL_BUDGET.items() if k != "unstated"}, None: PACE_TRAVEL_BUDGET["unstated"]}
 CARDS = {}
 for f in (DATA_DIR / "moments").glob("*.yaml"):
     c = yaml.safe_load(f.read_text(encoding="utf-8"))
@@ -65,7 +68,7 @@ def kinds_of(reaction: set[str], swipes: dict) -> set[str]:
     return {t for i, r in swipes.items() if r in reaction for t in ITEMS[i].get("types", [])}
 
 
-def check(p: dict, trip: dict) -> dict[str, list[str]]:
+def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str]]:
     t, sw = p["trip"], p["swipes"]
     fails = {g: [] for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8")}
     loved_cards = {c for i, r in sw.items() if r == "loved" for c in ITEMS[i].get("cards") or []}
@@ -73,7 +76,7 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
     bad_kinds = kinds_of({"didnt_enjoy"}, sw) - kinds_of({"loved", "fine"}, sw)
     reflected = False
     stated = []
-    q = {"waits": [], "starts": [], "unused": {}, "travel": {}, "time": {}, "meals": [], "fit": [], "pins": {}, "stops": set(),
+    q = {"waits": [], "starts": [], "unused": {}, "extras": [], "ends": [], "travel": {}, "time": {}, "meals": [], "fit": [], "pins": {}, "stops": set(),
          "titles": [d["title"] for d in trip["days"] if d.get("plan")]}
     for d in trip["days"]:
         pl = d.get("plan")
@@ -101,7 +104,8 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
             prev_end = depart
             q["travel"][d["date"]] = q["travel"].get(d["date"], 0) + travel
             fw = (st.get("feel_word") or "")
-            kind = "meal" if st.get("lunch") or str(st["moment_id"]).startswith(("lunch@", "dinner@")) else \
+            meal_id = str(st["moment_id"])
+            kind = "meal" if st.get("lunch") or meal_id.startswith(("lunch@", "dinner@")) or "#dinner" in meal_id else \
                 "rest" if fw in ("Resting", "Calm", "Quiet") else "explore" if mid.startswith("a_") else "visit"
             q["time"][kind] = q["time"].get(kind, 0) + (depart - arrive)
             if kind == "meal":
@@ -141,6 +145,16 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
                     fails["G6"].append(f"{d['date']} {st['title'][:30]}: arrives {st['arrive']}, \"{ln[:60]}\"")
         early = mins(t["day_end"]) - prev_end
         q["unused"][d["date"]] = q["unused"].get(d["date"], 0) + max(0, early)
+        if stops:
+            q["ends"].append(f"{stops[-1]['title'][:38]} at {stops[-1]['depart']}")
+        # m333 (Abram: "review every extra place added by the planner"): the places beyond the person's own number a
+        # day, taken as the ones the person is least likely to rate Good, with that chance from the stored plan
+        places = [st for st in stops if st.get("rateable") and "#dinner" not in str(st.get("key") or "")]
+        if chance is not None:
+            pg = {id(st): chance.get((d["date"], base(st["moment_id"]))) for st in places}
+            weak = [st for st in places if pg[id(st)] is not None and pg[id(st)] < EXTRA_MIN_P]
+            q["extras"].append((d["date"], len(places), int(t["stops_per_day"]), [
+                (st["title"][:36], pg[id(st)], KIND.get(base(st["moment_id"])) or "") for st in weak]))
         if early > EARLY_MAX:
             fails["G2"].append(f"{d['date']} ends {early} min early")
     if not reflected:
@@ -202,6 +216,17 @@ def quality(qual: list) -> list[str]:
                                      f"over 3 km away")
         for mid in q["stops"]:
             seen.setdefault(mid, []).append(p["key"])
+    days_ = [(p["key"], *x) for p, q in qual for x in q["extras"]]
+    extra_n = sum(max(0, n - asked) for _, _, n, asked, _ in days_)
+    broken = [(k, d) for k, d, n, asked, weak in days_ if len(weak) > asked]
+    out += ["", f"**Extra places** (Abram: \"it must match the person's actual preferences\"): {extra_n} places beyond "
+                f"the number a day each person asked for. The rule: a day holds at most that number of places with "
+                f"under a {EXTRA_MIN_P} chance of Good (the planner's own estimate), so every place beyond it is a "
+                f"strong match. Days breaking it: {len(broken)}{' ⚠ ' + str(broken) if broken else ''}. The weaker "
+                "places, within each day's own number:", ""]
+    out += [f"- {k} {d} ({n} places, {asked} asked): " + "; ".join(f"{t} ({kd or 'no kind'}) {pg}" for t, pg, kd in weak)
+            for k, d, n, asked, weak in days_ if weak]
+    out += ["", "**How each day ends:** " + "; ".join(f"{p['key']}: " + ", ".join(q["ends"]) for p, q in qual)]
     allu = [m for _, q in qual for m in q["unused"].values()]
     out += ["", f"**Unused time, all {len(allu)} days:** {sum(allu)} min, a mean of "
                 f"{round(sum(allu) / max(1, len(allu)))} min a day."]
@@ -217,6 +242,18 @@ RUNS = 3              # m333 (Abram, 24 Nov: "consistent configuration, repeatab
 TIME_LIMIT_S = 1.0    # the solver's limit per search, as in production (BRAIN_PLANNER_TIME_LIMIT_S)
 
 
+def chances(app, uid: str) -> dict:
+    """The chance of Good or better the planner gave each stop (kept with the stored plan, m276, never sent)."""
+    from brain import db
+    from brain.explain import p_good
+    pop = app.state.pop
+    with app.state.Session() as s:
+        rows = s.query(db.Plan).filter(db.Plan.user_id == uid).all()
+        return {(r.date, base(st["moment_id"])): round(p_good(pop.scales["rating"], pop.cutpoints["rating"][1],
+                                                            st["predicted"]), 2)
+                for r in rows for st in r.stops if st.get("predicted") is not None}
+
+
 def one_run() -> dict:
     """Every traveller once, through a fresh app and database."""
     tmp = tempfile.mkdtemp()
@@ -229,11 +266,11 @@ def one_run() -> dict:
         for p in ex.PEOPLE:
             r = c.post("/v1/installs", json={"channel": "stranger", "src": "gate",
                                              "consent": {"version": "2026-09", "research": True, "ai_processing": False}})
-            h = {"Authorization": f"Bearer {r.json()['token']}"}
+            h, uid = {"Authorization": f"Bearer {r.json()['token']}"}, r.json()["user_id"]
             c.put("/v1/me/profile", headers=h, json=p["profile"])
             c.post("/v1/me/swipes", headers=h, json={"items": [{"item": i, "reaction": x} for i, x in p["swipes"].items()]})
             trip = c.post("/v1/me/trips/days", headers=h, json={"start_date": ex.START.isoformat(), **p["trip"]}).json()
-            f = check(p, trip)
+            f = check(p, trip, chances(c.app, uid))
             f.pop("_free")
             qual.append((p, f.pop("_q")))
             rows.append(f"| {p['key']} | " + " | ".join("✅" if not f[g] else f"❌ {len(f[g])}" for g in total) + " |")

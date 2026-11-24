@@ -670,6 +670,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             money = lambda sts: block(sts, lunch)
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
+        if not blind:
+            dayplan.say_no_dinner(out, brief)   # m334: never a missing dinner left unsaid
         for st, inner in zip(out, stops):   # m276: kept with the stored plan for the evaluation, never sent
             st["predicted"] = inner.get("predicted")
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
@@ -1354,6 +1356,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), date=day.isoformat(), time_limit_s=limit,
                                       extra=n > part.stops,   # m329: an extra place is a genuine match only
+                                      # m333: and beyond the places they asked for (a stretch's stops count
+                                      # lunch too), a strong one
+                                      base_stops=part.stops - (1 if part.lunch and dayplan.spans_lunch(
+                                          tripdays.mins(part.start_time), tripdays.mins(part.end_time)) else 0),
                                       pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by pace
                                       sunset=sunset(day), mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch

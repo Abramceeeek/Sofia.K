@@ -59,6 +59,7 @@ class Candidate:
     loved: bool = False                     # m331: a place they said they loved: its journey costs only the usual amount
     rest: bool = False                      # m331: a rest (feel word "Resting"): never the day's first stop
     ride: bool = False                      # m333: a ride (the river bus): reached from somewhere near its start
+    dinner: bool = False                    # m334: a dinner (a "dinner near X" slot or a food card): one a plan
 
 
 def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: str | None = None) -> Candidate:
@@ -163,7 +164,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2,
            max_places: int | None = None, fixed_count: bool = False,
            strategy: str = "PARALLEL_CHEAPEST_INSERTION", seeded: bool = False,
-           travel_budget_min: int | None = None) -> DayPlan | None:
+           travel_budget_min: int | None = None, weak_below: float | None = None,
+           weak_max: int | None = None) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -278,6 +280,15 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     meals = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.lunch]
     if len(meals) > 1:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in meals]) <= 1)
+    # m333 (Abram: "review every extra place... it must match the person's actual preferences"): beyond the places
+    # the person asked for (`weak_max`), every place is a strong match (utility at least `weak_below`)
+    weak = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1)
+            if weak_below is not None and c.utility < weak_below and not (c.lunch or c.dinner or c.mine)]
+    if weak_max is not None and len(weak) > weak_max:
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in weak]) <= weak_max)
+    dinners = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.dinner]
+    if len(dinners) > 1:   # m334: one dinner, named or not
+        solver.Add(solver.Sum([routing.ActiveVar(i) for i in dinners]) <= 1)
     for j, c in enumerate(cands, start=1):   # m331: a day starts with something to do, never a rest
         if c.rest:
             solver.Add(routing.NextVar(routing.Start(0)) != manager.NodeToIndex(j))
@@ -329,7 +340,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         route = _greedy_route(cands, T, B, service, ranges, day_start, max_wait_min, prizes, legs,
                               max_stops=max_stops, max_places=max_places, budget_gbp=budget_gbp,
                               max_areas=max_areas, max_theme=max_theme, lunch_not_first=lunch_not_first,
-                              must=must_include)
+                              must=must_include, weak_below=weak_below, weak_max=weak_max)
         routing.CloseModelWithParameters(params)
         initial = routing.ReadAssignmentFromRoutes([[manager.NodeToIndex(j) for j in route]], True) if route else None
         if initial is not None:
@@ -365,7 +376,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
 def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]], service: list[int],
                   ranges: list[list[tuple[int, int]]], day_start: int, max_wait: int, prizes: list[float],
                   legs: LegWeights, *, max_stops: int, max_places: int | None, budget_gbp: float | None,
-                  max_areas: int, max_theme: int, lunch_not_first: bool, must: frozenset[str]) -> list[int]:
+                  max_areas: int, max_theme: int, lunch_not_first: bool, must: frozenset[str],
+                  weak_below: float | None = None, weak_max: int | None = None) -> list[int]:
     """m216, stage 1: a valid day built one stop at a time, keeping every rule the solver keeps (hours, waits, budget,
     one of a group, one lunch, one area, history at most twice and never in a row, the stop and place counts) and
     never taking a stop that would make one of the person's own blocks unreachable. Each step takes the stop worth
@@ -390,7 +402,8 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
     prev, ready = 0, day_start
     groups, done_blocks = set(), set()
     meals = areas = hist = spent = stops = places = 0
-    last_hist = False
+    last_hist = dined = False
+    n_weak = 0
     while True:
         best = None
         for j in range(1, n + 1):
@@ -400,6 +413,11 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
             if (c.lunch and (meals or (lunch_not_first and not route))) or (c.rest and not route):
                 continue
             if c.ride and T[prev][j] > RIDE_APPROACH_MAX:   # m333: a ride from somewhere near its start
+                continue
+            if c.dinner and dined:   # m334: one dinner
+                continue
+            is_weak = weak_below is not None and c.utility < weak_below and not (c.lunch or c.dinner or c.mine)
+            if is_weak and weak_max is not None and n_weak >= weak_max:   # m333: extra places strong only
                 continue
             if c.kind == "area" and areas >= max_areas:
                 continue
@@ -438,6 +456,8 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
             stops += 1
             places += 0 if c.lunch else 1
         meals += c.lunch
+        dined = dined or c.dinner
+        n_weak += weak_below is not None and c.utility < weak_below and not (c.lunch or c.dinner or c.mine)
         areas += c.kind == "area"
         hist += themed
         last_hist = themed
@@ -470,7 +490,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
              lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None,
              seeded: bool = False, relax_floor: bool = True, retry_min: bool = True,
-             travel_budget_min: int | None = None) -> DayPlan:
+             travel_budget_min: int | None = None, weak_below: float | None = None,
+             weak_max: int | None = None) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -506,7 +527,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
                 lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places,
                 fixed_count=bool(min_stops) and min_stops >= max_stops, seeded=seeded,
-                travel_budget_min=travel_budget_min)
+                travel_budget_min=travel_budget_min, weak_below=weak_below, weak_max=weak_max)
     status = "ok"
     if min_stops and not retry_min:
         # m331: a try with extra places (dayplan's Brief.extra): no hard minimum, which defeats the first-solution

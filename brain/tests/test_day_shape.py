@@ -139,3 +139,54 @@ def test_a_ride_starts_from_somewhere_near_its_start():
     assert [s.moment_id for s in plan.stops] == ["hill", "boat"]
     alone = plan_day([ride], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=1, time_limit_s=0.5)
     assert alone.stops == []
+
+
+def test_dinner_is_scored_by_the_persons_liking_for_food_and_can_be_a_named_place():
+    """m334 (Abram: "Dinner should be scored against the person's food interest, budget and preferences, not inserted
+    as an unpersonalised placeholder"; "use named, verified venues when possible")."""
+    from brain.config import DATA_DIR
+    from brain.moments import load_moments
+    cards = {m.id: m for m in load_moments(DATA_DIR / "moments") if m.status == "ready"}
+    real = [dayplan.candidate_for(cards[k], 0.2) for k in ("m_beigel_bake_late", "m_borough_market_graze",
+                                                          "m_waterloo_bridge_sunset")]
+    brief = dayplan.Brief(start_name="Charing Cross", start=START, start_time="11:00", end_time="21:00", stops=3,
+                          lunch_gbp=12.0)
+    plain = dayplan.dinner_candidates(real, brief, cards, food_pull=0.0)
+    keen = dayplan.dinner_candidates(real, brief, cards, food_pull=0.6)
+    slot = lambda cs: next(c for c in cs if c.moment_id == "dinner@m_waterloo_bridge_sunset")
+    assert abs(slot(keen).utility - slot(plain).utility - 0.6) < 1e-9 and all(c.dinner for c in keen)
+    named = {c.moment_id for c in keen if "#dinner" in c.moment_id}
+    assert named == {"m_beigel_bake_late#dinner"}                 # open to 23:30; Borough Market closes at 16:00
+    beigel = next(c for c in keen if c.moment_id == "m_beigel_bake_late#dinner")
+    assert all(lo >= dayplan.DINNER_START[0] for lo, _ in beigel.windows)
+    early = replace_brief(brief, end_time="18:00")
+    assert dayplan.dinner_candidates(real, early, cards) == []    # a day that ends before the evening has none
+
+
+def replace_brief(brief, **kw):
+    from dataclasses import replace
+    return replace(brief, **kw)
+
+
+def test_a_missing_dinner_is_said_with_its_reason():
+    brief = dayplan.Brief(start_name="Charing Cross", start=START, start_time="11:00", end_time="20:00", stops=3,
+                          lunch_gbp=12.0, budget_gbp=40.0)
+    stops = [{"moment_id": "m_x", "key": "m_x", "cost_gbp": 30.0, "travel_min": 10, "travel_mode": "walk",
+              "lines": ["Getting there: about 10 min on foot."]}]
+    dayplan.say_no_dinner(stops, brief)
+    assert stops[-1]["lines"][-1].startswith("Dinner isn't in the plan: with about £18 for it")
+    fed = [{"moment_id": "m_x", "key": "dinner@m_x", "cost_gbp": 18.0, "lines": []}]
+    dayplan.say_no_dinner(fed, brief)
+    assert fed[-1]["lines"] == []
+
+
+def test_places_beyond_the_persons_own_number_are_strong_matches():
+    """m333 (Abram: "review every extra place... it must match the person's actual preferences"): a day may hold as
+    many fair matches as the places the person asked for; every place beyond that is a strong match."""
+    near = lambda k: Point(lat=51.5081 + 0.001 * k, lon=-0.1281)
+    fair = [Candidate(f"fair{k}", near(k), near(k), 40, DAY, -0.5) for k in range(4)]      # a chance of Good ~0.56
+    strong = [Candidate(f"strong{k}", near(k + 4), near(k + 4), 40, DAY, 0.3) for k in range(1)]
+    plan = plan_day(fair + strong, START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=5, time_limit_s=0.5,
+                    weak_below=-0.131, weak_max=2)
+    ids = [s.moment_id for s in plan.stops]
+    assert sum(i.startswith("fair") for i in ids) <= 2 and "strong0" in ids

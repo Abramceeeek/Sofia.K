@@ -246,6 +246,7 @@ class Brief:
     weekday: str | None = None     # "mon".."sun": cards closed that day are left out
     date: str | None = None        # m329: "YYYY-MM-DD": a card's dated closures and early closings apply
     extra: bool = False            # m329: more places than asked, to fill the day: only genuine matches (no floor relaxing)
+    base_stops: int | None = None  # m333: with `extra`, the places the person asked for; the rest must be strong matches
     pace: str | None = None        # m331: the person's stated pace ("gentle", "medium", "full_on"): journey costs
     temp_c: float | None = None
     rain_prob: float | None = None
@@ -362,6 +363,8 @@ DINNER_START = (18 * 60, 20 * 60 + 30)
 DINNER_MIN = 60
 DINNER_FROM_END = 19 * 60 + 30     # only for a day that ends at 19:30 or later
 DINNER_OF_LUNCH = 1.5              # GUESS: dinner costs about 1.5 times the day's lunch
+EXTRA_MIN_P = 0.65                 # m333: an extra place's chance of Good, at least (the places asked for: 0.5)
+DINNER_BONUS = 1.0                 # m334: what a dinner adds to a day that runs into the evening (utility units)
 
 
 LUNCH_BONUS = 5.0
@@ -428,7 +431,8 @@ def dwell_targets(by_id: dict[str, Moment], ids: list[str]) -> dict[str, int]:
 
 
 def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
-                     liked: Mapping[str, float] | None = None, cost_per_gbp: float = POP_COST_PER_GBP) -> list:
+                     liked: Mapping[str, float] | None = None, cost_per_gbp: float = POP_COST_PER_GBP,
+                     food_pull: float = 0.0) -> list:
     """The planner's candidates plus the lunch options (D102): each food card the person is predicted to like at
     least as much as an ordinary lunch (m321) again as "<id>#lunch", allowed to start only in the lunch window
     (sharing a variant group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside
@@ -439,7 +443,8 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     if not brief.lunch or not spans_lunch(day_start, day_end):
         # meal cards only ever serve as lunch (D104); an evening still gets its dinner slot (m326)
-        return [c for c in real if not by_id[c.moment_id].meal] + dinner_candidates(real, brief)
+        return with_dinners([c for c in real if not by_id[c.moment_id].meal], real, by_id, brief, liked,
+                            cost_per_gbp, food_pull)
     lo, hi = LUNCH_START
     out = []
     for c in real:
@@ -459,18 +464,48 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
                                     None, "moment", lunch=True)
     out += [slot(f"lunch@{c.moment_id}", c.end) for c in real]
     out.append(slot("lunch@start", brief.start))   # D104: lunch near the start point, too
-    return out + dinner_candidates(real, brief)
+    return with_dinners(out, real, by_id, brief, liked, cost_per_gbp, food_pull)
 
 
-def dinner_candidates(real: list, brief: Brief) -> list:
-    """m326: a "dinner near X" slot beside every place, for a day ending at DINNER_FROM_END or later; at most one in a
-    plan (one group). Neutral like the lunch slot, and not a lunch (no lunch bonus, not in lunch's window)."""
+def with_dinners(out: list, real: list, by_id: Mapping[str, Moment], brief: Brief,
+                 liked: Mapping[str, float] | None, cost_per_gbp: float, food_pull: float) -> list:
+    """`out` plus the evening's dinner options (m334), with each food card that serves as a dinner sharing a group with
+    its visit, so a plan holds one of the two."""
+    dinners = dinner_candidates(real, brief, by_id, liked, cost_per_gbp, food_pull)
+    named = {c.moment_id.split("#")[0]: c.group for c in dinners if "#dinner" in c.moment_id}
+    out = [replace(c, group=named[c.moment_id]) if c.moment_id in named and not c.lunch else c for c in out]
+    return out + dinners
+
+
+def dinner_candidates(real: list, brief: Brief, by_id: Mapping[str, Moment] | None = None,
+                      liked: Mapping[str, float] | None = None, cost_per_gbp: float = POP_COST_PER_GBP,
+                      food_pull: float = 0.0) -> list:
+    """m326: a "dinner near X" slot beside every place, for a day ending at DINNER_FROM_END or later; one dinner a
+    plan. m334 (Abram, 24 Nov: "Dinner should be scored against the person's food interest, budget and preferences,
+    not inserted as an unpersonalised placeholder"; "use named, verified venues when possible"):
+    - every dinner carries DINNER_BONUS (a day that runs into the evening includes dinner unless it doesn't fit the
+      day or its budget) plus the person's own liking for food (`food_pull`, their weight on food, never below 0);
+    - each food card open in the dinner window (Beigel Bake, the Soho and Chinatown evening, a steakhouse) is also a
+      named dinner, "<id>#dinner", scored by the person's own liking for it plus the ordinary dinner's money, as
+      lunch's food cards are (m321). Cards that only serve lunch (`meal: lunch`) never are."""
     if not brief.lunch or parse_hhmm(brief.end_time) < DINNER_FROM_END:
         return []
     lo, hi = DINNER_START
     gbp = round(float(brief.lunch_gbp) * DINNER_OF_LUNCH)
-    return [Candidate(f"dinner@{c.moment_id}", c.end, c.end, DINNER_MIN, ((lo, hi + DINNER_MIN),), 0.0, float(gbp),
-                      "meal:dinner", "moment") for c in real]
+    out = [Candidate(f"dinner@{c.moment_id}", c.end, c.end, DINNER_MIN, ((lo, hi + DINNER_MIN),),
+                     DINNER_BONUS + food_pull, float(gbp), None, "moment", dinner=True) for c in real]
+    for c in real:
+        m = (by_id or {}).get(c.moment_id)
+        if m is None or m.meal or (m.features.place.get("food") or 0) < 2 or not (m.cost_gbp or 0) > 0:
+            continue
+        wins = tuple((max(a, lo), min(b, hi + c.duration_min)) for a, b in c.windows
+                     if max(a, lo) + c.duration_min <= min(b, hi + c.duration_min))
+        own = (liked or {}).get(c.moment_id, c.utility)
+        credit = cost_per_gbp * min(m.cost_gbp or 0.0, float(gbp))   # the ordinary dinner's money, given back
+        if wins and own + credit >= LUNCH_CARD_MIN:   # liked at least as much as an ordinary dinner
+            out.append(replace(c, moment_id=f"{c.moment_id}#dinner", windows=wins, dinner=True,
+                               group=c.group or f"meal:{c.moment_id}", utility=c.utility + credit + DINNER_BONUS))
+    return out
 
 
 def leg_text(t: int | None, mode: str, came_from: str, exit_station: str | None, arrive_at: str | None,
@@ -561,7 +596,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     idx = {n: i for i, n in enumerate(pop.names)}
     real = [replace(c, loved=True) if c.moment_id in loved_ids else c for c in real]   # m331: never far for them
     cands = lunch_candidates(real, by_id, brief, liked=u_hat,
-                             cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
+                             cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0),
+                             food_pull=max(0.0, float(b[idx["food"]]))) + \
         mine_candidates(real, brief)
     # m331: London from above once a day: two towers minutes apart felt repetitive (ChatGPT's review, 24 Nov)
     highs, ride_ids = high_views(), rides()
@@ -575,6 +611,10 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
                   # m333: the day's travel against its pace's budget (none for the Test B pair, which has no pace)
                   travel_budget_min=PACE_TRAVEL_BUDGET.get(brief.pace) if brief.pace else None,
+                  # m333: an extra place is a strong match: a chance of Good of at least EXTRA_MIN_P
+                  weak_below=(floor + math.log(EXTRA_MIN_P / (1 - EXTRA_MIN_P)) / pop.scales["rating"]
+                              if brief.extra and brief.base_stops else None),
+                  weak_max=brief.base_stops if brief.extra else None,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
                   buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS,
                   lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN,
@@ -705,6 +745,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops, route)}
             nxt = (m.end(), m.leave_name(), m.exit_station())
+            if st.moment_id.endswith("#dinner"):   # m334: a food card as the evening's dinner
+                stop["feel_word"] = "Dinner"
         away = stop.pop("mine_away", None)
         stop.update({"key": st.moment_id,   # the planner's id ("<card>#lunch" when a food card is the lunch), for `keep`
                      # m201: plans away from the places show at their own times; the time either side is for travel
@@ -965,6 +1007,24 @@ def _best_line(s: dict) -> str:
         return ""
     a, b = parse_hhmm(s["arrive"]), parse_hhmm(_leave(s))
     return f"Best: {s['best']}" if any(lo < b and a < hi for lo, hi in s.get("best_windows") or []) else ""
+
+
+def say_no_dinner(stops: list[dict], brief: Brief) -> None:
+    """m334: a day that runs into the evening (to DINNER_FROM_END or later) with no dinner in it says so on its last
+    stop, and why when it's the budget, never leaving it out silently. In place, on the app's stops."""
+    if not stops or not brief.lunch or parse_hhmm(brief.end_time) < DINNER_FROM_END:
+        return
+    if any(str(s.get("key") or s["moment_id"]).startswith("dinner@") or "#dinner" in str(s.get("key") or "")
+           for s in stops):
+        return
+    dinner = round(float(brief.lunch_gbp) * DINNER_OF_LUNCH)
+    spent = sum(float(s.get("cost_gbp") or 0) for s in stops) + transport_gbp(stops)
+    if brief.budget_gbp is not None and spent + dinner > brief.budget_gbp:
+        line = (f"Dinner isn't in the plan: with about {_money(dinner)} for it, today would go over your "
+                f"{_money(brief.budget_gbp)} budget.")
+    else:
+        line = "Dinner isn't in the plan: no dinner stop fitted around the evening's places."
+    stops[-1]["lines"] = list(stops[-1].get("lines") or []) + [line]
 
 
 def summary_lines(brief: Brief, stops: list[dict]) -> list[str]:
