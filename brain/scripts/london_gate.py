@@ -92,8 +92,10 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
             for ln in texts:
                 if "visiting window" in ln or "card's" in ln:
                     fails["G6"].append(f"{d['date']} {st['title'][:30]}: \"{ln[:70]}\"")
-                m = re.search(r"best time, (\d\d:\d\d)[–-](\d\d:\d\d)", ln)
-                if m and not (mins(m.group(1)) <= arrive <= mins(m.group(2))):
+                m = re.search(r"You're there at its best time, (\d\d:\d\d)[–-](\d\d:\d\d)", ln)
+                n = re.search(r"best time, (\d\d:\d\d)[–-](\d\d:\d\d), starts while", ln)
+                if (m and not (mins(m.group(1)) <= arrive <= mins(m.group(2)))) or \
+                        (n and not (arrive < mins(n.group(1)) < depart)):
                     fails["G6"].append(f"{d['date']} {st['title'][:30]}: arrives {st['arrive']}, \"{ln[:60]}\"")
         early = mins(t["day_end"]) - prev_end
         if early > EARLY_MAX:

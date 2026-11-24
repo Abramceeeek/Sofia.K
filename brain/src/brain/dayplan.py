@@ -44,6 +44,43 @@ def load_swipe_items(path: Path) -> dict[int, Moment]:
     return out
 
 
+def load_swipe_types(path: Path) -> dict[int, list[str]]:
+    """m326: each swipe place's kind (catalogue.TAXONOMY types), e.g. Sky Garden → [tower, roof_garden]."""
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f)
+    return {int(num): list(it.get("types") or []) for num, it in d["items"].items()}
+
+
+def load_card_kinds(path: Path) -> dict[str, str]:
+    """m326: each London card's kind, from the catalogue (data/catalogue/london.yaml); a missing file means none."""
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f) or {}
+    return {k: v.get("type") for k, v in (d.get("experiences") or {}).items() if v.get("type")}
+
+
+def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Mapping[int, list[str]],
+             card_kinds: Mapping[str, str], company: str | None) -> list[tuple[str, list[str]]]:
+    """m326 (the London gate, G4 and G5; Abram's acceptance tests, 24 Nov): cards never planned for this person, as
+    extra "didn't enjoy" entries (D100 keeps those out of every plan):
+    - **a kind they didn't enjoy:** every card of a kind (a rooftop garden, a tower, a market) where they said they
+      didn't enjoy a place of that kind, unless they loved or were fine with another place of the same kind;
+    - **an age rule:** a card whose own rules set a minimum age (`rules.min_age`), when they travel as a family. The
+      children's ages aren't asked, so a family never gets it (the Santander Cycles bike ride needs riders of 14+)."""
+    bad = {t for i, r in swipes if r == "didnt_enjoy" for t in swipe_types.get(i, [])}
+    bad -= {t for i, r in swipes if r in ("loved", "fine") for t in swipe_types.get(i, [])}
+    out = []
+    kinds = [m.id for m in ready if card_kinds.get(m.id) in bad]
+    if kinds:
+        out.append(("kinds they didn't enjoy: " + ", ".join(sorted(bad)), kinds))
+    if company == "family":
+        aged = [m.id for m in ready if (m.rules or {}).get("min_age")]
+        if aged:
+            out.append(("a minimum age, with children", aged))
+    return out
+
+
 def load_app_items(path: Path, later: bool = False) -> list[int]:
     """The swipe places the app shows before the first plan (D110, D112): `app_items`, or all of them if the list is
     missing. With `later`, the ones asked in "Improve future plans" (`app_items_later`)."""

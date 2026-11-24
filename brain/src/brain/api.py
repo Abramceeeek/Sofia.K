@@ -169,6 +169,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # the 16 locked swipe places (D107): their tags for the δ update, and the cards at each place for planning
         app.state.swipe_items = dayplan.load_swipe_items(settings.data_dir / "swipe_items.yaml")
         app.state.swipe_cards = dayplan.load_swipe_cards(settings.data_dir / "swipe_items.yaml")
+        # m326 (the London gate, G4): each swipe place's kind, and each card's kind (the catalogue's type), so a place
+        # the person didn't enjoy also keeps out places of the same kind (unless they loved or were fine with one)
+        app.state.swipe_types = dayplan.load_swipe_types(settings.data_dir / "swipe_items.yaml")
+        app.state.card_kinds = dayplan.load_card_kinds(settings.data_dir / "catalogue" / "london.yaml")
         app.state.swipe_phrases = dayplan.load_swipe_phrases(settings.data_dir / "swipe_items.yaml")   # D117
         app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # before the plan (D112)
         app.state.app_items_later = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml", later=True)
@@ -596,6 +600,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         kinds = [a for a in user.categories if f"kind:{a.key}" not in fixed]
         loved = [cards_at[sw.item] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at]
         disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
+        disliked += dayplan.kept_out(ready, [(sw.item, sw.reaction) for sw in swipes], app.state.swipe_types,
+                                     app.state.card_kinds, (user.profile or {}).get("company"))
         post = post or posterior(user, p)
 
         def run(keep: set[str], exclude: set[str]):
@@ -1224,6 +1230,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         cards_at = app.state.swipe_cards
         disliked = {cid for sw in user.swipes if f"place:{sw.item}" not in fixed and sw.reaction == "didnt_enjoy"
                     and sw.item in cards_at for cid in cards_at[sw.item][1]}
+        disliked |= {cid for _, ids in dayplan.kept_out(   # m326: kinds they didn't enjoy, and age rules
+            ready, [(sw.item, sw.reaction) for sw in user.swipes if f"place:{sw.item}" not in fixed],
+            app.state.swipe_types, app.state.card_kinds, (user.profile or {}).get("company")) for cid in ids}
         fields = person_fields(user)
         asp = {m.id: (app.state.amap.match(m, fields) if app.state.amap else 0.0) for m in ready}
         per_day = max(1, min(body.stops_per_day, span // tripdays.MIN_PER_STOP))

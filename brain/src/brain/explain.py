@@ -121,19 +121,23 @@ def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_tex
         if windows and inside and inside != (0, 1440):
             # the planner's window is the card's visiting window (when to go, within its opening hours), so it's
             # named that, with the opening hours beside it where the card gives them
-            f.append(Factor("hours", FOR, f"You're there {st['arrive']}–{st['depart']}, inside the card's visiting "
-                            f"window ({_hhmm(inside[0])}–{_hhmm(inside[1])}).", f"{_hhmm(inside[0])}-{_hhmm(inside[1])}",
-                            "the card's visiting window" + (f"; opening hours: {hours_text}" if hours_text else "")))
+            # m326 (the London gate, G6): said as a time to go, never "the card's visiting window" (internal words)
+            f.append(Factor("hours", FOR, f"You're there {st['arrive']}–{st['depart']}, within its times to go "
+                            f"({_hhmm(inside[0])}–{_hhmm(inside[1])}).", f"{_hhmm(inside[0])}-{_hhmm(inside[1])}",
+                            "when to go, from its opening hours" + (f": {hours_text}" if hours_text else "")))
         elif windows and inside:
-            f.append(Factor("hours", NEUTRAL, "Any time of day suits it.", "any", "the card's visiting window"))
+            f.append(Factor("hours", NEUTRAL, "Any time of day suits it.", "any", "when to go"))
         elif p is not None:
             unknown.append("opening times")
         best = st.get("best_windows") or []
         if best:
-            lo, hi = best[0]
-            hit = any(a < h and d > l for l, h in best)
+            # m326 (G6): the window the visit overlaps, never simply the first (a 16:08 swim isn't "06:30–10:00")
+            overlap = [(l, h) for l, h in best if a < h and d > l]
+            hit = bool(overlap)
+            lo, hi = overlap[0] if overlap else best[0]
             f.append(Factor("best_time", FOR if hit else NEUTRAL,
-                            (f"Your visit overlaps its best time, {_hhmm(lo)}–{_hhmm(hi)}." if hit else
+                            (f"You're there at its best time, {_hhmm(lo)}–{_hhmm(hi)}." if hit and lo <= a else
+                             f"Its best time, {_hhmm(lo)}–{_hhmm(hi)}, starts while you're there." if hit else
                              f"Its best time is {_hhmm(lo)}–{_hhmm(hi)}; this plan has you there {st['arrive']}–{st['depart']}."),
                             f"{_hhmm(lo)}-{_hhmm(hi)}", "the card's best time"))
     cost = st.get("cost_gbp")
@@ -156,6 +160,14 @@ def stop(st: dict, *, p: float | None, windows: list[tuple[int, int]], hours_tex
 WHY_MAX = 3   # Abram: "no more than three meaningful reasons"
 
 
+# m326: the practical things worth knowing when a person's answers count them against a stop (by the score's label)
+GOOD_TO_KNOW = {"crowds": "Good to know: it can be busy.",
+                "being outdoors": "Good to know: it's in the open, so wrap up.",
+                "outdoor exposure": "Good to know: it's in the open, so wrap up.",
+                "walking effort": "Good to know: there's a fair bit of walking.",
+                "a good walk": "Good to know: there's a fair bit of walking."}
+
+
 def why_this_stop(factors: list[Factor], pros: list[str], cons: list[str]) -> list[dict]:
     """At most three reasons for a stop, each from a factor above, worded with no model score or percentage (Abram,
     m224: "don't expose raw model scores or percentages"). Times, minutes and prices are the plan's own facts, so they
@@ -164,12 +176,13 @@ def why_this_stop(factors: list[Factor], pros: list[str], cons: list[str]) -> li
     1. A familiar place: "You loved it before…".
     2. Your answers: the score's two largest terms for it, by name only ("From your answers, it has what you like:
        photo spots, awe"). Labels can hold "and" or a comma themselves, so they're listed, not joined with "and".
-    3. The time: inside its best time, else inside the card's visiting window (not "any time").
+    3. The time: inside its best time (the window the visit overlaps; m326: the visiting window is no reason).
     4. The travel there, when it's short (15 min or less, the planner's first transfer penalty).
     5. The money, when it's free.
 
-    If anything counts against the stop (a long journey, a day over budget, a term against it in the score), the last
-    place goes to one trade-off, so the reasons never read as all upside. Nothing is added that the planner didn't use.
+    If anything counts against the stop (a long journey, a day over budget), the last place goes to one trade-off, so
+    the reasons never read as all upside. A taste term against it is said only when it's practical ("Good to know: it
+    can be busy"; m326). Nothing is added that the planner didn't use.
     """
     pick = lambda kind, effect: next((x for x in factors if x.kind == kind and x.effect == effect), None)
     fors: list[tuple[str, str]] = []
@@ -181,11 +194,8 @@ def why_this_stop(factors: list[Factor], pros: list[str], cons: list[str]) -> li
     best = pick("best_time", FOR)
     hours = pick("hours", FOR)
     if best:
-        lo, hi = str(best.value).split("-")
-        fors.append(("best_time", f"You're there at its best time, {lo}–{hi}."))
-    elif hours and hours.value != "any":
-        lo, hi = str(hours.value).split("-")
-        fors.append(("hours", f"It fits the card's visiting window, {lo}–{hi}."))
+        fors.append(("best_time", best.text))   # m326: exactly as true as the factor says (arriving inside, or before)
+    # m326 (G6): the times to go are a fact on the stop, not a reason; "It fits the card's visiting window" is gone
     travel = pick("travel", FOR)
     if travel:
         fors.append(("travel", travel.text))
@@ -197,8 +207,10 @@ def why_this_stop(factors: list[Factor], pros: list[str], cons: list[str]) -> li
     if against:
         x = against[0]
         trade = (x.kind, f"The trade-off: {x.text[:1].lower() + x.text[1:]}")
-    elif cons:
-        trade = ("preference", f"The trade-off: it has {cons[0]}, which your answers count against.")
+    elif cons and (good := next((GOOD_TO_KNOW[c] for c in cons if c in GOOD_TO_KNOW), None)):
+        # m326 (reviews, 24 Nov): an abstract taste ("local, new-to-you places … your answers count against") read as
+        # a dislike the person never stated, so only a practical one is said, plainly
+        trade = ("preference", good)
     keep = fors[:WHY_MAX - (1 if trade else 0)] + ([trade] if trade else [])
     return [{"kind": k, "effect": AGAINST if (k, t) == trade else FOR, "text": t} for k, t in keep]
 
