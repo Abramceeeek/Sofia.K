@@ -113,3 +113,29 @@ def test_a_day_never_starts_with_a_rest():
     sight = Candidate("sight", FAR, FAR, 60, DAY, 0.5)
     plan = plan_day([rest, sight], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=2, time_limit_s=0.5)
     assert [s.moment_id for s in plan.stops][0] == "sight"
+
+
+def test_a_days_travel_stays_near_its_paces_budget():
+    """m333 (Abram: "consider total daily travel burden"): places close together win over slightly better ones further
+    apart once the day's travel would pass its budget, and the day keeps its places."""
+    p = lambda dlat, dlon: Point(lat=51.5081 + dlat, lon=-0.1281 + dlon)
+    near = [Candidate(f"near{k}", p(0.002 * k, 0.0), p(0.002 * k, 0.0), 45, DAY, 0.3) for k in range(1, 4)]
+    far = [Candidate(f"far{k}", p(0.0125 * k, 0.0), p(0.0125 * k, 0.0), 45, DAY, 0.6) for k in range(1, 4)]
+    run = lambda budget: plan_day(near + far, START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=3,
+                                  time_limit_s=0.5, travel_budget_min=budget)
+    unlimited, gentle = run(None), run(30)
+    travel = lambda plan: sum(s.travel_min for s in plan.stops)
+    assert len(gentle.stops) == 3 and travel(gentle) <= 30 < travel(unlimited)   # 28 min against 53
+
+
+def test_a_ride_starts_from_somewhere_near_its_start():
+    """m333 (Abram: "do not create a 50-minute transfer simply to reach a pier"): the boat from Greenwich comes after
+    something at Greenwich, never straight after a long journey; with nothing there, no boat."""
+    pier = Point(lat=51.5281, lon=-0.1281)                        # about 40 min on foot from the start
+    hill = Point(lat=51.5291, lon=-0.1281)                        # a couple of minutes from the pier
+    ride = Candidate("boat", pier, NEAR, 60, DAY, 1.0, ride=True)
+    there = Candidate("hill", hill, hill, 45, DAY, 0.2)
+    plan = plan_day([ride, there], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=2, time_limit_s=0.5)
+    assert [s.moment_id for s in plan.stops] == ["hill", "boat"]
+    alone = plan_day([ride], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=1, time_limit_s=0.5)
+    assert alone.stops == []

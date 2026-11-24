@@ -741,7 +741,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             stops=body.stops, budget_gbp=budget,
             day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
             weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
-            pace=(user.profile or {}).get("activity"),   # m331: journey costs by the person's pace
+            pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by the person's pace
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
             time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
@@ -1354,7 +1354,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), date=day.isoformat(), time_limit_s=limit,
                                       extra=n > part.stops,   # m329: an extra place is a genuine match only
-                                      pace=(user.profile or {}).get("activity"),   # m331: journey costs by pace
+                                      pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by pace
                                       sunset=sunset(day), mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
@@ -1375,9 +1375,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     continue
                 early = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops)
                 # m331: what's still wrong with this plan: an early end past EARLY_MAX_MIN, and avoidable waiting
-                # mid-day (each wait past FREE_TIME_MIN). The extra places are tried while it isn't zero.
+                # mid-day (each wait past FREE_TIME_MIN), minute for minute; m333: and travel past the pace's
+                # budget. The extra places are tried while it isn't zero, and the plan with the least is kept.
                 excess = max(0, early - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
-                    stops, brief.start_time, by_ready, brief.end_time, brief.weekday, brief.date)
+                    stops, brief.start_time, by_ready, brief.end_time, brief.weekday, brief.date) + \
+                    dayplan.travel_over(stops, brief.pace)   # m333: and travel past the pace's budget
                 # m329 (Abram: "near his existing route, without a disproportionate transfer"): a plan with extra
                 # places is kept only if no journey in it is longer than the visit it leads to (30 min always allowed)
                 if n > part.stops and dayplan.disproportionate(stops, loved_cards):

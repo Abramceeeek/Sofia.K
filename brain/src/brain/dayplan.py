@@ -24,7 +24,7 @@ from .aspiration import AspirationMap
 from .features import Conditions, moment_features
 from .moments import Moment, Point
 from .personal import DeltaPosterior
-from .planner import (PACE_TRAVEL, Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
+from .planner import (PACE_TRAVEL, PACE_TRAVEL_BUDGET, Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
                       plan_day, spread_to_end)
 from .population import PopulationModel
 from .scoring import contributions, named_weights, value_gbp
@@ -128,6 +128,12 @@ def avoidable_wait(stops: list[dict], day_start: str, by_id: Mapping[str, Moment
     return sum(st.get("free_before_min", 0) for st in trial if st.get("free_before_kind") == "wait")
 
 
+def travel_over(stops: list[dict], pace: str | None) -> int:
+    """m333: minutes of the day's travel past its pace's budget (PACE_TRAVEL_BUDGET); 0 with no pace."""
+    budget = PACE_TRAVEL_BUDGET.get(pace) if pace else None
+    return max(0, sum(int(st.get("travel_min") or 0) for st in stops) - budget) if budget else 0
+
+
 def _short_title(title: str) -> str:
     return title.split(":")[0].strip() if title else ""
 
@@ -149,6 +155,7 @@ def load_card_kinds(path: Path) -> dict[str, str]:
 
 
 HIGH_VIEWS = ("tower", "roof_garden")   # m331: catalogue kinds that show London from above (one a day)
+RIDE_CATEGORY = "transport_experience"  # m333: the river bus, boat trips, the cable car: rides, not stops
 
 
 @lru_cache(maxsize=1)
@@ -157,6 +164,19 @@ def high_views() -> frozenset[str]:
     from .config import DATA_DIR
     kinds = load_card_kinds(DATA_DIR / "catalogue" / "london.yaml")
     return frozenset(k for k, v in kinds.items() if v in HIGH_VIEWS)
+
+
+@lru_cache(maxsize=1)
+def rides() -> frozenset[str]:
+    """m333: the cards that are rides (catalogue category transport_experience): a ride starts from a stop near its
+    start, so the journey to Greenwich comes with Greenwich (Abram, 24 Nov)."""
+    from .config import DATA_DIR
+    path = DATA_DIR / "catalogue" / "london.yaml"
+    if not path.exists():
+        return frozenset()
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f) or {}
+    return frozenset(k for k, v in (d.get("experiences") or {}).items() if v.get("category") == RIDE_CATEGORY)
 
 
 def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Mapping[int, list[str]],
@@ -544,14 +564,17 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                              cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
         mine_candidates(real, brief)
     # m331: London from above once a day: two towers minutes apart felt repetitive (ChatGPT's review, 24 Nov)
-    highs = high_views()
+    highs, ride_ids = high_views(), rides()
     cands = [replace(c, group="views:from-above") if c.moment_id in highs and not c.group and not c.lunch else c
              for c in cands]
+    cands = [replace(c, ride=True) if c.moment_id in ride_ids and not c.lunch else c for c in cands]
     by_cand = {c.moment_id: c for c in cands}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]],
                       *PACE_TRAVEL.get(brief.pace or "", (1.0, 0.0)))   # m331: journeys cost more at a gentle pace
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
+                  # m333: the day's travel against its pace's budget (none for the Test B pair, which has no pace)
+                  travel_budget_min=PACE_TRAVEL_BUDGET.get(brief.pace) if brief.pace else None,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
                   buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS,
                   lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN,

@@ -213,13 +213,16 @@ def quality(qual: list) -> list[str]:
     return out
 
 
-def main() -> int:
+RUNS = 3              # m333 (Abram, 24 Nov: "consistent configuration, repeatable runs and exact commit identifiers")
+TIME_LIMIT_S = 1.0    # the solver's limit per search, as in production (BRAIN_PLANNER_TIME_LIMIT_S)
+
+
+def one_run() -> dict:
+    """Every traveller once, through a fresh app and database."""
     tmp = tempfile.mkdtemp()
     settings = Settings(database_url=f"sqlite:///{tmp}/gate.db", data_dir=DATA_DIR, admin_token="x",
-                        alert_webhook_url=None, planner_time_limit_s=1.0)
+                        alert_webhook_url=None, planner_time_limit_s=TIME_LIMIT_S)
     rows, total = [], {g: 0 for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8")}
-    free_all: list[int] = []
-    free_rows: list[str] = []
     qual: list = []
     detail = []
     with TestClient(create_app(settings)) as c:
@@ -231,37 +234,57 @@ def main() -> int:
             c.post("/v1/me/swipes", headers=h, json={"items": [{"item": i, "reaction": x} for i, x in p["swipes"].items()]})
             trip = c.post("/v1/me/trips/days", headers=h, json={"start_date": ex.START.isoformat(), **p["trip"]}).json()
             f = check(p, trip)
-            free = f.pop("_free")
-            free_all.extend(free)
+            f.pop("_free")
             qual.append((p, f.pop("_q")))
             rows.append(f"| {p['key']} | " + " | ".join("✅" if not f[g] else f"❌ {len(f[g])}" for g in total) + " |")
-            free_rows.append(f"| {p['key']} | {len(free)} | {sum(free)} min | {max(free, default=0)} min |")
             for g, items in f.items():
                 total[g] += len(items)
                 detail += [f"- **{p['key']} {g}:** {x}" for x in items]
-    ok = not any(total.values())
+    unused = sum(m for _, q in qual for m in q["unused"].values())
+    waits = [w[0] for _, q in qual for w in q["waits"]]
+    over = sum(1 for p, q in qual for m in q["travel"].values()
+               if m > TRAVEL_BUDGET.get(p["profile"].get("activity"), 90))
+    over_min = sum(max(0, m - TRAVEL_BUDGET.get(p["profile"].get("activity"), 90)) for p, q in qual
+                   for m in q["travel"].values())
+    days = sum(len(q["unused"]) for _, q in qual)
+    return {"rows": rows, "total": total, "qual": qual, "detail": detail, "unused": unused, "waits": waits,
+            "over": over, "over_min": over_min, "days": days, "places": sum(len(q["stops"]) for _, q in qual)}
+
+
+def main(runs: int = RUNS) -> int:
+    import os
+    results = [one_run() for _ in range(runs)]
+    first = results[0]
+    ok = all(not any(r["total"].values()) for r in results)
+    rep = ["## Repeatability", "",
+           f"{runs} runs of the same commit and settings (solver limit {TIME_LIMIT_S} s a search, {os.cpu_count()} "
+           "CPUs). The solver stops at a time limit, so a run can differ slightly from the next; the tables below "
+           "are run 1, and this table is every run.", "",
+           "| Run | G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8 | Unused time | Waits mid-day | Days over the travel budget "
+           "| Minutes over it | Different places |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for k, r in enumerate(results, start=1):
+        rep.append(f"| {k} | " + " | ".join(str(n) for n in r["total"].values()) +
+                   f" | {r['unused']} min | {len(r['waits'])}, {sum(r['waits'])} min | {r['over']} of {r['days']} "
+                   f"| {r['over_min']} min | {r['places']} |")
     out = ["# The London gate (m326)", "",
            f"Run on {date.today():%-d %b %Y}, from {ex.built_from()}.", "",
            f"**{'PASSED' if ok else 'NOT PASSED'}.** Six synthetic travellers through the real planner "
-           "(`scripts/london_gate.py`).", "",
+           "(`scripts/london_gate.py`). London passes only when every check passes in every run.", "",
            "G1 gap ≤ 20 min · G2 ends ≤ 45 min early · G3 a loved place reflected · G4 no disliked kind · "
            "G5 age and booking rules · G6 every Why and best-time line true · G7 a gentle pace kept · "
            "G8 no journey longer than its visit", "",
-           "| Traveller | G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8 |", "|---|---|---|---|---|---|---|---|---|", *rows, "",
-           "Failures in total: " + ", ".join(f"{g} {n}" for g, n in total.items()), "",
-           "## Free time (tracked, not a pass or fail; Abram, 24 Nov)", "",
-           "G1 only says no wait is unexplained. Whether the free time is good is reviewed separately: these are "
-           "the waits stated on a stop as \"Free time first\".", "",
-           "| Traveller | Waits | Total | Longest |", "|---|---|---|---|", *free_rows,
-           f"| **all** | **{len(free_all)}** | **{sum(free_all)} min** | **{max(free_all, default=0)} min** |", "",
-           *quality(qual),
+           "| Traveller | G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8 |", "|---|---|---|---|---|---|---|---|---|",
+           *first["rows"], "",
+           "Failures in total (run 1): " + ", ".join(f"{g} {n}" for g, n in first["total"].items()), "",
+           *rep, "",
+           *quality(first["qual"]),
            "**The test measures a good trip; it doesn't define one.** Never make a traveller's day worse to turn a "
-           "check green (Abram, 24 Nov).", "", "## Each failure", "", *detail]
+           "check green (Abram, 24 Nov).", "", "## Each failure (run 1)", "", *first["detail"]]
     path = HERE.parents[1] / "validation" / "london-examples" / "gate.md"
     path.write_text("\n".join(out) + "\n", encoding="utf-8")
-    print("\n".join(out[:12]))
+    print("\n".join(out[:12] + rep))
     return 0 if ok else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(int(sys.argv[1]) if len(sys.argv) > 1 else RUNS))

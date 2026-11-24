@@ -58,6 +58,7 @@ class Candidate:
     mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
     loved: bool = False                     # m331: a place they said they loved: its journey costs only the usual amount
     rest: bool = False                      # m331: a rest (feel word "Resting"): never the day's first stop
+    ride: bool = False                      # m333: a ride (the river bus): reached from somewhere near its start
 
 
 def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: str | None = None) -> Candidate:
@@ -146,6 +147,10 @@ def fits_day(c: Candidate, day_start: int, day_end: int) -> bool:
 # unit of utility). Chosen on the London gate's six travellers (validation/london-examples/gate.md).
 WAIT_COST = 5.0
 EXTRA_STOP_BONUS = 0.5   # m331: per place, in utility units, on a try with extra places (plan_day)
+PACE_TRAVEL_BUDGET = {"gentle": 60, "medium": 90, "full_on": 120, "unstated": 90}   # m333: travel a day, minutes
+TRAVEL_OVER_COST = 5    # m333: per minute of a day's travel over its pace's budget: the same as a minute's wait
+                        # (swept 0-20 on the London gate, 24 Nov; see _solve)
+RIDE_APPROACH_MAX = 20  # m333: the stop before a ride is at most this far from where the ride starts
 START_LATE_COST = 1   # m331: per minute of setting off after the day's start (a tie-breaker; see _solve)   # 0 → 5: stated waits 15 → 11, minutes 802 → 557, early ends unchanged (24 Nov)
 
 
@@ -157,7 +162,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
            max_areas: int = 1, buffer_walk_min: int = 0, buffer_transit_min: int = 0,
            lunch_bonus: float = 0.0, lunch_not_first: bool = False, max_theme: int = 2,
            max_places: int | None = None, fixed_count: bool = False,
-           strategy: str = "PARALLEL_CHEAPEST_INSERTION", seeded: bool = False) -> DayPlan | None:
+           strategy: str = "PARALLEL_CHEAPEST_INSERTION", seeded: bool = False,
+           travel_budget_min: int | None = None) -> DayPlan | None:
     n = len(cands)
     START, END = 0, n + 1
     ranges = [_start_ranges(c, day_start, day_end) for c in cands]
@@ -275,6 +281,26 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     for j, c in enumerate(cands, start=1):   # m331: a day starts with something to do, never a rest
         if c.rest:
             solver.Add(routing.NextVar(routing.Start(0)) != manager.NodeToIndex(j))
+    # m333 (Abram, 24 Nov: "do not create a 50-minute transfer simply to reach a pier"): a ride starts from a stop
+    # near its start (Greenwich's hill, or lunch there, before the boat), never straight after a long journey
+    for j, c in enumerate(cands, start=1):
+        if c.ride:
+            for i in range(0, n + 1):
+                if i != j and T[i][j] > RIDE_APPROACH_MAX:
+                    solver.Add(routing.NextVar(routing.Start(0) if i == 0 else manager.NodeToIndex(i))
+                               != manager.NodeToIndex(j))
+    if travel_budget_min is not None and TRAVEL_OVER_COST:
+        # m333 (Abram: "consider total daily travel burden"): each leg was judged on its own, so a day of 25-min
+        # hops (Priya's Saturday, 135 min) looked fine leg by leg. A minute of travel past the pace's budget costs
+        # what a minute's wait does, so a day of far-apart places loses to one of nearby places unless they're
+        # worth the journeys. Swept on the gate (24 Nov): 0 left 289 min over budget; 5 cut that to 225 with the
+        # least unused time; 10-20 cut it to 168-196 but ended days hours early (Priya's Saturday at 14:38) and
+        # brought waits back, since waiting became cheaper than going somewhere.
+        travel_cb = routing.RegisterTransitCallback(
+            lambda fi, ti: 0 if manager.IndexToNode(ti) == END else T[manager.IndexToNode(fi)][manager.IndexToNode(ti)])
+        routing.AddDimension(travel_cb, 0, 24 * 60, True, "Travel")
+        routing.GetDimensionOrDie("Travel").SetCumulVarSoftUpperBound(routing.End(0), int(travel_budget_min),
+                                                                      TRAVEL_OVER_COST)
     if lunch_not_first:   # journey round 2: a morning starts with a place, not lunch
         for i in meals:
             solver.Add(routing.NextVar(routing.Start(0)) != i)
@@ -373,6 +399,8 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
                 continue
             if (c.lunch and (meals or (lunch_not_first and not route))) or (c.rest and not route):
                 continue
+            if c.ride and T[prev][j] > RIDE_APPROACH_MAX:   # m333: a ride from somewhere near its start
+                continue
             if c.kind == "area" and areas >= max_areas:
                 continue
             themed = c.theme == "history" and not c.lunch
@@ -441,7 +469,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
              lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None,
-             seeded: bool = False, relax_floor: bool = True, retry_min: bool = True) -> DayPlan:
+             seeded: bool = False, relax_floor: bool = True, retry_min: bool = True,
+             travel_budget_min: int | None = None) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -476,7 +505,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 min_stops=min_stops, max_areas=max_areas,
                 buffer_walk_min=buffer_walk_min, buffer_transit_min=buffer_transit_min, lunch_bonus=lunch_bonus,
                 lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places,
-                fixed_count=bool(min_stops) and min_stops >= max_stops, seeded=seeded)
+                fixed_count=bool(min_stops) and min_stops >= max_stops, seeded=seeded,
+                travel_budget_min=travel_budget_min)
     status = "ok"
     if min_stops and not retry_min:
         # m331: a try with extra places (dayplan's Brief.extra): no hard minimum, which defeats the first-solution
