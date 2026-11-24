@@ -110,6 +110,8 @@ def main() -> int:
                         out.append(head)
                         for line in st.get("lines") or []:
                             out.append(f"- {line}")
+                        if st.get("book_ahead"):                       # the app shows it on the stop
+                            out.append(f"- Book ahead: {st['book_ahead']}")
                         for rsn in (st.get("reasons") or [])[:2]:      # what the app shows under "Why this?"
                             out.append(f"- Why: {rsn['you']}")
                         for w in (st.get("explain") or {}).get("why") or []:

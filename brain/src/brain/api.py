@@ -1301,10 +1301,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str,
                  mine: tuple[dayplan.Block, ...] = (), relaxed: bool = False) -> tuple[dict, list[dict]] | None:
             """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all. m200: `mine` is
-            the person's own time, planned around."""
-            for n in dict.fromkeys((part.stops, part.stops - 1)):
-                if n < 1:
+            the person's own time, planned around. m326 (the London gate, G2): a stretch that would end more than
+            EARLY_MAX_MIN before its end time tries one or two more places, so the person's places a day are a pace,
+            not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
+            best = None
+            more = () if tag == "before" or mine else (part.stops + 1, part.stops + 2)   # the place on the way is one
+            for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
+                if n < 1 or (best is not None and n < part.stops):
                     continue
+                if best is not None and n > part.stops and best[3] <= dayplan.EARLY_MAX_MIN:
+                    break
                 outlook = app.state.forecast.for_window(day, part.start_time, part.end_time)   # Stage 1
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
@@ -1324,17 +1330,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     head["weather"] = outlook.out()
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
-                used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
-                # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
-                # location, never its name")
-                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
-                              stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
-                              intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
-                                      **({"weather": outlook.out()} if outlook else {})})
-                s.add(row)
-                s.flush()
-                return {**plan_out(row), "stops": public(stops), **head}, stops
-            return None
+                early = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops)
+                if best is None or early < best[3]:
+                    best = (plan, stops, head, early, brief, outlook)
+            if best is None:
+                return None
+            plan, stops, head, _, brief, outlook = best
+            # m326: the chosen plan, as before
+            dayplan.state_free_time(stops, brief.start_time, {m.id: m for m in ready},   # G1: no silent wait
+                                    brief.end_time)
+            used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
+            # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
+            # location, never its name")
+            row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
+                          stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
+                          intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
+                                  **({"weather": outlook.out()} if outlook else {})})
+            s.add(row)
+            s.flush()
+            return {**plan_out(row), "stops": public(stops), **head}, stops
 
         for i in wanted:
             day = body.start_date + timedelta(days=i)

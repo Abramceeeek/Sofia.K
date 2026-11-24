@@ -273,7 +273,8 @@ object CardPhotos {
     }
 
     /** The card behind a plan stop: "<card>#lunch" is the same card as lunch; "lunch@…" slots have no card. */
-    fun cardId(momentId: String): String? = if (momentId.startsWith("lunch@")) null else momentId.substringBefore("#")
+    fun cardId(momentId: String): String? =   // m326: dinner slots, like lunch, have no card
+        if (momentId.startsWith("lunch@") || momentId.startsWith("dinner@")) null else momentId.substringBefore("#")
 
     fun info(context: Context, momentId: String): CardPhoto? = cardId(momentId)?.let { all(context)[it] }
 

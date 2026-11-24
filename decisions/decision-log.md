@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-24 — The London gate: Abram's six acceptance tests, and the planner fixes (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m326 | **The London gate** (`brain/scripts/london_gate.py` → `validation/london-examples/gate.md`): the six acceptance tests Abram adopted from ChatGPT's review (24 Nov), run on the six example travellers through the real API and planner. London passes only when all six pass.<br>**Before → after today:** G1 unexplained gaps 13 → **0**; G2 days ending over 45 min early 13 → **5**; G3 no loved place 1 → **0**; G4 a disliked kind 2 → **0**; G5 age and booking 1 → **0**; G6 untrue or internal "Why" lines 35 → **0**.<br>**What changed:**<br>• **Why lines:** no "the card's visiting window"; the best time named is the one the visit overlaps; a taste against a stop only as a practical "Good to know".<br>• **Dislikes by kind:** each swipe place has a kind (`types`), and a place not enjoyed keeps out places of the same kind, unless one was loved or fine.<br>• **Age rules:** a card's `rules.min_age` keeps it out of family plans; the Santander bike, 14.<br>• **Filling the day:** a trip day ending over 45 min early tries one or two more places; there is one dinner slot for a day ending at 19:30 or later; a wait first becomes a longer stay, within the card's own range and times; what's left is stated on the next stop ("Free time first: …").<br>**Still failing (G2, 5 days):** evenings run out of places (13 ready cards can be planned after 19:00, most limited to one a day). That's Phase 2's evening cards. **20 stated free-time waits (1,109 min) remain**: fewer is the next target (a waiting cost in the solver).<br>580 tests pass. **Nothing deployed.** It changes plans for everyone, including the Test B personal plan (dislikes by kind) | the London cards' rules as stated text only | Abram, 24 Nov: "treat planner correctness as a release blocker", with the six tests |
+
 ## 2026-11-24 — London first, then a city a day; food data from open sources (Abram, 23 Nov)
 
 | # | Decision | Replaces | Why |

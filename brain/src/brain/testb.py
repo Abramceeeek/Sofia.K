@@ -418,7 +418,7 @@ def overlap_report(out: Path) -> tuple[str, list[str]]:
     """D104: how much different people's personal plans overlap. Flexible lunch slots never count as shared.
     Warns when two dissimilar people share more than half their stops, and lists stops in most plans."""
     people = [json.loads(f.read_text(encoding="utf-8")) for f in sorted(out.glob("*_personal.json"))]
-    stops = {p["pid"]: [s for s in p["stops"] if not s["id"].startswith("lunch@")] for p in people}
+    stops = {p["pid"]: [s for s in p["stops"] if not s["id"].startswith(("lunch@", "dinner@"))] for p in people}
     title = {s["id"]: s["title"] for p in people for s in p["stops"]}
     lines = ["# Overlap between personal plans (D104, for Abram only)", "",
              f"{len(people)} personal plans. Flexible lunch slots don't count. \"Dissimilar\" means their weights point "

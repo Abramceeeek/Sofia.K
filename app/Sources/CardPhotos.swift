@@ -35,7 +35,8 @@ enum CardPhotos {
 
     /// The card behind a plan stop: "<card>#lunch" is the same card as lunch; "lunch@…" slots have no card.
     static func cardId(_ momentId: String) -> String? {
-        momentId.hasPrefix("lunch@") ? nil : String(momentId.split(separator: "#").first ?? "")
+        momentId.hasPrefix("lunch@") || momentId.hasPrefix("dinner@") ? nil   // m326: dinner slots, like lunch, have no card
+            : String(momentId.split(separator: "#").first ?? "")
     }
 
     /// m258: the photo only if it's cleared for sharing; otherwise the card keeps its field of colour.

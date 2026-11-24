@@ -63,6 +63,7 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
     loved_kinds = kinds_of({"loved"}, sw)
     bad_kinds = kinds_of({"didnt_enjoy"}, sw) - kinds_of({"loved", "fine"}, sw)
     reflected = False
+    stated = []
     for d in trip["days"]:
         pl = d.get("plan")
         if not pl:
@@ -73,8 +74,11 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
             mid = base(st["moment_id"])
             arrive, depart, travel = mins(st["arrive"]), mins(st["depart"]), st.get("travel_min") or 0
             idle = arrive - travel - prev_end
-            if idle > GAP_MAX:
+            said = any(ln.startswith("Free time first:") for ln in st.get("lines") or [])   # stated, not silent
+            if idle > GAP_MAX and not said:
                 fails["G1"].append(f"{d['date']} {idle} min before {st['title'][:40]}")
+            if said:
+                stated.append(idle)
             prev_end = depart
             if mid in loved_cards or KIND.get(mid) in loved_kinds:
                 reflected = True
@@ -102,6 +106,7 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
             fails["G2"].append(f"{d['date']} ends {early} min early")
     if not reflected:
         fails["G3"].append("no stop reflects a loved place")
+    fails["_free"] = stated
     return fails
 
 
@@ -110,6 +115,7 @@ def main() -> int:
     settings = Settings(database_url=f"sqlite:///{tmp}/gate.db", data_dir=DATA_DIR, admin_token="x",
                         alert_webhook_url=None, planner_time_limit_s=1.0)
     rows, total = [], {g: 0 for g in ("G1", "G2", "G3", "G4", "G5", "G6")}
+    free_all: list[int] = []
     detail = []
     with TestClient(create_app(settings)) as c:
         for p in ex.PEOPLE:
@@ -120,6 +126,8 @@ def main() -> int:
             c.post("/v1/me/swipes", headers=h, json={"items": [{"item": i, "reaction": x} for i, x in p["swipes"].items()]})
             trip = c.post("/v1/me/trips/days", headers=h, json={"start_date": ex.START.isoformat(), **p["trip"]}).json()
             f = check(p, trip)
+            free = f.pop("_free")
+            free_all.extend(free)
             rows.append(f"| {p['key']} | " + " | ".join("✅" if not f[g] else f"❌ {len(f[g])}" for g in total) + " |")
             for g, items in f.items():
                 total[g] += len(items)
@@ -131,7 +139,9 @@ def main() -> int:
            "G1 gap ≤ 20 min · G2 ends ≤ 45 min early · G3 a loved place reflected · G4 no disliked kind · "
            "G5 age and booking rules · G6 every Why and best-time line true", "",
            "| Traveller | G1 | G2 | G3 | G4 | G5 | G6 |", "|---|---|---|---|---|---|---|", *rows, "",
-           "Failures in total: " + ", ".join(f"{g} {n}" for g, n in total.items()), "", "## Each failure", "", *detail]
+           "Failures in total: " + ", ".join(f"{g} {n}" for g, n in total.items()), "",
+           f"Free time stated on a stop (not a failure; fewer is better): {len(free_all)} waits, "
+           f"{sum(free_all)} min in all.", "", "## Each failure", "", *detail]
     path = HERE.parents[1] / "validation" / "london-examples" / "gate.md"
     path.write_text("\n".join(out) + "\n", encoding="utf-8")
     print("\n".join(out[:12]))

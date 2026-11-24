@@ -269,7 +269,7 @@ def day_feelings(stops: list[dict], by_id: dict[str, Moment], feelings: list[str
     """The person's own feelings (screen 5) that this day really carries: at least half its stops with a card fit, and
     at least two of them when there are two or more. Never a feeling they didn't pick."""
     cards = [by_id[s["moment_id"].split("#")[0]] for s in stops
-             if not s["moment_id"].startswith("lunch@") and s["moment_id"].split("#")[0] in by_id]
+             if not s["moment_id"].startswith(("lunch@", "dinner@")) and s["moment_id"].split("#")[0] in by_id]
     out = []
     for f in feelings:
         n = sum(_fits(m, f) for m in cards)
@@ -295,6 +295,8 @@ def feel_line(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] =
             p, f = ("your own plans" if s["mine"] == "plans" else "free time"), f"mine{i}"
         elif s.get("lunch") and m is not None and "food" not in taken:   # a food card as the lunch stop
             p, f = "good food", "food"
+        elif mid.startswith("dinner@"):   # m326: the evening's dinner slot
+            p, f = "dinner", "dinner"
         else:
             p, f = _stop_feel(m, mid.startswith("lunch@"), i == peak, i == 0, taken)
         taken.add(f)
