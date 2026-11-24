@@ -118,6 +118,17 @@ final class BrainClient {
         return try await call("POST", "v1/me/plans", request)
     }
 
+    /// m336: up to three other places for one stop, each a whole plan with the rest of the day kept.
+    func alternatives(_ request: PlanRequest) async throws -> [Plan] {
+        if demo {   // CI screenshots only: the sample day, with a sample line
+            var sample: Plan = try Self.bundled("demo_plan")
+            sample.change = PlanChange(text: "Sample: another place for the same time. The rest of the day stays.")
+            return [sample]
+        }
+        let out: Alternatives = try await call("POST", "v1/me/plans/alternatives", AlternativesRequest(request: request))
+        return out.alternatives
+    }
+
     /// m176: the moments a plan can include, for "Must include".
     func moments() async throws -> [MomentSummary] {
         if demo {   // the sample plan's places, for the screenshots (as on Android)

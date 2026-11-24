@@ -171,6 +171,9 @@ class PlanRequest(BaseModel):
     # m200: a trip day's own time and pace, so swap, regenerate and "re-plan the rest of today" keep them
     mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
     relaxed: bool = False
+    # m336 (Abram, 24 Nov: "explain changes to the customer; keep costs and route changes transparent"): the plan this
+    # one replaces (a swap, a regenerate, "re-plan the rest of today"), so the answer says what changed
+    compare_to: int | None = Field(default=None, ge=1)
 
     @field_validator("date")
     @classmethod
@@ -404,3 +407,10 @@ class TripDaysIn(BaseModel):
     arrive: TripEndIn | None = None                                      # replaces arrive_time when sent
     leave: TripEndIn | None = None                                       # replaces leave_time when sent
     personal: list[DayTimeIn] = Field(default_factory=list, max_length=31)   # m200: the person's own time, by day
+
+
+class AlternativesIn(BaseModel):
+    """m336 (Abram, 24 Nov: "show alternative recommendations when something is unavailable"): up to `count` other
+    ways to fill one stop's place in a plan, each a whole plan with the rest kept, and what it changes."""
+    request: PlanRequest            # the swap request: the other stops in `keep`, this one in `exclude`
+    count: int = Field(default=3, ge=1, le=3)

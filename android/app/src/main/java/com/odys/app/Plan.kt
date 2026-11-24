@@ -1057,6 +1057,48 @@ fun ShotCardView(card: Card) {
 
 // ---- screen 10: a stop ------------------------------------------------------------------------------------------
 
+/** m336: "Other places for this time": up to three other places for a stop, each a whole day with the rest kept and a
+ *  line saying what it changes (the finish, the cost, the travel). Or keep the stop. As the iPhone's SwapChoices. */
+@Composable
+fun SwapChoices(model: AppModel, stop: Stop, onClose: () -> Unit, onChosen: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    var options by remember { mutableStateOf<List<Plan>?>(null) }
+    LaunchedEffect(stop.id) { options = model.alternatives(stop) }
+    FullSheet(model, onClose) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Eyebrow("Swap a stop")
+            PageTitle("Other places for this time", style = Theme.serif(28.sp))
+            Text("The rest of your day stays as it is.", style = Theme.subheadline.copy(color = Theme.muted))
+            val list = options
+            if (list == null) {
+                Box(Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Theme.accent)
+                }
+            } else {
+                if (list.isEmpty()) {
+                    Text("Nothing else fits this time. Keep this stop, or plan the day again.",
+                        style = Theme.body.copy(color = Theme.inkSoft))
+                }
+                list.forEach { alt ->
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Theme.surface).padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(alt.change?.text ?: "A different place for this time.", style = Theme.body)
+                        SecondaryButton("Choose this", enabled = !model.busy) {
+                            scope.launch {
+                                model.choose(alt, stop)
+                                onClose()
+                                onChosen()
+                            }
+                        }
+                    }
+                }
+            }
+            QuietButton("Keep ${stop.title}", Modifier.fillMaxWidth()) { onClose() }
+        }
+    }
+}
+
 /** The moment card, full-bleed, then directions, swapping and (after the visit) rating and sharing. */
 @Composable
 fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Unit) {
@@ -1129,15 +1171,9 @@ fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Uni
         }
     }
     if (helping) SafetyView(model) { helping = false }
-    if (confirmSwap) {
-        ConfirmDialog("Swap ${stop.title} for something else?", "The other stops stay. This one won't come back in this plan.",
-            "Swap it", "Keep it", onConfirm = {
-                scope.launch {
-                    model.swap(stop)
-                    if (model.errorMessage == null) onBack()
-                }
-            }, onDismiss = { confirmSwap = false })
-    }
+    // m336 (Abram, 24 Nov: "show alternative recommendations"): a choice of places for this time, each saying what it
+    // changes, instead of one blind swap (as the iPhone's SwapChoices)
+    if (confirmSwap) SwapChoices(model, stop, onClose = { confirmSwap = false }, onChosen = onBack)
     if (confirmRegenerate) {
         ConfirmDialog("Make a new plan for this day?", "You'll get different stops for the same times. This plan will be replaced.",
             "Plan this day again", "Keep this plan", onConfirm = {

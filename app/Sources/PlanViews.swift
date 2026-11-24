@@ -1452,6 +1452,64 @@ struct ShotCardView: View {
     }
 }
 
+/// m336: "Other places for this time": up to three other places for a stop, each a whole day with the rest kept
+/// and a line saying what it changes (the finish, the cost, the travel). Or keep the stop.
+struct SwapChoices: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let stop: Stop
+    var onChosen: () -> Void = {}
+    @State private var options: [Plan]?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    Eyebrow("Swap a stop")
+                    PageTitle(text: "Other places for this time", font: Theme.serif(28, relativeTo: .title))
+                    Text("The rest of your day stays as it is.")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.muted)
+                    if let options {
+                        if options.isEmpty {
+                            Text("Nothing else fits this time. Keep this stop, or plan the day again.")
+                                .font(.body)
+                                .foregroundStyle(Theme.inkSoft)
+                        }
+                        ForEach(options) { alt in
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(alt.change?.text ?? "A different place for this time.")
+                                    .font(.body)
+                                    .foregroundStyle(Theme.ink)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                SecondaryButton(title: "Choose this", disabled: model.busy) {
+                                    Task {
+                                        await model.choose(alt, for: stop)
+                                        dismiss()
+                                        onChosen()
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+                        }
+                    } else {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 24)
+                    }
+                    QuietButton("Keep \(stop.title)") { dismiss() }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 6)
+                }
+                .padding(24)
+            }
+            .background(Theme.background)
+        }
+        .task { options = await model.alternatives(for: stop) }
+    }
+}
+
 /// Screen 10: the moment card, full-bleed, then directions, swapping and (after the visit) rating and sharing.
 struct StopView: View {
     @Environment(AppModel.self) private var model
@@ -1527,17 +1585,10 @@ struct StopView: View {
             ToolbarItem(placement: .topBarTrailing) { Button("Help") { helping = true } }
         }
         .sheet(isPresented: $helping) { SafetyView().brainFeedback() }
-        .confirmationDialog("Swap \(stop.title) for something else?", isPresented: $confirmSwap,
-                            titleVisibility: .visible) {
-            Button("Swap it") {
-                Task {
-                    await model.swap(stop)
-                    if model.errorMessage == nil { dismiss() }
-                }
-            }
-            Button("Keep it", role: .cancel) {}
-        } message: {
-            Text("The other stops stay. This one won't come back in this plan.")
+        // m336 (Abram, 24 Nov: "show alternative recommendations"): a choice of places for this time, each saying
+        // what it changes, instead of one blind swap
+        .sheet(isPresented: $confirmSwap) {
+            SwapChoices(stop: stop) { dismiss() }.brainFeedback()
         }
         .confirmationDialog("Make a new plan for this day?", isPresented: $confirmRegenerate, titleVisibility: .visible) {
             Button("Plan this day again") {

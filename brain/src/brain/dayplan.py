@@ -1027,6 +1027,40 @@ def say_no_dinner(stops: list[dict], brief: Brief) -> None:
     stops[-1]["lines"] = list(stops[-1].get("lines") or []) + [line]
 
 
+def plan_change(old: list[dict], new: list[dict]) -> dict:
+    """m336: what a replacement plan changes, from the stops as the app has them: the stops that left and came in, the
+    finish, what it costs (entry, food and fares) and the time spent travelling, with one plain line saying it."""
+    key = lambda st: str(st.get("key") or st["moment_id"])
+    places = lambda sts: [st for st in sts if st.get("rateable")]
+    gone = [st for st in places(old) if key(st) not in {key(x) for x in new}]
+    came = [st for st in places(new) if key(st) not in {key(x) for x in old}]
+    cost = lambda sts: round(sum(float(st.get("cost_gbp") or 0) for st in sts) + transport_gbp(sts), 2)
+    travel = lambda sts: sum(int(st.get("travel_min") or 0) for st in sts)
+    finish = lambda sts: sts[-1]["depart"] if sts else None
+    out = {"out": [st["title"] for st in gone], "in": [st["title"] for st in came],
+           "finish_before": finish(old), "finish_after": finish(new),
+           "cost_before_gbp": cost(old), "cost_after_gbp": cost(new),
+           "travel_before_min": travel(old), "travel_after_min": travel(new)}
+    parts = []
+    if gone and came:
+        parts.append(f"Instead of {_short_title(gone[0]['title'])}: {_short_title(came[0]['title'])}"
+                     + (f" and {len(came) - 1} more" if len(came) > 1 else "") + ".")
+    elif came:
+        parts.append(f"New: {', '.join(_short_title(st['title']) for st in came)}.")
+    elif gone:
+        parts.append(f"Left out: {', '.join(_short_title(st['title']) for st in gone)}.")
+    if out["finish_after"] and out["finish_after"] != out["finish_before"]:
+        parts.append(f"The day ends at {out['finish_after']} (was {out['finish_before']}).")
+    d = round(out["cost_after_gbp"] - out["cost_before_gbp"], 2)
+    if abs(d) >= 0.5:
+        parts.append(f"It costs about {_money(abs(d))} {'more' if d > 0 else 'less'}.")
+    t = out["travel_after_min"] - out["travel_before_min"]
+    if abs(t) >= 5:
+        parts.append(f"{abs(t)} min {'more' if t > 0 else 'less'} getting around.")
+    out["text"] = " ".join(parts) or "Nothing else changes."
+    return out
+
+
 def summary_lines(brief: Brief, stops: list[dict]) -> list[str]:
     """The plan's two header lines: where and when it starts, with the lunch, and what it costs (D100)."""
     spend, fare = sum(s["cost_gbp"] for s in stops), transport_gbp(stops)

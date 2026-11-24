@@ -185,9 +185,22 @@ data class Plan(
     val weather: Weather? = null,     // Stage 1: the Met Office forecast the plan was made with, if any
     val budget: DayBudget? = null,    // m217: the day's money against the person's budget, line by line
     val createdAt: String? = null,    // m228: when the Brain made it, for "saved on this phone"
+    val change: PlanChange? = null,   // m336: what this plan changed against the one it replaced (a swap)
 ) {
     val isBlind: Boolean get() = blind == true
 }
+
+/** m336: what a replacement plan changes (brain.dayplan.plan_change): one plain line, and the finish it gives. */
+@Serializable
+data class PlanChange(val text: String, val finishAfter: String? = null)
+
+/** m336: "other places for this time": each a whole plan with the rest of the day kept. */
+@Serializable
+data class Alternatives(val alternatives: List<Plan> = emptyList())
+
+/** m336: what the app sends for alternatives: the swap request, and how many to offer. */
+@Serializable
+data class AlternativesRequest(val request: PlanRequest, val count: Int = 3)
 
 /** m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out. */
 @Serializable
@@ -384,6 +397,7 @@ data class PlanRequest(
     val conditions: PlanConditions? = null,
     val mine: List<MyTime>? = null,       // m200: a trip day's own time, so swap and re-plan keep it
     val relaxed: Boolean? = null,         // m200: a relaxed trip day
+    val compareTo: Int? = null,           // m336: the plan this one replaces, so the Brain says what changed
 )
 
 @Serializable

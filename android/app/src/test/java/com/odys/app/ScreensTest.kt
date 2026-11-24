@@ -419,9 +419,12 @@ class ScreensTest {
         { reach("No thanks") })
     @Test fun replan() = showThen("10h-replan", { today(1); showNow = true },
         { reach("Re-plan the rest of today", tap = true) }, layers = true)
+    // m336: "Swap this stop" offers a choice of places for this time, each saying what it changes
     @Test fun swap() = showThen("10i-swap",
-        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) },
-        { reach("Swap this stop", tap = true) }, layers = true)
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable })
+          alternativesDemo = listOf(plan!!.copy(id = 9001, change = PlanChange(
+              "Sample: another place for the same time. The day ends at 17:20 (was 17:40).", "17:20"))) },
+        { reach("Swap this stop", tap = true); reach("Other places for this time") }, layers = true)
     @Test fun ratingPicked() {
         val stop = model.plan!!.stops.first { it.rateable }
         compose.setContent { RootView(model); RatingView(model, stop) {} }

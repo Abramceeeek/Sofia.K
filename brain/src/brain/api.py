@@ -33,7 +33,7 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
+from .schemas import (AlternativesIn, AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       PreviewCodeIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
                       ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StayCompareIn, StaySearchIn, SurveyIn, SwipesIn,
@@ -732,6 +732,32 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def make_plan(body: PlanRequest, user: db.User = Depends(current_user), s: Session = Depends(session),
                   p: PopulationModel = Depends(pop)):
         """The person's plan, from the same engine as the Test B plans (brain.dayplan, D107)."""
+        return plan_for(body, user, s, p)
+
+    @app.post("/v1/me/plans/alternatives", status_code=201)
+    def plan_alternatives(body: AlternativesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                          p: PopulationModel = Depends(pop)):
+        """m336 (Abram, 24 Nov): "show alternative recommendations when something is unavailable", "preserve the rest
+        of the itinerary", "explain changes". Up to `count` ways to fill a stop's place: each a whole plan (a swap:
+        the other stops kept, the swapped-out ones left out), each new card left out of the next, each with what it
+        changes against the plan it replaces (`compare_to`). The app adopts the one chosen; nothing else changes."""
+        req, out, seen = body.request, [], set()
+        if req.blind:
+            raise HTTPException(422, "the blind comparison is rated as it was chosen")
+        for _ in range(body.count):
+            alt = plan_for(req.model_copy(update={"exclude": sorted(set(req.exclude) | seen)}), user, s, p)
+            came = [st["moment_id"].split("#")[0] for st in alt["stops"] if st.get("rateable")
+                    and st["moment_id"].split("#")[0] not in {k.split("#")[0] for k in req.keep}]
+            if not alt["stops"] or not came or any(set(came) == set(a["came"]) for a in out):
+                break
+            out.append({**alt, "came": came})
+            seen |= set(came)
+        for a in out:
+            a.pop("came")
+        return {"alternatives": out}
+
+    def plan_for(body: PlanRequest, user: db.User, s: Session, p: PopulationModel) -> dict:
+        """make_plan's work, for one request (m336: also each alternative)."""
         day = date.fromisoformat(body.date) if body.date else None
         budget = body.budget_gbp if body.budget_gbp is not None else \
             BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
@@ -779,7 +805,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                       stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
         s.add(row)
         s.commit()
-        return {**plan_out(row), "stops": public(out), **head}
+        res = {**plan_out(row), "stops": public(out), **head}
+        if body.compare_to:   # m336: what this plan changes against the one it replaces
+            old = s.get(db.Plan, body.compare_to)
+            if old is not None and old.user_id == user.id and not hidden(old):
+                res["change"] = dayplan.plan_change(public(old.stops), res["stops"])
+        return res
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):

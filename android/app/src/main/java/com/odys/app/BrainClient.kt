@@ -89,6 +89,9 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun sendChoices(items: List<ChoiceItem>) = send("POST", "v1/me/conjoint", ChoiceItems(items))
     suspend fun sendProfile(profile: Profile) = send("PUT", "v1/me/profile", profile)
     suspend fun makePlan(request: PlanRequest): Plan = call("POST", "v1/me/plans", request)
+    /** m336: up to three other places for one stop, each a whole plan with the rest of the day kept. */
+    suspend fun alternatives(request: PlanRequest): List<Plan> =
+        call<AlternativesRequest, Alternatives>("POST", "v1/me/plans/alternatives", AlternativesRequest(request)).alternatives
     suspend fun moments(): List<MomentSummary> = call("GET", "v1/moments?plannable_only=true")
     suspend fun referral(): ReferralResponse = call("GET", "v1/me/referral")
     suspend fun rate(request: RatingRequest) = send("POST", "v1/me/ratings", request)
