@@ -15,6 +15,7 @@ import math
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
+from functools import lru_cache
 from pathlib import Path
 
 import yaml
@@ -81,12 +82,18 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
         idle = arrive - travel - prev_end
         if prev is not None and idle > 0:
             idle -= stretch(prev, idle)
-        if idle > FREE_TIME_MIN:
+        if idle > FREE_TIME_MIN and prev is None:
+            # m331: before the first stop it's a later start, not a wait: the planner begins when the first place
+            # is ready (an opening, or the day's shape)
+            st["lines"] = [f"A gentle start: your first stop is at {st['arrive']}, so the time before it is yours."] + \
+                list(st.get("lines") or [])
+            st["free_before_min"], st["free_before_kind"] = idle, "start"
+        elif idle > FREE_TIME_MIN:
             where = f" near {prev_name}" if prev_name else ""
             line = (f"Free time first: about {_hm(idle)} to yourself{where}. Linger, or find a coffee, then head here "
                     f"for {st['arrive']}.")
             st["lines"] = [line] + list(st.get("lines") or [])
-            st["free_before_min"] = idle
+            st["free_before_min"], st["free_before_kind"] = idle, "wait"
         prev, prev_end = st, parse_hhmm(st["depart"])
         prev_name = st.get("end_name") or _short_title(st.get("title") or "")
     if prev is not None and day_end:   # the end of the day: a longer last stay, within its times
@@ -111,6 +118,16 @@ def disproportionate(stops: list[dict], loved: set[str] | frozenset[str] = froze
     return out
 
 
+def avoidable_wait(stops: list[dict], day_start: str, by_id: Mapping[str, Moment], day_end: str | None,
+                   weekday: str | None, date: str | None) -> int:
+    """m331: the minutes of waiting a plan would still state mid-day (over FREE_TIME_MIN each), after longer stays;
+    a later start doesn't count. Measured on a copy, so the plan isn't changed."""
+    import copy
+    trial = copy.deepcopy(stops)
+    state_free_time(trial, day_start, by_id, day_end, weekday, date)
+    return sum(st.get("free_before_min", 0) for st in trial if st.get("free_before_kind") == "wait")
+
+
 def _short_title(title: str) -> str:
     return title.split(":")[0].strip() if title else ""
 
@@ -129,6 +146,17 @@ def load_card_kinds(path: Path) -> dict[str, str]:
     with open(path, encoding="utf-8") as f:
         d = yaml.safe_load(f) or {}
     return {k: v.get("type") for k, v in (d.get("experiences") or {}).items() if v.get("type")}
+
+
+HIGH_VIEWS = ("tower", "roof_garden")   # m331: catalogue kinds that show London from above (one a day)
+
+
+@lru_cache(maxsize=1)
+def high_views() -> frozenset[str]:
+    """m331: the cards that show London from above (a tower or a roof garden): a day holds at most one."""
+    from .config import DATA_DIR
+    kinds = load_card_kinds(DATA_DIR / "catalogue" / "london.yaml")
+    return frozenset(k for k, v in kinds.items() if v in HIGH_VIEWS)
 
 
 def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Mapping[int, list[str]],
@@ -515,6 +543,10 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     cands = lunch_candidates(real, by_id, brief, liked=u_hat,
                              cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
         mine_candidates(real, brief)
+    # m331: London from above once a day: two towers minutes apart felt repetitive (ChatGPT's review, 24 Nov)
+    highs = high_views()
+    cands = [replace(c, group="views:from-above") if c.moment_id in highs and not c.group and not c.lunch else c
+             for c in cands]
     by_cand = {c.moment_id: c for c in cands}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]],
                       *PACE_TRAVEL.get(brief.pace or "", (1.0, 0.0)))   # m331: journeys cost more at a gentle pace
@@ -528,7 +560,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                   if brief.mine else None,
                   # m216: on days with the person's own time, the solver starts from a valid plan built step by
                   # step (stage 1) and improves it (stage 2). Other days, and Test B, plan exactly as before.
-                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine), relax_floor=not brief.extra)
+                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine), relax_floor=not brief.extra,
+                  retry_min=not brief.extra)   # m331: an extra place fits at once, or the try is dropped
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))

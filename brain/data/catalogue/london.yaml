@@ -58,3 +58,4 @@ experiences:
   m_uber_boat_west_day:       {category: transport_experience, type: river_bus}
   m_uber_boat_west_night:     {category: transport_experience, type: river_bus}
   m_waterloo_bridge_sunset:   {category: views, type: bridge}
+  m_wellcome_reading_room:    {category: culture, type: museum, area: "Euston Road"}   # m331

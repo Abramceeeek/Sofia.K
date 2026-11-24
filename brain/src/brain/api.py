@@ -1300,9 +1300,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         out = []
 
         own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
+        by_ready = {m.id: m for m in ready}
         # m331: the cards at places they said they loved: never refused for a long journey
-        loved_cards = {cid for sw in user.swipes if sw.reaction == "loved" and sw.item in app.state.swipe_cards
-                       for cid in app.state.swipe_cards[sw.item][1]}
+        loved_sets = [tuple(app.state.swipe_cards[sw.item][1]) for sw in user.swipes
+                      if sw.reaction == "loved" and sw.item in app.state.swipe_cards]
+        loved_cards = {cid for ids in loved_sets for cid in ids}
+
+        def loved_for(part: tripdays.Part, day: date) -> str | None:
+            """m331 (Abram: "preserve strong preferences"): a place they loved that the trip hasn't been to yet, open
+            and fitting this stretch of the day and its budget, is that day's must-do, one a day, so a trip holds
+            each loved place once where it can (the family's and Margaret's Uber Boat, Sam's Borough Market). The
+            planner leaves a must-do out if it can't fit the day."""
+            wd, ds = day.strftime("%a").lower(), day.isoformat()
+            lo, hi = tripdays.mins(part.start_time), tripdays.mins(part.end_time)
+            for ids in loved_sets:
+                if set(ids) & used:
+                    continue
+                for cid in ids:
+                    m = by_ready.get(cid)
+                    if m and cid not in body.exclude and m.open_on(wd, ds) and (budget is None or (m.cost_gbp or 0) <= budget) \
+                            and dayplan.fits_day(dayplan.candidate_for(m, 0.0, wd, ds), lo, hi) and (
+                            part.toward is None or ((pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward))):
+                        return cid
+            return None
 
         def blocks_for(i: int) -> tuple[dayplan.Block, ...]:
             d = own_days.get(i)
@@ -1318,10 +1338,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
             best = None
             more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, EXTRA_PLACES_MAX + 1))
+            want = None if tag == "before" or mine else loved_for(part, day)
             for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
                 if n < 1 or (best is not None and n < part.stops):
                     continue
-                if best is not None and n > part.stops and best[3] <= dayplan.EARLY_MAX_MIN:
+                if best is not None and n > part.stops and best[3] <= 0:   # m331: no excess left: keep it
                     break
                 # m326: an extra place never takes what the trip's later days need (their places a day, each)
                 if n > part.stops and len(ready) - len(used) - n < (total - i - 1) * body.stops_per_day:
@@ -1344,23 +1365,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 pool = ready if part.toward is None else [   # D122: the place on the way really is on the way
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
                 plan, stops, head = personal_day(s, user, p, brief, pool, familiar=False, exclude=sorted(used),
+                                                 must_do=want if want in {m.id for m in pool} else None,
                                                  post=post, feelings=feelings or None, fallback=False, travel=view)
+                if want and want not in {st["moment_id"].split("#")[0] for st in stops}:
+                    want = None   # it didn't fit: the day's other tries go without it
                 if outlook:
                     head["weather"] = outlook.out()
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
                 early = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops)
+                # m331: what's still wrong with this plan: an early end past EARLY_MAX_MIN, and avoidable waiting
+                # mid-day (each wait past FREE_TIME_MIN). The extra places are tried while it isn't zero.
+                excess = max(0, early - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
+                    stops, brief.start_time, by_ready, brief.end_time, brief.weekday, brief.date)
                 # m329 (Abram: "near his existing route, without a disproportionate transfer"): a plan with extra
                 # places is kept only if no journey in it is longer than the visit it leads to (30 min always allowed)
                 if n > part.stops and dayplan.disproportionate(stops, loved_cards):
                     continue
-                if best is None or early < best[3]:
-                    best = (plan, stops, head, early, brief, outlook)
+                if best is None or excess < best[3]:
+                    best = (plan, stops, head, excess, brief, outlook)
             if best is None:
                 return None
             plan, stops, head, _, brief, outlook = best
             # m326: the chosen plan, as before
-            dayplan.state_free_time(stops, brief.start_time, {m.id: m for m in ready},   # G1: no silent wait
+            dayplan.state_free_time(stops, brief.start_time, by_ready,   # G1: no silent wait
                                     brief.end_time, brief.weekday, brief.date)
             used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
             # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its

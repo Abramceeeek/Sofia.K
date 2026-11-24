@@ -200,4 +200,8 @@ cards:
     label: Waterloo Bridge
     metres: 0
     wikidata: Q501003
+  m_wellcome_reading_room:   # m331: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Wellcome Collection
+    metres: 0
+    wikidata: Q7981191
 checked: '2026-11-11'

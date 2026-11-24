@@ -16,6 +16,8 @@ Run from brain/: `.venv/bin/python scripts/london_gate.py` → ../validation/lon
 """
 from __future__ import annotations
 
+from datetime import date
+
 import importlib.util
 import re
 import sys
@@ -40,6 +42,10 @@ CHILD_AGES = {"family": 8}            # the youngest in each example party, wher
 ITEMS = yaml.safe_load((DATA_DIR / "swipe_items.yaml").read_text(encoding="utf-8"))["items"]
 KIND = {k: v.get("type") for k, v in
         yaml.safe_load((DATA_DIR / "catalogue" / "london.yaml").read_text(encoding="utf-8"))["experiences"].items()}
+from brain.moments import load_moments  # noqa: E402
+
+WINDOWS = {m.id: m.windows() for m in load_moments(DATA_DIR / "moments")}
+TRAVEL_BUDGET = {"gentle": 60, "medium": 90, "full_on": 120, None: 90}   # m331: travel a day, by pace (minutes)
 CARDS = {}
 for f in (DATA_DIR / "moments").glob("*.yaml"):
     c = yaml.safe_load(f.read_text(encoding="utf-8"))
@@ -67,6 +73,8 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
     bad_kinds = kinds_of({"didnt_enjoy"}, sw) - kinds_of({"loved", "fine"}, sw)
     reflected = False
     stated = []
+    q = {"waits": [], "starts": [], "unused": {}, "travel": {}, "time": {}, "meals": [], "fit": [], "pins": {}, "stops": set(),
+         "titles": [d["title"] for d in trip["days"] if d.get("plan")]}
     for d in trip["days"]:
         pl = d.get("plan")
         if not pl:
@@ -77,19 +85,41 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
             mid = base(st["moment_id"])
             arrive, depart, travel = mins(st["arrive"]), mins(st["depart"]), st.get("travel_min") or 0
             idle = arrive - travel - prev_end
-            said = any(ln.startswith("Free time first:") for ln in st.get("lines") or [])   # stated, not silent
-            if idle > GAP_MAX and not said:
+            q["unused"][d["date"]] = q["unused"].get(d["date"], 0) + max(0, idle)
+            first = st is stops[0]
+            said = any(ln.startswith(("Free time first:", "A gentle start:")) for ln in st.get("lines") or [])
+            if idle > GAP_MAX and not said:   # stated, not silent
                 fails["G1"].append(f"{d['date']} {idle} min before {st['title'][:40]}")
-            if said:
+            card = CARDS.get(mid, {})
+            if first and idle > GAP_MAX:   # m331: a later start is measured on its own, not as a wait
+                q["starts"].append((idle, st["title"][:40], d["date"]))
+            elif said:
                 stated.append(idle)
+                why = "its best time" if st.get("best_text") else "its opening" if any(
+                    lo == arrive for lo, _ in WINDOWS.get(mid, [])) else "the day's shape"
+                q["waits"].append((idle, why, st["title"][:40], d["date"]))
             prev_end = depart
+            q["travel"][d["date"]] = q["travel"].get(d["date"], 0) + travel
+            fw = (st.get("feel_word") or "")
+            kind = "meal" if st.get("lunch") or str(st["moment_id"]).startswith(("lunch@", "dinner@")) else \
+                "rest" if fw in ("Resting", "Calm", "Quiet") else "explore" if mid.startswith("a_") else "visit"
+            q["time"][kind] = q["time"].get(kind, 0) + (depart - arrive)
+            if kind == "meal":
+                q["meals"].append("generic" if str(st["moment_id"]).startswith(("lunch@", "dinner@")) else "named")
+            if (((card.get("features") or {}).get("place") or {}).get("active", 0) >= 2
+                    and set(t.get("feelings") or []) & {"peaceful", "restored"}):
+                q["fit"].append(f"{d['date']} {st['title'][:40]} (strenuous, on a day to feel {', '.join(t['feelings'])})")
+            if st.get("pin"):
+                q["pins"].setdefault(d["date"], []).append((st["pin"]["lat"], st["pin"]["lon"], st["title"][:30]))
+            q["stops"].add(mid)
             if mid in loved_cards or KIND.get(mid) in loved_kinds:
                 reflected = True
             if KIND.get(mid) in bad_kinds:
                 fails["G4"].append(f"{d['date']} {st['title'][:40]} ({KIND.get(mid)})")
             card = CARDS.get(mid, {})
             stay = depart - arrive
-            if travel > 30 and travel > stay and not str(st["moment_id"]).startswith(("lunch@", "dinner@")):
+            if travel > 30 and travel > stay and mid not in loved_cards \
+                    and not str(st["moment_id"]).startswith(("lunch@", "dinner@")):   # m331: a loved place is worth it
                 fails["G8"].append(f"{d['date']} {travel} min to a {stay}-min visit: {st['title'][:36]}")
             if p["profile"].get("activity") == "gentle" and ((card.get("features") or {}).get("place") or {}).get("active", 0) >= 2:
                 fails["G7"].append(f"{d['date']} {st['title'][:40]} (strenuous, for a gentle day)")
@@ -110,12 +140,77 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
                         (n and not (arrive < mins(n.group(1)) < depart)):
                     fails["G6"].append(f"{d['date']} {st['title'][:30]}: arrives {st['arrive']}, \"{ln[:60]}\"")
         early = mins(t["day_end"]) - prev_end
+        q["unused"][d["date"]] = q["unused"].get(d["date"], 0) + max(0, early)
         if early > EARLY_MAX:
             fails["G2"].append(f"{d['date']} ends {early} min early")
     if not reflected:
         fails["G3"].append("no stop reflects a loved place")
     fails["_free"] = stated
+    fails["_q"] = q
     return fails
+
+
+def _km(a, b) -> float:
+    import math
+    dy = (a[0] - b[0]) * 111.2
+    dx = (a[1] - b[1]) * 111.2 * math.cos(math.radians(a[0]))
+    return (dx * dx + dy * dy) ** 0.5
+
+
+def _similar(a: str, b: str) -> bool:
+    wa, wb = set(re.findall(r"[a-z]+", a.lower())), set(re.findall(r"[a-z]+", b.lower()))
+    return bool(wa and wb) and len(wa & wb) / len(wa | wb) >= 0.6
+
+
+def quality(qual: list) -> list[str]:
+    """m331 (Abram, 24 Nov): measures reviewed by a person, never pass or fail. ⚠ marks what needs a look."""
+    out = ["## Quality measures (reviewed, not pass or fail)", "",
+           "Free time is split by kind, as Abram asked: rest, meals and wandering are part of a good day; the waits "
+           "are stated on the next stop, with what they wait for. Travel is compared with a day's budget for the "
+           f"person's pace ({', '.join(f'{k or 'unstated'} {v} min' for k, v in TRAVEL_BUDGET.items())}).", "",
+           "Unused time is the day's window with nothing planned: a later start, waits and an early end together "
+           "(fewer is better; rest, meals and wandering are planned, so they don't count).", "",
+           "| Traveller | Unused per day | Rest | Meals | Wandering | Waits (count, total, longest) | Later starts | "
+           "Travel per day | Meals named | Titles |", "|---|---|---|---|---|---|---|---|---|---|"]
+    notes, seen = [], {}
+    for p, q in qual:
+        pace = p["profile"].get("activity")
+        budget = TRAVEL_BUDGET.get(pace, 90)
+        per_day = ", ".join(f"{m} min{' ⚠' if m > budget else ''}" for m in q["travel"].values())
+        waits = q["waits"]
+        w = f"{len(waits)}, {sum(x[0] for x in waits)} min, {max((x[0] for x in waits), default=0)} min"
+        named = q["meals"].count("named")
+        food = "food" in p["profile"].get("fields", []) or any(
+            p["swipes"].get(i) == "loved" for i in (3, 7, 14))
+        meals = f"{named} of {len(q['meals'])}" + (" ⚠" if food and q["meals"] and not named else "")
+        titles = q["titles"]
+        rep = sum(1 for i in range(len(titles)) for j in range(i + 1, len(titles)) if _similar(titles[i], titles[j]))
+        long_t = sum(len(x) > 80 for x in titles)
+        tq = "ok" if not rep and not long_t else f"{rep} alike, {long_t} long ⚠"
+        starts = ", ".join(f"{x[0]} min" for x in q["starts"]) or "none"
+        unused = ", ".join(f"{m} min" for m in q["unused"].values())
+        out.append(f"| {p['key']} | {unused} | {q['time'].get('rest', 0)} min | {q['time'].get('meal', 0)} min | "
+                   f"{q['time'].get('explore', 0)} min | {w} | {starts} | {per_day} | {meals} | {tq} |")
+        for x in sorted(waits, reverse=True)[:2]:
+            notes.append(f"- **{p['key']}:** {x[0]} min before {x[2]} ({x[3]}), waiting for {x[1]}")
+        notes += [f"- **{p['key']} fit ⚠:** {x}" for x in q["fit"]]
+        for day, pins in q["pins"].items():   # back to a spot left earlier, after a long trip away
+            for i in range(len(pins)):
+                for j in range(i + 2, len(pins)):
+                    if _km(pins[i], pins[j]) < 0.6 and max(_km(pins[i], pins[k]) for k in range(i + 1, j)) > 3:
+                        notes.append(f"- **{p['key']} route ⚠:** {day} goes back to {pins[j][2]} after going "
+                                     f"over 3 km away")
+        for mid in q["stops"]:
+            seen.setdefault(mid, []).append(p["key"])
+    allu = [m for _, q in qual for m in q["unused"].values()]
+    out += ["", f"**Unused time, all {len(allu)} days:** {sum(allu)} min, a mean of "
+                f"{round(sum(allu) / max(1, len(allu)))} min a day."]
+    common = sorted(((len(v), k) for k, v in seen.items() if len(v) >= 3 and not k.startswith(("lunch@", "dinner@"))),
+                    reverse=True)
+    out += ["", "**The largest waits, and what they wait for:**", *notes, "",
+            "**The same stop for 3 or more of the 6 travellers** (variety; fewer is better): "
+            + (", ".join(f"{k} ({n})" for n, k in common) or "none"), ""]
+    return out
 
 
 def main() -> int:
@@ -125,6 +220,7 @@ def main() -> int:
     rows, total = [], {g: 0 for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8")}
     free_all: list[int] = []
     free_rows: list[str] = []
+    qual: list = []
     detail = []
     with TestClient(create_app(settings)) as c:
         for p in ex.PEOPLE:
@@ -137,6 +233,7 @@ def main() -> int:
             f = check(p, trip)
             free = f.pop("_free")
             free_all.extend(free)
+            qual.append((p, f.pop("_q")))
             rows.append(f"| {p['key']} | " + " | ".join("✅" if not f[g] else f"❌ {len(f[g])}" for g in total) + " |")
             free_rows.append(f"| {p['key']} | {len(free)} | {sum(free)} min | {max(free, default=0)} min |")
             for g, items in f.items():
@@ -144,6 +241,7 @@ def main() -> int:
                 detail += [f"- **{p['key']} {g}:** {x}" for x in items]
     ok = not any(total.values())
     out = ["# The London gate (m326)", "",
+           f"Run on {date.today():%-d %b %Y}, from {ex.built_from()}.", "",
            f"**{'PASSED' if ok else 'NOT PASSED'}.** Six synthetic travellers through the real planner "
            "(`scripts/london_gate.py`).", "",
            "G1 gap ≤ 20 min · G2 ends ≤ 45 min early · G3 a loved place reflected · G4 no disliked kind · "
@@ -156,6 +254,7 @@ def main() -> int:
            "the waits stated on a stop as \"Free time first\".", "",
            "| Traveller | Waits | Total | Longest |", "|---|---|---|---|", *free_rows,
            f"| **all** | **{len(free_all)}** | **{sum(free_all)} min** | **{max(free_all, default=0)} min** |", "",
+           *quality(qual),
            "**The test measures a good trip; it doesn't define one.** Never make a traveller's day worse to turn a "
            "check green (Abram, 24 Nov).", "", "## Each failure", "", *detail]
     path = HERE.parents[1] / "validation" / "london-examples" / "gate.md"

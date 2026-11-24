@@ -57,13 +57,15 @@ class Candidate:
     theme: str | None = None                # D127: "history" for a history-and-culture stop (at most 2, never in a row)
     mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
     loved: bool = False                     # m331: a place they said they loved: its journey costs only the usual amount
+    rest: bool = False                      # m331: a rest (feel word "Resting"): never the day's first stop
 
 
 def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: str | None = None) -> Candidate:
     """The planner's view of a plannable moment."""
     return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows(weekday, date)),
                      float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind,
-                     theme="history" if moment_features(m).get("history_culture", 0) >= 1 else None)
+                     theme="history" if moment_features(m).get("history_culture", 0) >= 1 else None,
+                     rest=(m.feel_word or "") == "Resting")
 
 
 @dataclass(frozen=True)
@@ -142,7 +144,9 @@ def fits_day(c: Candidate, day_start: int, day_end: int) -> bool:
 # m326 (Abram, 24 Nov: "labelling a wait … doesn't necessarily make it a good travel experience"): the objective's
 # cost for each minute spent waiting before a stop (its best time or its opening), in the solver's units (SCALE per
 # unit of utility). Chosen on the London gate's six travellers (validation/london-examples/gate.md).
-WAIT_COST = 5.0   # 0 → 5: stated waits 15 → 11, minutes 802 → 557, early ends unchanged (24 Nov)
+WAIT_COST = 5.0
+EXTRA_STOP_BONUS = 0.5   # m331: per place, in utility units, on a try with extra places (plan_day)
+START_LATE_COST = 1   # m331: per minute of setting off after the day's start (a tie-breaker; see _solve)   # 0 → 5: stated waits 15 → 11, minutes 802 → 557, early ends unchanged (24 Nov)
 
 
 def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
@@ -191,6 +195,13 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     tdim.CumulVar(routing.End(0)).SetRange(day_start, day_end)
     if WAIT_COST:   # m326 (the London gate): waiting for a stop's time costs a little, so routes that idle lose
         tdim.SetSlackCostCoefficientForAllVehicles(int(round(WAIT_COST)))
+        # m331: setting off after the day's start costs a minute's worth per minute, a tie-breaker: with nothing to
+        # wait for, go when the first place opens; a wait the day needs goes before the first stop (time at the stay)
+        # rather than in the middle of the day (WAIT_COST). Tried and dropped (24 Nov, the London gate): a start cost
+        # at WAIT_COST ended days early instead (Priya's Sunday, 145 min early); a cost per minute of finishing
+        # early started days an hour late to finish "on time", rewarded longer walks, and once planned nothing
+        # rather than one good place (OR-Tools leaves an empty route's costs out).
+        tdim.SetCumulVarSoftUpperBound(routing.Start(0), day_start, START_LATE_COST)
 
     def cost_cb(fi, ti):
         i, j = manager.IndexToNode(fi), manager.IndexToNode(ti)
@@ -261,6 +272,9 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     meals = [manager.NodeToIndex(j) for j, c in enumerate(cands, start=1) if c.lunch]
     if len(meals) > 1:
         solver.Add(solver.Sum([routing.ActiveVar(i) for i in meals]) <= 1)
+    for j, c in enumerate(cands, start=1):   # m331: a day starts with something to do, never a rest
+        if c.rest:
+            solver.Add(routing.NextVar(routing.Start(0)) != manager.NodeToIndex(j))
     if lunch_not_first:   # journey round 2: a morning starts with a place, not lunch
         for i in meals:
             solver.Add(routing.NextVar(routing.Start(0)) != i)
@@ -357,7 +371,7 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
             c = cands[j - 1]
             if j in used or (c.group and c.group in groups) or (c.mine and c.mine in done_blocks):
                 continue
-            if c.lunch and (meals or (lunch_not_first and not route)):
+            if (c.lunch and (meals or (lunch_not_first and not route))) or (c.rest and not route):
                 continue
             if c.kind == "area" and areas >= max_areas:
                 continue
@@ -427,7 +441,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
              lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None,
-             seeded: bool = False, relax_floor: bool = True) -> DayPlan:
+             seeded: bool = False, relax_floor: bool = True, retry_min: bool = True) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -464,8 +478,17 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                 lunch_not_first=lunch_not_first, max_theme=max_theme, max_places=max_places,
                 fixed_count=bool(min_stops) and min_stops >= max_stops, seeded=seeded)
     status = "ok"
-    best = _solve_best(usable, args)
-    if best is None and min_stops:
+    if min_stops and not retry_min:
+        # m331: a try with extra places (dayplan's Brief.extra): no hard minimum, which defeats the first-solution
+        # heuristic, and no ladder of retries (five more solves); one search where each place adds a modest bonus,
+        # so the day fills only with places whose journey and wait cost less than they're worth
+        args = {**args, "min_stops": None, "fixed_count": False, "stop_bonus": EXTRA_STOP_BONUS}
+        best = _solve_best(usable, args)
+    else:
+        best = _solve_best(usable, args)
+    if best is None and min_stops and not retry_min:
+        status = f"could not fit {min_stops} stops"
+    elif best is None and min_stops:
         # The hard minimum can defeat the first-solution heuristic. Drop it and instead add a
         # growing per-stop bonus (in utility units) until the plan has enough stops.
         args["min_stops"] = None

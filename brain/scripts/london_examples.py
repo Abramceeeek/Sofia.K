@@ -60,11 +60,28 @@ PEOPLE = [
 ]
 
 
+def built_from() -> str:
+    """m331 (Abram: "keep each plan tied to its Brain commit"): the commit these plans came from, and whether the
+    Brain's code or data had changes not yet committed."""
+    import subprocess
+    here = Path(__file__).resolve().parent.parent
+    try:
+        rev = subprocess.run(["git", "rev-parse", "--short=7", "HEAD"], cwd=here, capture_output=True, text=True,
+                             check=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", "src", "data"], cwd=here, capture_output=True,
+                               text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "an unknown Brain commit"
+    return f"Brain commit {rev}" + (" with uncommitted changes" if dirty else "")
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp()
     settings = Settings(database_url=f"sqlite:///{tmp}/examples.db", data_dir=DATA_DIR, admin_token="x",
                         alert_webhook_url=None, planner_time_limit_s=1.0)
-    out = ["# ODYS: example London trips (23 Nov 2026)", "",
+    out = ["# ODYS: example London trips", "",
+           f"Made by `scripts/london_examples.py` on {date.today():%-d %b %Y}, from {built_from()} (no app build: "
+           "the planner is called directly).", "",
            "**Synthetic people.** Each person is invented. Their onboarding answers are listed, and the plans are "
            "exactly what ODYS's planner returns for them, in the words the app shows. Nothing was edited by hand. "
            "These are for judging the product, not evidence about real travellers.", "",
