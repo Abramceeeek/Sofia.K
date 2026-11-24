@@ -46,6 +46,10 @@ cards:
     label: Borough Market
     metres: 1
     wikidata: Q894072
+  m_british_library_treasures:   # m329: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: British Library
+    metres: 0
+    wikidata: Q23308
   m_burlington_arcade:
     label: 6 Burlington Gardens
     metres: 77

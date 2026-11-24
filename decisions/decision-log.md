@@ -2,6 +2,18 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-24 — Jonas: a quiet place added, and two checks the numbers missed (branch only)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m330 | **The British Library's Treasures Gallery is a ready card** (`m_british_library_treasures`): free, quiet, indoors, open to 18:00 on Fridays, from bl.uk/visit (read 24 Nov). Its dated closures and early closings are on the card. Cards can now carry **dated times** (`time_of_day_dates`: a date with no times is closed), and every plan knows its date (`Brief.date`).<br>**Two failures the gate's numbers missed, both now checked:**<br>1. **A strenuous stop for a gentle traveller.** Filling Jonas's day first added a heated outdoor swim at 16:45 in the December dark, on top of a bike ride. Now a gentle pace keeps strenuous cards out (`kept_out`, `active` 2); places added only to fill a day must be genuine matches (no floor relaxing); and the gate checks it (**G7**).<br>2. **A disproportionate journey.** The British Library then came at the end of a 57-min journey, for a 50-min visit. Now a plan with extra places is refused if any journey is longer than the visit it leads to (30 min always allowed), and the gate checks it for everyone (**G8**).<br>**The gate's honest state: NOT PASSED.** Five travellers pass all eight checks. Jonas fails G2 by 60 min: the Library is now in his day at midday, but his afternoon goes out to Greenwich (57 + 26 min of journeys) and ends at 17:00. **The real fix is a compact day for a gentle traveller** (a stronger cost on long journeys for gentle people), proposed next. Free time: 14 waits, 769 min, the longest 66 min (tracked). 585 tests pass | m328's G2 state | Abram, 24 Nov: "never make a traveller's experience worse just to make an automated test green" |
+
+## 2026-11-24 — Jonas's evening, and what the gate is for (Abram)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m329 (Abram) | **Jonas's last G2 failure is fixed with a genuinely suitable place, never a shorter last visit.** The place must be:<br>• free, or within his budget (under £20);<br>• quiet, and indoors or sheltered in December;<br>• open in the actual Friday window;<br>• near his route, without a disproportionate transfer;<br>• short enough to fit without rushing.<br>"Don't insert an activity merely because the planner needs another stop."<br>**Two separate measures:** unexplained waiting must be zero (G1). Free time is tracked per traveller (count, total, longest) in `gate.md` and reviewed for usefulness; passing G1 says nothing about whether the amount is right.<br>**Build provenance stays** (m327): one frozen combination of `main` commit, TestFlight build and Brain commit for the round, with no feedback mixed across versions.<br>**Release position: not ready** until all six pass, the six trips are regenerated, and the independent reviews are rerun, including the qualitative problems (repetitive titles, activity mismatches).<br>**The principle: "never make a traveller's experience worse just to make an automated test green. The test should measure a good trip, not define one incorrectly."** | — | Abram, 24 Nov |
+
 ## 2026-11-24 — The London gate: G2 and idle time (branch only, m327's release rule)
 
 | # | Decision | Replaces | Why |

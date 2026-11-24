@@ -73,6 +73,9 @@ class BestTime(BaseModel):
     # m326 (the London gate; after-9-Nov #7): times for particular days, from the card's own opening hours, e.g.
     # {"fri": ["10:00-21:00"]} for a gallery's Friday late. A day not listed uses `time_of_day`.
     time_of_day_days: dict[str, list[str]] = Field(default_factory=dict)
+    # m329: dated changes the place's own page announces, by date ("2026-12-11": [] is closed that day;
+    # "2026-11-26": ["09:30-17:00"] closes early). A date listed here wins over the day of the week.
+    time_of_day_dates: dict[str, list[str]] = Field(default_factory=dict)
     # D100: when `light` is worth telling people ("hh:mm-hh:mm"). A plan shows "Best: <light>" only if the stop
     # overlaps one of these windows; with none, the line is never shown.
     best_window: list[str] = Field(default_factory=list)
@@ -179,9 +182,13 @@ class Moment(BaseModel):
             return self.experience.end_name
         return re.split(r"[:,(]", self.place.name)[0].strip()
 
-    def windows(self, weekday: str | None = None) -> list[tuple[int, int]]:
+    def windows(self, weekday: str | None = None, date: str | None = None) -> list[tuple[int, int]]:
         """Allowed time windows in minutes from midnight, from best_time.time_of_day. m326: on a day the card gives its
-        own times for (`time_of_day_days`, e.g. a gallery's Friday late), those instead."""
+        own times for (`time_of_day_days`, e.g. a gallery's Friday late), those instead. m329: on a date the card
+        lists (`time_of_day_dates`), that date's times, or none when it's closed."""
+        dated = (self.best_time.time_of_day_dates or {})
+        if date and date in dated:
+            return parse_windows(dated[date], self.id)
         own = (self.best_time.time_of_day_days or {}).get((weekday or "").lower()[:3])
         return parse_windows(own if own else self.best_time.time_of_day, self.id)
 
@@ -230,8 +237,11 @@ class Moment(BaseModel):
             missing.append("best_time.days (format)")
         return missing
 
-    def open_on(self, weekday: str | None) -> bool:
-        """Can the card be planned on this day ("mon".."sun")? No listed days means every day."""
+    def open_on(self, weekday: str | None, date: str | None = None) -> bool:
+        """Can the card be planned on this day ("mon".."sun")? No listed days means every day. m329: never on a date
+        the card lists as closed."""
+        if date and (self.best_time.time_of_day_dates or {}).get(date) == []:
+            return False
         if weekday is None or not self.best_time.days:
             return True
         return weekday.lower()[:3] in {d.lower() for d in self.best_time.days}

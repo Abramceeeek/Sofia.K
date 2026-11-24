@@ -19,6 +19,7 @@ experiences:
   m_beigel_bake_late:         {category: food_drink, type: bakery, area: "Brick Lane"}
   m_bm_great_court:           {category: culture, type: museum}
   m_borough_market_graze:     {category: food_drink, type: market, area: "Borough"}
+  m_british_library_treasures: {category: culture, type: gallery, area: "King's Cross"}   # m329
   m_burlington_arcade:        {category: shopping, type: arcade}
   m_canary_wharf_towers:      {category: neighbourhood, type: architecture_walk, area: "Canary Wharf"}
   m_chinatown_dim_sum:        {category: food_drink, type: restaurant, area: "Chinatown"}

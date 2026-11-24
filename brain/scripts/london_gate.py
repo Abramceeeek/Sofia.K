@@ -7,6 +7,9 @@
   G4  no stop of a kind the person didn't enjoy (unless they loved or were fine with a place of that kind)
   G5  card rules hold: no stop below its minimum age for a party with children; a booking the card needs is said
   G6  every "Why" and best-time line is true of the stop: no internal wording, no best time the visit misses
+  G7  the stated pace holds: someone who asked for a gentle day gets no strenuous stop (m329, Abram: "never make a
+      traveller's experience worse just to make an automated test green")
+  G8  no journey is longer than the visit it leads to (over 30 min): "without a disproportionate transfer" (m329)
 
 SYNTHETIC PEOPLE: the gate measures the planner, never real travellers.
 Run from brain/: `.venv/bin/python scripts/london_gate.py` → ../validation/london-examples/gate.md (and exit 1 on fail)
@@ -58,7 +61,7 @@ def kinds_of(reaction: set[str], swipes: dict) -> set[str]:
 
 def check(p: dict, trip: dict) -> dict[str, list[str]]:
     t, sw = p["trip"], p["swipes"]
-    fails = {g: [] for g in ("G1", "G2", "G3", "G4", "G5", "G6")}
+    fails = {g: [] for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8")}
     loved_cards = {c for i, r in sw.items() if r == "loved" for c in ITEMS[i].get("cards") or []}
     loved_kinds = kinds_of({"loved"}, sw)
     bad_kinds = kinds_of({"didnt_enjoy"}, sw) - kinds_of({"loved", "fine"}, sw)
@@ -85,6 +88,11 @@ def check(p: dict, trip: dict) -> dict[str, list[str]]:
             if KIND.get(mid) in bad_kinds:
                 fails["G4"].append(f"{d['date']} {st['title'][:40]} ({KIND.get(mid)})")
             card = CARDS.get(mid, {})
+            stay = depart - arrive
+            if travel > 30 and travel > stay and not str(st["moment_id"]).startswith(("lunch@", "dinner@")):
+                fails["G8"].append(f"{d['date']} {travel} min to a {stay}-min visit: {st['title'][:36]}")
+            if p["profile"].get("activity") == "gentle" and ((card.get("features") or {}).get("place") or {}).get("active", 0) >= 2:
+                fails["G7"].append(f"{d['date']} {st['title'][:40]} (strenuous, for a gentle day)")
             min_age = (card.get("rules") or {}).get("min_age")
             if p["key"] in CHILD_AGES and min_age and CHILD_AGES[p["key"]] < min_age:
                 fails["G5"].append(f"{d['date']} {st['title'][:40]}: minimum age {min_age}")
@@ -114,8 +122,9 @@ def main() -> int:
     tmp = tempfile.mkdtemp()
     settings = Settings(database_url=f"sqlite:///{tmp}/gate.db", data_dir=DATA_DIR, admin_token="x",
                         alert_webhook_url=None, planner_time_limit_s=1.0)
-    rows, total = [], {g: 0 for g in ("G1", "G2", "G3", "G4", "G5", "G6")}
+    rows, total = [], {g: 0 for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8")}
     free_all: list[int] = []
+    free_rows: list[str] = []
     detail = []
     with TestClient(create_app(settings)) as c:
         for p in ex.PEOPLE:
@@ -129,6 +138,7 @@ def main() -> int:
             free = f.pop("_free")
             free_all.extend(free)
             rows.append(f"| {p['key']} | " + " | ".join("✅" if not f[g] else f"❌ {len(f[g])}" for g in total) + " |")
+            free_rows.append(f"| {p['key']} | {len(free)} | {sum(free)} min | {max(free, default=0)} min |")
             for g, items in f.items():
                 total[g] += len(items)
                 detail += [f"- **{p['key']} {g}:** {x}" for x in items]
@@ -137,11 +147,17 @@ def main() -> int:
            f"**{'PASSED' if ok else 'NOT PASSED'}.** Six synthetic travellers through the real planner "
            "(`scripts/london_gate.py`).", "",
            "G1 gap ≤ 20 min · G2 ends ≤ 45 min early · G3 a loved place reflected · G4 no disliked kind · "
-           "G5 age and booking rules · G6 every Why and best-time line true", "",
-           "| Traveller | G1 | G2 | G3 | G4 | G5 | G6 |", "|---|---|---|---|---|---|---|", *rows, "",
+           "G5 age and booking rules · G6 every Why and best-time line true · G7 a gentle pace kept · "
+           "G8 no journey longer than its visit", "",
+           "| Traveller | G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8 |", "|---|---|---|---|---|---|---|---|---|", *rows, "",
            "Failures in total: " + ", ".join(f"{g} {n}" for g, n in total.items()), "",
-           f"Free time stated on a stop (not a failure; fewer is better): {len(free_all)} waits, "
-           f"{sum(free_all)} min in all.", "", "## Each failure", "", *detail]
+           "## Free time (tracked, not a pass or fail; Abram, 24 Nov)", "",
+           "G1 only says no wait is unexplained. Whether the free time is good is reviewed separately: these are "
+           "the waits stated on a stop as \"Free time first\".", "",
+           "| Traveller | Waits | Total | Longest |", "|---|---|---|---|", *free_rows,
+           f"| **all** | **{len(free_all)}** | **{sum(free_all)} min** | **{max(free_all, default=0)} min** |", "",
+           "**The test measures a good trip; it doesn't define one.** Never make a traveller's day worse to turn a "
+           "check green (Abram, 24 Nov).", "", "## Each failure", "", *detail]
     path = HERE.parents[1] / "validation" / "london-examples" / "gate.md"
     path.write_text("\n".join(out) + "\n", encoding="utf-8")
     print("\n".join(out[:12]))

@@ -607,7 +607,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         loved = [cards_at[sw.item] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at]
         disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
         disliked += dayplan.kept_out(ready, [(sw.item, sw.reaction) for sw in swipes], app.state.swipe_types,
-                                     app.state.card_kinds, (user.profile or {}).get("company"))
+                                     app.state.card_kinds, (user.profile or {}).get("company"),
+                                     (user.profile or {}).get("activity"))
         post = post or posterior(user, p)
 
         def run(keep: set[str], exclude: set[str]):
@@ -696,7 +697,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
                 u = inner.get("predicted")
                 prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
-                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows(brief.weekday) if card_m else [],
+                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows(brief.weekday, brief.date) if card_m else [],
                                              hours_text=inner.get("hours") or "", budget=budget_block,
                                              travel_source=legs_from, labels=dayplan.APP_LABELS,
                                              taste=taste)
@@ -739,7 +740,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             start_name=body.start_name, start=body.start, start_time=body.start_time, end_time=body.end_time,
             stops=body.stops, budget_gbp=budget,
             day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
-            weekday=day.strftime("%a").lower() if day else None,
+            weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
             time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
@@ -1238,7 +1239,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     and sw.item in cards_at for cid in cards_at[sw.item][1]}
         disliked |= {cid for _, ids in dayplan.kept_out(   # m326: kinds they didn't enjoy, and age rules
             ready, [(sw.item, sw.reaction) for sw in user.swipes if f"place:{sw.item}" not in fixed],
-            app.state.swipe_types, app.state.card_kinds, (user.profile or {}).get("company")) for cid in ids}
+            app.state.swipe_types, app.state.card_kinds, (user.profile or {}).get("company"),
+            (user.profile or {}).get("activity")) for cid in ids}
         fields = person_fields(user)
         asp = {m.id: (app.state.amap.match(m, fields) if app.state.amap else 0.0) for m in ready}
         per_day = max(1, min(body.stops_per_day, span // tripdays.MIN_PER_STOP))
@@ -1325,7 +1327,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 limit = settings.planner_time_limit_s if n <= part.stops else settings.planner_time_limit_s / 2
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
-                                      weekday=day.strftime("%a").lower(), time_limit_s=limit,
+                                      weekday=day.strftime("%a").lower(), date=day.isoformat(), time_limit_s=limit,
+                                      extra=n > part.stops,   # m329: an extra place is a genuine match only
                                       sunset=sunset(day), mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
@@ -1342,6 +1345,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
                 early = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops)
+                # m329 (Abram: "near his existing route, without a disproportionate transfer"): a plan with extra
+                # places is kept only if no journey in it is longer than the visit it leads to (30 min always allowed)
+                if n > part.stops and dayplan.disproportionate(stops):
+                    continue
                 if best is None or early < best[3]:
                     best = (plan, stops, head, early, brief, outlook)
             if best is None:
@@ -1349,7 +1356,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             plan, stops, head, _, brief, outlook = best
             # m326: the chosen plan, as before
             dayplan.state_free_time(stops, brief.start_time, {m.id: m for m in ready},   # G1: no silent wait
-                                    brief.end_time, brief.weekday)
+                                    brief.end_time, brief.weekday, brief.date)
             used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
             # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
             # location, never its name")

@@ -56,7 +56,7 @@ def _hm(n: int) -> str:
 
 
 def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Moment] | None = None,
-                    day_end: str | None = None, weekday: str | None = None) -> None:
+                    day_end: str | None = None, weekday: str | None = None, date: str | None = None) -> None:
     """m326 (G1, G2): a wait before a stop (the planner waits for its best time or its opening) first becomes a longer
     stay at the place before it, up to the top of that card's own time range (`dwell_targets`) and within its times to
     go; so does the end of the day, after the last stop. What's still over FREE_TIME_MIN is said as the next stop's
@@ -69,7 +69,7 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
             return 0
         a, d = parse_hhmm(st["arrive"]), parse_hhmm(st["depart"])
         top = dwell_targets(by_id, [m.id])[m.id]
-        close = max((hi for lo, hi in m.windows(weekday) if lo <= a <= hi), default=d)
+        close = max((hi for lo, hi in m.windows(weekday, date) if lo <= a <= hi), default=d)
         extra = max(0, min(room, top - (d - a), close - d))
         if extra:
             st["depart"] = hhmm(d + extra)
@@ -93,6 +93,21 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
         stretch(prev, parse_hhmm(day_end) - prev_end)
 
 
+TRANSFER_ALWAYS_OK = 30   # m329: a journey of up to this long is never called disproportionate
+
+
+def disproportionate(stops: list[dict]) -> list[dict]:
+    """m329: stops reached by a journey longer than the visit itself (and longer than TRANSFER_ALWAYS_OK): 57 min on
+    the Tube for a 50-min visit isn't a good end to a gentle day."""
+    out = []
+    for st in stops:
+        t = int(st.get("travel_min") or 0)
+        stay = parse_hhmm(st["depart"]) - parse_hhmm(st["arrive"])
+        if t > TRANSFER_ALWAYS_OK and t > stay:
+            out.append(st)
+    return out
+
+
 def _short_title(title: str) -> str:
     return title.split(":")[0].strip() if title else ""
 
@@ -114,13 +129,16 @@ def load_card_kinds(path: Path) -> dict[str, str]:
 
 
 def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Mapping[int, list[str]],
-             card_kinds: Mapping[str, str], company: str | None) -> list[tuple[str, list[str]]]:
+             card_kinds: Mapping[str, str], company: str | None,
+             activity: str | None = None) -> list[tuple[str, list[str]]]:
     """m326 (the London gate, G4 and G5; Abram's acceptance tests, 24 Nov): cards never planned for this person, as
     extra "didn't enjoy" entries (D100 keeps those out of every plan):
     - **a kind they didn't enjoy:** every card of a kind (a rooftop garden, a tower, a market) where they said they
       didn't enjoy a place of that kind, unless they loved or were fine with another place of the same kind;
     - **an age rule:** a card whose own rules set a minimum age (`rules.min_age`), when they travel as a family. The
-      children's ages aren't asked, so a family never gets it (the Santander Cycles bike ride needs riders of 14+)."""
+      children's ages aren't asked, so a family never gets it (the Santander Cycles bike ride needs riders of 14+);
+    - **a gentle pace** (m329, Abram: "never compromise the traveller's stated pace"): someone who asked for a gentle
+      day never gets a strenuous card (`active` 2: a bike ride, a swim, karting)."""
     bad = {t for i, r in swipes if r == "didnt_enjoy" for t in swipe_types.get(i, [])}
     bad -= {t for i, r in swipes if r in ("loved", "fine") for t in swipe_types.get(i, [])}
     out = []
@@ -131,6 +149,10 @@ def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Ma
         aged = [m.id for m in ready if (m.rules or {}).get("min_age")]
         if aged:
             out.append(("a minimum age, with children", aged))
+    if activity == "gentle":
+        hard = [m.id for m in ready if (m.features.place.get("active") or 0) >= 2]
+        if hard:
+            out.append(("a gentle pace", hard))
     return out
 
 
@@ -171,6 +193,8 @@ class Brief:
     budget_gbp: float | None = None
     day_label: str = "A day out in London"
     weekday: str | None = None     # "mon".."sun": cards closed that day are left out
+    date: str | None = None        # m329: "YYYY-MM-DD": a card's dated closures and early closings apply
+    extra: bool = False            # m329: more places than asked, to fill the day: only genuine matches (no floor relaxing)
     temp_c: float | None = None
     rain_prob: float | None = None
     time_limit_s: float = 2.0
@@ -468,7 +492,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     cond = Conditions(brief.temp_c, brief.rain_prob)
     rain = brief.rain_prob is not None and brief.rain_prob >= 0.5
     gone = {m.variant_of for m in moments if m.id in exclude and m.variant_of}
-    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)
+    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday, brief.date)
               and m.id not in exclude and not (m.variant_of and m.variant_of in gone)]
     if rain:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
@@ -481,7 +505,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
              for m in usable if m.id not in disliked_ids}
     off = offset or {}
     # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
-    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0), brief.weekday) for m in usable if m.id not in disliked_ids]
+    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0), brief.weekday, brief.date) for m in usable if m.id not in disliked_ids]
     idx = {n: i for i, n in enumerate(pop.names)}
     cands = lunch_candidates(real, by_id, brief, liked=u_hat,
                              cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
@@ -498,7 +522,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                   if brief.mine else None,
                   # m216: on days with the person's own time, the solver starts from a valid plan built step by
                   # step (stage 1) and improves it (stage 2). Other days, and Test B, plan exactly as before.
-                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine))
+                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine), relax_floor=not brief.extra)
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))
@@ -684,7 +708,7 @@ def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPl
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
 
     def could_fit(m: Moment) -> bool:
-        return (m.plannable() and m.open_on(brief.weekday) and not (rain and m.best_time.weather == ["dry"])
+        return (m.plannable() and m.open_on(brief.weekday, brief.date) and not (rain and m.best_time.weather == ["dry"])
                 and fits_day(candidate_for(m, 0.0), day_start, day_end)
                 and (brief.budget_gbp is None or (m.cost_gbp is not None and m.cost_gbp <= brief.budget_gbp)))
     # m255: an unknown price can't be checked against a budget, so it never passes as free
@@ -693,7 +717,7 @@ def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPl
     m = max((ready[i] for i in have), key=lambda m: (could_fit(m), cands[m.id].utility if m.id in cands else -99))
     if not m.plannable():
         why = "its card isn't complete yet"
-    elif not m.open_on(brief.weekday):
+    elif not m.open_on(brief.weekday, brief.date):
         why = f"closed on {DAY_NAMES.get((brief.weekday or '')[:3], brief.weekday)}"
     elif rain and m.best_time.weather == ["dry"]:
         why = "it's outdoors and rain is forecast"

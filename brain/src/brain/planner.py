@@ -58,9 +58,9 @@ class Candidate:
     mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
 
 
-def candidate_for(m: Moment, utility: float, weekday: str | None = None) -> Candidate:
+def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: str | None = None) -> Candidate:
     """The planner's view of a plannable moment."""
-    return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows(weekday)),
+    return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows(weekday, date)),
                      float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind,
                      theme="history" if moment_features(m).get("history_culture", 0) >= 1 else None)
 
@@ -410,7 +410,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              time_limit_s: float = 1.0, max_wait_min: int = 60, max_areas: int = 1,
              buffer_walk_min: int = 0, buffer_transit_min: int = 0, lunch_bonus: float = 0.0,
              lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None,
-             seeded: bool = False) -> DayPlan:
+             seeded: bool = False, relax_floor: bool = True) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -428,7 +428,9 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
                         reverse=True)
         # m206 (WS7 benchmark): with spares. Letting in exactly `min_stops` cards left a day short whenever those
         # couldn't fit together (an evening after three places that close at 18:00 gave one place, not three).
-        if places and sum(u > floor for u in places) < min_stops:
+        # m329 (Abram, 24 Nov): never for places added only to fill a day (`relax_floor` False): an extra place
+        # must be a genuine match, not "an activity inserted because the planner needs another stop"
+        if relax_floor and places and sum(u > floor for u in places) < min_stops:
             floor = min(floor, places[min(min_stops + FLOOR_SPARES, len(places)) - 1] - 1e-6)
     usable = [c for c in cands if (c.utility > floor or c.moment_id in must or c.lunch or c.mine)
               and _start_ranges(c, day_start, day_end)]
