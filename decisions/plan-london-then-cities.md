@@ -72,7 +72,27 @@ Claude's hours are estimates. Abram's hours come out of his 7.5 a week.
 
 ## 2b. OpenStreetMap in London
 
-*(Filled in when the tile-by-tile query finishes: food places, and the share with hours, cuisine and diet tags.)*
+**Partial: 20 of the 36 map tiles answered.** The public Overpass mirror, the only one reachable from here, timed out on the other 16, central London among them. So these are shares, not London's totals. Queried 24 Nov 2026; data © OpenStreetMap contributors, ODbL.
+
+| In the 20 tiles that answered | Places | Share |
+|---|---|---|
+| Food and drink (restaurant, café, fast food, pub, bar, ice cream, food court, beer garden) | 10,168 | — |
+| with a `cuisine` tag | 5,758 | 56.6% |
+| with a `website` | 2,791 | 27.4% |
+| with `opening_hours` | 2,242 | **22.0%** |
+| with `wheelchair` (access) | 889 | 8.7% |
+| `diet:vegetarian` = yes or only | 544 | 5.4% |
+| `diet:vegan` = yes or only | 286 | 2.8% |
+| `diet:halal` = yes or only | **130** | **1.3%** |
+
+**What it means:**
+- OSM adds what Overture lacks: **opening hours for about one place in five**, and some access information. These are a second source for the checked layer, never a replacement for the venue's own page.
+- **Diet tags are rare:** halal on about 1 place in 77. Like Overture's 115 halal restaurants, that is far below how many halal places London has.
+- **No open source answers "which places are halal" well enough to filter by it.** The honest options are:
+  - show the label where a source gives it, saying which source;
+  - later, a certifier's own published listing, if one publishes data that may be reused (to research);
+  - or the venue's own words, read on its page.
+- To get all of London's tiles, either retry the mirror at a quiet hour, or allow an OSM extract download (Geofabrik is blocked here). That needs one environment change, which Abram approves.
 
 ## 3. What Abram does this week
 
