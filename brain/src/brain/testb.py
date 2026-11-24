@@ -47,7 +47,7 @@ from .travel import LondonEstimate
 # The planning engine lives in dayplan.py (D107), shared with the app's API; re-exported here for the CLI and tests.
 from .dayplan import (GENERIC_STOP_MIN, Brief, PlanNotes, _base, _best_line, _cost, _cost_line,  # noqa: F401
                       _header, _leave, _same_place, _sentence, _stop_lines, _sunset, approach_text, clean,
-                      dwell_targets, leg_text, load_brief, load_swipe_cards, load_swipe_items, lunch_candidates,
+                      dwell_targets, leg_text, load_brief, load_swipe_cards, load_swipe_items, lunch_candidates, POP_COST_PER_GBP,
                       pace_of, personal_plan, transport_gbp)
 
 REACTIONS = {1: "loved", 2: "fine", 3: "didnt_enjoy", 4: "havent_been"}

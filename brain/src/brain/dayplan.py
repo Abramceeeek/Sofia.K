@@ -193,7 +193,12 @@ LUNCH_MIN = 45
 LUNCH_BONUS = 5.0
 
 
-LUNCH_CARD_MIN = 0.5   # a food card is offered as the lunch stop only if the person is predicted to like it this much
+# m321 (Abram, 21-23 Nov: "it is not showing in any London trip"): a food card is offered as the lunch stop when the
+# person is predicted to like it at least as much as an ordinary lunch. Its price counts only above the ordinary
+# lunch's (`Brief.lunch_gbp`), which the person pays either way; the "lunch near X" slot is scored 0 for the same
+# reason. Before, a food card needed +0.5 with its whole price counted, so no food place reached a London trip.
+LUNCH_CARD_MIN = 0.0
+POP_COST_PER_GBP = 0.025   # the population's cost weight, 0.25 per £10 (priors.yaml), when no person's is given
 
 
 # Journey round 2 (8 Oct): a day that starts at least this long before the lunch window (10:15 or earlier) never
@@ -249,12 +254,14 @@ def dwell_targets(by_id: dict[str, Moment], ids: list[str]) -> dict[str, int]:
 
 
 def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
-                     liked: Mapping[str, float] | None = None) -> list:
-    """The planner's candidates plus the lunch options (D102): each food card the person is predicted to like
-    (utility ≥ LUNCH_CARD_MIN) again as "<id>#lunch", allowed to start only in the lunch window (sharing a variant
-    group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside every place,
-    scored as neutral (0). Nothing is added if the day doesn't span lunch. `liked` holds the person's own
-    utilities when the planner's are nudged (D113), so a popular food card still counts as liked."""
+                     liked: Mapping[str, float] | None = None, cost_per_gbp: float = POP_COST_PER_GBP) -> list:
+    """The planner's candidates plus the lunch options (D102): each food card the person is predicted to like at
+    least as much as an ordinary lunch (m321) again as "<id>#lunch", allowed to start only in the lunch window
+    (sharing a variant group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside
+    every place, scored as neutral (0). Nothing is added if the day doesn't span lunch. `liked` holds the person's own
+    utilities when the planner's are nudged (D113), so a popular food card still counts as liked. `cost_per_gbp` is
+    the person's own cost weight per £ (a positive size): the ordinary lunch's money is given back to the food card,
+    since the person spends it either way."""
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     if not brief.lunch or not spans_lunch(day_start, day_end):
         return [c for c in real if not by_id[c.moment_id].meal]   # meal cards only ever serve as lunch (D104)
@@ -263,12 +270,14 @@ def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
     for c in real:
         m = by_id[c.moment_id]
         own = (liked or {}).get(c.moment_id, c.utility)
-        if (m.features.place.get("food") or 0) >= 2 and (m.cost_gbp or 0) > 0 and own >= LUNCH_CARD_MIN:
+        credit = cost_per_gbp * min(m.cost_gbp or 0.0, float(brief.lunch_gbp))   # m321: the ordinary lunch's money
+        if (m.features.place.get("food") or 0) >= 2 and (m.cost_gbp or 0) > 0 and own + credit >= LUNCH_CARD_MIN:
             wins = tuple((max(a, lo), min(b, hi + c.duration_min)) for a, b in c.windows
                          if max(a, lo) + c.duration_min <= min(b, hi + c.duration_min))
             if wins:
                 c = replace(c, group=c.group or f"meal:{c.moment_id}")
-                out.append(replace(c, moment_id=f"{c.moment_id}#lunch", windows=wins, lunch=True))
+                out.append(replace(c, moment_id=f"{c.moment_id}#lunch", windows=wins, lunch=True,
+                                   utility=c.utility + credit))
         if not m.meal:
             out.append(c)
     slot = lambda mid, p: Candidate(mid, p, p, LUNCH_MIN, ((lo, hi + LUNCH_MIN),), 0.0, float(brief.lunch_gbp),
@@ -363,9 +372,11 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     off = offset or {}
     # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
     real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0)) for m in usable if m.id not in disliked_ids]
-    cands = lunch_candidates(real, by_id, brief, liked=u_hat) + mine_candidates(real, brief)
-    by_cand = {c.moment_id: c for c in cands}
     idx = {n: i for i, n in enumerate(pop.names)}
+    cands = lunch_candidates(real, by_id, brief, liked=u_hat,
+                             cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
+        mine_candidates(real, brief)
+    by_cand = {c.moment_id: c for c in cands}
     legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
