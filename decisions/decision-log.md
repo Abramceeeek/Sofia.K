@@ -2,6 +2,15 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-24 — London first, then a city a day; food data from open sources (Abram, 23 Nov)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m321 (built) | **The lunch fix is on the branch** (`dayplan.lunch_candidates`). The ordinary lunch's money is given back to a food place at the person's own cost weight, and the bar is "at least as good as that lunch". Simulated 4-day London trips: food places 0 / 1 / 2 / 4 / 0 for no answers / food interest / loved Borough Market / both / didn't enjoy Borough Market (0 for all before). 577 tests pass. **Not deployed; shipping it now or after the round is Abram's call** | m321 (proposed) | Abram, 23 Nov: "do everything you have said on the steps" |
+| m323 (proposed) | **London first, then a city a day** (`plan-london-then-cities.md`): fix London's planning (the reviewers' 10 problems), fill its gaps (about 35 checked cards), and pass a written gate. Then the engineering (E1–E7), then one city a day to Preview, at 6–8 h of Claude's work and 30 min of Abram's review each. Plannable cities follow by demand | m322's order | Abram, 23 Nov: "as soon as London is enough … then move to another city … every single city every day" |
+| m324 | **Six example London trips, three independent reviews, and a question pack for other AI models** (`validation/london-examples/`). The plans are the real planner's output, unedited. Verdict: **"not yet"**. The writing about places is strong; the planning ends days early, waits silently, misses loved places, brings back disliked kinds, and has untrue "Why" lines. These are opinions from software, never evidence about people | — | Abram, 23 Nov: examples, a subagent's evaluation, then other AI models |
+| m325 | **Food data from open sources, not Google or Apple** (their terms forbid copying). Overture's London pull (23 Nov): 781,690 places, 70,291 food and drink, 49,126 confident and open; cuisine on most restaurants; `halal_restaurant` 115, vegetarian 264, vegan 162, kosher 31 (thin). Diet labels may be shown as what the source says ("listed as halal by OpenStreetMap contributors · check with the venue"). **A person's halal or food preference still waits for the DPIA review (m224)** | — | Abram, 23 Nov: halal, vegetarian, cuisine |
+
 ## 2026-11-21 — Why food never appears in London trips, and the expansion playbook (proposed)
 
 | # | Decision | Replaces | Why |
