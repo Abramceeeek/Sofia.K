@@ -51,7 +51,19 @@ def test_dated_closures_and_early_closings_come_from_the_card():
 
 
 def test_a_journey_longer_than_its_visit_is_disproportionate():
-    stop = lambda t, a, d: {"travel_min": t, "arrive": a, "depart": d}
+    stop = lambda t, a, d, mid="m_x": {"moment_id": mid, "travel_min": t, "arrive": a, "depart": d}
     assert dayplan.disproportionate([stop(57, "17:06", "17:56")])        # 57 min to a 50-min visit
     assert not dayplan.disproportionate([stop(30, "17:00", "17:20")])    # 30 min is always fine
     assert not dayplan.disproportionate([stop(45, "14:00", "15:30")])    # 45 min to a 90-min visit
+    # m331 (Abram): a place they said they loved is worth a longer journey
+    assert not dayplan.disproportionate([stop(57, "17:06", "17:56", "m_uber_boat_west_day")], {"m_uber_boat_west_day"})
+
+
+def test_journeys_cost_more_at_a_gentle_pace_but_never_to_a_loved_place():
+    """m331 (Abram, 24 Nov): pace-sensitive journeys; a strong preference overrides the distance cost."""
+    from brain.planner import PACE_TRAVEL, LegWeights
+    gentle, full = LegWeights(-0.3, -0.7, 0.0, *PACE_TRAVEL["gentle"]), LegWeights(-0.3, -0.7, 0.0, *PACE_TRAVEL["full_on"])
+    plain = LegWeights(-0.3, -0.7)
+    assert gentle.penalty(45) > plain.penalty(45) > full.penalty(45) > 0
+    assert gentle.penalty(10) == plain.penalty(10) == 0               # a short walk costs nothing at any pace
+    assert gentle.penalty(45, loved=True) == plain.penalty(45)          # to a loved place: the usual cost only

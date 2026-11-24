@@ -23,7 +23,7 @@ from .aspiration import AspirationMap
 from .features import Conditions, moment_features
 from .moments import Moment, Point
 from .personal import DeltaPosterior
-from .planner import (Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
+from .planner import (PACE_TRAVEL, Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
                       plan_day, spread_to_end)
 from .population import PopulationModel
 from .scoring import contributions, named_weights, value_gbp
@@ -96,11 +96,14 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
 TRANSFER_ALWAYS_OK = 30   # m329: a journey of up to this long is never called disproportionate
 
 
-def disproportionate(stops: list[dict]) -> list[dict]:
+def disproportionate(stops: list[dict], loved: set[str] | frozenset[str] = frozenset()) -> list[dict]:
     """m329: stops reached by a journey longer than the visit itself (and longer than TRANSFER_ALWAYS_OK): 57 min on
-    the Tube for a 50-min visit isn't a good end to a gentle day."""
+    the Tube for a 50-min visit isn't a good end to a gentle day. m331 (Abram): a place they said they loved is never
+    called disproportionate: "a 35-minute journey to a place someone loves for two hours can be worthwhile"."""
     out = []
     for st in stops:
+        if _base(st["moment_id"]) in loved:
+            continue
         t = int(st.get("travel_min") or 0)
         stay = parse_hhmm(st["depart"]) - parse_hhmm(st["arrive"])
         if t > TRANSFER_ALWAYS_OK and t > stay:
@@ -195,6 +198,7 @@ class Brief:
     weekday: str | None = None     # "mon".."sun": cards closed that day are left out
     date: str | None = None        # m329: "YYYY-MM-DD": a card's dated closures and early closings apply
     extra: bool = False            # m329: more places than asked, to fill the day: only genuine matches (no floor relaxing)
+    pace: str | None = None        # m331: the person's stated pace ("gentle", "medium", "full_on"): journey costs
     temp_c: float | None = None
     rain_prob: float | None = None
     time_limit_s: float = 2.0
@@ -507,11 +511,13 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
     real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0), brief.weekday, brief.date) for m in usable if m.id not in disliked_ids]
     idx = {n: i for i, n in enumerate(pop.names)}
+    real = [replace(c, loved=True) if c.moment_id in loved_ids else c for c in real]   # m331: never far for them
     cands = lunch_candidates(real, by_id, brief, liked=u_hat,
                              cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
         mine_candidates(real, brief)
     by_cand = {c.moment_id: c for c in cands}
-    legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
+    legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]],
+                      *PACE_TRAVEL.get(brief.pace or "", (1.0, 0.0)))   # m331: journeys cost more at a gentle pace
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
@@ -689,7 +695,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                       for name, ids in disliked]
     # the plan's worth by the person's own weights: stop utilities (a "lunch near X" slot scores 0) minus transfer
     # penalties. The stop count is fixed by the brief, so the floor and pace terms are the same for every plan
-    notes.value = round(sum(u_hat.get(_base(st.moment_id), 0.0) - legs.penalty(st.travel_min) for st in plan.stops), 4)
+    notes.value = round(sum(u_hat.get(_base(st.moment_id), 0.0) - legs.penalty(st.travel_min, _base(st.moment_id) in loved_ids)
+                            for st in plan.stops), 4)
     return plan, stops, left_out, notes
 
 

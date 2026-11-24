@@ -56,6 +56,7 @@ class Candidate:
     lunch: bool = False                     # D102: a meal stop; a plan holds at most one, and `lunch_bonus` pulls one in
     theme: str | None = None                # D127: "history" for a history-and-culture stop (at most 2, never in a row)
     mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
+    loved: bool = False                     # m331: a place they said they loved: its journey costs only the usual amount
 
 
 def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: str | None = None) -> Candidate:
@@ -70,10 +71,26 @@ class LegWeights:
     transfer_15_30: float
     transfer_30_plus: float
     packed_pace: float = 0.0   # plan-level: 5 stops vs 3, spread as β/2 per stop
+    # m331 (Abram, 24 Nov: "a peaceful day involves spending more time in the right neighbourhood, not visiting more
+    # places"): the person's own pace scales the cost of a journey (`pace_mult`), and every minute past a short walk
+    # adds `per_min`, so a day keeps to its part of town. A journey to a place they said they loved costs only the
+    # usual amount: distance never overrides a strong preference.
+    pace_mult: float = 1.0
+    per_min: float = 0.0
 
-    def penalty(self, travel_min: float) -> float:
+    def penalty(self, travel_min: float, loved: bool = False) -> float:
         h = leg_features(travel_min)
-        return max(0.0, -(self.transfer_15_30 * h["transfer_15_30"] + self.transfer_30_plus * h["transfer_30_plus"]))
+        base = max(0.0, -(self.transfer_15_30 * h["transfer_15_30"] + self.transfer_30_plus * h["transfer_30_plus"]))
+        if loved:
+            return base
+        return base * self.pace_mult + self.per_min * max(0.0, float(travel_min or 0) - WALK_MIN)
+
+
+# m331: journey costs by the person's stated pace (onboarding's "gentle / medium / full on"), as (multiplier on the
+# transfer penalties, cost per minute past WALK_MIN). Calibrated on the London gate's six travellers (24 Nov). No stated
+# pace keeps the old costs, so the generic plan and anyone who skipped the question plan as before.
+WALK_MIN = 15
+PACE_TRAVEL = {"gentle": (2.0, 0.02), "medium": (1.0, 0.008), "full_on": (0.7, 0.004)}
 
 
 @dataclass(frozen=True)
@@ -180,7 +197,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         if j == END:
             return 0
         t = T[i][j]
-        return int(round(SCALE * legs.penalty(t))) + t
+        return int(round(SCALE * legs.penalty(t, cands[j - 1].loved))) + t
 
     routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(cost_cb))
 
@@ -290,7 +307,7 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         if 1 <= node <= n:
             c = cands[node - 1]
             arrive = sol.Min(tdim.CumulVar(index))
-            pen = legs.penalty(T[prev][node])
+            pen = legs.penalty(T[prev][node], c.loved)
             stops.append(PlannedStop(c.moment_id, arrive, arrive + c.duration_min, T[prev][node],
                                      round(c.utility, 3), round(pen, 3)))
             prev = node
@@ -361,7 +378,7 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
             if any(k != c.mine and k not in done_blocks and not any(start_at(x, j, end) is not None for x in slots)
                    for k, slots in blocks.items()):
                 continue   # it would leave one of the person's own blocks out of reach
-            score = SCALE * (prizes[j] - legs.penalty(T[prev][j])) - T[prev][j]
+            score = SCALE * (prizes[j] - legs.penalty(T[prev][j], cands[j - 1].loved)) - T[prev][j]
             if best is None or score > best[0]:
                 best = (score, j, end, themed, cost)
         if best is None:

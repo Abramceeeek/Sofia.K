@@ -741,6 +741,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             stops=body.stops, budget_gbp=budget,
             day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
             weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
+            pace=(user.profile or {}).get("activity"),   # m331: journey costs by the person's pace
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
             time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
@@ -1299,6 +1300,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         out = []
 
         own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
+        # m331: the cards at places they said they loved: never refused for a long journey
+        loved_cards = {cid for sw in user.swipes if sw.reaction == "loved" and sw.item in app.state.swipe_cards
+                       for cid in app.state.swipe_cards[sw.item][1]}
 
         def blocks_for(i: int) -> tuple[dayplan.Block, ...]:
             d = own_days.get(i)
@@ -1329,6 +1333,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), date=day.isoformat(), time_limit_s=limit,
                                       extra=n > part.stops,   # m329: an extra place is a genuine match only
+                                      pace=(user.profile or {}).get("activity"),   # m331: journey costs by pace
                                       sunset=sunset(day), mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
@@ -1347,7 +1352,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 early = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops)
                 # m329 (Abram: "near his existing route, without a disproportionate transfer"): a plan with extra
                 # places is kept only if no journey in it is longer than the visit it leads to (30 min always allowed)
-                if n > part.stops and dayplan.disproportionate(stops):
+                if n > part.stops and dayplan.disproportionate(stops, loved_cards):
                     continue
                 if best is None or early < best[3]:
                     best = (plan, stops, head, early, brief, outlook)
