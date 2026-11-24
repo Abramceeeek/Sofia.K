@@ -1134,6 +1134,14 @@ fun StopView(model: AppModel, stop: Stop, planId: Int? = null, onBack: () -> Uni
                             SecondaryButton("Swap this stop", Modifier.weight(1f), enabled = !model.busy) { confirmSwap = true }
                             SecondaryButton("Plan again", Modifier.weight(1f), enabled = !model.busy) { confirmRegenerate = true }
                         }
+                        if (!stop.rainSwapId.isNullOrEmpty()) {   // m341: the rain option, in one tap
+                            SecondaryButton("Raining? Swap for the indoor option", enabled = !model.busy) {
+                                scope.launch {
+                                    model.swapForRain(stop)
+                                    if (model.errorMessage == null) onBack()
+                                }
+                            }
+                        }
                     }
                 }
                 if (stop.rateable) {

@@ -359,6 +359,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let costGbp: Double
     let costText: String
     let rainSwap: String
+    var rainSwapId: String? = nil  // m341: the rain option's card, so "Raining? Swap for the indoor option" is one tap
     let lunch: Bool
     let familiar: Bool
     let rateable: Bool

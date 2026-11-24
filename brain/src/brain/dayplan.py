@@ -908,12 +908,14 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
         if (hit := pick(st, s, max_min, any_time=False)):
             used.add(hit[1].id)
             s["rain_swap"] = line(hit[1], hit[2], hit[3])
+            s["rain_swap_id"] = hit[1].id   # m341: so the app can swap to it in one tap
     indoor = [st for st, _ in real if (by_id[_base(st.moment_id)].features.place.get("outdoor_exposure") or 0) == 0]
     if outdoor and not used and not indoor:
         hits = [(h, s) for st, s in outdoor if (h := pick(st, s, 30.0, any_time=True))]
         if hits:
             hit, s = max(hits, key=lambda x: x[0][0])
             s["rain_swap"] = line(hit[1], hit[2], hit[3])
+            s["rain_swap_id"] = hit[1].id
 
 
 GENERIC_STOP_MIN = 45   # GUESS: used when a generic stop has no `depart` time
@@ -1034,9 +1036,13 @@ def say_no_dinner(stops: list[dict], brief: Brief) -> None:
     stops[-1]["lines"] = list(stops[-1].get("lines") or []) + [line]
 
 
-def plan_change(old: list[dict], new: list[dict]) -> dict:
+def plan_change(old: list[dict], new: list[dict], since: str | None = None) -> dict:
     """m336: what a replacement plan changes, from the stops as the app has them: the stops that left and came in, the
-    finish, what it costs (entry, food and fares) and the time spent travelling, with one plain line saying it."""
+    finish, what it costs (entry, food and fares) and the time spent travelling, with one plain line saying it.
+    m341: `since` (a time): "re-plan the rest of today" is compared with the part of the old day still ahead, so the
+    stops already done aren't counted as left out."""
+    if since:
+        old = [st for st in old if parse_hhmm(st.get("depart") or "23:59") > parse_hhmm(since)]
     key = lambda st: str(st.get("key") or st["moment_id"])
     places = lambda sts: [st for st in sts if st.get("rateable")]
     gone = [st for st in places(old) if key(st) not in {key(x) for x in new}]
@@ -1171,7 +1177,8 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "travel_min": s["travel_min"], "travel_mode": s["travel_mode"], "travel_text": s.get("travel_text", ""),
             "approach": s["approach"], "what": s["what"], "queue_min": s.get("queue") or 0,
             "best_text": _best_line(s), "cost_gbp": s["cost_gbp"], "cost_kind": s["cost_kind"],
-            "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "lunch": s["lunch"],
+            "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "rain_swap_id": s.get("rain_swap_id"),
+            "lunch": s["lunch"],
             "familiar": s.get("familiar", False),
             "rateable": not s["moment_id"].startswith(("lunch@", "dinner@", "mine")),
             "mine": s.get("mine"),   # m200: "plans" or "free" for the person's own time, else None

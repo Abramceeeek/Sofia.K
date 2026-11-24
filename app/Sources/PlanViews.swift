@@ -1557,6 +1557,14 @@ struct StopView: View {
                                 SecondaryButton(title: "Swap this stop", disabled: model.busy) { confirmSwap = true }
                                 SecondaryButton(title: "Plan again", disabled: model.busy) { confirmRegenerate = true }
                             }
+                            if let rain = stop.rainSwapId, !rain.isEmpty {   // m341: the rain option, in one tap
+                                SecondaryButton(title: "Raining? Swap for the indoor option", disabled: model.busy) {
+                                    Task {
+                                        await model.swapForRain(stop)
+                                        if model.errorMessage == nil { dismiss() }
+                                    }
+                                }
+                            }
                         }
                     }
                     if stop.rateable {

@@ -809,7 +809,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if body.compare_to:   # m336: what this plan changes against the one it replaces
             old = s.get(db.Plan, body.compare_to)
             if old is not None and old.user_id == user.id and not hidden(old):
-                res["change"] = dayplan.plan_change(public(old.stops), res["stops"])
+                # m341: a plan that starts later than the one it replaces ("re-plan the rest of today") is compared
+                # with what was still ahead of it
+                first = min((st.get("arrive") or "23:59" for st in old.stops), default="00:00")
+                since = body.start_time if body.start_time > first else None
+                res["change"] = dayplan.plan_change(public(old.stops), res["stops"], since)
         return res
 
     @app.get("/v1/example-day")

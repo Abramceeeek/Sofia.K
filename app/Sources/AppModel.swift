@@ -598,9 +598,11 @@ final class AppModel {
                                   exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings,
                                   mine: old.mine, relaxed: old.relaxed)
         if reason == "rain" { request.conditions = PlanConditions(rainProb: 0.9) }
+        request.compareTo = current.id   // m341: say what changed in the rest of the day
         let tripId = currentTripDay?.trip.id
         await fetchPlan(request, sameDay: false)   // the trip keeps the day as planned; this is today's version
         guard let new = plan, new.id != current.id else { return }
+        if let change = new.change?.text { notice = ("What changed", change) }
         nowIndex = 0
         UserDefaults.standard.set(0, forKey: "nowIndex.\(new.id)")
         if let tripId, var trip = findTrip(tripId) {   // later days won't repeat this afternoon's places
@@ -623,6 +625,20 @@ final class AppModel {
             swappedIn = now.stops.first { !before.contains($0.momentId) }?.momentId
             if let change = now.change?.text { notice = ("What changed", change) }   // m336
             await client.event("swap_stop", ["out": stop.momentId, "in": swappedIn ?? ""])
+        }
+    }
+
+    /// m341: "Raining? Swap for the indoor option": the stop's rain option in its place, the rest of the day kept,
+    /// and what changed said.
+    func swapForRain(_ stop: Stop) async {
+        guard var request = swapRequest(stop), let rain = stop.rainSwapId, let current = plan else { return }
+        request.intent = ["must_do": rain]
+        let before = Set(current.stops.map(\.momentId))
+        await fetchPlan(request, swap: true)
+        if let now = plan, now.id != current.id {
+            swappedIn = now.stops.first { !before.contains($0.momentId) }?.momentId
+            if let change = now.change?.text { notice = ("What changed", change) }
+            await client.event("swap_stop", ["out": stop.momentId, "in": swappedIn ?? "", "from": "rain"])
         }
     }
 

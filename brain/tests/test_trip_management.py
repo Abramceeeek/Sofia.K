@@ -73,3 +73,26 @@ def test_the_change_line_names_the_swap_the_finish_the_cost_and_the_travel():
     ch = dayplan.plan_change(old, new)
     assert ch["text"] == ("Instead of Liberty's wooden galleries: Graze your way round Borough Market. The day ends at "
                           "17:20 (was 17:40). It costs about £18 more. 16 min more getting around.")   # £15 and one £3 fare
+
+
+def test_re_planning_the_rest_of_today_is_compared_with_what_was_still_ahead():
+    """m341: "re-plan the rest of today" doesn't call the stops already done "left out"."""
+    old = [{"key": "a", "moment_id": "a", "title": "The morning place", "rateable": True, "cost_gbp": 0,
+            "travel_min": 5, "travel_mode": "walk", "arrive": "10:00", "depart": "11:00"},
+           {"key": "b", "moment_id": "b", "title": "The closed place", "rateable": True, "cost_gbp": 0,
+            "travel_min": 5, "travel_mode": "walk", "arrive": "14:00", "depart": "15:00"}]
+    new = [{"key": "c", "moment_id": "c", "title": "The open place nearby", "rateable": True, "cost_gbp": 0,
+            "travel_min": 5, "travel_mode": "walk", "arrive": "14:10", "depart": "15:10"}]
+    ch = dayplan.plan_change(old, new, since="13:30")
+    assert ch["out"] == ["The closed place"] and ch["text"].startswith("Instead of The closed place: The open place")
+
+
+def test_a_stop_with_a_rain_option_names_it_for_the_one_tap_swap(client):
+    h, _ = install(client)
+    body, plan = _day(client, h)
+    with_rain = [st for st in plan["stops"] if st.get("rain_swap")]
+    assert with_rain and all(st.get("rain_swap_id") for st in with_rain)   # the card behind "If it rains"
+    for st in with_rain[:1]:
+        swap = {**_swap(body, plan, st), "intent": {"must_do": st["rain_swap_id"]}}
+        new = client.post("/v1/me/plans", headers=h, json=swap).json()
+        assert st["rain_swap_id"] in {s["moment_id"] for s in new["stops"]} and new["change"]["text"]

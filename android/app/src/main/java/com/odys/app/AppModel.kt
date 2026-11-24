@@ -568,11 +568,13 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             exclude = (old.exclude + skip).toSet().sorted(), feelings = old.feelings,
             conditions = if (reason == "rain") PlanConditions(0.9) else null,
             mine = old.mine, relaxed = old.relaxed,
+            compareTo = current.id,   // m341: say what changed in the rest of the day
         )
         val tripId = currentTripDay()?.first?.id
         fetchPlan(request, sameDay = false)
         val new = plan ?: return
         if (new.id == current.id) return
+        new.change?.text?.let { notice = "What changed" to it }
         nowIndex = 0
         prefs.set("nowIndex.${new.id}", 0)
         if (tripId != null) findTrip(tripId)?.let { trip ->
@@ -591,6 +593,22 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             swappedIn = now.stops.firstOrNull { it.momentId !in before }?.momentId
             now.change?.text?.let { notice = "What changed" to it }   // m336
             client.event("swap_stop", mapOf("out" to stop.momentId, "in" to (swappedIn ?: "")))
+        }
+    }
+
+    /** m341: "Raining? Swap for the indoor option": the stop's rain option in its place, the rest of the day kept, and
+     *  what changed said. */
+    suspend fun swapForRain(stop: Stop) {
+        val rain = stop.rainSwapId ?: return
+        val request = swapRequest(stop)?.copy(intent = mapOf("must_do" to rain)) ?: return
+        val current = plan ?: return
+        val before = current.stops.map { it.momentId }.toSet()
+        fetchPlan(request, swap = true)
+        val now = plan
+        if (now != null && now.id != current.id) {
+            swappedIn = now.stops.firstOrNull { it.momentId !in before }?.momentId
+            now.change?.text?.let { notice = "What changed" to it }
+            client.event("swap_stop", mapOf("out" to stop.momentId, "in" to (swappedIn ?: ""), "from" to "rain"))
         }
     }
 

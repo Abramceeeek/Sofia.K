@@ -274,6 +274,7 @@ data class Stop(
     val costGbp: Double = 0.0,
     val costText: String = "",
     val rainSwap: String = "",
+    val rainSwapId: String? = null,   // m341: the rain option's card, so "Raining? Swap for the indoor option" is one tap
     val lunch: Boolean = false,
     val familiar: Boolean = false,
     val rateable: Boolean = true,
