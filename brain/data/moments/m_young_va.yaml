@@ -38,8 +38,8 @@ best_time:
   crowd_window: null
   opening_hours: "Daily 10:00-17:45 (galleries close from 17:00), closed 24-26 Dec; free. vam.ac.uk/young, read 2026-11-24"
   hours: "Daily 10:00–17:45, galleries close from 17:00; closed 24–26 Dec. Free"   # shown on the stop
-features:
-  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+features:   # m340: museums are history_culture 2, as the Natural History Museum is (so D127 counts them)
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
   moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 1}
 cost_gbp: 0   # CHECKED: free
 shot_card: null

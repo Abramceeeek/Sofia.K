@@ -40,8 +40,8 @@ best_time:
   book_ahead: "Book a free entry ticket on sciencemuseum.org.uk beforehand"   # CHECKED
   opening_hours: "Daily 10:00-18:00 (last entry 17:15), closed 24-26 Dec, closes 17:00 on 26 Nov 2026; free, with a free ticket booked ahead. sciencemuseum.org.uk, read 2026-11-24"
   hours: "Daily 10:00–18:00, last entry 17:15; closed 24–26 Dec. Free (book a free ticket)"   # shown on the stop
-features:
-  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 2, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
+features:   # m340: museums are history_culture 2, as the Natural History Museum is (so D127 counts them)
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
   moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 1}
 cost_gbp: 0   # CHECKED: free with a pre-booked free ticket
 shot_card: null
