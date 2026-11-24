@@ -121,6 +121,9 @@ class Moment(BaseModel):
     # D104: a card that is a meal ("Lunch in the crypt…") is only ever planned as the day's lunch stop
     meal: Literal["lunch"] | None = None
     in_test_b: bool = True         # D105: False keeps a card out of Test B plans (e.g. booking plus price); the app keeps it
+    # m326 (the London gate, G5): rules the visit itself sets, from the card's source. `min_age`: the youngest person
+    # allowed to take part (e.g. Santander Cycles riders: 14). A party with a younger child never gets the card.
+    rules: dict = Field(default_factory=dict)
     shot_card: ShotCard | None = None
     source: str = "founder"
     last_checked: str | None = None
