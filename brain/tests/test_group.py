@@ -184,3 +184,23 @@ def test_a_large_group_is_told_the_trade_off_and_the_alternatives():
     if not all(gp.proportional.values()):
         note = next(n for n in gp.notes if "none of their favourite places" in n)
         assert "add a day" in note and "split up" in note
+
+
+def test_every_stop_says_who_it_suits_and_each_member_their_share():
+    """m342 (Abram: "show why particular decisions were made, so nobody feels that one person's preferences
+    dominate"): by member label only, never a name or an answer."""
+    gp = group.plan(members(), CANDS, days=2, per_day=3)
+    assert set(gp.why) == {x.id for x in gp.stops}
+    assert all(w.endswith(".") and "Member" in w for w in gp.why.values())
+    assert set(gp.shares) == {"Member A", "Member B", "Member C"}
+    assert all("of the" in s and "favourites" in s for s in gp.shares.values())
+
+
+def test_a_gentle_member_keeps_strenuous_stops_out_for_everyone():
+    """m342: the slowest stated pace holds for the group, as it does for one person (m329)."""
+    strenuous = {x.id for x in CANDS if (x.features.get("active") or 0) >= 2}
+    keen = members(A={"pace": "full_on"})
+    gentle = members(A={"pace": "full_on"}, C={"pace": "gentle"})
+    assert not {x.id for x in group.plan(gentle, CANDS, days=2, per_day=3).stops} & strenuous
+    assert any("gentle pace" in n for n in group.plan(gentle, CANDS, days=2, per_day=3).notes)
+    assert not any("gentle pace" in n for n in group.plan(keen, CANDS, days=2, per_day=3).notes)

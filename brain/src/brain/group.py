@@ -53,6 +53,7 @@ class Member:
     strict_access: bool = False     # m256: only places a source says are step-free (unknown access is left out)
     joins_first: dict[int, int] | None = None     # m256: day → how many of that day's stops they join (a later start
                                                   # or an earlier finish is the same count from the other end: GUESS)
+    pace: str | None = None         # m342: their stated pace ("gentle", "medium", "full_on"); a gentle one holds for all
 
 
 @dataclass
@@ -64,6 +65,10 @@ class GroupPlan:
     proportional: dict[str, bool]
     envy_free: dict[str, int]       # how many stops each member is envy-free for
     notes: list[str] = field(default_factory=list)
+    # m342 (Abram, 24 Nov: "show why particular decisions were made, so nobody feels that one person's preferences
+    # dominate"): for each stop, who it suits, in plain words; and each member's share of their favourites
+    why: dict[str, str] = field(default_factory=dict)
+    shares: dict[str, str] = field(default_factory=dict)
 
     @property
     def stops(self) -> list[Experience]:
@@ -109,6 +114,12 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     whose access is unknown stays in and is named in the notes (`unknown_access="flag"`), or is left out too
     (`"exclude"`): unknown is never read as "no", but the group can choose to be strict."""
     vetoed = {r for m in members for r in m.rejects}
+    # m342: the slowest stated pace holds for everyone: with a gentle member, no strenuous stop (a bike ride, a swim,
+    # karting), as for one person (m329); said in the notes, with splitting up as the way round it
+    gentle = [m.label for m in members if m.pace == "gentle"]
+    strenuous = {x.id for x in candidates if gentle and (x.features.get("active") or 0) >= 2}
+    vetoed_pace = strenuous - vetoed
+    vetoed |= strenuous
     access = any(m.needs_step_free for m in members)
     strict = any(m.needs_step_free and m.strict_access for m in members) or unknown_access == "exclude"
     sf = lambda x: x.accessibility.step_free
@@ -125,8 +136,12 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     U = {(m.label, x.id): m.scorer.utility(x) for m in members for x in pool}
     n = days * per_day
     notes = []
-    if vetoed & {x.id for x in candidates}:
-        notes.append(f"{len(vetoed & {x.id for x in candidates})} place(s) left out because someone rejected them.")
+    rejected = (vetoed - vetoed_pace) & {x.id for x in candidates}
+    if rejected:
+        notes.append(f"{len(rejected)} place(s) left out because someone rejected them.")
+    if vetoed_pace:
+        notes.append(f"{len(vetoed_pace)} strenuous place(s) left out because {', '.join(gentle)} asked for a gentle "
+                     "pace. To include one, split up for that stop.")
     if not_step_free:
         notes.append(f"{len(not_step_free)} place(s) left out because their own sources say they aren't step-free: "
                      + "; ".join(x.title for x in candidates if x.id in not_step_free) + ".")
@@ -217,7 +232,31 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
         notes.append(f"{', '.join(left_out)} {'has' if len(left_out) == 1 else 'have'} none of their favourite places in "
                      f"this plan: {days * per_day} stops can't hold a favourite for all {len(members)} of you. To change "
                      "that: add a day or a stop, split up for one stop, or let them choose one stop.")
-    return GroupPlan(day_lists, highlights, method, sats, prop, envy, notes)
+    why = {x.id: who_it_suits(members, x, P, favourites) for x in chosen}
+    def share(m: Member) -> str:
+        k = sum(x.id in favourites[m.label] for x in seen(m))
+        return f"{k} of the {len(seen(m))} stops they're there for {'is' if k == 1 else 'are'} among their favourites"
+    shares = {m.label: share(m) for m in members}
+    return GroupPlan(day_lists, highlights, method, sats, prop, envy, notes, why, shares)
+
+
+def who_it_suits(members: list[Member], x: Experience, P: dict, favourites: dict[str, set[str]]) -> str:
+    """m342: why a stop is in a group's plan, in plain words, by member label only (never a name or an answer):
+    whose favourites it is among, who it's a good match for (a chance of Good of at least GOOD), and who it isn't
+    for. "Among Member A's favourites; a good match for Member C; less so for Member B." """
+    fav = [m.label for m in members if x.id in favourites.get(m.label, set())]
+    good = [m.label for m in members if m.label not in fav and P[(m.label, x.id)] >= GOOD]
+    rest = [m.label for m in members if m.label not in fav and m.label not in good]
+    join = lambda xs: xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
+    parts = []
+    if fav:
+        parts.append(f"Among {join([f'{f}' + chr(39) + 's' for f in fav])} favourites")
+    if good:
+        parts.append(f"a good match for {join(good)}")
+    if rest:
+        parts.append(f"less so for {join(rest)}")
+    text = "; ".join(parts) + "."
+    return text[:1].upper() + text[1:]
 
 
 def _assign(chosen: list[Experience], members: list[Member], days: int, per_day: int, P: dict,
