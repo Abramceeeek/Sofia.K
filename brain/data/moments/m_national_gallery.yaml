@@ -26,6 +26,7 @@ experience:
   end_point: null
 best_time:
   time_of_day: ["10:00-18:00"]
+  time_of_day_days: {fri: ["10:00-21:00"]}   # m326: the Friday late, from opening_hours below (official, 2026-09-28)
   light: null
   weather: ["any"]
   company: null

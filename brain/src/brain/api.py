@@ -80,6 +80,9 @@ def _tester_code(text: str | None) -> str | None:
     return code[:40] or None
 
 
+# m326 (the London gate, G2): a trip day ending over 45 min early tries up to this many more places, one at a time,
+# and stops at the first that fills the day (the place on the way, and days with the person's own plans, don't)
+EXTRA_PLACES_MAX = 4
 MAX_TRIP_DAYS = 7   # D120: days planned in one request (about a second each on the free server)
 
 
@@ -693,7 +696,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
                 u = inner.get("predicted")
                 prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
-                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows() if card_m else [],
+                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows(brief.weekday) if card_m else [],
                                              hours_text=inner.get("hours") or "", budget=budget_block,
                                              travel_source=legs_from, labels=dayplan.APP_LABELS,
                                              taste=taste)
@@ -1305,19 +1308,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                  mine: tuple[dayplan.Block, ...] = (), relaxed: bool = False) -> tuple[dict, list[dict]] | None:
             """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all. m200: `mine` is
             the person's own time, planned around. m326 (the London gate, G2): a stretch that would end more than
-            EARLY_MAX_MIN before its end time tries one or two more places, so the person's places a day are a pace,
+            EARLY_MAX_MIN before its end time tries up to EXTRA_PLACES_MAX more places, so the person's places a day are a pace,
             not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
             best = None
-            more = () if tag == "before" or mine else (part.stops + 1, part.stops + 2)   # the place on the way is one
+            more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, EXTRA_PLACES_MAX + 1))
             for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
                 if n < 1 or (best is not None and n < part.stops):
                     continue
                 if best is not None and n > part.stops and best[3] <= dayplan.EARLY_MAX_MIN:
                     break
+                # m326: an extra place never takes what the trip's later days need (their places a day, each)
+                if n > part.stops and len(ready) - len(used) - n < (total - i - 1) * body.stops_per_day:
+                    break
                 outlook = app.state.forecast.for_window(day, part.start_time, part.end_time)   # Stage 1
+                # m326: the extra tries search for half as long, so a trip still plans in seconds
+                limit = settings.planner_time_limit_s if n <= part.stops else settings.planner_time_limit_s / 2
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
-                                      weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
+                                      weekday=day.strftime("%a").lower(), time_limit_s=limit,
                                       sunset=sunset(day), mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
@@ -1341,7 +1349,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             plan, stops, head, _, brief, outlook = best
             # m326: the chosen plan, as before
             dayplan.state_free_time(stops, brief.start_time, {m.id: m for m in ready},   # G1: no silent wait
-                                    brief.end_time)
+                                    brief.end_time, brief.weekday)
             used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
             # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
             # location, never its name")

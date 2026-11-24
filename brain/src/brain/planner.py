@@ -58,9 +58,9 @@ class Candidate:
     mine: str | None = None                 # m200: the person's own block this slot stands for (exactly one per block)
 
 
-def candidate_for(m: Moment, utility: float) -> Candidate:
+def candidate_for(m: Moment, utility: float, weekday: str | None = None) -> Candidate:
     """The planner's view of a plannable moment."""
-    return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows()),
+    return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows(weekday)),
                      float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind,
                      theme="history" if moment_features(m).get("history_culture", 0) >= 1 else None)
 
@@ -122,6 +122,12 @@ def fits_day(c: Candidate, day_start: int, day_end: int) -> bool:
     return bool(_start_ranges(c, day_start, day_end))
 
 
+# m326 (Abram, 24 Nov: "labelling a wait … doesn't necessarily make it a good travel experience"): the objective's
+# cost for each minute spent waiting before a stop (its best time or its opening), in the solver's units (SCALE per
+# unit of utility). Chosen on the London gate's six travellers (validation/london-examples/gate.md).
+WAIT_COST = 5.0   # 0 → 5: stated waits 15 → 11, minutes 802 → 557, early ends unchanged (24 Nov)
+
+
 def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
            travel: TravelTimes, legs: LegWeights, floor: float, max_stops: int,
            forced_last: int | None, time_limit_s: float, max_wait_min: int,
@@ -166,6 +172,8 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
     tdim = routing.GetDimensionOrDie("Time")
     tdim.CumulVar(routing.Start(0)).SetRange(day_start, min(day_start + max_wait_min, day_end))
     tdim.CumulVar(routing.End(0)).SetRange(day_start, day_end)
+    if WAIT_COST:   # m326 (the London gate): waiting for a stop's time costs a little, so routes that idle lose
+        tdim.SetSlackCostCoefficientForAllVehicles(int(round(WAIT_COST)))
 
     def cost_cb(fi, ti):
         i, j = manager.IndexToNode(fi), manager.IndexToNode(ti)

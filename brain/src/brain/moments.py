@@ -70,6 +70,9 @@ class BestTime(BaseModel):
     # Days the card can be planned ("mon".."sun"); empty means every day. Keeps weekday-only
     # museums out of weekend plans. Different hours on different days still wait (after-9-nov #7).
     days: list[str] = Field(default_factory=list)
+    # m326 (the London gate; after-9-Nov #7): times for particular days, from the card's own opening hours, e.g.
+    # {"fri": ["10:00-21:00"]} for a gallery's Friday late. A day not listed uses `time_of_day`.
+    time_of_day_days: dict[str, list[str]] = Field(default_factory=dict)
     # D100: when `light` is worth telling people ("hh:mm-hh:mm"). A plan shows "Best: <light>" only if the stop
     # overlaps one of these windows; with none, the line is never shown.
     best_window: list[str] = Field(default_factory=list)
@@ -176,9 +179,11 @@ class Moment(BaseModel):
             return self.experience.end_name
         return re.split(r"[:,(]", self.place.name)[0].strip()
 
-    def windows(self) -> list[tuple[int, int]]:
-        """Allowed time windows in minutes from midnight, from best_time.time_of_day."""
-        return parse_windows(self.best_time.time_of_day, self.id)
+    def windows(self, weekday: str | None = None) -> list[tuple[int, int]]:
+        """Allowed time windows in minutes from midnight, from best_time.time_of_day. m326: on a day the card gives its
+        own times for (`time_of_day_days`, e.g. a gallery's Friday late), those instead."""
+        own = (self.best_time.time_of_day_days or {}).get((weekday or "").lower()[:3])
+        return parse_windows(own if own else self.best_time.time_of_day, self.id)
 
     def best_windows(self, sunset: int | None = None) -> list[tuple[int, int]]:
         """When the `light` line applies (D100), in minutes from midnight; relative to `sunset` when the card says

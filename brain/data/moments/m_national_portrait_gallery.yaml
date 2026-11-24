@@ -26,6 +26,7 @@ experience:
   end_point: null
 best_time:
   time_of_day: ["10:30-18:00"]
+  time_of_day_days: {fri: ["10:30-21:00"], sat: ["10:30-21:00"]}   # m326: Friday and Saturday lates, from opening_hours below
   light: null
   weather: ["any"]
   company: null

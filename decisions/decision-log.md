@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-24 — The London gate: G2 and idle time (branch only, m327's release rule)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m328 | **Early ends 5 → 1, and stated idle time cut by about a third to a half.**<br>• **A cost for waiting in the solver** (`planner.WAIT_COST` = 5 per minute; 1,000 = one unit of utility). Swept 0 / 2 / 5 / 10 on the gate's travellers: at 5, stated waits 20 → 11–15 and minutes 1,109 → 557–789 (the range is between runs, from the solver's time limit).<br>• **A trip day fills with up to 4 more places** (`EXTRA_PLACES_MAX`), one at a time, stopping at the first that ends within 45 min. The extra tries search for half as long. **An extra place never takes what the trip's later days need**: a long trip's last days keep their places; this was found by a test.<br>• **Per-day times on cards** (`time_of_day_days`, closing after-9-Nov #7 for these cards), taken only from each card's own recorded opening hours: the National Gallery on Fridays to 21:00; the National Portrait Gallery on Fridays and Saturdays to 21:00; Liberty to 20:00 and Burlington Arcade to 19:00, Monday to Saturday; the Royal Festival Hall foyers to 22:00 (open to 23:00).<br>• **Still failing (G2, 1):** Jonas's gentle Friday ends 77 min early.<br>582 tests pass. **Not released (m327)** | m326's 5 early ends | Abram, 24 Nov: "Complete G2 and reduce idle time: required" |
+
 ## 2026-11-24 — Release decision: London earns the release (Abram)
 
 | # | Decision | Replaces | Why |

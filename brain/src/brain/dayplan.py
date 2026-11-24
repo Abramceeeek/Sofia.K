@@ -56,7 +56,7 @@ def _hm(n: int) -> str:
 
 
 def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Moment] | None = None,
-                    day_end: str | None = None) -> None:
+                    day_end: str | None = None, weekday: str | None = None) -> None:
     """m326 (G1, G2): a wait before a stop (the planner waits for its best time or its opening) first becomes a longer
     stay at the place before it, up to the top of that card's own time range (`dwell_targets`) and within its times to
     go; so does the end of the day, after the last stop. What's still over FREE_TIME_MIN is said as the next stop's
@@ -69,7 +69,7 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
             return 0
         a, d = parse_hhmm(st["arrive"]), parse_hhmm(st["depart"])
         top = dwell_targets(by_id, [m.id])[m.id]
-        close = max((hi for lo, hi in m.windows() if lo <= a <= hi), default=d)
+        close = max((hi for lo, hi in m.windows(weekday) if lo <= a <= hi), default=d)
         extra = max(0, min(room, top - (d - a), close - d))
         if extra:
             st["depart"] = hhmm(d + extra)
@@ -481,7 +481,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
              for m in usable if m.id not in disliked_ids}
     off = offset or {}
     # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
-    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0)) for m in usable if m.id not in disliked_ids]
+    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0), brief.weekday) for m in usable if m.id not in disliked_ids]
     idx = {n: i for i, n in enumerate(pop.names)}
     cands = lunch_candidates(real, by_id, brief, liked=u_hat,
                              cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0)) + \
