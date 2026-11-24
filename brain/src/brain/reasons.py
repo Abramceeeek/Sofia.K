@@ -14,7 +14,11 @@ blind Test B comparison (the plan request's `blind`).
 
 from __future__ import annotations
 
+import re
+from functools import lru_cache
+
 import numpy as np
+import yaml
 
 from .moments import Moment
 from .personal import Observation
@@ -276,6 +280,66 @@ def day_feelings(stops: list[dict], by_id: dict[str, Moment], feelings: list[str
         if cards and n * 2 >= len(cards) and n >= min(2, len(cards)):
             out.append(f)
     return out
+
+
+TITLE_PLACES = 3   # m337: a day's title names at most this many places
+
+
+@lru_cache(maxsize=1)
+def short_names() -> dict[str, str]:
+    """m337: the names a day's title uses for places whose own name reads badly cut short ("Greenwich Park" for the
+    General Wolfe statue): `short` in data/catalogue/<locality>.yaml, Claude's wording."""
+    from .config import DATA_DIR
+    out: dict[str, str] = {}
+    for f in sorted((DATA_DIR / "catalogue").glob("*.yaml")):
+        d = yaml.safe_load(f.read_text(encoding="utf-8")) or {}
+        out.update({k: v["short"] for k, v in (d.get("experiences") or {}).items()
+                    if isinstance(v, dict) and v.get("short")})
+    return out
+
+
+def short_place(m: Moment) -> str:
+    """m337 (Abram, 24 Nov: "titles should sound natural and describe the actual day, not repeat generic templates"):
+    a place's name as a day's title uses it: its catalogue `short` name, else the card's place name before its first
+    comma or colon ("Borough Market", "the National Gallery")."""
+    name = short_names().get(m.id) or re.split(r"[,:(]", m.place.name)[0].strip()
+    return "the" + name[3:] if name.startswith("The ") else name
+
+
+def _at_sunset(m: Moment) -> bool:
+    return bool(m.best_time.best_around_sunset) or "sunset" in f"{m.title} {m.best_time.light or ''}".lower()
+
+
+def day_title(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] = ()) -> str:
+    """m337: a day's title from its own places, in the day's order: the high point (the stop the person is predicted to
+    like most), a named food stop, and the ending ("at sunset" when it's a sunset), at most TITLE_PLACES of them:
+    "Borough Market, a Brick Lane bagel and Tower Bridge at sunset". With the person's feelings when the stops carry
+    them (D118): "A curious day: …". Falls back to the feel line when the day has no place of its own."""
+    places = [(i, by_id[s["moment_id"].split("#")[0]], s) for i, s in enumerate(stops)
+              if not s.get("mine") and not str(s["moment_id"]).startswith(("lunch@", "dinner@"))
+              and s["moment_id"].split("#")[0] in by_id]
+    if not places:
+        return feel_line(stops, by_id, feelings)
+    own = next((s["mine"] for s in stops if s.get("mine")), None)   # m200: the person's own time, said too
+    room = TITLE_PLACES - (1 if own else 0)
+    pick = [max(places, key=lambda t: t[2].get("predicted") if t[2].get("predicted") is not None else -99)]
+    food = next((t for t in places if (t[1].features.place.get("food") or 0) >= 2), None)
+    for t in (food, places[-1], places[0], *places[1:-1]):
+        if t is not None and len(pick) < room and t[0] not in {p[0] for p in pick}:
+            pick.append(t)
+    pick.sort(key=lambda t: t[0])
+    names = []
+    for i, m, _ in pick:
+        n = short_place(m)
+        if n.lower() not in {x.lower() for x in names}:
+            names.append(n + (" at sunset" if i == places[-1][0] and _at_sunset(m) else ""))
+    text = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+    if own:
+        text += ", around your own plans" if own == "plans" else ", with free time"
+    words = [FEELING_ADJ[f] for f in day_feelings(stops, by_id, list(feelings)) if f in FEELING_ADJ]
+    if words:
+        return f"A {', '.join(words)} day: {text}"
+    return text[:1].upper() + text[1:]
 
 
 def feel_line(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] = ()) -> str:

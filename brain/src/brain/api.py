@@ -1478,7 +1478,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
                 if got := fill(fr.main, day, i, label, "main", blocks, relaxed=bool(own and own.relaxed)):
                     entry["plan"] = got[0]
-                    entry["title"] = got[0]["feel_line"] or label
+                    # m337: the day's title names its own places; the feel line stays "how the day moves"
+                    entry["title"] = reasons.day_title(got[1], {m.id: m for m in ready}, feelings or []) or label
                     planned = {int(st["moment_id"][4:st["moment_id"].index("@")])
                                for st in got[1] if st["moment_id"].startswith("mine")}
                     for k, b in enumerate(entry["mine"]):

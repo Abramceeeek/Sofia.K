@@ -119,6 +119,10 @@ def main() -> int:
                         out.append(f"*{pl['feel_line']}*")
                     for line in pl.get("summary") or []:
                         out.append(f"> {line}")
+                    t = pl.get("totals") or {}
+                    if t.get("cost_gbp") is not None:   # m337: what the app's top line says (each price is per person)
+                        out.append(f"> In the app: £{t['cost_gbp']:,.2f} per person, entry, food and fares; finishes at "
+                                   f"{t.get('finish')}")
                     out.append("")
                     for st in pl["stops"]:
                         head = f"**{st.get('arrive', '')}–{st.get('depart', '')} · {st['title']}**"

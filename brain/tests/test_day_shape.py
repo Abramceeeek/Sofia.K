@@ -190,3 +190,17 @@ def test_places_beyond_the_persons_own_number_are_strong_matches():
                     weak_below=-0.131, weak_max=2)
     ids = [s.moment_id for s in plan.stops]
     assert sum(i.startswith("fair") for i in ids) <= 2 and "strong0" in ids
+
+
+def test_a_days_title_names_its_own_places():
+    """m337 (Abram: "titles should sound natural and describe the actual day, not repeat generic templates")."""
+    from brain import reasons
+    from brain.config import DATA_DIR
+    from brain.moments import load_moments
+    cards = {m.id: m for m in load_moments(DATA_DIR / "moments") if m.status == "ready"}
+    st = lambda mid, p: {"moment_id": mid, "predicted": p}
+    day = [st("m_borough_market_graze", 0.5), st("m_beigel_bake_late", 0.9), st("lunch@start", None),
+           st("a_old_spitalfields_market", 0.2), st("m_leadenhall_market", 0.1), st("m_alderman_stairs_sunset", 0.3)]
+    assert reasons.day_title(day, cards) == "Borough Market, a Brick Lane bagel and Tower Bridge at sunset"
+    assert reasons.day_title([st("m_national_gallery", 0.4)], cards) == "The National Gallery"
+    assert len(reasons.day_title(day, cards)) <= 80
