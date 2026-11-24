@@ -56,6 +56,15 @@ def _hm(n: int) -> str:
     return f"{h} hr {m} min" if h and m else f"{h} hr" if h else f"{m} min"
 
 
+def say(st: dict, text: str, first: bool = False) -> None:
+    """m349: a sentence for the person about this stop (free time, a later start, an estimate, no dinner). It goes on
+    the stop's text lines (the blind pair's format, which shows only those) and on `notes`, which the apps show under
+    the stop on the day; before the journey audit's fix the day view never showed it. In place."""
+    for field in ("lines", "notes"):
+        cur = list(st.get(field) or [])
+        st[field] = [text] + cur if first else cur + [text]
+
+
 def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Moment] | None = None,
                     day_end: str | None = None, weekday: str | None = None, date: str | None = None) -> None:
     """m326 (G1, G2): a wait before a stop (the planner waits for its best time or its opening) first becomes a longer
@@ -85,14 +94,13 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
         if idle > FREE_TIME_MIN and prev is None:
             # m331: before the first stop it's a later start, not a wait: the planner begins when the first place
             # is ready (an opening, or the day's shape)
-            st["lines"] = [f"A gentle start: your first stop is at {st['arrive']}, so the time before it is yours."] + \
-                list(st.get("lines") or [])
+            say(st, f"A gentle start: your first stop is at {st['arrive']}, so the time before it is yours.", first=True)
             st["free_before_min"], st["free_before_kind"] = idle, "start"
         elif idle > FREE_TIME_MIN:
             where = f" near {prev_name}" if prev_name else ""
             line = (f"Free time first: about {_hm(idle)} to yourself{where}. Linger, or find a coffee, then head here "
                     f"for {st['arrive']}.")
-            st["lines"] = [line] + list(st.get("lines") or [])
+            say(st, line, first=True)
             st["free_before_min"], st["free_before_kind"] = idle, "wait"
         prev, prev_end = st, parse_hhmm(st["depart"])
         # m345: where they are, by the place's own name ("the Royal Festival Hall"), never a stop's whole title
@@ -1046,6 +1054,10 @@ def _cost_line(s: dict) -> str:
         return "Price not known"
     if not c:
         return "Cost: free"
+    if str(s.get("key") or s.get("moment_id") or "").startswith(("lunch@", "dinner@")):
+        # m349 (Abram: "Never display an apparently precise £6 meal estimate against a generic 'café, pub or food
+        # stall' recommendation without an underlying source"): a meal with no named place says it's an estimate
+        return f"Food: about {_money(c)}, ODYS's estimate"
     return {"food": f"Food: about {_money(c)}", "ticket": f"Ticket: {_money(c)}",
             "hire": f"Hire: {_money(c)}"}.get(s.get("cost_kind") or "entry", f"Entry: {_money(c)}")
 
@@ -1089,13 +1101,15 @@ def say_estimates(stops: list[dict]) -> None:
     and journey trade-offs"): a meal with no named place says its price is our estimate, and the day's first Tube or
     bus journey says how fares are estimated. A named place's own facts carry their "checked on" date already
     (`checked`). In place, on the app's stops; never for the blind Test B pair."""
-    for st in stops:
+    said = False
+    for st in stops:   # m349: once a day, on the first meal it's true of (never the same sentence twice in a day)
         key = str(st.get("key") or st["moment_id"])
-        if key.startswith(("lunch@", "dinner@")) and st.get("cost_gbp"):
-            st["lines"] = list(st.get("lines") or []) + [ESTIMATE_MEAL]
+        if key.startswith(("lunch@", "dinner@")) and st.get("cost_gbp") and not said:
+            say(st, ESTIMATE_MEAL)
+            said = True
     first = next((st for st in stops if st.get("travel_mode") not in (None, "walk") and st.get("travel_min")), None)
     if first is not None:
-        first["lines"] = list(first.get("lines") or []) + [ESTIMATE_FARES]
+        say(first, ESTIMATE_FARES)
 
 
 def say_no_dinner(stops: list[dict], brief: Brief) -> None:
@@ -1114,7 +1128,7 @@ def say_no_dinner(stops: list[dict], brief: Brief) -> None:
                 f"{_money(brief.budget_gbp)} budget.")
     else:
         line = "Dinner isn't in the plan: no dinner stop fitted around the evening's places."
-    stops[-1]["lines"] = list(stops[-1].get("lines") or []) + [line]
+    say(stops[-1], line)
 
 
 def plan_change(old: list[dict], new: list[dict], since: str | None = None) -> dict:

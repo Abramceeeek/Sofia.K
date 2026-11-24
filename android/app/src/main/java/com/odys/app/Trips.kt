@@ -830,11 +830,28 @@ fun DaysStep(trip: Trip, onChange: (Trip) -> Unit) {
             { onChange(trip.copy(places = maxOf(1, n - 1))) }) { onChange(trip.copy(places = minOf(6, n + 1))) }
         Text("Plus lunch, when a day runs through midday. A short day holds fewer places.", style = Theme.footnote,
             modifier = Modifier.padding(horizontal = 4.dp))
+        // m346 (Abram, 24 Nov): how full the days should be, separate from how active the places are; stored with the
+        // trip, and changing it on "Your days" plans again the days not yet lived, as changing the hours does
+        Text("How would you like your days to feel?", style = Theme.footnote, modifier = Modifier.padding(horizontal = 4.dp))
+        for ((key, label, line) in DayFeels.all) {
+            OptionTile(label, line, trip.feelOfDays == key, offFill = Theme.surface, offStroke = Color.Transparent) {
+                onChange(trip.copy(dayFeel = key))
+            }
+        }
         if (trip.arrivingBy == "flight" || trip.arrivingBy == "train") {
             SwitchRow("Travelling light on day 1", "No big bags: if you arrive before check-in, one place on the way, then your stay.",
                 trip.travelLight) { onChange(trip.copy(light = it)) }
         }
     }
+}
+
+/** m346: the three ways a day can feel, the same words as on the iPhone. */
+object DayFeels {
+    val all = listOf(
+        Triple("relaxed", "Relaxed", "More breathing room: fewer planned experiences, longer at each, and time that's yours."),
+        Triple("balanced", "Balanced", "A mix of planned experiences, food, exploring and rest."),
+        Triple("full", "Full", "Make the most of the day: more experiences, still within easy journeys."),
+    )
 }
 
 @Composable
@@ -1281,8 +1298,8 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
             val end = day.window?.end
             val last = plan.stops.lastOrNull()
             if (end != null && last != null && last.mine == null &&
-                Dates.minutes(end) - Dates.minutes(last.depart) >= 60) {   // journey round 2
-                FreeTimeRow(model, last.depart, end, trip.placesPerDay < 6) {
+                (plan.freeAfter != null || Dates.minutes(end) - Dates.minutes(last.depart) >= 60)) {   // journey round 2
+                FreeTimeRow(model, last.depart, end, trip.placesPerDay < 6, text = plan.freeAfter?.text) {   // m346
                     scope.launch {
                         model.changeTripDay(trip.id, index, day.window.start, end, minOf(6, trip.placesPerDay + 1))
                     }
@@ -1499,6 +1516,7 @@ fun TripDayStop(stop: Stop) {
             Text("${stop.arrive} · ${stop.word}", style = Theme.footnote)
             Text(stop.title, style = Theme.serif(20.sp))
             Text(stop.reasons?.firstOrNull()?.you ?: stop.what, style = Theme.subheadline.copy(color = Theme.inkSoft), maxLines = 3)
+            stop.notes.orEmpty().forEach { Text(it, style = Theme.footnote) }   // m349: free time, a later start, an estimate
         }
     }
 }

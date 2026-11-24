@@ -186,6 +186,7 @@ data class Plan(
     val budget: DayBudget? = null,    // m217: the day's money against the person's budget, line by line
     val createdAt: String? = null,    // m228: when the Brain made it, for "saved on this phone"
     val change: PlanChange? = null,   // m336: what this plan changed against the one it replaced (a swap)
+    val freeAfter: FreeAfter? = null, // m346: the time left at the end of a trip day, in the Brain's words
 ) {
     val isBlind: Boolean get() = blind == true
 }
@@ -193,6 +194,10 @@ data class Plan(
 /** m336: what a replacement plan changes (brain.dayplan.plan_change): one plain line, and the finish it gives. */
 @Serializable
 data class PlanChange(val text: String, val finishAfter: String? = null)
+
+/** m346: the end of a trip day that's the person's own ("A relaxed day, as you asked: the rest of it is yours…"). */
+@Serializable
+data class FreeAfter(val from: String, val until: String, val min: Int, val text: String)
 
 /** m336: "other places for this time": each a whole plan with the rest of the day kept. */
 @Serializable
@@ -295,6 +300,7 @@ data class Stop(
     val checked: String? = null,
     val mine: String? = null,         // m200: "plans" or "free": the person's own time, planned around (never rated)
     val explain: StopExplain? = null, // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
+    val notes: List<String>? = null,  // m349: free time, a later start, an estimate: said under the stop on the day
 ) {
     val id: String get() = "$momentId@$arrive"
 

@@ -815,6 +815,7 @@ fun StopCard(number: Int, stop: Stop, rated: Boolean = false, swapped: Boolean =
             if (showWhy) stop.reasons?.firstOrNull()?.you?.let {
                 Text(it, style = Theme.subheadline.copy(color = Theme.inkSoft))
             }
+            stop.notes.orEmpty().forEach { Text(it, style = Theme.footnote) }   // m349: what the Brain says about this stop
             if (showWhy) stop.matchLine?.let { Text(it, style = Theme.subheadline.copy(color = Theme.muted)) }   // 19 Oct: amber is for actions
             val badges = listOfNotNull(if (swapped) "Swapped in" else null, if (stop.familiar) "A place you loved" else null,
                 if (rated) "Rated" else null)
@@ -1338,11 +1339,11 @@ fun ReminderAsk(model: AppModel) {
 
 /** Journey round 2: a day that ends early says so, with one tap to add a place. */
 @Composable
-fun FreeTimeRow(model: AppModel, from: String, to: String, canAdd: Boolean, add: () -> Unit) {
+fun FreeTimeRow(model: AppModel, from: String, to: String, canAdd: Boolean, text: String? = null, add: () -> Unit) {
     Row(Modifier.surfaceCard(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text("Free from $from until $to", style = Theme.body)
-            Text("Rest, wander, or add one more place.", style = Theme.footnote)
+            Text(text ?: "Rest, wander, or add one more place.", style = Theme.footnote)   // m346: the Brain's words
         }
         if (canAdd) QuietButton(if (model.busy) "Adding…" else "Add a place", color = Theme.accent, enabled = !model.busy, onClick = add)
     }

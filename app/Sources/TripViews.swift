@@ -1171,6 +1171,46 @@ struct FromStep: View {
     }
 }
 
+/// m346 (Abram, 24 Nov): "How would you like your days to feel?", separate from how active the places are. Stored with
+/// the trip; changing it on "Your days" plans again the days not yet lived, as changing the hours does.
+struct DayFeelPicker: View {
+    @Binding var feel: String
+    static let options: [(key: String, title: String, line: String)] = [
+        ("relaxed", "Relaxed", "More breathing room: fewer planned experiences, longer at each, and time that's yours."),
+        ("balanced", "Balanced", "A mix of planned experiences, food, exploring and rest."),
+        ("full", "Full", "Make the most of the day: more experiences, still within easy journeys."),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("How would you like your days to feel?").font(.footnote).foregroundStyle(Theme.muted)
+                .padding(.horizontal, 4)
+            ForEach(Self.options, id: \.key) { o in
+                Button { feel = o.key } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: feel == o.key ? "largecircle.fill.circle" : "circle")
+                            .foregroundStyle(feel == o.key ? Theme.accent : Theme.muted)
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(o.title).foregroundStyle(Theme.ink)
+                            Text(o.line).font(.footnote).foregroundStyle(Theme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(o.title). \(o.line)")
+                .accessibilityAddTraits(feel == o.key ? .isSelected : [])
+            }
+        }
+    }
+}
+
 /// D122: "Your days": from what time to what time, how many places a day, and travelling light on day 1.
 struct DaysStep: View {
     @Binding var trip: Trip
@@ -1204,6 +1244,7 @@ struct DaysStep: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.muted)
                 .padding(.horizontal, 4)
+            DayFeelPicker(feel: Binding(get: { trip.feelOfDays }, set: { trip.dayFeel = $0 }))
             if trip.arrivingBy == "flight" || trip.arrivingBy == "train" {
                 Toggle(isOn: Binding(get: { trip.travelLight }, set: { trip.light = $0 })) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -1835,8 +1876,9 @@ struct TripDayView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             if let end = day.window?.end, let last = plan.stops.last, last.mine == nil,   // journey round 2: free time
-                               AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
-                                FreeTimeRow(from: last.depart, to: end, canAdd: trip.placesPerDay < 6) {
+                               plan.freeAfter != nil || AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
+                                FreeTimeRow(from: last.depart, to: end, text: plan.freeAfter?.text,   // m346: the Brain's words
+                                            canAdd: trip.placesPerDay < 6) {
                                     Task {
                                         _ = await model.changeTripDay(trip.id, index, from: day.window?.start ?? trip.dayFrom,
                                                                       to: end, places: min(6, trip.placesPerDay + 1))
@@ -2252,6 +2294,10 @@ struct TripDayStop: View {
                     .foregroundStyle(Theme.inkSoft)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
+                ForEach(stop.notes ?? [], id: \.self) { note in   // m349: free time, a later start, an estimate
+                    Text(note).font(.footnote).foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             Spacer(minLength: 0)
         }

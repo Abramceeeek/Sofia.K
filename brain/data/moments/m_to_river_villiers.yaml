@@ -25,7 +25,7 @@ approach:
   step_free: null
 experience:
   what_happens: "You leave the busy Strand, walk down the narrow slope of Villiers Street, then climb the steps onto the footbridge as the Thames opens up wide on both sides."   # CHECKED (route)
-  why_it_works: "Out of the busy streets until the river suddenly opens up."   # FRIEND
+  why_it_works: "A narrow street, then a bridge, and the whole width of the river opens up."   # m349: Claude's wording from this card's own facts; was a friend's line shared by several cards ("Out of the busy streets until the river suddenly opens up."), for Abram to check
   duration_min: [15, 30] # GUESS, including time on the bridge
   end_point: {lat: 51.50611, lon: -0.12}
   end_station: "Embankment station"   # * D102: where to walk to for the Tube onwards

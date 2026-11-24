@@ -15,6 +15,8 @@ Thresholds are GUESSES, stated here, until real ratings say otherwise.
 
 from __future__ import annotations
 
+import re
+
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -363,3 +365,29 @@ def rank(items: list[tuple[object, Assessment]], doubt_cost: float | None = None
     strongest match (or, with `doubt_cost`, the match less a cost per doubt: m249; or, `calibrated`, the expected
     chance of a good visit given what's uncertain for this use: m254). The default is unchanged (Abram, m252)."""
     return sorted(items, key=lambda t: t[1].rank_key(doubt_cost, calibrated))
+
+
+# ---- m349: words that only hold in some seasons ----------------------------------------------------------------------
+# Abram, 24 Nov: "A winter visitor should not be promised a garden full of summer flowers." A card's words may name a
+# season-bound thing only together with its season in the same sentence ("with flowers in summer").
+SEASON_BOUND = ("summer flowers", "spring flowers", "autumn leaves", "autumn colours", "christmas lights",
+                "paddling pool", "ice rink", "deckchairs", "sunbathing", "sunbathe", "wisteria", "lavender",
+                "daffodils", "bluebells", "blossom", "in bloom", "blooming", "flowers", "roses", "snow")
+SEASON_SAID = re.compile(r"\b(in|from|until|between|during|each|every)\s+(spring|summer|autumn|winter|season|the\s+"
+                         r"(spring|summer|autumn|winter)|january|february|march|april|may|june|july|august|"
+                         r"september|october|november|december)\b|\b(spring|summer|autumn|winter|seasonal|in season)"
+                         r"\s+only\b|\bwhen\s+in\s+(bloom|season)\b", re.I)
+
+
+def unseasonal(text: str) -> list[str]:
+    """The season-bound words in `text` said without their season in the same sentence (m349)."""
+    out = []
+    for sentence in re.split(r"(?<=[.!?;])\s+", text or ""):
+        if SEASON_SAID.search(sentence):
+            continue
+        low = sentence.lower()
+        for word in SEASON_BOUND:
+            if re.search(rf"\b{re.escape(word)}\b", low):
+                out.append(word)
+                low = re.sub(rf"\b{re.escape(word)}\b", " ", low)   # "summer flowers" isn't also "flowers"
+    return out

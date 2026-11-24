@@ -24,7 +24,7 @@ approach:
   step_free: null
 experience:
   what_happens: "Walk into Holland Park to the Kyoto Garden: a tiered waterfall, koi, stone lanterns, and peacocks wandering."
-  why_it_works: "Green, water and birds: a calm break in the day."   # FOUNDER (card 10)
+  why_it_works: "A small Japanese garden with a waterfall and koi: the calmest corner of west London."   # m349: Claude's wording from this card's own facts; was Abram's line shared by several cards ("Green, water and birds: a calm break in the day."), for Abram to check
   duration_min: [30, 45] # GUESS
   end_point: null
 best_time:

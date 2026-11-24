@@ -247,6 +247,7 @@ struct Plan: Codable, Hashable, Identifiable {
     var budget: DayBudget? = nil   // m217: the day's money against the person's budget, line by line
     var createdAt: String? = nil   // m228: when the Brain made it, for "saved on this phone"
     var change: PlanChange? = nil  // m336: what this plan changed against the one it replaced (a swap)
+    var freeAfter: FreeAfter? = nil  // m346: the time left at the end of a trip day, in the Brain's words
 
     var isBlind: Bool { blind == true }
 
@@ -255,6 +256,14 @@ struct Plan: Codable, Hashable, Identifiable {
         Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
              basis: basis, blind: blind, weather: weather, budget: budget, createdAt: createdAt)
     }
+}
+
+/// m346: the end of a trip day that's the person's own ("A relaxed day, as you asked: the rest of it is yours…").
+struct FreeAfter: Codable, Hashable {
+    let from: String
+    let until: String
+    let min: Int
+    let text: String
 }
 
 /// m336: what a replacement plan changes (brain.dayplan.plan_change): one plain line, and the finish it gives.
@@ -380,6 +389,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let checked: String?           // journey round 2: when the card's facts were last checked ("2026-10-08")
     let mine: String?              // m200: "plans" or "free": the person's own time, planned around (never rated)
     var explain: StopExplain? = nil  // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
+    var notes: [String]? = nil     // m349: free time, a later start, an estimate: said under the stop on the day
 
     var id: String { momentId + "@" + arrive }
 

@@ -87,6 +87,7 @@ EXTRA_PLACES_MAX = 4
 # beyond the person's own number follow how full they want their days, never their pace ("Do not assume that a gentle
 # traveller wants fewer experiences"). Pace still sets journeys, their budget and strenuous stops. No answer: balanced.
 EXTRA_BY_FEEL = {"relaxed": 0, "balanced": 2, "full": EXTRA_PLACES_MAX}
+SUN_TZ = {"GB": "Europe/London", "ES": "Europe/Madrid"}   # m349: the local clock a destination's sunset is told in
 # m346: what an extra place is worth to the solver, in utility units, by day feel: a full day ("make the most of the
 # available day") takes a strong match whose journey and wait cost a little more than a balanced day would accept
 EXTRA_BONUS_BY_FEEL = {"relaxed": 0.0, "balanced": 0.5, "full": 1.0}
@@ -725,6 +726,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     p, post.mean, m, loved=loved_places, feelings=feelings, interests=mine, n_choices=n_choices)
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
+        said: set[str] = set()   # m349: a reason is said once a day ("We don't know much about you yet…" on one stop)
+        for st in out:
+            st["reasons"] = [r for r in st.get("reasons") or [] if not (r.get("you") in said or said.add(r.get("you")))]
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
                 "budget": budget_block,   # m217: the day's money, line by line
@@ -780,7 +784,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by the person's pace
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
-            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
+            # m349 (Abram: "Calculate sunset for the actual date and location"): where the day starts, that date
+            time_limit_s=settings.planner_time_limit_s,
+            sunset=sunset(day, body.start.lat, body.start.lon) if day else None,
             mine=(own := tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end), b.location,
                                               b.kind == "plans" and b.meal) for b in body.mine
                                if tripdays.mins(b.start) < tripdays.mins(b.end))),   # m200, m201
@@ -1410,7 +1416,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       base_stops=part.stops - (1 if part.lunch and dayplan.spans_lunch(
                                           tripdays.mins(part.start_time), tripdays.mins(part.end_time)) else 0),
                                       pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by pace
-                                      sunset=sunset(day), mine=mine, relaxed=relaxed,
+                                      # m349: the sunset for that date where the trip is
+                                      sunset=sunset(day, dest.lat, dest.lon, SUN_TZ.get(dest.country_code,
+                                                                                        "Europe/London")),
+                                      mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
                                       temp_c=outlook.temp_c if outlook else None,

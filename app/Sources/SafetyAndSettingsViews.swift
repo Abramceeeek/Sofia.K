@@ -379,6 +379,10 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
+        case "stoprain":                                                        // 10p (m349): the one-tap rain swap
+            if let stop = model.plan?.stops.first(where: { $0.rainSwapId != nil }) ?? demoStop {
+                NavigationStack { StopView(stop: stop, demoScroll: "body") }
+            }
         case "stopwhy":                                                         // 10o (m230): "Why this stop?" open
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body", demoWhy: true) }

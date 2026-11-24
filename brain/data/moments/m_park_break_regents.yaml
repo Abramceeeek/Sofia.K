@@ -24,7 +24,7 @@ approach:
   step_free: null
 experience:
   what_happens: "Wander the gardens and the lake paths, and slow down."
-  why_it_works: "Green, water and birds: a calm break in the day."   # FOUNDER (card 10)
+  why_it_works: "Gardens and lake paths: a gentle wander between the day's busier places."   # m349: Claude's wording from this card's own facts; was Abram's line shared by several cards ("Green, water and birds: a calm break in the day."), for Abram to check
   duration_min: [30, 45] # GUESS
   end_point: null
 best_time:

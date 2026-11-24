@@ -1071,6 +1071,10 @@ struct StopCard: View {
                         .foregroundStyle(Theme.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                ForEach(stop.notes ?? [], id: \.self) { note in   // m349: what the Brain says about this stop
+                    Text(note).font(.footnote).foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if showWhy, let worth = stop.matchLine {
                     Text(worth).font(.subheadline).foregroundStyle(Theme.muted)   // 19 Oct: amber is for actions
                         .fixedSize(horizontal: false, vertical: true)
@@ -1678,6 +1682,7 @@ struct FreeTimeRow: View {
     @Environment(AppModel.self) private var model
     let from: String
     let to: String
+    var text: String? = nil        // m346: the Brain's own words for this time, when it sent them
     let canAdd: Bool
     let add: () -> Void
 
@@ -1685,7 +1690,7 @@ struct FreeTimeRow: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Free from \(from) until \(to)").foregroundStyle(Theme.ink)
-                Text("Rest, wander, or add one more place.")
+                Text(text ?? "Rest, wander, or add one more place.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)

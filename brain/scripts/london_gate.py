@@ -112,7 +112,8 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
             gaps.append(max(0, idle))
             q["unused"][d["date"]] = q["unused"].get(d["date"], 0) + max(0, idle)
             first = st is stops[0]
-            said = any(ln.startswith(("Free time first:", "A gentle start:")) for ln in st.get("lines") or [])
+            # m349: said where the app shows it (`notes`, under the stop on the day), not only in the text lines
+            said = any(ln.startswith(("Free time first:", "A gentle start:")) for ln in st.get("notes") or [])
             if idle > GAP_MAX and not said:   # stated, not silent
                 fails["G1"].append(f"{d['date']} {idle} min before {st['title'][:40]}")
             card = CARDS.get(mid, {})

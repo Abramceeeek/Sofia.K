@@ -308,7 +308,7 @@ extension AppModel {
                                days: days, exclude: exclude, dayStart: hours?.from ?? trip.dayFrom,
                                dayEnd: hours?.to ?? trip.dayTo, stopsPerDay: hours?.places ?? trip.placesPerDay,
                                travelLight: trip.travelLight, arrive: ends.arrive, leave: ends.leave,
-                               personal: (trip.personal ?? []).filter { !$0.isEmpty })
+                               personal: (trip.personal ?? []).filter { !$0.isEmpty }, dayFeel: trip.dayFeel)
     }
 
     /// "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and regenerate.

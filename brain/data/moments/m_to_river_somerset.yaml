@@ -25,7 +25,7 @@ approach:
   step_free: null
 experience:
   what_happens: "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you."
-  why_it_works: "Out of the busy streets until the river suddenly opens up."   # FRIEND
+  why_it_works: "A quiet courtyard between the Strand and the Thames, and the river all at once."   # m349: Claude's wording from this card's own facts; was a friend's line shared by several cards ("Out of the busy streets until the river suddenly opens up."), for Abram to check
   duration_min: [15, 30] # GUESS
   end_point: null
   end_station: "Temple station"   # * D102: where to walk to for the Tube onwards

@@ -240,6 +240,7 @@ data class TripDaysRequest(
     val arrive: TripEnd?,
     val leave: TripEnd?,
     val personal: List<DayTime> = emptyList(),   // m200
+    val dayFeel: String? = null,                  // m346: how full the days should be, stored with the trip
 )
 
 @Serializable
@@ -455,17 +456,19 @@ data class Trip(
     val flightAirport: String? = null,
     val changedDays: List<Int>? = null,
     val personal: List<DayTime>? = null,   // m200: the person's own time, by day
+    val dayFeel: String? = null,           // m346: relaxed | balanced | full (none: balanced), separate from pace
 ) {
     fun own(index: Int): DayTime = personal?.firstOrNull { it.day == index } ?: DayTime(index)
     val dayFrom: String get() = hoursFrom ?: "10:00"
     val dayTo: String get() = hoursTo ?: "18:00"
     val placesPerDay: Int get() = places ?: 3
+    val feelOfDays: String get() = dayFeel ?: "balanced"
     val travelLight: Boolean get() = light ?: false
     /** flight | train | car | here */
     val arrivingBy: String get() = if (needFlight) "flight" else (travelBy ?: "here")
 
     val daysLine: String
-        get() = "$dayFrom–$dayTo · $placesPerDay place${if (placesPerDay == 1) "" else "s"} a day" +
+        get() = "$dayFrom–$dayTo · $placesPerDay place${if (placesPerDay == 1) "" else "s"} a day · $feelOfDays days" +
             if (travelLight && arrivingBy != "here" && arrivingBy != "car") " · travelling light" else ""
 
     /** Journey audit: a saved or booked choice still matches the trip's dates. */

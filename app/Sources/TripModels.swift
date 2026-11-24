@@ -384,6 +384,7 @@ struct TripDaysRequest: Encodable {
     let arrive: TripEnd?
     let leave: TripEnd?
     var personal: [DayTime] = []          // m200
+    var dayFeel: String? = nil            // m346: how full the days should be, stored with the trip
 }
 
 struct TripDayOut: Codable, Hashable {
@@ -545,19 +546,21 @@ struct Trip: Codable, Hashable, Identifiable {
     var flightAirport: String?
     var changedDays: [Int]?                // journey round 2: days changed by hand, kept when the trip is re-planned
     var personal: [DayTime]?               // m200: the person's own time, by day
+    var dayFeel: String?                   // m346: relaxed | balanced | full (none: balanced), separate from pace
 
     func own(_ index: Int) -> DayTime { personal?.first { $0.day == index } ?? DayTime(day: index) }
 
     var dayFrom: String { hoursFrom ?? "10:00" }
     var dayTo: String { hoursTo ?? "18:00" }
     var placesPerDay: Int { places ?? 3 }
+    var feelOfDays: String { dayFeel ?? "balanced" }
     var travelLight: Bool { light ?? false }
     /// flight | train | car | here
     var arrivingBy: String { needFlight ? "flight" : (travelBy ?? "here") }
 
     /// "10:00–18:00 · 3 places a day · travelling light"
     var daysLine: String {
-        "\(dayFrom)–\(dayTo) · \(placesPerDay) place\(placesPerDay == 1 ? "" : "s") a day"
+        "\(dayFrom)–\(dayTo) · \(placesPerDay) place\(placesPerDay == 1 ? "" : "s") a day · \(feelOfDays) days"
             + (travelLight && arrivingBy != "here" && arrivingBy != "car" ? " · travelling light" : "")
     }
 

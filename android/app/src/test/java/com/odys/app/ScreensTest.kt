@@ -411,6 +411,10 @@ class ScreensTest {
     @Test fun planEnd() = showThen("09f-planend", { tripPath += Dest.Day }, { reach("Another day") })
     @Test fun stopMore() = showThen("10a-stop2",
         { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }, { reach("Best time and light") })
+    // m349: the one-tap rain swap, on the stop whose card has a rain option (QA screenshots, Abram 24 Nov)
+    @Test fun stopRain() = showThen("10p-stoprain",
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rainSwapId != null }) },
+        { reach("Raining? Swap for the indoor option") })
     // m230: "Why this stop?" tapped open, on the stop the iPhone shows (one with a best-light window)
     @Test fun stopWhy() = showThen("10o-stopwhy",
         { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { !it.bestWindow.isNullOrEmpty() && it.rateable }) },
