@@ -46,6 +46,9 @@ from .travel import LondonEstimate
 from .tfl import TflTravel, TravelStore, next_weekday_1pm
 from .ghoidc import GithubOIDC
 from .weather import Forecast
+from . import versions
+
+versions.install_plan_stamp(db.Plan)   # m327: every plan row records the Brain commit and the app build
 
 # D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
 BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}

@@ -1,5 +1,14 @@
 # The friends' round: one fixed version (m196, m197; moved to the new build, m315; and again, m320)
 
+> **24 Nov (m327, Abram): the round waits for the London gate.** The planner fixes are released once the gate passes 6 of 6 (`validation/london-examples/gate.md`), before the first invite, and that build is frozen for the round.
+>
+> **When it's released, fill in these lines, and never change them during the round:**
+> - `main` commit:
+> - TestFlight build:
+> - Brain commit (`/v1/health` `version`):
+>
+> Every plan also records `versions.brain` and `versions.app`, so the read-out keeps only rows that match these.
+
 > **21 Nov (m320): the round moves again, to the release that adds the Seville preview.** Abram chose "Seville in the app, me only". The preview is read-only and opens only with the code `ODYS-SEVILLE`; without it, the app is the same as build 112.
 > - **The round's fixed version is now the merge commit of the 21 Nov release, and the TestFlight build it uploads.** Read "the new `main` commit" and "the new build number" below as those.
 > - **The rehearsal on build 112 has to be redone on the new build.** The tag goes on the new commit.

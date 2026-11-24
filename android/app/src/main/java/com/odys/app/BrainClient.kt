@@ -167,6 +167,7 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun raw(method: String, path: String, body: String?, auth: Boolean = true): String {
         val url = (base.trimEnd('/') + "/" + path).toHttpUrl()
         val builder = Request.Builder().url(url)
+            .header("X-ODYS-Build", "android-${BuildConfig.VERSION_CODE}")   // m327: feedback is read per version
         if (auth) {
             val t = token ?: throw BrainError(-1)
             builder.header("Authorization", "Bearer $t")

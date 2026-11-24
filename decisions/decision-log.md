@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-24 — Release decision: London earns the release (Abram)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m327 (Abram) | **The planner fixes stay on the branch until the London gate passes 6 of 6.** Then they're released once, before the friends' round starts, and that build is frozen for the whole round.<br>• **Required before the release:** finish G2 (no day more than 45 min early) and cut the idle time (the 20 stated waits, 1,109 min); regenerate the six examples; the full tests and the gate both pass.<br>• **No planner change during the round** (as m198).<br>• **Every plan now records its versions:** `intent.versions = {brain: <commit>, app: <"ios-114" / "android-22">}` (`brain/src/brain/versions.py`). Both apps send `X-ODYS-Build`, and only a build identifier is kept. The round's manifest names the exact `main` commit, the TestFlight build and the Brain commit, so feedback is never mixed across versions.<br>• **"I would not sacrifice the quality gate just to preserve the original schedule. London needs to earn the release."** | m315's release timing | Abram, 24 Nov |
+
 ## 2026-11-24 — The London gate: Abram's six acceptance tests, and the planner fixes (branch only)
 
 | # | Decision | Replaces | Why |

@@ -280,6 +280,10 @@ final class BrainClient {
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
+        // m327: the build, so feedback is read per version ("ios-114"); not personal data
+        if let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String {
+            request.setValue("ios-\(build)", forHTTPHeaderField: "X-ODYS-Build")
+        }
         if path != "v1/installs" {
             guard let token else { throw BrainError.noToken }
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
