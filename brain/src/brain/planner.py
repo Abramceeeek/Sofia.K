@@ -225,15 +225,18 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
 
     routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(cost_cb))
 
-    count_idx = routing.RegisterUnaryTransitCallback(   # m200: the person's own time isn't one of the places
-        lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine else 0)
+    # m200: the person's own time isn't one of the places; m346 (the London gate, G2a): nor is dinner, which comes on
+    # top of the places they asked for and never takes one of them
+    count_idx = routing.RegisterUnaryTransitCallback(
+        lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine
+        and not cands[manager.IndexToNode(fi) - 1].dinner else 0)
     routing.AddDimension(count_idx, 0, max_stops, True, "Stops")
     if min_stops:
         routing.GetDimensionOrDie("Stops").CumulVar(routing.End(0)).SetMin(min(min_stops, max_stops))
     if max_places is not None:   # m202: lunch that can't fit is never replaced by a place the person didn't ask for
         places_idx = routing.RegisterUnaryTransitCallback(
             lambda fi: 1 if 1 <= manager.IndexToNode(fi) <= n and not cands[manager.IndexToNode(fi) - 1].mine
-            and not cands[manager.IndexToNode(fi) - 1].lunch else 0)
+            and not cands[manager.IndexToNode(fi) - 1].lunch and not cands[manager.IndexToNode(fi) - 1].dinner else 0)
         routing.AddDimension(places_idx, 0, max_places, True, "Places")
     if budget_gbp is not None:
         cost_idx = routing.RegisterUnaryTransitCallback(
@@ -434,7 +437,8 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
             cost = math.ceil(c.cost_gbp)
             if budget is not None and spent + cost > budget:
                 continue
-            if not c.mine and (stops >= max_stops or (max_places is not None and not c.lunch and places >= max_places)):
+            if not c.mine and not c.dinner and (stops >= max_stops or (max_places is not None and not c.lunch
+                                                                       and places >= max_places)):
                 continue
             if not c.mine and prizes[j] <= 0 and c.moment_id not in must:
                 continue
@@ -459,7 +463,7 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
             groups.add(c.group)
         if c.mine:
             done_blocks.add(c.mine)
-        else:
+        elif not c.dinner:   # m346: dinner is on top of the places asked for
             stops += 1
             places += 0 if c.lunch else 1
         meals += c.lunch
@@ -488,6 +492,12 @@ def _solve_best(usable: list[Candidate], args: dict) -> DayPlan | None:
     return min(found, key=lambda p: p.objective) if found else None
 
 
+def _counted(p: "DayPlan", cands: list) -> int:
+    """m346: the stops that count towards the day's number: all but dinner and the person's own time."""
+    off = {c.moment_id for c in cands if c.dinner or c.mine}
+    return sum(st.moment_id not in off for st in p.stops)
+
+
 def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end: int,
              travel: TravelTimes, legs: LegWeights, *, floor: float = -0.75, max_stops: int = 5,
              min_stops: int | None = None, budget_gbp: float | None = None,
@@ -498,7 +508,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
              lunch_not_first: bool = False, max_theme: int = 2, max_places: int | None = None,
              seeded: bool = False, relax_floor: bool = True, retry_min: bool = True,
              travel_budget_min: int | None = None, weak_below: float | None = None,
-             weak_max: int | None = None) -> DayPlan:
+             weak_max: int | None = None, extra_bonus: float | None = None) -> DayPlan:
     """Choose and order the stops for one day.
 
     Candidates below the floor or with no feasible time window are left out before solving,
@@ -540,7 +550,8 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         # m331: a try with extra places (dayplan's Brief.extra): no hard minimum, which defeats the first-solution
         # heuristic, and no ladder of retries (five more solves); one search where each place adds a modest bonus,
         # so the day fills only with places whose journey and wait cost less than they're worth
-        args = {**args, "min_stops": None, "fixed_count": False, "stop_bonus": EXTRA_STOP_BONUS}
+        args = {**args, "min_stops": None, "fixed_count": False,   # m346: a full day's extra places count for more
+                "stop_bonus": EXTRA_STOP_BONUS if extra_bonus is None else extra_bonus}
         best = _solve_best(usable, args)
     else:
         best = _solve_best(usable, args)
@@ -552,9 +563,9 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         args["min_stops"] = None
         for bonus in (0.0, 0.5, 1.0, 2.0, 4.0):
             best = _solve_best(usable, {**args, "stop_bonus": bonus})
-            if best is not None and len(best.stops) >= min_stops:
+            if best is not None and _counted(best, usable) >= min_stops:
                 break
-        if best is not None and len(best.stops) >= min_stops:
+        if best is not None and _counted(best, usable) >= min_stops:
             args["stop_bonus"] = bonus
         else:
             status = f"could not fit {min_stops} stops"
@@ -574,7 +585,7 @@ def plan_day(cands: list[Candidate], start_point: Point, day_start: int, day_end
         best_score = with_bonus(best)
         for k in top:
             p = _solve(usable, forced_last=k + 1, **args)
-            if p is not None and min_stops and len(p.stops) < min_stops:
+            if p is not None and min_stops and _counted(p, usable) < min_stops:
                 continue
             if with_bonus(p) > best_score:
                 best, best_score = p, with_bonus(p)

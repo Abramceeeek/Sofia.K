@@ -410,6 +410,9 @@ class TripDaysIn(BaseModel):
     arrive: TripEndIn | None = None                                      # replaces arrive_time when sent
     leave: TripEndIn | None = None                                       # replaces leave_time when sent
     personal: list[DayTimeIn] = Field(default_factory=list, max_length=31)   # m200: the person's own time, by day
+    # m346 (Abram, 24 Nov: "stored with the trip, editable and available to the planner"): how full the days
+    # should be, separate from activity pace. Wins over the profile's default; none means balanced.
+    day_feel: Literal["relaxed", "balanced", "full"] | None = None
 
 
 class AlternativesIn(BaseModel):

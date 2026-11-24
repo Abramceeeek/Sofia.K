@@ -74,3 +74,16 @@ experiences:
   m_waterloo_bridge_sunset:   {category: views, type: bridge}
   m_wellcome_reading_room:    {category: culture, type: museum, area: "Euston Road", short: "the Wellcome Collection"}   # m331
   m_young_va:                  {category: culture, type: museum, area: "Bethnal Green", short: "Young V&A"}   # m340
+  m_golden_hinde:             {category: culture, type: historic_site, area: "Southwark", short: "the Golden Hinde"}   # m348
+  m_va_south_kensington:      {category: culture, type: museum, area: "South Kensington", short: "the V&A"}   # m348
+  m_poppies_spitalfields:     {category: food_drink, type: restaurant, area: "Spitalfields", short: "Poppie's"}   # m348
+  m_mildreds_kings_cross:     {category: food_drink, type: restaurant, area: "King's Cross", short: "Mildreds"}   # m348
+  m_foundling_museum:         {category: culture, type: museum, area: "Bloomsbury", short: "the Foundling Museum"}   # m348
+  m_queens_house:             {category: culture, type: historic_site, area: "Greenwich", short: "the Queen's House"}   # m348
+  m_sky_garden:               {category: views, type: roof_garden, area: "City of London", short: "the Sky Garden"}   # m348
+  m_museum_docklands:         {category: culture, type: museum, area: "Docklands", short: "London Museum Docklands"}   # m348
+  m_hunterian_museum:         {category: culture, type: museum, area: "Lincoln's Inn Fields", short: "the Hunterian"}   # m348
+  m_wahaca_southbank:         {category: food_drink, type: restaurant, area: "Southbank", short: "Wahaca"}   # m348
+  m_dickens_museum:           {category: culture, type: historic_site, area: "Bloomsbury", short: "Dickens's house"}   # m348
+  m_dr_johnsons_house:        {category: culture, type: historic_site, area: "Fleet Street", short: "Dr Johnson's House"}   # m348
+  m_garden_museum:            {category: culture, type: museum, area: "Lambeth", short: "the Garden Museum"}   # m348

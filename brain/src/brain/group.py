@@ -210,6 +210,29 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                     break
             if improved:
                 break
+    # m348 (Abram: "Nobody should dominate"): every member gets at least one of their own favourites where the budget
+    # and the free choices allow. With a larger catalogue the product of satisfactions alone can leave one member
+    # with none (the London gate's 13 new places did), so a member without one swaps in their best-ranked favourite
+    # for the free choice whose loss costs the group least.
+    k_fav = max(1, round(DELTA * len(pool)))
+    fav_of = {m.label: [x for x in sorted(pool, key=lambda y: -P[(m.label, y.id)])[:k_fav]] for m in members}
+    for m in members:
+        if any(x in chosen for x in fav_of[m.label]):
+            continue
+        best_trial, best_v = None, -math.inf
+        for y in fav_of[m.label]:
+            if y in chosen:
+                continue
+            for i, x in enumerate(chosen):
+                if x in fixed or any(x in fav_of[o.label] and sum(z in chosen for z in fav_of[o.label]) == 1
+                                     for o in members if o is not m):
+                    continue   # never take another member's only favourite
+                trial = chosen[:i] + [y] + chosen[i + 1:]
+                if fits_budget(trial) and (v := _objective(method, members, trial, P, U)) > best_v:
+                    best_trial, best_v = trial, v
+        if best_trial is not None:
+            rest = [x for x in pool if x not in best_trial]
+            chosen = best_trial
     day_lists, highlights, over = _assign(chosen, members, days, per_day, P, cap,
                                           lambda x: _price(x, currency, rates) or 0.0)
     notes += over

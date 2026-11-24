@@ -1,0 +1,78 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.rmg.co.uk/queens-house: "Open daily except 24, 25 and 26 December" "10am-5pm", "Last entry 4.15pm"; "The Queen's House is free to visit."; "Entry to the Queen's House is free, but you must have a ticket to visit."; "We recommend booking tickets online ... in advance to guarantee entry ... but you can normally also turn up on the day"; "The sweeping Tulip Stairs are one of the original features of the Queen's House."; the Armada Portrait; "the white cube of the Queen's House influenced centuries of British architecture"
+# - https://www.rmg.co.uk/queens-house/plan-your-visit/house-closures: "9 November 2026 to 3 January 2027" "Orangery and South Parlours" "All day"; "18 January to 12 February 2027" "Whole House" "All day" "Annual rehang"
+# - https://www.rmg.co.uk/plan-your-visit/accessibility-queens-house: "All floors of the Queen's House have lift access."
+# Coordinates: Overture Maps Places (open data), "The Queen's House, Romney Rd, SE10 9NF" (51.481113, -0.003731), confidence 0.995, read 2026-11-24
+id: m_queens_house
+title: "The Tulip Stairs at the Queen's House, Greenwich"
+feel_word: "Quiet"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Queen's House, Romney Road, Greenwich"
+  lat: 51.481113
+  lon: -0.003731
+approach:
+  from: "Cutty Sark DLR station"   # *
+  start_point: {lat: 51.481113, lon: -0.003731}
+  path: "Walk through Greenwich to the white house between the Maritime Museum and the park"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: lift access to all floors
+experience:
+  what_happens: "You climb the sweeping Tulip Stairs and find the Armada Portrait of Elizabeth I, in the white house that shaped centuries of British architecture."   # CHECKED (the Tulip Stairs, the Armada Portrait, the house's influence)
+  why_it_works: "Free and calm between the river and Greenwich Park: an unhurried hour on a day out by boat."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily, last entry 16:15
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+    "2027-01-18": []
+    "2027-01-19": []
+    "2027-01-20": []
+    "2027-01-21": []
+    "2027-01-22": []
+    "2027-01-23": []
+    "2027-01-24": []
+    "2027-01-25": []
+    "2027-01-26": []
+    "2027-01-27": []
+    "2027-01-28": []
+    "2027-01-29": []
+    "2027-01-30": []
+    "2027-01-31": []
+    "2027-02-01": []
+    "2027-02-02": []
+    "2027-02-03": []
+    "2027-02-04": []
+    "2027-02-05": []
+    "2027-02-06": []
+    "2027-02-07": []
+    "2027-02-08": []
+    "2027-02-09": []
+    "2027-02-10": []
+    "2027-02-11": []
+    "2027-02-12": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Entry is free with a ticket: book online ahead to be sure of a place (you can normally turn up on the day)"   # CHECKED
+  opening_hours: "Daily 10:00-17:00 (last entry 16:15), closed 24-26 Dec and 18 Jan-12 Feb 2027 (annual rehang); Orangery and South Parlours closed to 3 Jan; free with a ticket. rmg.co.uk, read 2026-11-24"
+  hours: "Daily 10:00–17:00, last entry 16:15; closed 24–26 Dec and 18 Jan–12 Feb. Free with a ticket"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 0}
+cost_gbp: 0   # CHECKED: free, with a ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

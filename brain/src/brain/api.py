@@ -83,7 +83,13 @@ def _tester_code(text: str | None) -> str | None:
 # m326 (the London gate, G2): a trip day ending over 45 min early tries up to this many more places, one at a time,
 # and stops at the first that fills the day (the place on the way, and days with the person's own plans, don't)
 EXTRA_PLACES_MAX = 4
-EXTRA_BY_PACE = {"gentle": 1, "medium": 2, "unstated": 2, "full_on": EXTRA_PLACES_MAX}   # m345: extra places by pace
+# m346 (Abram, 24 Nov): "Pace determines physical intensity. Day Feel determines itinerary density": the extra places
+# beyond the person's own number follow how full they want their days, never their pace ("Do not assume that a gentle
+# traveller wants fewer experiences"). Pace still sets journeys, their budget and strenuous stops. No answer: balanced.
+EXTRA_BY_FEEL = {"relaxed": 0, "balanced": 2, "full": EXTRA_PLACES_MAX}
+# m346: what an extra place is worth to the solver, in utility units, by day feel: a full day ("make the most of the
+# available day") takes a strong match whose journey and wait cost a little more than a balanced day would accept
+EXTRA_BONUS_BY_FEEL = {"relaxed": 0.0, "balanced": 0.5, "full": 1.0}
 MAX_TRIP_DAYS = 7   # D120: days planned in one request (about a second each on the free server)
 
 
@@ -1339,7 +1345,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         out = []
 
         own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
-        day_feel = (user.profile or {}).get("day_feel")   # m344: relaxed / balanced / full (proposed; None: balanced)
+        # m346: the trip's own day feel, else the profile's default, else balanced; never inferred from anything else
+        day_feel = body.day_feel or (user.profile or {}).get("day_feel") or "balanced"
         by_ready = {m.id: m for m in ready}
         # m331: the cards at places they said they loved: never refused for a long journey
         loved_sets = [tuple(app.state.swipe_cards[sw.item][1]) for sw in user.swipes
@@ -1377,11 +1384,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             EARLY_MAX_MIN before its end time tries up to EXTRA_PLACES_MAX more places, so the person's places a day are a pace,
             not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
             best = None
-            # m344: a relaxed day isn't filled with extra places; a full one may take one more than usual.
-            # m345 (two independent reviews, 24 Nov: "the requested stop count and pace are ignored"; Abram: an extra
-            # place must "respect their pace"): the extra places follow the person's pace
-            extra_max = 0 if day_feel == "relaxed" else \
-                EXTRA_BY_PACE.get((user.profile or {}).get("activity") or "unstated", 2) + (1 if day_feel == "full" else 0)
+            # m346: the extra places follow the day feel: none for relaxed, up to 2 for balanced, up to 4 for full,
+            # strong matches only (m335) and within the pace's journeys (m333)
+            extra_max = EXTRA_BY_FEEL[day_feel]
             more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, extra_max + 1))
             want = None if tag == "before" or mine else loved_for(part, day)
             for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
@@ -1399,6 +1404,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
                                       weekday=day.strftime("%a").lower(), date=day.isoformat(), time_limit_s=limit,
                                       extra=n > part.stops,   # m329: an extra place is a genuine match only
+                                      extra_bonus=EXTRA_BONUS_BY_FEEL[day_feel],
                                       # m333: and beyond the places they asked for (a stretch's stops count
                                       # lunch too), a strong one
                                       base_stops=part.stops - (1 if part.lunch and dayplan.spans_lunch(
@@ -1442,6 +1448,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             dayplan.state_free_time(stops, brief.start_time, by_ready,   # G1: no silent wait
                                     brief.end_time, brief.weekday, brief.date)
             head["totals"] = dayplan.plan_totals(stops, app.state.travel)   # m345: the finish after longer stays
+            # m346 (G2c): the time left at the end of the day is said as the person's own, with what they can do with it
+            if free := dayplan.free_after(stops, brief.end_time, by_ready, brief.weekday, brief.date, day_feel):
+                head["free_after"] = free
             used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
             # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
             # location, never its name")
@@ -1458,16 +1467,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             label = f"{day:%A} {day.day} {day:%B}"
             own = own_days.get(i)
             blocks = blocks_for(i)
-            # m200: a relaxed day has one place fewer (never none), so each stays longer; m344: so does every day for
-            # someone whose days should feel relaxed (a proposed preference, off unless the profile says so)
+            # m200: a day the person marked relaxed has one place fewer (never none), so each stays longer. m346 (Abram:
+            # "two places and choose Relaxed. Two excellent experiences finishing at 15:00 can be a successful day"): a
+            # relaxed day feel keeps the places they asked for, with longer stays and nothing added
             calm = bool(own and own.relaxed) or day_feel == "relaxed"
-            places = max(1, body.stops_per_day - (1 if calm else 0))
+            places = max(1, body.stops_per_day - (1 if own and own.relaxed else 0))
             fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name, stay_chosen=body.stay is not None,
                                     day_start=body.day_start, day_end=body.day_end, stops=places,
                                     arrive=arrive, leave=leave, travel_light=body.travel_light)
             legs = list(fr.legs)
             entry = {"index": i, "date": day.isoformat(), "kind": fr.kind, "plan": None, "before": None,
-                     "window": None, "title": fr.title, "free_day": bool(own and own.free_day),
+                     "window": None, "title": fr.title, "free_day": bool(own and own.free_day), "day_feel": day_feel,
                      "relaxed": bool(own and own.relaxed),
                      "mine": [{"kind": b.kind, "start": tripdays.hhmm(b.start_min), "end": tripdays.hhmm(b.end_min),
                                "planned": False} for b in blocks]}
@@ -1516,9 +1526,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                               # m200: how many days keep time for the person (never what for, or when)
                               "own_time": sum(bool(d.mine) for d in body.personal),
                               "free_days": sum(d.free_day for d in body.personal),
-                              "relaxed": sum(d.relaxed for d in body.personal)}))
+                              "relaxed": sum(d.relaxed for d in body.personal), "day_feel": day_feel}))
         s.commit()
-        return {"total_days": total, "days": out, "start": start_name,
+        return {"total_days": total, "days": out, "start": start_name, "day_feel": day_feel,
                 "used": sorted(used)}   # sent back as `exclude` when planning the later days
 
     # ---- sharing a rated moment (D114) -----------------------------------------------------

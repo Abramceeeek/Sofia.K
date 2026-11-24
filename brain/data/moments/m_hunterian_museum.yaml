@@ -1,0 +1,66 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://hunterianmuseum.org/visit: "Royal College of Surgeons of England 38–43 Lincolns Inn Fields London WC2A 3PE"; "Tuesday to Saturday: 10am–5pm (recommended last entry 4 pm)"; Sunday, Monday and bank holidays closed; "The last day to visit is Saturday 19 December 2026, reopening Tuesday 5 January 2027"; "The Hunterian Museum is free to everyone."; "Pre-booking tickets is recommended to avoid having to queue at busy times."
+# - https://hunterianmuseum.org/visit/faqs: "there are displays of human remains that some young people may find upsetting"; "only children under 16 must be accompanied by a responsible adult"
+# - https://hunterianmuseum.org/visit/access-facilities: "All floors of the building have step-free access."
+# - https://hunterianmuseum.org/: "Discover the art and science of surgery from ancient times to the present day."
+# Coordinates: Overture Maps Places (open data), "Hunterian Museum, The Royal College of Surgeons of England, Lincoln's Inn Fields, WC2A 3PE" (51.515411, -0.11628), confidence 0.997, read 2026-11-24
+id: m_hunterian_museum
+title: "The Hunterian: the art and science of surgery"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Hunterian Museum, 38-43 Lincoln's Inn Fields"
+  lat: 51.515411
+  lon: -0.11628
+approach:
+  from: "Holborn station"   # *
+  start_point: {lat: 51.515411, lon: -0.11628}
+  path: "Walk across Lincoln's Inn Fields to the Royal College of Surgeons"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: step-free on every floor
+experience:
+  what_happens: "You see the art and science of surgery from ancient times to today, around John Hunter's collection of specimens."   # CHECKED
+  why_it_works: "Free, quiet and unlike anywhere else, across the square from Sir John Soane's Museum. It shows human remains, which some people find upsetting."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: Tue-Sat, last entry 16:00
+  days: [tue, wed, thu, fri, sat]   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-20": []
+    "2026-12-21": []
+    "2026-12-22": []
+    "2026-12-23": []
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+    "2026-12-27": []
+    "2026-12-28": []
+    "2026-12-29": []
+    "2026-12-30": []
+    "2026-12-31": []
+    "2027-01-01": []
+    "2027-01-02": []
+    "2027-01-03": []
+    "2027-01-04": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Booking a free ticket ahead is recommended, to avoid queues at busy times"   # CHECKED
+  opening_hours: "Tue-Sat 10:00-17:00 (last entry 16:00); closed Sun, Mon and bank holidays; closed 20 Dec 2026-4 Jan 2027; free, booking recommended. hunterianmuseum.org, read 2026-11-24"
+  hours: "Tue–Sat 10:00–17:00; closed Sun, Mon and 20 Dec–4 Jan. Free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 0, local_novel: 2, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 0}
+cost_gbp: 0   # CHECKED: free
+shot_card: null
+source: research
+last_checked: "2026-11-24"

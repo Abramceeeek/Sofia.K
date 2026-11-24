@@ -1,0 +1,50 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.vam.ac.uk/south-kensington/visit: "Cromwell Road, London, SW7 2RL"; "Daily: 10.00 – 17.45"; "Friday: 10.00 – 22.00 (some galleries close after 17.45)"; "Closed 24 – 26 December"; "General admission is free and you don't need to book."; "The Cromwell Road and Exhibition Road entrances are step-free and wheelchair accessible."; "The John Madejski Garden is open from 10.00 – 17.00 Monday to Sunday."
+# - https://www.vam.ac.uk/south-kensington: "Admission is free"; "Some exhibitions and events carry a separate charge."
+# Coordinates: Overture Maps Places (open data), "National Art Library, Victoria and Albert Museum, Cromwell Road, SW7 2RL" (51.496773, -0.17251), confidence 0.8: inside the museum, read 2026-11-24
+id: m_va_south_kensington
+title: "The V&A's galleries and the garden at its heart"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "V&A South Kensington, Cromwell Road"
+  lat: 51.496773
+  lon: -0.17251
+approach:
+  from: "South Kensington station"   # *
+  start_point: {lat: 51.496773, lon: -0.17251}
+  path: "Walk five minutes up Exhibition Road to the museum's step-free entrance"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: the Cromwell Road and Exhibition Road entrances are step-free
+experience:
+  what_happens: "You wander free galleries of art and design from every age, then sit in the John Madejski Garden, open to the sky in the middle of the building."   # free, the garden CHECKED; the galleries' range *
+  why_it_works: "Free, warm and endlessly varied, five minutes from the Natural History Museum; on Fridays it stays open until 22:00."
+  duration_min: [60, 120] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:45"]   # CHECKED: daily, Fridays to 22:00
+  time_of_day_days: {fri: ["10:00-22:00"]}   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekend afternoons (GUESS)"
+  opening_hours: "Daily 10:00-17:45, Fridays 10:00-22:00 (some galleries close after 17:45); closed 24-26 Dec; free, no need to book (some exhibitions charged); garden 10:00-17:00. vam.ac.uk, read 2026-11-24"
+  hours: "Daily 10:00–17:45, Fridays to 22:00; closed 24–26 Dec. Free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 0}
+cost_gbp: 0   # CHECKED: free (some exhibitions charged)
+shot_card: null
+source: research
+last_checked: "2026-11-24"

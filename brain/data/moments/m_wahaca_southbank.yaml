@@ -1,0 +1,49 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.wahaca.co.uk/location/southbank/: "Queen Elizabeth Hall London SE1 8XX"; Monday to Thursday "12pm - 10pm"; Friday and Saturday "12pm - 10.30pm"; Sunday "12pm - 9:30pm"; "We will be closed December 25 this festive period."; "opening hours may vary on occasion."; "Step Free Access"; "sits on the Queen Elizabeth Hall terrace at Southbank Centre"; "its colourful, multi-level architecture and innovative use of recycled shipping containers"
+# - https://www.wahaca.co.uk/mexican-menu-full/ (the menu for all branches): Pork Pibil taco 7.95; Beef Gringa taco 9.50; Slow-Cooked Beef burrito 16.95
+# Coordinates: Overture Maps Places (open data), "Wahaca, Queen Elizabeth Hall, Southbank Centre, Belvedere Rd, SE1 8XX" (51.507011, -0.11613), confidence 1.0, read 2026-11-24
+id: m_wahaca_southbank
+title: "Mexican street food at Wahaca, in shipping containers on the Southbank"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Wahaca Southbank, Queen Elizabeth Hall"
+  lat: 51.507011
+  lon: -0.11613
+approach:
+  from: "Waterloo station"   # *
+  start_point: {lat: 51.507011, lon: -0.11613}
+  path: "Walk to the Queen Elizabeth Hall terrace on the Southbank"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: step-free access listed
+experience:
+  what_happens: "You eat Mexican street food in a colourful, many-levelled restaurant built from recycled shipping containers above the river walk."   # CHECKED
+  why_it_works: "A lively, good-value meal on the Southbank: tacos from £7.95, a burrito about £17."
+  duration_min: [45, 70] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["12:00-22:00"]   # CHECKED: daily
+  time_of_day_days: {fri: ["12:00-22:30"], sat: ["12:00-22:30"], sun: ["12:00-21:30"]}   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-25": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Mon-Thu 12:00-22:00, Fri-Sat 12:00-22:30, Sun 12:00-21:30; closed 25 Dec; tacos £7.95-£9.50, burrito £16.95 (menu for all branches). wahaca.co.uk, read 2026-11-24"
+  hours: "Daily from 12:00, to 22:00 (22:30 Fri–Sat, 21:30 Sun); closed 25 Dec"   # shown on the stop
+features:
+  place: {movement_views: 1, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+cost_gbp: 17   # CHECKED: burrito £16.95; tacos £7.95-£9.50 (menu for all branches)
+cost_kind: food
+shot_card: null
+source: research
+last_checked: "2026-11-24"

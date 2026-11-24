@@ -26,37 +26,39 @@ START = date(2026, 12, 4)   # a Friday
 ITEMS = yaml.safe_load((DATA_DIR / "swipe_items.yaml").read_text(encoding="utf-8"))["items"]
 WORDS = {"loved": "Loved it", "fine": "It was fine", "didnt_enjoy": "Didn't enjoy it", "havent_been": "Haven't been"}
 
+# m346 (Abram, 24 Nov): each trip carries its day feel. Abram named three: Margaret and Alan and Jonas Relaxed, Sam
+# Full; Claude chose the rest (Priya and Dan and the family Balanced, the four friends Full), logged in m346.
 PEOPLE = [
     dict(key="sam", who="Sam, 29, travelling alone from Manchester for a weekend; loves food, on a budget",
          profile=dict(based="uk", home_city="Manchester", company="solo", budget_band="20_40", activity="medium",
                       chronotype="night", fields=["food"], why_travel=["excited", "curious"]),
          swipes={3: "loved", 14: "loved", 7: "loved", 4: "didnt_enjoy", 6: "fine", 13: "havent_been"},
-         trip=dict(nights=1, feelings=["excited", "curious"], day_start="11:00", day_end="20:00", stops_per_day=3)),
+         trip=dict(nights=1, feelings=["excited", "curious"], day_start="11:00", day_end="20:00", stops_per_day=3, day_feel="full")),
     dict(key="priya", who="Priya and Dan, a couple in their 30s from Leeds; history and museums, mid budget",
          profile=dict(based="uk", home_city="Leeds", company="partner", budget_band="40_70", activity="medium",
                       chronotype="morning", fields=["history_culture"], why_travel=["curious", "connected"]),
          swipes={4: "loved", 12: "loved", 1: "loved", 3: "fine", 15: "didnt_enjoy", 7: "didnt_enjoy"},
-         trip=dict(nights=2, feelings=["curious", "connected"], day_start="09:30", day_end="18:00", stops_per_day=3)),
+         trip=dict(nights=2, feelings=["curious", "connected"], day_start="09:30", day_end="18:00", stops_per_day=3, day_feel="balanced")),
     dict(key="family", who="A family of four (two children, 8 and 11) from Bristol; parks and boats, a gentle pace",
          profile=dict(based="uk", home_city="Bristol", company="family", budget_band="20_40", activity="gentle",
                       chronotype="morning", fields=["nature"], why_travel=["connected", "restored"]),
          swipes={6: "loved", 2: "loved", 11: "loved", 4: "fine", 7: "didnt_enjoy", 9: "havent_been"},
-         trip=dict(nights=1, feelings=["connected", "restored"], day_start="10:00", day_end="17:00", stops_per_day=3)),
+         trip=dict(nights=1, feelings=["connected", "restored"], day_start="10:00", day_end="17:00", stops_per_day=3, day_feel="balanced")),
     dict(key="jonas", who="Jonas, who lives in London and needs a quiet day to recharge; no plans to spend much",
          profile=dict(based="london", company="solo", budget_band="under_20", activity="gentle", chronotype="morning",
                       fields=["nature"], why_travel=["peaceful", "restored"]),
          swipes={16: "loved", 13: "loved", 6: "loved", 1: "didnt_enjoy", 9: "didnt_enjoy", 8: "fine"},
-         trip=dict(nights=0, feelings=["peaceful", "restored"], day_start="10:00", day_end="18:00", stops_per_day=3)),
+         trip=dict(nights=0, feelings=["peaceful", "restored"], day_start="10:00", day_end="18:00", stops_per_day=3, day_feel="relaxed")),
     dict(key="friends", who="Four friends in their 20s from Glasgow; views, markets and a lively evening",
          profile=dict(based="uk", home_city="Glasgow", company="friends", budget_band="40_70", activity="full_on",
                       chronotype="night", fields=["food"], why_travel=["excited", "connected"]),
          swipes={7: "loved", 9: "loved", 5: "loved", 15: "loved", 3: "fine", 4: "didnt_enjoy"},
-         trip=dict(nights=1, feelings=["excited", "connected"], day_start="11:00", day_end="21:00", stops_per_day=4)),
+         trip=dict(nights=1, feelings=["excited", "connected"], day_start="11:00", day_end="21:00", stops_per_day=4, day_feel="full")),
     dict(key="margaret", who="Margaret and Alan, retired, from Norwich; art and the river, unhurried, happy to spend",
          profile=dict(based="uk", home_city="Norwich", company="partner", budget_band="70_plus", activity="gentle",
                       chronotype="morning", fields=["history_culture"], why_travel=["restored", "curious"]),
          swipes={8: "loved", 4: "loved", 2: "loved", 15: "didnt_enjoy", 7: "didnt_enjoy", 13: "fine"},
-         trip=dict(nights=2, feelings=["restored", "curious"], day_start="10:00", day_end="17:00", stops_per_day=2)),
+         trip=dict(nights=2, feelings=["restored", "curious"], day_start="10:00", day_end="17:00", stops_per_day=2, day_feel="relaxed")),
 ]
 
 
@@ -105,7 +107,7 @@ def main() -> int:
                        f"{pr.get('chronotype')} person; interests: {', '.join(pr.get('fields', [])) or 'none'}")
             out.append(f"- How the trip should feel: {', '.join(t['feelings'])}")
             out.append("- Places they know: " + "; ".join(f"{ITEMS[i]['name']}: {WORDS[x]}" for i, x in p["swipes"].items()))
-            out.append(f"- Trip: {t['nights'] + 1} day(s), {t['day_start']}–{t['day_end']}, {t['stops_per_day']} places a day")
+            out.append(f"- Trip: {t['nights'] + 1} day(s), {t['day_start']}–{t['day_end']}, {t["stops_per_day"]} places a day, days to feel {t.get("day_feel") or "balanced"}")
             if learned:
                 out.append("- \"So far, I've learned\": " + " ".join(i["text"] for i in learned[:6]))
             out.append("")
@@ -123,6 +125,8 @@ def main() -> int:
                     if t.get("cost_gbp") is not None:   # m337: what the app's top line says (each price is per person)
                         out.append(f"> In the app: £{t['cost_gbp']:,.2f} per person, entry, food and fares; finishes at "
                                    f"{t.get('finish')}")
+                    if (fa := pl.get("free_after")):   # m346: the time left at the end, as the app says it
+                        out.append(f"> Free time: {fa['text']}")
                     out.append("")
                     for st in pl["stops"]:
                         head = f"**{st.get('arrive', '')}–{st.get('depart', '')} · {st['title']}**"

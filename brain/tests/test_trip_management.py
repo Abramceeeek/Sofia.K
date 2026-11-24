@@ -111,17 +111,31 @@ def test_estimates_are_said_as_estimates():
     assert named[0]["lines"] == []                                        # a named place's price is its menu's
 
 
-def test_a_relaxed_day_feel_means_fewer_places_and_no_filling(client):
-    """m344 (Abram, 24 Nov; proposed): "How would you like your days to feel?" Relaxed: fewer experiences, more
-    breathing room; separate from activity. Without an answer, days plan as before."""
+def test_a_relaxed_day_feel_keeps_the_places_asked_and_adds_none(client):
+    """m344, changed by m346 (Abram, 24 Nov: "Margaret and Alan request two places and choose Relaxed. Two excellent
+    experiences finishing at 15:00 can be a successful day"; "The number of places requested should be respected"):
+    Relaxed keeps the places they asked for, adds none and says the rest of the day is theirs. Separate from activity."""
     start = (date.today() + timedelta(days=3)).isoformat()
     trip = {"start_date": start, "nights": 1, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 3}
-    counts = {}
+    counts, frees = {}, {}
     for feel in (None, "relaxed"):
         h, _ = install(client)
-        if feel:
-            assert client.put("/v1/me/profile", headers=h, json={"day_feel": feel}).status_code == 204
-        d = client.post("/v1/me/trips/days", headers=h, json=trip).json()
-        counts[feel] = [len([st for st in x["plan"]["stops"] if st["rateable"]]) for x in d["days"] if x["plan"]]
-    assert all(n <= 2 for n in counts["relaxed"])                     # one place fewer than the three asked, no extras
-    assert sum(counts["relaxed"]) < sum(counts[None])
+        d = client.post("/v1/me/trips/days", headers=h, json={**trip, "day_feel": feel}).json()
+        assert all(x["day_feel"] == (feel or "balanced") for x in d["days"])
+        counts[feel] = [len([st for st in x["plan"]["stops"] if st["rateable"] and not st.get("lunch")])
+                        for x in d["days"] if x["plan"]]
+        frees[feel] = [x["plan"].get("free_after") for x in d["days"] if x["plan"]]
+    assert all(n <= 3 for n in counts["relaxed"])                     # none beyond the three asked
+    assert sum(counts["relaxed"]) <= sum(counts[None])
+    for f in frees["relaxed"]:
+        assert f is None or f["text"].startswith("A relaxed day, as you asked: the rest of it is yours from")
+
+
+def test_the_trip_day_feel_wins_over_the_profile_default(client):
+    """m346: "stored with the trip, editable": the trip's own answer is the one planned with."""
+    h, _ = install(client)
+    assert client.put("/v1/me/profile", headers=h, json={"day_feel": "full"}).status_code == 204
+    start = (date.today() + timedelta(days=3)).isoformat()
+    trip = {"start_date": start, "nights": 0, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 2}
+    assert client.post("/v1/me/trips/days", headers=h, json=trip).json()["day_feel"] == "full"
+    assert client.post("/v1/me/trips/days", headers=h, json={**trip, "day_feel": "relaxed"}).json()["day_feel"] == "relaxed"

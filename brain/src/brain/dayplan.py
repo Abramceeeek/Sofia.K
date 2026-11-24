@@ -104,6 +104,41 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
         stretch(prev, parse_hhmm(day_end) - prev_end)
 
 
+def free_after(stops: list[dict], day_end: str | None, by_id: Mapping[str, Moment] | None = None,
+               weekday: str | None = None, date: str | None = None, day_feel: str | None = None) -> dict | None:
+    """m346 (Abram, 24 Nov, G2c: "Is remaining time clearly disclosed and genuinely useful?"; "Free time is clearly
+    presented without making the traveller feel that something is missing"): the time left after the last stop, when
+    it's more than EARLY_MAX_MIN, said as the person's own, with the one thing the plan knows they can do with it: stay
+    on where they are, while it's open. A relaxed day says it's the day they asked for; a fuller one says why nothing
+    was added. Never a reason the planner didn't have."""
+    if not stops or not day_end:
+        return None
+    last = stops[-1]
+    if str(last.get("moment_id") or "").startswith("mine"):
+        return None                     # the person's own plans end the day
+    start, end = parse_hhmm(last["depart"]), parse_hhmm(day_end)
+    if end - start <= EARLY_MAX_MIN:
+        return None
+    free = end - start
+    card = (by_id or {}).get(_base(str(last.get("moment_id") or "")))
+    name = (re.split(r"[,:(]", card.place.name)[0].strip() if card else None)
+    stay_on = None
+    if card is not None:
+        arrive = parse_hhmm(last["arrive"])
+        close = max((hi for lo, hi in card.windows(weekday, date) if lo <= arrive <= hi), default=start)
+        if close - start >= 20:
+            stay_on = f"{name} is open until {hhmm(min(close, end))} if you'd like to stay on."
+    head = (f"A relaxed day, as you asked: the rest of it is yours from {last['depart']}"
+            if day_feel == "relaxed" else
+            f"The rest of the day is yours from {last['depart']}")
+    text = f"{head}, about {_hm(free)} until {day_end}."
+    if day_feel != "relaxed":
+        text += " Nothing else close by was a strong enough match to add."
+    if stay_on:
+        text += " " + stay_on
+    return {"from": last["depart"], "until": day_end, "min": free, "text": text, "stay_on": bool(stay_on)}
+
+
 TRANSFER_ALWAYS_OK = 30   # m329: a journey of up to this long is never called disproportionate
 
 
@@ -257,6 +292,7 @@ class Brief:
     date: str | None = None        # m329: "YYYY-MM-DD": a card's dated closures and early closings apply
     extra: bool = False            # m329: more places than asked, to fill the day: only genuine matches (no floor relaxing)
     base_stops: int | None = None  # m333: with `extra`, the places the person asked for; the rest must be strong matches
+    extra_bonus: float | None = None   # m346: with `extra`, what each extra place is worth to the solver (by day feel)
     pace: str | None = None        # m331: the person's stated pace ("gentle", "medium", "full_on"): journey costs
     temp_c: float | None = None
     rain_prob: float | None = None
@@ -643,7 +679,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                   # m216: on days with the person's own time, the solver starts from a valid plan built step by
                   # step (stage 1) and improves it (stage 2). Other days, and Test B, plan exactly as before.
                   seeded=SEEDED_WITH_BLOCKS and bool(brief.mine), relax_floor=not brief.extra,
-                  retry_min=not brief.extra)   # m331: an extra place fits at once, or the try is dropped
+                  retry_min=not brief.extra,   # m331: an extra place fits at once, or the try is dropped
+                  extra_bonus=brief.extra_bonus if brief.extra else None)
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))

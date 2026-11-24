@@ -249,4 +249,43 @@ cards:
     label: Young V&A
     metres: 0
     wikidata: Q644281
+  m_golden_hinde:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_va_south_kensington:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_poppies_spitalfields:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_mildreds_kings_cross:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_foundling_museum:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_queens_house:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_sky_garden:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_museum_docklands:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_hunterian_museum:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_wahaca_southbank:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_dickens_museum:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_dr_johnsons_house:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
+  m_garden_museum:   # m348: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: Overture Places, matched by name and address (Wikidata not checked)
+    wikidata: null
 checked: '2026-11-11'

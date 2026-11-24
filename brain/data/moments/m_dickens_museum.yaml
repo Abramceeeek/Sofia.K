@@ -1,0 +1,61 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://dickensmuseum.com/pages/admissions: "Wednesday to Sunday from 10am to 5pm."; "Closed Mondays and Tuesdays."; Adult (17+) £14.00; Child (6-16) £8.00; under 6 free; Concession £12.00; admission "in fifteen minute intervals"
+# - https://dickensmuseum.com/: "48 Doughty Street, London, WC1N 2LX"; last entry 4pm
+# - https://dickensmuseum.com/pages/christmas-opening-hours: 1-6 Dec open to 6pm (4 Dec to 5pm); 24 Dec event ticket holders only; 25 and 26 Dec closed; 27-31 Dec 10am-5pm; 1 Jan closed; 4-5 Jan closed
+# - https://dickensmuseum.com/pages/accessibility-details: entry "step free from the street level"; a staff-operated platform lift to four of five levels; the attic "not accessible with the museum lift"
+# Coordinates: Overture Maps Places (open data), "Charles Dickens Blue Plaque, 48-49 Doughty St, WC1N 2LX" (51.523567, -0.116353), confidence 0.998: the plaque on the house, read 2026-11-24
+id: m_dickens_museum
+title: "Charles Dickens's house on Doughty Street"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Charles Dickens Museum, 48 Doughty Street"
+  lat: 51.523567
+  lon: -0.116353
+approach:
+  from: "Russell Square station"   # *
+  start_point: {lat: 51.523567, lon: -0.116353}
+  path: "Walk along Guilford Street to Doughty Street"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # CHECKED: step-free entry; a platform lift to four of the five floors, not the attic
+experience:
+  what_happens: "You walk through the Georgian home where Charles Dickens lived, room by room, from the kitchen to his study."   # the Georgian home where he lived CHECKED; the rooms *
+  why_it_works: "A real house, kept as it was, a short walk from the Foundling Museum and the British Museum."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: Wed-Sun, last entry 16:00
+  days: [wed, thu, fri, sat, sun]   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-01": ["10:00-18:00"]
+    "2026-12-02": ["10:00-18:00"]
+    "2026-12-03": ["10:00-18:00"]
+    "2026-12-05": ["10:00-18:00"]
+    "2026-12-06": ["10:00-18:00"]
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+    "2026-12-28": ["10:00-17:00"]
+    "2026-12-29": ["10:00-17:00"]
+    "2027-01-01": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Wed-Sun 10:00-17:00 (last entry 16:00), closed Mon and Tue; to 18:00 on 1-6 Dec (not 4 Dec); 24 Dec event tickets only; closed 25-26 Dec and 1 Jan; open 28-29 Dec; adult £14, child 6-16 £8, under 6 free. dickensmuseum.com, read 2026-11-24"
+  hours: "Wed–Sun 10:00–17:00, last entry 16:00; closed 24–26 Dec and 1 Jan. Adult £14, child £8"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+cost_gbp: 14   # CHECKED: adult £14, child (6-16) £8, under 6 free, concession £12
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"
