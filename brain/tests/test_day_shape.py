@@ -139,6 +139,14 @@ def test_a_ride_starts_from_somewhere_near_its_start():
     assert [s.moment_id for s in plan.stops] == ["hill", "boat"]
     alone = plan_day([ride], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=1, time_limit_s=0.5)
     assert alone.stops == []
+    # …but a ride that's the day's must-do (a place they loved) is still planned: as a rule this once left the
+    # solver no first solution, and the family's loved boat dropped out of their trip
+    loved = plan_day([ride], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=1, time_limit_s=0.5,
+                     must_include={"boat"})
+    assert [s.moment_id for s in loved.stops] == ["boat"]
+    with_hill = plan_day([ride, there], START, 600, 1080, WalkingEstimate(), PLAIN, max_stops=2, time_limit_s=0.5,
+                         must_include={"boat"})
+    assert [s.moment_id for s in with_hill.stops] == ["hill", "boat"]   # Greenwich first where the day has it
 
 
 def test_dinner_is_scored_by_the_persons_liking_for_food_and_can_be_a_named_place():

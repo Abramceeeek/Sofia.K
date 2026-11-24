@@ -151,7 +151,9 @@ EXTRA_STOP_BONUS = 0.5   # m331: per place, in utility units, on a try with extr
 PACE_TRAVEL_BUDGET = {"gentle": 60, "medium": 90, "full_on": 120, "unstated": 90}   # m333: travel a day, minutes
 TRAVEL_OVER_COST = 5    # m333: per minute of a day's travel over its pace's budget: the same as a minute's wait
                         # (swept 0-20 on the London gate, 24 Nov; see _solve)
-RIDE_APPROACH_MAX = 20  # m333: the stop before a ride is at most this far from where the ride starts
+RIDE_APPROACH_MAX = 20  # m333: the stop before a ride is at most this far from where the ride starts...
+RIDE_FAR_COST = 2.0     # ...or, for a ride that is the day's must-do (a loved one), the journey to it costs this
+                        # much more (utility units), so it follows a stop near its start where the day has one
 START_LATE_COST = 1   # m331: per minute of setting off after the day's start (a tie-breaker; see _solve)   # 0 → 5: stated waits 15 → 11, minutes 802 → 557, early ends unchanged (24 Nov)
 
 
@@ -216,7 +218,10 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         if j == END:
             return 0
         t = T[i][j]
-        return int(round(SCALE * legs.penalty(t, cands[j - 1].loved))) + t
+        # m333: a must-do ride (a loved one) reached from far away costs more (see the rule below)
+        far = RIDE_FAR_COST if cands[j - 1].ride and cands[j - 1].moment_id in must_include \
+            and t > RIDE_APPROACH_MAX else 0.0
+        return int(round(SCALE * (legs.penalty(t, cands[j - 1].loved) + far))) + t
 
     routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(cost_cb))
 
@@ -293,9 +298,11 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
         if c.rest:
             solver.Add(routing.NextVar(routing.Start(0)) != manager.NodeToIndex(j))
     # m333 (Abram, 24 Nov: "do not create a 50-minute transfer simply to reach a pier"): a ride starts from a stop
-    # near its start (Greenwich's hill, or lunch there, before the boat), never straight after a long journey
+    # near its start (Greenwich's hill, or lunch there, before the boat), never straight after a long journey. Not for
+    # a ride that is the day's must-do (a place they loved, "worth a journey"): as a rule it left the solver no first
+    # solution and the loved boat dropped out of the trip, so for it the long approach costs RIDE_FAR_COST instead
     for j, c in enumerate(cands, start=1):
-        if c.ride:
+        if c.ride and c.moment_id not in must_include:
             for i in range(0, n + 1):
                 if i != j and T[i][j] > RIDE_APPROACH_MAX:
                     solver.Add(routing.NextVar(routing.Start(0) if i == 0 else manager.NodeToIndex(i))
@@ -412,7 +419,7 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
                 continue
             if (c.lunch and (meals or (lunch_not_first and not route))) or (c.rest and not route):
                 continue
-            if c.ride and T[prev][j] > RIDE_APPROACH_MAX:   # m333: a ride from somewhere near its start
+            if c.ride and c.moment_id not in must and T[prev][j] > RIDE_APPROACH_MAX:   # m333: near its start
                 continue
             if c.dinner and dined:   # m334: one dinner
                 continue
