@@ -1015,7 +1015,8 @@ def say_no_dinner(stops: list[dict], brief: Brief) -> None:
     if not stops or not brief.lunch or parse_hhmm(brief.end_time) < DINNER_FROM_END:
         return
     if any(str(s.get("key") or s["moment_id"]).startswith("dinner@") or "#dinner" in str(s.get("key") or "")
-           for s in stops):
+           or (s.get("cost_kind") == "food" and parse_hhmm(s.get("arrive") or "00:00") >= DINNER_START[0] - 30)
+           for s in stops):   # a food stop in the evening (Beigel Bake at 17:56) is the dinner
         return
     dinner = round(float(brief.lunch_gbp) * DINNER_OF_LUNCH)
     spent = sum(float(s.get("cost_gbp") or 0) for s in stops) + transport_gbp(stops)

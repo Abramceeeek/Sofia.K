@@ -186,6 +186,10 @@ def test_a_missing_dinner_is_said_with_its_reason():
     fed = [{"moment_id": "m_x", "key": "dinner@m_x", "cost_gbp": 18.0, "lines": []}]
     dayplan.say_no_dinner(fed, brief)
     assert fed[-1]["lines"] == []
+    bagel = [{"moment_id": "m_beigel_bake_late", "key": "m_beigel_bake_late", "cost_gbp": 7.5, "cost_kind": "food",
+              "arrive": "17:56", "lines": []}]
+    dayplan.say_no_dinner(bagel, brief)
+    assert bagel[-1]["lines"] == []                                # a food stop in the evening is the dinner
 
 
 def test_places_beyond_the_persons_own_number_are_strong_matches():
