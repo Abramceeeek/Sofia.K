@@ -1,0 +1,44 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.royalparks.org.uk/visit/parks/kensington-gardens/diana-memorial-playground: "November to January: 10.00 - 15.45"; "the last entry is 15 minutes prior to closing time"; "Only adults supervising children up to the age of 12 will be admitted."; "unaccompanied adults may only enter the playground between 9.30 and 10.00"; "this free playground"; "The waterplay is currently switched off"
+# Coordinates: Wikidata Q5271058 "Diana, Princess of Wales Memorial Playground" (51.5092, -0.188333), read 2026-11-24
+id: m_diana_playground
+title: "A pirate-ship afternoon at the Diana Memorial Playground"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Diana, Princess of Wales Memorial Playground, Kensington Gardens"
+  lat: 51.5092
+  lon: -0.188333
+approach:
+  from: "Queensway station"   # *
+  start_point: {lat: 51.5092, lon: -0.188333}
+  path: "Walk into Kensington Gardens to the playground by Kensington Palace"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated
+experience:
+  what_happens: "Children climb a great wooden pirate ship and explore the playground around it while you watch from the benches."   # the pirate ship *; free, for children up to 12 with an adult CHECKED
+  why_it_works: "Free, outdoors and made for children up to twelve: an hour where they run the show."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-15:45"]   # CHECKED: November to January (later months not checked: re-check from 1 Feb)
+  light: null
+  weather: ["dry"]
+  company: null
+  crowd_window: null
+  opening_hours: "November-January 10:00-15:45 (last entry 15:30); free; only adults supervising children up to 12. royalparks.org.uk, read 2026-11-24"
+  hours: "Nov–Jan 10:00–15:45, last entry 15:30. Free; for children up to 12 with an adult"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 2, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 2, awe: 0, social_pull: 2}
+rules: {with_children: true, max_child_age: 12}   # CHECKED: only adults supervising children up to 12 are admitted
+cost_gbp: 0   # CHECKED: free
+shot_card: null
+source: research
+last_checked: "2026-11-24"

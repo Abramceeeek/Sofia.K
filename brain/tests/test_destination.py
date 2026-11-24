@@ -22,7 +22,7 @@ def test_london_is_understood_from_its_checked_catalogue():
     assert LONDON.sources == {"areas": "ODYS catalogue", "travel": "ODYS catalogue", "experiences": "ODYS catalogue",
                               "holidays": "ODYS catalogue", "stays": "ODYS catalogue",
                               "emergency": "ODYS emergency numbers (official pages, read 10 Nov 2026)"}
-    assert len(LONDON.experiences) == 51 and len(LONDON.areas) >= 15          # m329, m331: + British Library, Wellcome
+    assert len(LONDON.experiences) == 63 and len(LONDON.areas) >= 15          # m329, m331, m340: 12 more on 24 Nov
     names = {a.name for a in LONDON.areas}
     assert {"Greenwich", "Canary Wharf", "Hyde Park", "City of London"} <= names
     assert all(51.28 < a.centre.lat < 51.70 for a in LONDON.areas)

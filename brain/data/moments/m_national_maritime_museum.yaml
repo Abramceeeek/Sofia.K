@@ -1,0 +1,48 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.rmg.co.uk/national-maritime-museum: "Open daily except 24, 25 and 26 December 10am-5pm"; "The National Maritime Museum is free, and you do not need to book."; "Charges apply for special exhibition."
+# - https://www.rmg.co.uk/plan-your-visit/accessibility-national-maritime-museum: "The building has accessible lifts to every floor."
+# Coordinates: Wikidata Q1199924 "National Maritime Museum" (51.4811, -0.005556), read 2026-11-24
+id: m_national_maritime_museum
+title: "Ships, maps and great voyages at the National Maritime Museum"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "National Maritime Museum, Greenwich"
+  lat: 51.4811
+  lon: -0.005556
+approach:
+  from: "Cutty Sark DLR station"   # *
+  start_point: {lat: 51.4811, lon: -0.005556}
+  path: "Walk through Greenwich past the Old Royal Naval College to the museum's entrance on Romney Road"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: accessible lifts to every floor
+experience:
+  what_happens: "You wander free galleries of ships, maps and voyages, from great naval battles to the people who sailed."   # free galleries CHECKED; the galleries' subjects *
+  why_it_works: "Free, warm and indoors in Greenwich, at your own pace, before or after the river."
+  duration_min: [45, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Daily 10:00-17:00, closed 24-26 Dec; free (special exhibitions charged). rmg.co.uk, read 2026-11-24"
+  hours: "Daily 10:00–17:00; closed 24–26 Dec. Free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 0}
+cost_gbp: 0   # CHECKED: free (special exhibitions charged)
+shot_card: null
+source: research
+last_checked: "2026-11-24"

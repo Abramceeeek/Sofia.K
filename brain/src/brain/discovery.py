@@ -123,10 +123,14 @@ def _top(s: Scorer, xs: list[Experience], today: date, extra: dict[str, list[str
          ranking: str = quality.DEFAULT_CONFIG, **kw) -> list[Suggestion]:
     scored = _ranked(s, xs, today, ranking, **kw)
     out = []
-    for x, a in scored[:LIMIT]:
+    for x, a in scored:
+        if len(out) >= LIMIT:
+            break
         why = [w for w in [_why_taste(s, x), *(extra or {}).get(x.id, [])] if w]
         if a.practicality.level == "good" and (kw.get("minutes_free") is not None or kw.get("day") is not None):
             why.append(a.practicality.reason)
+        if not why:   # m340: never suggested without a reason from the person's own answers or the moment
+            continue
         out.append(Suggestion(x.id, x.title, tuple(why[:LIMIT]), a))
     return out
 

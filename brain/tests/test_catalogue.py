@@ -130,7 +130,8 @@ def test_photos_carry_their_credit_and_an_open_licence():
 
 def test_code_asks_the_catalogue_not_a_list_of_ids():
     assert triplength.SHOPPING == {"m_burlington_arcade", "m_leadenhall_market", "m_liberty_timber_galleries",
-                                   "a_old_spitalfields_market", "a_portobello_saturday"}   # the same five as before
+                                   "a_old_spitalfields_market", "a_portobello_saturday",
+                                   "a_greenwich_market"}   # the same five as before, and Greenwich Market (m340)
     src = Path(catalogue.__file__).parent
     allowed = {"api.py"}   # Test A and Test B settings (EXAMPLE_DAY, EXAMPLE_SHOT_CARD): frozen with the experiment
     found = {p.name for p in src.glob("*.py")

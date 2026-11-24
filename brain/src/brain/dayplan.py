@@ -188,6 +188,8 @@ def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Ma
       didn't enjoy a place of that kind, unless they loved or were fine with another place of the same kind;
     - **an age rule:** a card whose own rules set a minimum age (`rules.min_age`), when they travel as a family. The
       children's ages aren't asked, so a family never gets it (the Santander Cycles bike ride needs riders of 14+);
+    - **only with children** (m340): a card for children with their adults (`rules.with_children`: the Diana Memorial
+      Playground admits only adults supervising children up to 12) is never planned unless they travel as a family;
     - **a gentle pace** (m329, Abram: "never compromise the traveller's stated pace"): someone who asked for a gentle
       day never gets a strenuous card (`active` 2: a bike ride, a swim, karting)."""
     bad = {t for i, r in swipes if r == "didnt_enjoy" for t in swipe_types.get(i, [])}
@@ -200,6 +202,10 @@ def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Ma
         aged = [m.id for m in ready if (m.rules or {}).get("min_age")]
         if aged:
             out.append(("a minimum age, with children", aged))
+    else:   # m340: a place only for children with their adults (the Diana Memorial Playground) is for families only
+        kids = [m.id for m in ready if (m.rules or {}).get("with_children")]
+        if kids:
+            out.append(("only with children", kids))
     if activity == "gentle":
         hard = [m.id for m in ready if (m.features.place.get("active") or 0) >= 2]
         if hard:

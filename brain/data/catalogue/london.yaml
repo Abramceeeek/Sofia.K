@@ -12,6 +12,7 @@
 locality: london
 experiences:
   a_covent_garden_soho:       {category: neighbourhood, type: area_walk, area: "Covent Garden"}
+  a_greenwich_market:          {category: shopping, type: market, area: "Greenwich", short: "Greenwich Market"}   # m340
   a_kings_cross_canal:        {category: neighbourhood, type: waterfront, area: "King's Cross", short: "King's Cross"}
   a_old_spitalfields_market:  {category: shopping, type: market, area: "Spitalfields"}
   a_portobello_saturday:      {category: shopping, type: market, area: "Portobello Road"}
@@ -28,7 +29,11 @@ experiences:
   m_chinatown_dim_sum:        {category: food_drink, type: restaurant, area: "Chinatown", short: "dim sum in Chinatown"}
   m_city_towers_walk:         {category: neighbourhood, type: architecture_walk, area: "City of London", short: "the City's towers"}
   m_courtauld_gallery:        {category: culture, type: gallery}
+  m_cutty_sark:                {category: culture, type: historic_site, area: "Greenwich", short: "the Cutty Sark"}   # m340
+  m_diana_playground:          {category: nature, type: park, area: "Kensington Gardens", short: "the Diana Memorial Playground"}   # m340
+  m_dishoom_covent_garden:     {category: food_drink, type: restaurant, area: "Covent Garden", short: "Dishoom"}   # m340
   m_evensong_st_pauls:        {category: culture, type: performance, short: "evensong at St Paul's"}
+  m_flat_iron_covent_garden:   {category: food_drink, type: restaurant, area: "Covent Garden", short: "Flat Iron"}   # m340
   m_garden_at_120:            {category: views, type: roof_garden, area: "City of London"}
   m_go_karting_canary_wharf:  {category: activity, type: karting, area: "Canary Wharf", short: "karting at Canary Wharf"}
   m_greenwich_peninsula_walk: {category: nature, type: riverside_walk, area: "Greenwich Peninsula"}
@@ -39,9 +44,12 @@ experiences:
   m_london_fields_lido:       {category: activity, type: swimming, area: "London Fields"}
   m_millennium_bridge_dome:   {category: views, type: bridge, short: "the Millennium Bridge"}
   m_national_gallery:         {category: culture, type: gallery, area: "Trafalgar Square"}
+  m_national_maritime_museum:  {category: culture, type: museum, area: "Greenwich", short: "the National Maritime Museum"}   # m340
   m_national_portrait_gallery: {category: culture, type: gallery, short: "the National Portrait Gallery"}
   m_nhm_whale_hall:           {category: culture, type: museum, short: "the Natural History Museum"}
   m_open_kitchen_steakhouse:  {category: food_drink, type: restaurant}
+  m_padella_borough:           {category: food_drink, type: restaurant, short: "Padella"}   # m340
+  m_painted_hall:              {category: culture, type: historic_site, area: "Greenwich", short: "the Painted Hall"}   # m340
   m_park_bike_loop_hyde:      {category: activity, type: cycling, area: "Hyde Park", short: "a bike ride in Hyde Park"}
   m_park_break_battersea:     {category: nature, type: park, area: "Battersea Park"}
   m_park_break_embankment:    {category: nature, type: garden, area: "Victoria Embankment Gardens"}
@@ -52,13 +60,17 @@ experiences:
   m_park_break_st_james:      {category: nature, type: park, area: "St James's Park"}
   m_rfh_foyers_rest:          {category: culture, type: arts_centre, short: "the Southbank"}
   m_richmond_park_view:       {category: nature, type: wild_park, area: "Richmond Park"}
+  m_science_museum:            {category: culture, type: museum, short: "the Science Museum"}   # m340
   m_soane_museum:             {category: culture, type: museum}
   m_st_dunstan_garden:        {category: culture, type: historic_site, area: "City of London"}
   m_st_martin_crypt_lunch:    {category: food_drink, type: cafe, short: "St Martin-in-the-Fields"}
+  m_tate_modern:               {category: culture, type: gallery, area: "Bankside", short: "Tate Modern"}   # m340
   m_to_river_somerset:        {category: views, type: riverside, short: "Somerset House"}
   m_to_river_villiers:        {category: views, type: riverside, short: "Villiers Street"}
   m_transport_museum:         {category: culture, type: museum, short: "the London Transport Museum"}
   m_uber_boat_west_day:       {category: transport_experience, type: river_bus, short: "the river by Uber Boat"}
   m_uber_boat_west_night:     {category: transport_experience, type: river_bus, short: "the river by night"}
+  m_wallace_collection:        {category: culture, type: museum, short: "the Wallace Collection"}   # m340
   m_waterloo_bridge_sunset:   {category: views, type: bridge}
   m_wellcome_reading_room:    {category: culture, type: museum, area: "Euston Road", short: "the Wellcome Collection"}   # m331
+  m_young_va:                  {category: culture, type: museum, area: "Bethnal Green", short: "Young V&A"}   # m340

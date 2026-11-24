@@ -1,0 +1,45 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://greenwichmarket.london/visit-us/: "open seven days a week from 10am to 5:30pm, including Bank Holidays"; "The whole market is closed on Christmas Day."; food and drink traders listed by day (a summary of the page; no trader is named here)
+# Coordinates: Wikidata Q18192655 "Greenwich Market" (51.48152778, -0.00905556), read 2026-11-24
+id: a_greenwich_market
+title: "Browsing Greenwich Market"
+status: ready
+swipe: false
+kind: area
+place:
+  name: "Greenwich Market"
+  lat: 51.48152778
+  lon: -0.00905556
+approach:
+  from: "Cutty Sark DLR station"   # *
+  start_point: {lat: 51.48152778, lon: -0.00905556}
+  path: "No set route: wander between the stalls under the market's roof"   # *
+  duration_min: 0        # GUESS
+  step_free: null        # not stated
+experience:
+  what_happens: "You browse the covered market's stalls and its food traders, a minute from the river."   # CHECKED (stalls and food traders, every day); covered *
+  why_it_works: "Easy browsing with something to eat, in the heart of Greenwich before or after the boat."
+  duration_min: [40, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:30"]   # CHECKED: every day, including bank holidays
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-25": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekends are busiest (GUESS)"
+  opening_hours: "Daily 10:00-17:30, closed on Christmas Day. greenwichmarket.london, read 2026-11-24"
+  hours: "Daily 10:00–17:30; closed on Christmas Day"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 1, green_nature: 0, history_culture: 1, iconic: 0, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: 0   # browsing is free; buying is optional
+shot_card: null
+source: research
+last_checked: "2026-11-24"

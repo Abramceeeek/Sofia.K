@@ -1,0 +1,47 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.dishoom.com/covent-garden/: "12 Upper St. Martin's Lane London WC2H 9FB"; "Monday–Thursday 8am to 11pm", "Friday–Saturday 8am to 12am", "Sunday 9am to 11pm"; "Dishoom is mostly a walk-in café. All are welcome, any time, no reservations needed."; "After 6pm, we accept bookings for groups of six or more."
+# - https://www.dishoom.com/menu/covent-garden-all-day/: "Served from 12pm daily"; "Chicken Ruby" 18.90, "House Black Daal" 11.70, "Lamb Biryani" 21.90 (no date shown)
+# Coordinates: Overture Maps Places (open data), "Dishoom Covent Garden, 12 Upper Saint Martin's Lane" (51.512535, -0.126831), confidence 0.9999, read 2026-11-24
+id: m_dishoom_covent_garden
+title: "A Bombay café supper at Dishoom, Covent Garden"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Dishoom, 12 Upper St Martin's Lane"
+  lat: 51.512535
+  lon: -0.126831
+approach:
+  from: "Leicester Square or Covent Garden station"   # *
+  start_point: {lat: 51.512535, lon: -0.126831}
+  path: "Walk up St Martin's Lane to the café"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated
+experience:
+  what_happens: "You eat Bombay café dishes, a black daal and a curry, in a busy, old-style dining room."   # CHECKED (the menu); the dining room *
+  why_it_works: "A lively, much-loved supper in the West End, with mains from about £12 to £22."
+  duration_min: [60, 90] # GUESS
+  end_point: null
+  queue_min: 20         # GUESS
+best_time:
+  time_of_day: ["12:00-22:00"]   # CHECKED: the all-day menu from 12:00; open to 23:00 (Fri-Sat midnight); the planner seats people by 22:00 (GUESS)
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Queues for a table at dinner (GUESS)"
+  book_ahead: "Mostly walk-in, no booking needed; after 6pm bookings are for groups of six or more"   # CHECKED
+  opening_hours: "Mon-Thu 08:00-23:00, Fri-Sat 08:00-00:00, Sun 09:00-23:00; all-day menu from 12:00; mostly walk-in. dishoom.com, read 2026-11-24"
+  hours: "Mon–Thu 08:00–23:00, Fri–Sat to midnight, Sun 09:00–23:00. Mostly walk-in"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 2}
+cost_gbp: 19   # CHECKED: mains £11.70-£21.90 on the all-day menu (no date shown); about £19 for a curry
+cost_kind: food
+shot_card: null
+source: research
+last_checked: "2026-11-24"

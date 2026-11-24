@@ -1,0 +1,48 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.padella.co/borough-market/: "6 Southwark St, London, SE1 1TQ"; lunch "Monday - Sunday: 11:30 to 15:45"; dinner "Monday - Wednesday: 17:00 to 22:00", "Thursday - Saturday: 17:00 to 22:30", "Sunday: 17:00 to 21:00"; "We don't accept reservations at Padella Borough Market, but you can join our virtual queue"
+# - https://www.padella.co/ (menu dated "Tuesday 24th November"): pastas £13.50-£16.50, e.g. "Pici cacio & pepe" £13.5, "Pappardelle with 8 hours Hereford beef shin ragu" £16.5
+# Coordinates: Overture Maps Places (open data), "Padella, 6 Southwark St, SE1 1TQ" (51.505146, -0.089770), confidence 0.999, read 2026-11-24
+id: m_padella_borough
+title: "Fresh pasta at Padella, by Borough Market"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Padella, 6 Southwark Street"
+  lat: 51.505146
+  lon: -0.08977
+approach:
+  from: "London Bridge station"   # *
+  start_point: {lat: 51.505146, lon: -0.08977}
+  path: "Walk to the corner of Borough Market on Southwark Street"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated
+experience:
+  what_happens: "You join the virtual queue, then sit down to a plate of fresh pasta made in the open kitchen."   # CHECKED (virtual queue, the menu); open kitchen *
+  why_it_works: "A famous, good-value plate of pasta beside Borough Market: about £15."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+  queue_min: 20         # GUESS
+best_time:
+  time_of_day: ["11:30-15:45", "17:00-21:00"]   # CHECKED: lunch daily; dinner as below
+  time_of_day_days: {mon: ["11:30-15:45", "17:00-22:00"], tue: ["11:30-15:45", "17:00-22:00"], wed: ["11:30-15:45", "17:00-22:00"], thu: ["11:30-15:45", "17:00-22:30"], fri: ["11:30-15:45", "17:00-22:30"], sat: ["11:30-15:45", "17:00-22:30"]}   # CHECKED
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Queues at peak meal times (GUESS)"
+  book_ahead: "No reservations: join the virtual queue on padella.co (groups of up to six)"   # CHECKED
+  opening_hours: "Lunch daily 11:30-15:45; dinner Mon-Wed 17:00-22:00, Thu-Sat 17:00-22:30, Sun 17:00-21:00; virtual queue, no bookings. padella.co, read 2026-11-24"
+  hours: "Lunch daily 11:30–15:45; dinner from 17:00. No bookings: virtual queue"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+cost_gbp: 15   # CHECKED: pastas £13.50-£16.50 on the 24 Nov menu
+cost_kind: food
+shot_card: null
+source: research
+last_checked: "2026-11-24"

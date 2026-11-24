@@ -18,7 +18,7 @@ def test_a_place_they_didnt_enjoy_keeps_out_places_of_the_same_kind():
     # …unless they loved or were fine with another place of that kind: then it's the place, not the kind
     assert "m_horizon_22" not in out_ids(dayplan.kept_out(
         READY, [(9, "didnt_enjoy"), (9, "fine")], TYPES, KINDS, "solo"))
-    assert dayplan.kept_out(READY, [(9, "loved")], TYPES, KINDS, "solo") == []
+    assert [e for e in dayplan.kept_out(READY, [(9, "loved")], TYPES, KINDS, "solo") if e[0] != "only with children"] == []
 
 
 def test_a_minimum_age_keeps_a_card_out_of_family_plans():
@@ -39,7 +39,8 @@ def test_a_gentle_pace_keeps_strenuous_cards_out():
     gone = out_ids(dayplan.kept_out(READY, [], TYPES, KINDS, "solo", "gentle"))
     assert {"m_park_bike_loop_hyde", "m_london_fields_lido"} <= gone
     assert "m_british_library_treasures" not in gone
-    assert out_ids(dayplan.kept_out(READY, [], TYPES, KINDS, "solo", "full_on")) == set()
+    assert out_ids([e for e in dayplan.kept_out(READY, [], TYPES, KINDS, "solo", "full_on")
+                    if e[0] != "only with children"]) == set()
 
 
 def test_dated_closures_and_early_closings_come_from_the_card():
@@ -67,3 +68,10 @@ def test_journeys_cost_more_at_a_gentle_pace_but_never_to_a_loved_place():
     assert gentle.penalty(45) > plain.penalty(45) > full.penalty(45) > 0
     assert gentle.penalty(10) == plain.penalty(10) == 0               # a short walk costs nothing at any pace
     assert gentle.penalty(45, loved=True) == plain.penalty(45)          # to a loved place: the usual cost only
+
+
+def test_a_place_only_for_children_is_for_families_only():
+    """m340: the Diana Memorial Playground admits only adults supervising children up to 12 (royalparks.org.uk)."""
+    assert "m_diana_playground" in out_ids(dayplan.kept_out(READY, [], TYPES, KINDS, "solo"))
+    assert "m_diana_playground" in out_ids(dayplan.kept_out(READY, [], TYPES, KINDS, "friends"))
+    assert "m_diana_playground" not in out_ids(dayplan.kept_out(READY, [], TYPES, KINDS, "family"))

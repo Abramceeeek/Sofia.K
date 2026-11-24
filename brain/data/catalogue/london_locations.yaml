@@ -6,6 +6,10 @@ cards:
     label: Covent Garden
     metres: 72
     wikidata: Q55019
+  a_greenwich_market:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Greenwich Market
+    metres: 0
+    wikidata: Q18192655
   a_kings_cross_canal:
     label: Granary Square
     metres: 4
@@ -69,10 +73,24 @@ cards:
     label: Somerset House
     metres: 73
     wikidata: Q1344889
+  m_cutty_sark:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Cutty Sark
+    metres: 0
+    wikidata: Q171255
+  m_diana_playground:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Diana, Princess of Wales Memorial Playground
+    metres: 0
+    wikidata: Q5271058
+  m_dishoom_covent_garden:   # m340: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: no Wikidata item; Overture Places, matched by name and address
+    wikidata: null
   m_evensong_st_pauls:
     label: St Paul's Cathedral
     metres: 3
     wikidata: Q173882
+  m_flat_iron_covent_garden:   # m340: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: no Wikidata item; Overture Places, matched by name and address
+    wikidata: null
   m_garden_at_120:
     label: Fen Court
     metres: 0
@@ -112,6 +130,10 @@ cards:
     label: National Gallery
     metres: 52
     wikidata: Q180788
+  m_national_maritime_museum:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: National Maritime Museum
+    metres: 0
+    wikidata: Q1199924
   m_national_portrait_gallery:
     label: National Portrait Gallery
     metres: 28
@@ -124,6 +146,13 @@ cards:
     label: Craven Road
     metres: 122
     wikidata: Q70688315
+  m_padella_borough:   # m340: coordinates from Overture Maps Places (open data), read 2026-11-24
+    note: no Wikidata item; Overture Places, matched by name and address
+    wikidata: null
+  m_painted_hall:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Painted Hall
+    metres: 0
+    wikidata: Q20876258
   m_park_bike_loop_hyde:
     label: Serpentine
     metres: 0
@@ -164,6 +193,10 @@ cards:
     label: Pembroke Lodge
     metres: 270
     wikidata: Q3898995
+  m_science_museum:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Science Museum
+    metres: 0
+    wikidata: Q674773
   m_soane_museum:
     label: 6, 7 and 8 Lincoln's Inn Fields
     metres: 8
@@ -176,6 +209,10 @@ cards:
     label: St Martin-in-the-Fields
     metres: 35
     wikidata: Q1335201
+  m_tate_modern:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Tate Modern
+    metres: 0
+    wikidata: Q193375
   m_to_river_somerset:
     label: Somerset House
     metres: 2
@@ -196,6 +233,10 @@ cards:
     label: Greenwich Pier
     metres: 4
     wikidata: Q5604868
+  m_wallace_collection:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Wallace Collection
+    metres: 0
+    wikidata: Q1327919
   m_waterloo_bridge_sunset:
     label: Waterloo Bridge
     metres: 0
@@ -204,4 +245,8 @@ cards:
     label: Wellcome Collection
     metres: 0
     wikidata: Q7981191
+  m_young_va:   # m340: the card's coordinates are Wikidata's own (read 2026-11-24)
+    label: Young V&A
+    metres: 0
+    wikidata: Q644281
 checked: '2026-11-11'
