@@ -1338,6 +1338,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         out = []
 
         own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
+        day_feel = (user.profile or {}).get("day_feel")   # m344: relaxed / balanced / full (proposed; None: balanced)
         by_ready = {m.id: m for m in ready}
         # m331: the cards at places they said they loved: never refused for a long journey
         loved_sets = [tuple(app.state.swipe_cards[sw.item][1]) for sw in user.swipes
@@ -1375,7 +1376,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             EARLY_MAX_MIN before its end time tries up to EXTRA_PLACES_MAX more places, so the person's places a day are a pace,
             not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
             best = None
-            more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, EXTRA_PLACES_MAX + 1))
+            # m344: a relaxed day isn't filled with extra places; a full one may take one more than usual
+            extra_max = 0 if day_feel == "relaxed" else EXTRA_PLACES_MAX + (1 if day_feel == "full" else 0)
+            more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, extra_max + 1))
             want = None if tag == "before" or mine else loved_for(part, day)
             for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
                 if n < 1 or (best is not None and n < part.stops):
@@ -1450,8 +1453,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             label = f"{day:%A} {day.day} {day:%B}"
             own = own_days.get(i)
             blocks = blocks_for(i)
-            # m200: a relaxed day has one place fewer (never none), so each stays longer
-            places = max(1, body.stops_per_day - (1 if own and own.relaxed else 0))
+            # m200: a relaxed day has one place fewer (never none), so each stays longer; m344: so does every day for
+            # someone whose days should feel relaxed (a proposed preference, off unless the profile says so)
+            calm = bool(own and own.relaxed) or day_feel == "relaxed"
+            places = max(1, body.stops_per_day - (1 if calm else 0))
             fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name, stay_chosen=body.stay is not None,
                                     day_start=body.day_start, day_end=body.day_end, stops=places,
                                     arrive=arrive, leave=leave, travel_light=body.travel_light)
@@ -1481,7 +1486,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 entry["title"] = fr.title
             if fr.main:
                 entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
-                if got := fill(fr.main, day, i, label, "main", blocks, relaxed=bool(own and own.relaxed)):
+                if got := fill(fr.main, day, i, label, "main", blocks, relaxed=calm):
                     entry["plan"] = got[0]
                     # m337: the day's title names its own places; the feel line stays "how the day moves"
                     entry["title"] = reasons.day_title(got[1], {m.id: m for m in ready}, feelings or []) or label

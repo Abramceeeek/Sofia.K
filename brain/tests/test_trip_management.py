@@ -109,3 +109,19 @@ def test_estimates_are_said_as_estimates():
     named = [{"moment_id": "m_padella_borough", "key": "m_padella_borough#lunch", "cost_gbp": 15.0, "lines": []}]
     dayplan.say_estimates(named)
     assert named[0]["lines"] == []                                        # a named place's price is its menu's
+
+
+def test_a_relaxed_day_feel_means_fewer_places_and_no_filling(client):
+    """m344 (Abram, 24 Nov; proposed): "How would you like your days to feel?" Relaxed: fewer experiences, more
+    breathing room; separate from activity. Without an answer, days plan as before."""
+    start = (date.today() + timedelta(days=3)).isoformat()
+    trip = {"start_date": start, "nights": 1, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 3}
+    counts = {}
+    for feel in (None, "relaxed"):
+        h, _ = install(client)
+        if feel:
+            assert client.put("/v1/me/profile", headers=h, json={"day_feel": feel}).status_code == 204
+        d = client.post("/v1/me/trips/days", headers=h, json=trip).json()
+        counts[feel] = [len([st for st in x["plan"]["stops"] if st["rateable"]]) for x in d["days"] if x["plan"]]
+    assert all(n <= 2 for n in counts["relaxed"])                     # one place fewer than the three asked, no extras
+    assert sum(counts["relaxed"]) < sum(counts[None])

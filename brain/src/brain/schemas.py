@@ -120,6 +120,9 @@ class ProfileIn(BaseModel):
     company: Literal["solo", "friends", "partner", "family"] | None = None
     chronotype: Literal["morning", "night", "neither"] | None = None
     activity: Literal["gentle", "medium", "full_on"] | None = None
+    # m344 (Abram, 24 Nov; a PROPOSED feature, not asked in onboarding yet): "How would you like your days to feel?",
+    # separate from activity: someone can enjoy walking and still prefer a short day. None means "balanced"
+    day_feel: Literal["relaxed", "balanced", "full"] | None = None
     grew_up: Literal["big_city", "town", "coast", "countryside"] | None = None
     # D19, D123, m223: no longer asked (D123), and never stored: free text here could hold beliefs or allergies, and
     # food needs wait for their DPIA (m215). Older builds may still send it, so it's accepted and dropped (api.py).
