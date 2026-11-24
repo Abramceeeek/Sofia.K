@@ -59,6 +59,61 @@ Three fresh independent reviews of the new plans are summarised at the end.
 - **The day-feel preference**, built in the Brain and proposed for the apps (m344).
 - **The iPhone app compiled** on this branch (run 116, at no cost, the repository being public).
 
-## Fresh independent reviews
+## Fresh independent reviews (24 Nov, on the `14c781b` plans)
 
-(Added when the three reviews return.)
+Three subagents each read the plans with a different brief. They aren't real travellers, so this is still not evidence about customers.
+
+| Traveller | London local | Families and gentle pace | Sceptical product reviewer |
+|---|---|---|---|
+| Sam | 5/10 | 6/10 | with small fixes |
+| Priya and Dan | 6/10 | 6/10 | no (5 Dec), small fixes otherwise |
+| Family | 6/10 | 5/10 | no |
+| Jonas | 6/10 | 6/10 | no |
+| Four friends | 4/10 | 5/10 | no |
+| Margaret and Alan | 5/10 | 5/10 | with small fixes |
+| **Overall** | — | — | **4/10 against a well-informed friend; "not yet"** |
+
+**What all three agree on:**
+1. **The number of places a day and the pace are ignored.** Margaret and Alan asked for 2 gentle places and got 6 on Friday; Priya 7 for 3; the friends 9 for 4. The gaps fill with the same few places: the Royal Festival Hall foyers for 5 of 6 travellers.
+2. **Evenings and meals fail.** No real evening for night people or the lively friends. Sam eats twice in two hours, then has no dinner. A generic lunch sits next to a named market.
+3. **Geography and light.** Days zig-zag across London. "At sunset" stops fall after dark (Waterloo Bridge at 17:06 and 17:24).
+4. **Presentation errors.** The "finishes at" time disagreed with the last stop on 10 of 13 days. The same "lunch near X" cost £6 for one traveller and £15 for another, unexplained. A free-time line pasted a whole stop title. Some Why lines compare different kinds of place ("You loved the Uber Boat, and this has history too" for Liberty).
+5. **The gate can mislead.**
+   - G7 ("a gentle pace kept") passes while gentle days exceed their travel budget. It only checks for strenuous stops.
+   - G6 passes while "at sunset" titles fall after dark.
+   - G2 pushes towards filling days, which is the wrong cure for a gentle traveller.
+
+**What they praised:** the cards: exact approaches, prices, booking notes and rain options. Also Priya's Sunday (Tate Modern, the Painted Hall, the boat), the family's boat day, and Jonas's calm, cheap day.
+
+## Fixed after the reviews (m345, `4c0ad0e`)
+- **Extra places follow the person's pace:** gentle at most 1, medium or unstated 2, full-on 4.
+- **A place called "at sunset" is planned at sunset** when the date's sunset is known.
+- **The "finishes at" time** is computed after the last stay is lengthened.
+- **A cheaper lunch reads as one.**
+- **Free time names the place.**
+- **No summer flowers in December.**
+Tested.
+
+**The result** (3 runs, `4c0ad0e`):
+
+| Measure | `4c0ad0e` |
+|---|---|
+| G2 | 12 of 13 days |
+| Unused time | 1,448–1,491 min |
+| Waits mid-day | 1 (35 min) |
+| Days over the travel budget | 9 of 13, 217–228 min over |
+| Different places | 68 |
+
+**Margaret and Alan's Friday:** the National Gallery, Burlington Arcade, lunch and the British Museum, ending at 14:36. That is 3 places, against the 2 they asked for and the 6 they had before.
+
+## The decision this leaves for Abram
+The reviews and G2 pull in opposite directions:
+- **G2 says** a day must run to within 45 min of the person's end time.
+- **The reviews say** a day must hold the places and pace the person asked for, and not be filled.
+
+Both can't hold with today's catalogue. The options:
+1. **Keep G2 as it is** and keep failing until the catalogue has enough strong matches. That is honest, but nothing passes soon.
+2. **Approve the day-feel preference** (`decisions/day-feel-preference.md`): someone who chose Relaxed is measured against the day they asked for. Others keep G2.
+3. **Make G2 measure the person's own number of places** ("no day short of the places they asked for"), with free time said as free time, and keep unused time as a reported measure.
+
+**Claude's recommendation: 2, with 3 for gentle travellers.** Either way, more evening and named-food places are the work that helps every option.
