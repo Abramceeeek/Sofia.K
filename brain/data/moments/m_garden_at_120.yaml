@@ -24,7 +24,7 @@ approach:
   duration_min: 5        # GUESS, including security
   step_free: true        # CHECKED (official): step-free lifts
 experience:
-  what_happens: "You step out 15 floors up into a garden of wisteria, roses and hydrangeas around a water feature, with the City's towers all around and views to the Thames and Tower Bridge."   # CHECKED (official)
+  what_happens: "You step out 15 floors up into a planted roof garden around a water feature, with the City's towers all around and views to the Thames and Tower Bridge."   # CHECKED (official); m345: the flowers it names (wisteria, roses, hydrangeas) are summer's, so a December plan doesn't promise them
   why_it_works: "A quiet garden where you expect glass and steel: calm, and a close view of the finance district."
   duration_min: [20, 40] # GUESS
   end_point: null

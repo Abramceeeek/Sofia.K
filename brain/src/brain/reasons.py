@@ -307,7 +307,8 @@ def short_place(m: Moment) -> str:
 
 
 def _at_sunset(m: Moment) -> bool:
-    return bool(m.best_time.best_around_sunset) or "sunset" in f"{m.title} {m.best_time.light or ''}".lower()
+    """A place called "at sunset", which the planner puts at sunset (m345); never a place merely good then."""
+    return "sunset" in m.title.lower()
 
 
 def day_title(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] = ()) -> str:

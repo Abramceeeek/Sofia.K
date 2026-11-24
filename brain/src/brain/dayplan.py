@@ -95,7 +95,11 @@ def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Momen
             st["lines"] = [line] + list(st.get("lines") or [])
             st["free_before_min"], st["free_before_kind"] = idle, "wait"
         prev, prev_end = st, parse_hhmm(st["depart"])
-        prev_name = st.get("end_name") or _short_title(st.get("title") or "")
+        # m345: where they are, by the place's own name ("the Royal Festival Hall"), never a stop's whole title
+        # pasted into the sentence ("near A rest in the Royal Festival Hall's free foyers")
+        card = by_id.get(_base(str(st.get("moment_id") or "")))
+        prev_name = st.get("end_name") or (re.split(r"[,:(]", card.place.name)[0].strip() if card else
+                                           _short_title(st.get("title") or ""))
     if prev is not None and day_end:   # the end of the day: a longer last stay, within its times
         stretch(prev, parse_hhmm(day_end) - prev_end)
 
@@ -606,6 +610,15 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                              food_pull=max(0.0, float(b[idx["food"]]))) + \
         mine_candidates(real, brief)
     # m331: London from above once a day: two towers minutes apart felt repetitive (ChatGPT's review, 24 Nov)
+    # m345: a place called "at sunset" is planned at sunset when the date's sunset is known: arriving within its
+    # sunset window (`best_around_sunset`), staying as long as it lasts. Its fixed times were an autumn guess, so
+    # "Waterloo Bridge at sunset" was planned at 17:06 in December, after dark
+    if brief.sunset:
+        sun_at = parse_hhmm(brief.sunset)
+        sun = {m.id: m for m in usable if m.best_time.best_around_sunset and "sunset" in m.title.lower()}
+        cands = [replace(c, windows=((sun_at + sun[c.moment_id].best_time.best_around_sunset[0],
+                                      sun_at + sun[c.moment_id].best_time.best_around_sunset[1] + c.duration_min),))
+                 if c.moment_id in sun else c for c in cands]
     highs, ride_ids = high_views(), rides()
     cands = [replace(c, group="views:from-above") if c.moment_id in highs and not c.group and not c.lunch else c
              for c in cands]
@@ -703,7 +716,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         elif st.moment_id == "lunch@start":
             place = brief.start_name
             stop = {"title": f"Lunch near {place}", "approach": "",
-                    "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
+                    "what": meal_what(brief), "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, place, not stops, route)}
             nxt = (c.end, place, brief.start_name)
@@ -711,7 +724,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             host = by_id[st.moment_id[len("dinner@"):]]
             place = host.leave_name()
             stop = {"title": f"Dinner near {place}", "approach": "",
-                    "what": "Pick a restaurant, pub or food hall nearby.", "best": "", "best_windows": [],
+                    "what": meal_what(brief, dinner=True), "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [], "feel_word": "Dinner",
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, host.approach.from_, not stops, route)}
             nxt = (c.end, place, host.exit_station())
@@ -723,7 +736,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             place = host.leave_name() if after_host or host.experience.end_point else \
                 (clean(host.approach.from_) or host.leave_name())
             stop = {"title": f"Lunch near {place}", "approach": "",
-                    "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
+                    "what": meal_what(brief), "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, host.approach.from_, not stops, route)}
             nxt = (c.end, place, host.exit_station())
@@ -1020,6 +1033,18 @@ def _best_line(s: dict) -> str:
 ESTIMATE_MEAL = "The price is ODYS's planning estimate for a meal nearby, not a menu price."
 ESTIMATE_FARES = (f"Fares are estimated: £{TUBE_FARE_GBP:.2f} a Tube or bus journey, at most £{DAILY_CAP_GBP:.2f} a day "
                   "(TfL's fares, read Sep 2026). TfL charges the real fare.")
+
+
+def meal_what(brief: Brief, dinner: bool = False) -> str:
+    """m345: a meal slot's words follow the meal the budget planned (daybudget.LUNCHES): a cheaper lunch reads as
+    one, so "about £6" never sits beside "a café, pub or food stall"."""
+    gbp = float(brief.lunch_gbp)
+    if gbp >= 15:
+        return "Pick a restaurant, pub or food hall nearby." if dinner else "Pick a café, pub or food stall nearby."
+    if gbp > 0:
+        return ("A cheaper dinner: a takeaway, café or market stall nearby." if dinner else
+                "A cheaper lunch: a bakery, market stall or supermarket nearby.")
+    return "Bring something to eat, or buy it nearby." if not dinner else "Eat wherever suits you nearby."
 
 
 def say_estimates(stops: list[dict]) -> None:

@@ -95,6 +95,8 @@ def test_jonas_gentle_friday_in_london():
         card = cards[st["moment_id"].split("#")[0]]
         assert card.features.place.get("active", 0) < 2, st["moment_id"]           # nothing strenuous
     assert not dayplan.disproportionate(stops)                                       # no journey longer than its visit
+    assert len(places) <= p["trip"]["stops_per_day"] + 1   # m345: a gentle day takes at most one extra place
+    assert day["days"][0]["plan"]["totals"]["finish"] == stops[-1]["depart"]   # m345: the finish is the last stop's
     for st in stops[1:]:
         assert st.get("free_before_min", 0) <= 45, st["moment_id"]                   # no long wait mid-day
 
@@ -216,3 +218,28 @@ def test_a_days_title_names_its_own_places():
     assert reasons.day_title(day, cards) == "Borough Market, a Brick Lane bagel and Tower Bridge at sunset"
     assert reasons.day_title([st("m_national_gallery", 0.4)], cards) == "The National Gallery"
     assert len(reasons.day_title(day, cards)) <= 80
+
+
+def test_a_sunset_place_is_planned_at_sunset_and_a_cheaper_lunch_reads_as_one():
+    """m345 (three independent reviews, 24 Nov): "Waterloo Bridge at sunset" at 17:06 in December, after dark; "about
+    £6" beside "a café, pub or food stall"."""
+    import tempfile
+
+    from fastapi.testclient import TestClient
+
+    from brain.api import create_app
+    from brain.config import DATA_DIR, Settings
+    settings = Settings(database_url=f"sqlite:///{tempfile.mkdtemp()}/t.db", data_dir=DATA_DIR, admin_token="x",
+                        alert_webhook_url=None, planner_time_limit_s=1.0)
+    with TestClient(create_app(settings)) as c:
+        r = c.post("/v1/installs", json={"channel": "stranger", "src": "test", "consent": {
+            "version": "2026-09", "research": True, "ai_processing": False}})
+        h = {"Authorization": f"Bearer {r.json()['token']}"}
+        plan = c.post("/v1/me/plans", headers=h, json={
+            "start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "Charing Cross", "start_time": "14:00",
+            "end_time": "19:00", "date": "2026-12-04", "stops": 2, "intent": {"must_do": "m_waterloo_bridge_sunset"}}).json()
+    bridge = next(st for st in plan["stops"] if st["moment_id"] == "m_waterloo_bridge_sunset")
+    assert "15:00" <= bridge["arrive"] <= "16:15"          # sunset on 4 Dec is about 15:53; its window is -40 to +20
+    cheap = dayplan.Brief(start_name="x", start=START, start_time="10:00", end_time="18:00", stops=3, lunch_gbp=6.0)
+    assert dayplan.meal_what(cheap).startswith("A cheaper lunch")
+    assert dayplan.meal_what(replace_brief(cheap, lunch_gbp=15.0)) == "Pick a café, pub or food stall nearby."

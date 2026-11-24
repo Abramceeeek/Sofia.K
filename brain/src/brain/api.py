@@ -83,6 +83,7 @@ def _tester_code(text: str | None) -> str | None:
 # m326 (the London gate, G2): a trip day ending over 45 min early tries up to this many more places, one at a time,
 # and stops at the first that fills the day (the place on the way, and days with the person's own plans, don't)
 EXTRA_PLACES_MAX = 4
+EXTRA_BY_PACE = {"gentle": 1, "medium": 2, "unstated": 2, "full_on": EXTRA_PLACES_MAX}   # m345: extra places by pace
 MAX_TRIP_DAYS = 7   # D120: days planned in one request (about a second each on the free server)
 
 
@@ -1376,8 +1377,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             EARLY_MAX_MIN before its end time tries up to EXTRA_PLACES_MAX more places, so the person's places a day are a pace,
             not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
             best = None
-            # m344: a relaxed day isn't filled with extra places; a full one may take one more than usual
-            extra_max = 0 if day_feel == "relaxed" else EXTRA_PLACES_MAX + (1 if day_feel == "full" else 0)
+            # m344: a relaxed day isn't filled with extra places; a full one may take one more than usual.
+            # m345 (two independent reviews, 24 Nov: "the requested stop count and pace are ignored"; Abram: an extra
+            # place must "respect their pace"): the extra places follow the person's pace
+            extra_max = 0 if day_feel == "relaxed" else \
+                EXTRA_BY_PACE.get((user.profile or {}).get("activity") or "unstated", 2) + (1 if day_feel == "full" else 0)
             more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, extra_max + 1))
             want = None if tag == "before" or mine else loved_for(part, day)
             for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
@@ -1437,6 +1441,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             # m326: the chosen plan, as before
             dayplan.state_free_time(stops, brief.start_time, by_ready,   # G1: no silent wait
                                     brief.end_time, brief.weekday, brief.date)
+            head["totals"] = dayplan.plan_totals(stops, app.state.travel)   # m345: the finish after longer stays
             used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
             # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
             # location, never its name")
