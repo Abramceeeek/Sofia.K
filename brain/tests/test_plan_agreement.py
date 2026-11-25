@@ -133,3 +133,4 @@ def test_a_place_called_at_sunset_is_planned_at_sunset_on_every_day_it_comes(cli
             if m and "sunset" in m.title.lower() and m.best_time.best_around_sunset:
                 lo, hi = m.best_time.best_around_sunset
                 assert set_at + lo <= parse_hhmm(st["arrive"]) <= set_at + hi, (d["date"], st["title"], st["arrive"])
+                assert parse_hhmm(st["depart"]) >= set_at, (d["date"], st["title"], st["depart"])   # m352: there as it sets

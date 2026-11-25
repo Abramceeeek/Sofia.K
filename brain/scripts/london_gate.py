@@ -14,8 +14,8 @@
   G2 (original, kept for comparison, not a blocker): no day ending more than 45 min before the person's end time
   G9  (m350, Abram: "date-specific opening and closure rules") every stop is open for its whole visit on that date,
       by the card's own hours for that weekday and its dated changes (Christmas, early closings, refurbishments)
-  G10 (m350, "actual sunset suitability") a stop that promises sunset in its title is there at sunset for that date
-      (the card's own window around sunset)
+  G10 (m350, "actual sunset suitability") a stop that promises sunset in its title is there at sunset for that date:
+      it starts within the card's own window around sunset and is still there when the sun sets (m352)
   G11 (m350, "daily travel budget by pace") no day's travel is more than 20 min over its pace's budget (gentle 60,
       medium or unstated 90, full-on 120 min): one journey's slack, never a day of crossing London
 
@@ -187,7 +187,8 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
                 if "sunset" in m_.title.lower() and m_.best_time.best_around_sunset:   # G10
                     sun = mins(_sunset(date.fromisoformat(d["date"])))
                     lo, hi = m_.best_time.best_around_sunset
-                    if not (sun + lo <= arrive <= sun + hi):
+                    # m352 (review): there as the sun sets, not gone ten minutes before it
+                    if not (sun + lo <= arrive <= sun + hi) or depart < sun:
                         fails["G10"].append(f"{d['date']} {st['title'][:40]} at {st['arrive']}, sunset "
                                             f"{_sunset(date.fromisoformat(d['date']))}")
             if p["profile"].get("activity") == "gentle" and ((card.get("features") or {}).get("place") or {}).get("active", 0) >= 2:

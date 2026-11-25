@@ -35,7 +35,7 @@ best_time:
   weather: ["any"]
   company: null
   crowd_window: "Queues at peak meal times (GUESS)"
-  book_ahead: "No reservations: join the virtual queue on padella.co (groups of up to six)"   # CHECKED
+  book_ahead: "Join the virtual queue on padella.co: no table bookings (groups of up to six)"   # m352: it read "Book ahead: No reservations"   # CHECKED
   opening_hours: "Lunch daily 11:30-15:45; dinner Mon-Wed 17:00-22:00, Thu-Sat 17:00-22:30, Sun 17:00-21:00; virtual queue, no bookings. padella.co, read 2026-11-24"
   hours: "Lunch daily 11:30–15:45; dinner from 17:00. No bookings: virtual queue"   # shown on the stop
 features:

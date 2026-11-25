@@ -1,3 +1,4 @@
+# m352 (a London local's review, 25 Nov: "Somerset House's courtyard is an ice rink in December, not quiet"): https://www.somersethouse.org.uk/whats-on/skate-somerset-house, read 2026-11-24: Skate "11 Nov 2026–10 Jan 2027"; the courtyard is no longer called quiet
 # From a friend's suggestion (2026-09-28; no names stored). Written in Claude's own words; facts verified by Claude
 # and marked ready under the research rule (D91, D98). Tags are Claude's judgement: Abram can flag any.
 # A flexible "to the river" moment (D98): the cards share variant_of to_the_river, so a plan holds one route,
@@ -24,7 +25,7 @@ approach:
   duration_min: 3        # GUESS
   step_free: null
 experience:
-  what_happens: "From the busy Strand you pass through the arch into the big, quiet courtyard, then out onto the terrace, where the Thames opens up in front of you."
+  what_happens: "From the busy Strand you pass through the arch into the big courtyard (an ice rink from November to early January), then out onto the terrace, where the Thames opens up in front of you."
   why_it_works: "A quiet courtyard between the Strand and the Thames, and the river all at once."   # m349: Claude's wording from this card's own facts; was a friend's line shared by several cards ("Out of the busy streets until the river suddenly opens up."), for Abram to check
   duration_min: [15, 30] # GUESS
   end_point: null

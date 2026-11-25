@@ -131,7 +131,9 @@ def free_after(stops: list[dict], day_end: str | None, by_id: Mapping[str, Momen
     card = (by_id or {}).get(_base(str(last.get("moment_id") or "")))
     name = (re.split(r"[,:(]", card.place.name)[0].strip() if card else None)
     stay_on = None
-    if card is not None:
+    # m352 (review): never "open until" for a public street, a bridge or a place open all day and night
+    always = card is not None and re.search(r"always open|24 hours", card.best_time.hours or "", re.I)
+    if card is not None and not always:
         arrive = parse_hhmm(last["arrive"])
         close = max((hi for lo, hi in card.windows(weekday, date) if lo <= arrive <= hi), default=start)
         if close - start >= 20:
@@ -141,7 +143,7 @@ def free_after(stops: list[dict], day_end: str | None, by_id: Mapping[str, Momen
             f"The rest of the day is yours from {last['depart']}")
     text = f"{head}, about {_hm(free)} until {day_end}."
     if day_feel != "relaxed":
-        text += " Nothing else close by was a strong enough match to add."
+        text += " It's kept free rather than filled with a place that suits you less."
     if stay_on:
         text += " " + stay_on
     return {"from": last["depart"], "until": day_end, "min": free, "text": text, "stay_on": bool(stay_on)}
@@ -660,7 +662,10 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     if brief.sunset:
         sun_at = parse_hhmm(brief.sunset)
         sun = {m.id: m for m in usable if m.best_time.best_around_sunset and "sunset" in m.title.lower()}
-        cands = [replace(c, windows=((sun_at + sun[c.moment_id].best_time.best_around_sunset[0],
+        # m352 (a London local's review, 25 Nov: "Waterloo Bridge 'at sunset' leaves at 15:44-15:48, before sunset"):
+        # the visit spans the sunset itself: it starts no earlier than its own length, less 10 min, before sunset
+        cands = [replace(c, windows=((sun_at + max(sun[c.moment_id].best_time.best_around_sunset[0],
+                                                   10 - c.duration_min),
                                       sun_at + sun[c.moment_id].best_time.best_around_sunset[1] + c.duration_min),))
                  if c.moment_id in sun else c for c in cands]
     highs, ride_ids = high_views(), rides()
