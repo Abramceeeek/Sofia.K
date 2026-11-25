@@ -35,11 +35,27 @@ from dataclasses import dataclass, field
 
 from .catalogue import Experience
 from .discovery import Scorer
+from .travel import haversine_m
 
 DELTA = 0.2          # GUESS: "likes" = in the member's own top 20% (Sato's top-Δ%)
 EPS = 1e-6
 REPAIR_OTHERS_MIN = 0.3   # m353 (GUESS): a favourite swapped in for one member is never poor (below this) for another
 GOOD = 0.5           # quality.GOOD: below this for every place, nothing here is a good match for that member
+HISTORY_A_DAY = 2    # m358: D127's day shape, as for one person: at most two history-and-culture stops a day
+NEAR_M = 3000        # m358 (GUESS): a day's places within about 3 km of its highlight, where the chosen places allow
+
+
+def _history(x: Experience) -> bool:
+    return (x.features.get("history_culture") or 0) >= 2   # the planner's "history" theme (tag 2, D127)
+
+
+def _who(m: "Member") -> str:
+    """m358 (m353's rule): a member in a note, by label only if they agreed to be named, else counted."""
+    return m.label if m.shares_preferences else "one of you"
+
+
+def _m(a: Experience, b: Experience) -> float:
+    return haversine_m(a.geo, b.geo)
 
 
 @dataclass(frozen=True)
@@ -110,7 +126,8 @@ def _objective(method: str, members: list[Member], chosen: list[Experience], P: 
 
 
 def plan(members: list[Member], candidates: list[Experience], days: int, per_day: int,
-         method: str = "nash", unknown_access: str = "flag", currency: str = "GBP", rates=None) -> GroupPlan:
+         method: str = "nash", unknown_access: str = "flag", currency: str = "GBP", rates=None,
+         must_phrase: str = "A must-see for {who}") -> GroupPlan:
     """The shared itinerary: `days` days of `per_day` stops. Greedy on the objective, then single swaps until nothing
     improves it; the hard rules hold throughout.
 
@@ -121,6 +138,12 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     # m342: the slowest stated pace holds for everyone: with a gentle member, no strenuous stop (a bike ride, a swim,
     # karting), as for one person (m329); said in the notes, with splitting up as the way round it
     gentle = [m.label for m in members if m.pace == "gentle"]
+    # m358 (m353's rule, Abram: "don't expose one person's private preferences to the rest of the group without their
+    # permission"): a note names a member only if they agreed; otherwise they're counted
+    gentle_named = [m.label for m in members if m.pace == "gentle" and m.shares_preferences]
+    gentle_who = ", ".join(gentle_named + ([("one of you" if len(gentle) - len(gentle_named) == 1 else
+                                             f"{len(gentle) - len(gentle_named)} of you")]
+                                           if len(gentle) > len(gentle_named) else []))
     strenuous = {x.id for x in candidates if gentle and (x.features.get("active") or 0) >= 2}
     vetoed_pace = strenuous - vetoed
     vetoed |= strenuous
@@ -144,7 +167,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     if rejected:
         notes.append(f"{len(rejected)} place(s) left out because someone rejected them.")
     if vetoed_pace:
-        notes.append(f"{len(vetoed_pace)} strenuous place(s) left out because {', '.join(gentle)} asked for a gentle "
+        notes.append(f"{len(vetoed_pace)} strenuous place(s) left out because {gentle_who} asked for a gentle "
                      "pace. To include one, split up for that stop.")
     if not_step_free:
         notes.append(f"{len(not_step_free)} place(s) left out because their own sources say they aren't step-free: "
@@ -157,10 +180,17 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                      "be checked against the smallest budget: " + "; ".join(x.title for x in unpriced) + ".")
     for m in members:
         if pool and max(P[(m.label, x.id)] for x in pool) < GOOD:
-            notes.append(f"Nothing here ranks well for {m.label} by their answers so far, whatever we choose, so it's "
+            notes.append(f"Nothing here ranks well for {m.label if m.shares_preferences else 'one of you'} by their "
+                         "answers so far, whatever we choose, so it's "
                          "said rather than hidden.")   # m275: a ranking, not a claim about how they'll feel
     def fits_budget(xs: list[Experience]) -> bool:   # the trip's cost per person within the smallest budget overall
         return cap is None or sum(_price(x, currency, rates) for x in xs) <= cap * days + 1e-9
+
+    def fits(xs: list[Experience]) -> bool:
+        """m358: the budget, and D127's day shape over the trip (a real group plan of six museums showed it was
+        missing); a member's own must-sees are never held to the second."""
+        return fits_budget(xs) and sum(_history(x) for x in xs if x not in fixed) <= max(
+            0, HISTORY_A_DAY * days - sum(_history(x) for x in fixed))
 
     # must-sees: each member's first, then the rest in turns, while they fit the days and the smallest budget
     by_id = {x.id: x for x in pool}
@@ -168,7 +198,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     queues = [[i for i in m.musts if i in by_id] for m in members]
     for m in members:
         if any(i in vetoed for i in m.musts):
-            notes.append(f"A must-see of {m.label} was rejected by someone else, so it's left out.")
+            notes.append(f"A must-see of {_who(m)} was rejected by someone else, so it's left out.")
     while any(queues) and len(chosen) < n:
         for m, q in zip(members, queues):
             while q and by_id[q[0]] in chosen:
@@ -178,7 +208,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                 if fits_budget(chosen + [x]):
                     chosen.append(x)
                 else:
-                    notes.append(f"{m.label}'s must-see {x.title} doesn't fit the smallest budget, so it's left for "
+                    notes.append(f"A must-see of {_who(m)}, {x.title}, doesn't fit the smallest budget, so it's left for "
                                  "the group to decide.")
     fixed = list(chosen)
 
@@ -187,7 +217,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
         best, best_v = None, -math.inf
         for x in rest:
             trial = chosen + [x]
-            if not fits_budget(trial):
+            if not fits(trial):
                 continue
             v = _objective(method, members, trial, P, U)
             if v > best_v:
@@ -206,7 +236,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                 continue
             for y in rest:
                 trial = chosen[:i] + [y] + chosen[i + 1:]
-                if fits_budget(trial) and _objective(method, members, trial, P, U) > base + 1e-9:
+                if fits(trial) and _objective(method, members, trial, P, U) > base + 1e-9:
                     rest.remove(y)
                     rest.append(x)
                     chosen = trial
@@ -235,13 +265,47 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                                      for o in members if o is not m):
                     continue   # never take another member's only favourite
                 trial = chosen[:i] + [y] + chosen[i + 1:]
-                if fits_budget(trial) and (v := _objective(method, members, trial, P, U)) > best_v:
+                if fits(trial) and (v := _objective(method, members, trial, P, U)) > best_v:
                     best_trial, best_v = trial, v
         if best_trial is not None:
             rest = [x for x in pool if x not in best_trial]
             chosen = best_trial
     day_lists, highlights, over = _assign(chosen, members, days, per_day, P, cap,
                                           lambda x: _price(x, currency, rates) or 0.0)
+    # m358: a day that crosses London. A place far from the day's highlight is swapped for the best place near it that
+    # keeps every rule (budget, day shape, nobody's no, nobody poorly served); never a must-see, a member's only
+    # favourite in the plan, or the highlight itself
+    for day in day_lists:
+        for i in range(1, len(day)):
+            x = day[i]
+            planned = [z for d in day_lists for z in d]
+            if _m(day[0], x) <= NEAR_M or x in fixed or any(
+                    x in fav_of[o.label] and sum(z in planned for z in fav_of[o.label]) == 1 for o in members):
+                continue
+            others = [z for z in day if z is not x]
+            near = [y for y in pool if y not in planned and _m(day[0], y) <= NEAR_M
+                    and all(P[(o.label, y.id)] >= REPAIR_OTHERS_MIN for o in members)
+                    and fits([z for z in planned if z is not x] + [y])
+                    and (not _history(y) or sum(map(_history, others)) < HISTORY_A_DAY)
+                    and (cap is None or sum(_price(z, currency, rates) or 0.0 for z in others + [y]) <= cap + 1e-9)]
+            if near:
+                day[i] = max(near, key=lambda y: sum(P[(o.label, y.id)] for o in members))
+    # m358: D127's day shape, day by day. A day with three history stops swaps one (never its highlight) with another
+    # day's other kind of stop, where both days stay within the smallest budget
+    spend = lambda d: sum(_price(z, currency, rates) or 0.0 for z in d)
+    for day in day_lists:
+        for other in day_lists:
+            if other is day or sum(map(_history, day)) <= HISTORY_A_DAY:
+                continue
+            for i in [i for i in range(1, len(day)) if _history(day[i])]:
+                j = next((j for j in range(1, len(other)) if not _history(other[j]) and sum(map(_history, other)) <
+                          HISTORY_A_DAY and (cap is None or (spend(day) - _p(day[i]) + _p(other[j]) <= cap + 1e-9 and
+                                                             spend(other) - _p(other[j]) + _p(day[i]) <= cap + 1e-9))
+                          for _p in [lambda z: _price(z, currency, rates) or 0.0]), None)
+                if j is not None:
+                    day[i], other[j] = other[j], day[i]
+                    break
+    chosen = [z for d in day_lists for z in d]
     notes += over
     if access and not strict:
         flagged = [x.title for x in chosen if x.id in unknown]
@@ -265,7 +329,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
         notes.append(f"{who} {'has' if len(left_out) == 1 else 'have'} none of their favourite places in "
                      f"this plan: {days * per_day} stops can't hold a favourite for all {len(members)} of you. To change "
                      "that: add a day or a stop, split up for one stop, or let them choose one stop.")
-    why = {x.id: who_it_suits(members, x, P, favourites) for x in chosen}
+    why = {x.id: who_it_suits(members, x, P, favourites, must_phrase) for x in chosen}
     def share(m: Member) -> str:
         k = sum(x.id in favourites[m.label] for x in seen(m))
         return f"{k} of the {len(seen(m))} stops they're there for {'is' if k == 1 else 'are'} among their favourites"
@@ -273,10 +337,14 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     return GroupPlan(day_lists, highlights, method, sats, prop, envy, notes, why, shares)
 
 
-def who_it_suits(members: list[Member], x: Experience, P: dict, favourites: dict[str, set[str]]) -> str:
+def who_it_suits(members: list[Member], x: Experience, P: dict, favourites: dict[str, set[str]],
+                 must_phrase: str = "A must-see for {who}") -> str:
     """m342: why a stop is in a group's plan, in plain words, by member label only (never a name or an answer):
     whose favourites it is among, who it's a good match for (a chance of Good of at least GOOD), and who it isn't
     for. "Among Member A's favourites; a good match for Member C; less so for Member B." """
+    # m358: whose must-see it is comes first ("A place Member A loved" from the app), and they aren't counted again
+    asked = [m for m in members if x.id in m.musts]
+    members = [m for m in members if m not in asked]
     fav = [m for m in members if x.id in favourites.get(m.label, set())]
     good = [m for m in members if m not in fav and P[(m.label, x.id)] >= GOOD]
     rest = [m for m in members if m not in fav and m not in good]
@@ -290,10 +358,10 @@ def who_it_suits(members: list[Member], x: Experience, P: dict, favourites: dict
             named.append("one of you" if k == 1 else f"{k} of you")
         return join(named)
 
-    parts = []
+    parts = [must_phrase.format(who=who(asked))] if asked else []
     if fav:
-        parts.append(f"Among {who(fav, own=True)} favourites" if all(m.shares_preferences for m in fav) else
-                     f"A favourite for {who(fav)}")
+        parts.append(f"among {who(fav, own=True)} favourites" if all(m.shares_preferences for m in fav) else
+                     f"a favourite for {who(fav)}")   # capitalised below when it comes first
     if good:
         parts.append(f"a good match for {who(good)}")
     if rest and all(m.shares_preferences for m in rest):   # m353: who it suits less is said only with their agreement
@@ -328,6 +396,10 @@ def _assign(chosen: list[Experience], members: list[Member], days: int, per_day:
             options = [x for x in left if fits(day, x)]
             if not options:
                 break
+            # m358: at most two history stops in the day (D127), and near the day's highlight where any is, so a day
+            # doesn't cross London and back (a real group plan went Greenwich → Docklands → Marylebone)
+            options = [x for x in options if not _history(x) or sum(map(_history, day)) < HISTORY_A_DAY] or options
+            options = [x for x in options if _m(lead, x) <= NEAR_M] or sorted(options, key=lambda x: _m(lead, x))[:2]
             nxt = max(options, key=lambda x: sum(P[(o.label, x.id)] for o in others))
             left.remove(nxt)
             day.append(nxt)

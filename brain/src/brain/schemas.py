@@ -390,6 +390,22 @@ class DayTimeIn(BaseModel):
     mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
 
 
+class GroupTripIn(BaseModel):
+    """m358: a group trip's days, as an organiser sets them; never anything about the people."""
+    start_date: date
+    nights: int = Field(default=0, ge=0, le=6)
+    per_day: int = Field(default=3, ge=1, le=5)
+    consent: Literal[True]                 # the organiser agrees their answers plan this shared trip
+    share_preferences: bool = False        # whether the plan may name them when it says who a stop suits
+
+
+class GroupJoinIn(BaseModel):
+    """m358: joining a friend's trip by its code, with consent asked every time (never assumed)."""
+    code: str = Field(min_length=6, max_length=16, pattern=r"^[A-Z0-9]+$")
+    consent: Literal[True]
+    share_preferences: bool = False
+
+
 class PartyIn(BaseModel):
     """m356 (Abram, 25 Nov: "The default budget is per person… show individual estimated spending, total estimated group
     spending, shared-cost allocation assumptions, children's applicable prices"): who's going. Ages only for children

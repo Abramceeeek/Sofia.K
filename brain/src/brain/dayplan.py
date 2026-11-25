@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import math
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from pathlib import Path
@@ -345,7 +345,7 @@ def rides() -> frozenset[str]:
 
 def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Mapping[int, list[str]],
              card_kinds: Mapping[str, str], company: str | None,
-             activity: str | None = None) -> list[tuple[str, list[str]]]:
+             activity: str | None = None, children: Sequence[int] | None = None) -> list[tuple[str, list[str]]]:
     """m326 (the London gate, G4 and G5; Abram's acceptance tests, 24 Nov): cards never planned for this person, as
     extra "didn't enjoy" entries (D100 keeps those out of every plan):
     - **a kind they didn't enjoy:** every card of a kind (a rooftop garden, a tower, a market) where they said they
@@ -355,14 +355,26 @@ def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Ma
     - **only with children** (m340): a card for children with their adults (`rules.with_children`: the Diana Memorial
       Playground admits only adults supervising children up to 12) is never planned unless they travel as a family;
     - **a gentle pace** (m329, Abram: "never compromise the traveller's stated pace"): someone who asked for a gentle
-      day never gets a strenuous card (`active` 2: a bike ride, a swim, karting)."""
+      day never gets a strenuous card (`active` 2: a bike ride, a swim, karting).
+
+    m358: a trip's own children (`children`, their ages, from "Who's going") count too, whatever the profile says: an
+    age rule keeps a card out when any child is under it, and a place only for children with their adults is allowed."""
     bad = {t for i, r in swipes if r == "didnt_enjoy" for t in swipe_types.get(i, [])}
     bad -= {t for i, r in swipes if r in ("loved", "fine") for t in swipe_types.get(i, [])}
     out = []
     kinds = [m.id for m in ready if card_kinds.get(m.id) in bad]
     if kinds:
         out.append(("kinds they didn't enjoy: " + ", ".join(sorted(bad)), kinds))
-    if company == "family":
+    if children:
+        aged = [m.id for m in ready if (m.rules or {}).get("min_age") and min(children) < m.rules["min_age"]]
+        if aged:
+            out.append(("a minimum age, with children", aged))
+        # a place for children up to an age (the playground: up to 12) needs a child that young in the party
+        old = [m.id for m in ready if (m.rules or {}).get("with_children") and (m.rules or {}).get("max_child_age")
+               is not None and min(children) > m.rules["max_child_age"]]
+        if old:
+            out.append(("only with younger children", old))
+    elif company == "family":
         aged = [m.id for m in ready if (m.rules or {}).get("min_age")]
         if aged:
             out.append(("a minimum age, with children", aged))

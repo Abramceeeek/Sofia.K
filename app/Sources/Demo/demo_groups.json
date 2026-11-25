@@ -1,0 +1,31 @@
+{
+ "groups": [
+  {
+   "id": 1,
+   "settings": {
+    "start_date": "2026-12-11",
+    "nights": 1,
+    "per_day": 3
+   },
+   "you": "Member A",
+   "code": "432399E5",
+   "members": [
+    {
+     "label": "Member A",
+     "you": true,
+     "named": true
+    },
+    {
+     "label": "Member B",
+     "you": false,
+     "named": false
+    },
+    {
+     "label": "Member C",
+     "you": false,
+     "named": true
+    }
+   ]
+  }
+ ]
+}

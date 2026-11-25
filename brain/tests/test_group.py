@@ -41,7 +41,9 @@ def test_rejections_budgets_and_must_sees_always_hold():
     tight = members(A={"budget_per_day": 5.0}, B={"musts": (X["m_courtauld_gallery"].id,)})
     q = group.plan(tight, CANDS, days=2, per_day=3)
     assert X["m_courtauld_gallery"].id not in [x.id for x in q.stops]
-    assert any("Member B's must-see" in n and "smallest budget" in n for n in q.notes)
+    # m358: named only with their agreement (m353), else counted
+    assert any("A must-see of one of you" in n and "smallest budget" in n for n in q.notes)
+    assert not any("Member B" in n for n in q.notes)
     assert all(sum(x.price.value.amount for x in day) <= 5.0 for day in q.days)
 
 
@@ -124,7 +126,11 @@ def test_when_nothing_suits_a_member_it_is_said():
     d[[i for i, k in enumerate(pop.names[:len(sd)]) if k.startswith("cost")]] = 0
     ms = [Member("Member A", Scorer(pop, d)), Member("Member B", Scorer(pop, None))]
     gp = plan(ms, _london(), 1, 3)
-    assert any("Nothing here ranks well for Member A" in n for n in gp.notes)
+    # m358: named only with their agreement; otherwise counted (m353's privacy rule)
+    assert any("Nothing here ranks well for one of you" in n for n in gp.notes)
+    assert not any("Member A" in n for n in gp.notes)
+    ms = [Member("Member A", Scorer(pop, d), shares_preferences=True), Member("Member B", Scorer(pop, None))]
+    assert any("Nothing here ranks well for Member A" in n for n in plan(ms, _london(), 1, 3).notes)
 
 
 # ---- m256: Abram's regression cases (m252) -------------------------------------------------------------------------
@@ -205,6 +211,11 @@ def test_a_gentle_member_keeps_strenuous_stops_out_for_everyone():
     assert not {x.id for x in group.plan(gentle, CANDS, days=2, per_day=3).stops} & strenuous
     assert any("gentle pace" in n for n in group.plan(gentle, CANDS, days=2, per_day=3).notes)
     assert not any("gentle pace" in n for n in group.plan(keen, CANDS, days=2, per_day=3).notes)
+    # m358: who asked for it is named only with their agreement (m353's privacy rule)
+    notes = group.plan(gentle, CANDS, days=2, per_day=3).notes
+    assert any("because one of you asked for a gentle pace" in n for n in notes) and not any("Member C" in n for n in notes)
+    named = members(A={"pace": "full_on"}, C={"pace": "gentle", "shares_preferences": True})
+    assert any("because Member C asked for a gentle pace" in n for n in group.plan(named, CANDS, days=2, per_day=3).notes)
 
 
 def test_why_a_stop_suits_the_group_names_nobody_who_hasnt_agreed():

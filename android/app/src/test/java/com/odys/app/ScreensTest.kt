@@ -227,6 +227,27 @@ class ScreensTest {
         compose.setContent { RootView(model); PreviewScreen(model, "seville") {} }
         shoot("34-preview")
     }
+    // m358: a trip planned with friends: the list, joining with a code, and the shared days
+    private fun AppModel.withGroups() {
+        groupsDemo = demo("demo_groups", GroupList.serializer())
+        groupPlanDemo = demo("demo_group_plan", GroupPlanOut.serializer())
+    }
+    @Test fun groups() {
+        model.withGroups()
+        compose.setContent { RootView(model); GroupTripsScreen(model, {}) }
+        shoot("35a-groups")
+    }
+    @Test fun groupJoin() {
+        model.withGroups()
+        compose.setContent { RootView(model); GroupTripsScreen(model, {}, demo = "join") }
+        shoot("35b-groupjoin")
+    }
+    @Test fun groupPlan() {
+        model.withGroups()
+        compose.setContent { RootView(model); GroupTripsScreen(model, {}, demo = "plan") }
+        reach("Day 1")
+        shoot("35c-groupplan")
+    }
     @Test fun safetyPreview() {
         model.withPreview()
         compose.setContent { RootView(model); SafetyView(model) {} }

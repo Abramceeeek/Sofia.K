@@ -186,6 +186,7 @@ fun SettingsView(model: AppModel, onClose: () -> Unit) {
                     DataLine("Your reactions to places, your choices between example days, the short survey and your choice between two plans.")
                     DataLine("Your plans, your ratings and how each day felt, and anything you add under \"Improve future plans\".")
                     DataLine("Anything you send in Help & safety.")
+                    DataLine("If you plan a trip with friends: your member letter (Member A, B…), when you agreed, and whether the plan may name you. The others never see your answers.")   // m358
                     DataLine("All of it on our server in Frankfurt, in the EU (run by Render), then deleted.")
                 }
                 SettingsSection("What goes to other companies") {

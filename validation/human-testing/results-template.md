@@ -1,20 +1,26 @@
-# Moderated sessions: results (fill in one block per person)
+# Moderated sessions: results (one block per person; updated 25 Nov 2026)
 
-The app's version and build are in its settings; the Brain commit is the QA Brain's `/v1/health` `version`. Write only what the person did and said. Abram's own impressions go under "Moderator's note", marked as his.
+The app's version and build are in its settings; the Brain commit is the QA Brain's `/v1/health` `version`.
+- **Write only what the person did and said.**
+- **Abram's own impressions** go under "Moderator's note", marked as his.
+- **No AI review, synthetic traveller or Claude opinion goes in this file.** It holds participant evidence only.
+- **Initials and P numbers only:** no names, phone numbers or emails.
 
-## P1: ________ (travelling style)
+## P1: Solo traveller
 
 - **Date:**
+- **Initials:**
 - **Phone:** theirs / Abram's
 - **App build:**
 - **Brain commit:**
 - **Consent given:** yes / no
 - **Recording:** none / audio (deleted on __ ) / screen (deleted on __ )
+- **Deleted in the app at the end:** yes / no (date: __ )
 
 | Task | Done unaided / with a hint / not done | Time (mm:ss) | What confused them (their words) |
 |---|---|---|---|
-| 1 Plan a trip | | | |
-| 2 Preferences and pace | | | |
+| 1 Preferences and pace | | | |
+| 2 Plan a trip | | | |
 | 3 Review the first full day | | | |
 | 4 Replace one place | | | |
 | 5 Change for rain | | | |
@@ -35,4 +41,33 @@ The app's version and build are in its settings; the Brain commit is the QA Brai
 
 **Moderator's note (Abram's, not the participant's):**
 
-<!-- Copy the block for P2–P6. -->
+<!-- Copy the block for P2 (couple), P3 (parent: note the made-up ages used), P4 (gentle). -->
+
+## P5 and P6: the shared trip (Friend-group organiser and invited friend)
+
+Fill in P5's and P6's own blocks as above for tasks 1–7 (copy the block). Then:
+
+- **Both on their own phones and installs:** yes / no
+- **P5 agreed (and named: yes / no):**
+- **P6 agreed (and named: yes / no):**
+- **How the code reached P6:** message / read out / other:
+
+| Task | Who | Done unaided / with a hint / not done | Time (mm:ss) | What confused them (their words) |
+|---|---|---|---|---|
+| 8 Start a shared trip and send the code | P5 | | | |
+| 9 Join with the code | P6 | | | |
+| 10 Plan the days together | | | | |
+| 11 Something for each of you, and why each place is there | P5 / P6 | | | |
+| 12 Leave the trip | P6 | | | |
+
+| Statement | P5 | P6 |
+|---|---|---|
+| 8 The shared plan had something I really wanted to do | | |
+| 9 My friend's tastes didn't take over the plan | | |
+| 10 I was comfortable with what the others could see about me | | |
+
+**What each said about the shared plan** (word for word):
+- P5:
+- P6:
+
+**Moderator's note (Abram's, not the participants'):**

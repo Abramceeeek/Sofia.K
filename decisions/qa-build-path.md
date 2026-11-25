@@ -15,6 +15,8 @@
 | **Android QA app** | Build type `qa`: `com.odys.app.qa`, version `-qa`, installed beside the real app, reaching only the QA Brain. Workflow `android-qa.yml`, manual only: a debug-signed APK kept 7 days as the run's artifact. It refuses the production Brain's address | Run `android-qa` with the QA Brain's address, then install the APK on his own phone | $0 |
 | **iPhone QA app** | Workflow `ios-qa.yml`, manual only. It builds "ODYS QA" for the simulator with a QA bundle ID and the QA Brain, on that run only (`project.yml` unchanged), and refuses the production Brain. Its upload job stops unless `QA_UPLOAD_APPROVED` is `yes`, and isn't wired to TestFlight yet | See "Before any QA TestFlight build" below | $0 while the repository is public |
 
+**What runs on it:** the six moderated sessions (`validation/human-testing/script.md`), including the trip two friends plan together from their own phones (m358). Their data is deleted in the app at the end of each session, and the QA database within 30 days of the last one (proposed; Abram to agree).
+
 ## Before any QA TestFlight build (each one Abram's)
 1. **The Apple policy check:** Apple's outside-activities policy, and the IP clause in his Apple contract (`CLAUDE.md` legal gates; D60, D94), before any external TestFlight build. A QA group of internal testers on his own account still needs his go-ahead.
 2. **A QA app in App Store Connect:** its own bundle ID (for example `….odys.qa`), its own provisioning profile, and an internal TestFlight group named "ODYS QA", never the friends' group.

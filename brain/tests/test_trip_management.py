@@ -207,3 +207,24 @@ def test_a_party_sees_each_travellers_cost_the_total_and_what_is_estimated(clien
     assert (party["over_group_gbp"] is not None) == (party["total_gbp"] > 50.5)
     one = client.post("/v1/me/trips/days", headers=h, json={**body, "party": None}).json()
     assert all("party" not in (x["plan"] or {}) for x in one["days"])   # one adult: the usual per-person line only
+
+
+def test_a_trips_children_set_the_age_rules_whatever_the_profile_says():
+    """m358: the bike loop (riders 14+) was kept out only when the profile said "family", so a couple's trip with an
+    8-year-old on "Who's going" could plan it. The trip's children now count: an age rule keeps a card out when any
+    child is under it, and the playground (children up to 12, with their adults) needs a child that young."""
+    from brain.config import DATA_DIR
+    from brain.moments import load_moments
+    ready = [m for m in load_moments(DATA_DIR / "moments") if m.status == "ready"]
+    ids = {m.id for m in ready}
+    assert {"m_park_bike_loop_hyde", "m_diana_playground"} <= ids
+
+    def out(company, children=None):
+        return {i for _, xs in dayplan.kept_out(ready, [], {}, {}, company, None, children) for i in xs}
+
+    assert "m_park_bike_loop_hyde" in out("partner", (8, 11))       # an 8-year-old can't ride
+    assert "m_diana_playground" not in out("partner", (8, 11))      # and the playground is for them
+    assert "m_park_bike_loop_hyde" not in out("partner", (15,))     # a 15-year-old can
+    assert "m_diana_playground" in out("partner", (15,))            # who is too old for the playground
+    assert "m_diana_playground" in out("partner")                   # no children: never the playground
+    assert "m_park_bike_loop_hyde" in out("family")                 # a family whose ages we don't know: never the bike

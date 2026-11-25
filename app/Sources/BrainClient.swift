@@ -314,6 +314,11 @@ final class BrainClient {
         try Self.decoder.decode(Out.self, from: try await raw(method, path, body))
     }
 
+    /// m358: a call that answers with no body (leaving a shared trip).
+    func callNoContent(_ method: String, _ path: String) async throws {
+        _ = try await raw(method, path, nil)
+    }
+
     static func bundled<T: Decodable>(_ name: String) throws -> T {
         guard let url = Bundle.main.url(forResource: name, withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)

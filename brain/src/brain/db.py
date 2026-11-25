@@ -45,6 +45,8 @@ class User(Base):
     categories = relationship("CategoryAnswer", cascade="all, delete-orphan", passive_deletes=True)
     corrections = relationship("Correction", cascade="all, delete-orphan", passive_deletes=True)
     day_feedback = relationship("DayFeedback", cascade="all, delete-orphan", passive_deletes=True)
+    groups_owned = relationship("GroupTrip", cascade="all, delete-orphan", passive_deletes=True)   # m358
+    group_memberships = relationship("GroupMember", cascade="all, delete-orphan", passive_deletes=True)
 
 
 class Swipe(Base):
@@ -235,6 +237,32 @@ class TravelTime(Base):
     mode: Mapped[str] = mapped_column(String(8))
     route: Mapped[str | None] = mapped_column(Text)
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class GroupTrip(Base):
+    """m358 (Abram, 25 Nov: "test whether two or three people can actually create one together, contribute their
+    individual preferences and produce something they all want to do"): a trip planned by several people, each from
+    their own account. Friends only, by invite code; no strangers, no matching (group-trips-architecture.md)."""
+    __tablename__ = "group_trips"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    owner_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    code: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)   # the days, hours and places a day (never people)
+    members = relationship("GroupMember", cascade="all, delete-orphan", passive_deletes=True)
+
+
+class GroupMember(Base):
+    """m358: one person in a group trip, by label only ("Member B"), with their consent and whether they agreed to be
+    named when the plan says who a stop suits."""
+    __tablename__ = "group_members"
+    __table_args__ = (UniqueConstraint("trip_id", "user_id"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("group_trips.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    label: Mapped[str] = mapped_column(String(16))
+    shares_preferences: Mapped[bool] = mapped_column(Boolean, default=False)
+    consented_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 def make_engine(url: str):

@@ -167,6 +167,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var safetyThreads by mutableStateOf<List<SafetyThread>>(emptyList())
     var previews by mutableStateOf<List<PreviewInfo>>(emptyList())   // m320: places shown read-only, opened with a code
     var previewDemo: PreviewContent? = null   // screenshots only: the preview drawn without a server
+    var groupsDemo: GroupList? = null         // m358, screenshots only: shared trips drawn without a server
+    var groupPlanDemo: GroupPlanOut? = null
     var alternativesDemo: List<Plan>? = null  // m336, screenshots only: "Other places for this time" without a server
     var remindersOn by mutableStateOf(prefs.bool("remindersOn"))
     var reminderAsked by mutableStateOf(prefs.bool("reminderAsked"))

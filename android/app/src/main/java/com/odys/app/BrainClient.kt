@@ -108,6 +108,12 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun previews(): PreviewList = call("GET", "v1/me/previews")
     suspend fun openPreview(code: String): PreviewList = call("POST", "v1/me/previews", PreviewCode(code))
     suspend fun preview(key: String): PreviewContent = call("GET", "v1/me/previews/$key")
+    // m358: trips planned with friends (Groups.kt)
+    suspend fun groups(): GroupList = call("GET", "v1/me/groups")
+    suspend fun createGroup(r: GroupCreateRequest): GroupTripInfo = call("POST", "v1/me/groups", r)
+    suspend fun joinGroup(r: GroupJoinRequest): GroupTripInfo = call("POST", "v1/me/groups/join", r)
+    suspend fun planGroup(id: Int): GroupPlanOut = call("POST", "v1/me/groups/$id/plan")
+    suspend fun leaveGroup(id: Int) { raw("POST", "v1/me/groups/$id/leave", null) }
 
     // ---- Build 2: the survey and the blind Test B pair ----
     suspend fun survey(body: SurveyBody) = send("POST", "v1/me/survey", body)

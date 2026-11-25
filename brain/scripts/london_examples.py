@@ -38,12 +38,14 @@ PEOPLE = [
          profile=dict(based="uk", home_city="Leeds", company="partner", budget_band="40_70", activity="medium",
                       chronotype="morning", fields=["history_culture"], why_travel=["curious", "connected"]),
          swipes={4: "loved", 12: "loved", 1: "loved", 3: "fine", 15: "didnt_enjoy", 7: "didnt_enjoy"},
-         trip=dict(nights=2, feelings=["curious", "connected"], day_start="09:30", day_end="18:00", stops_per_day=3, day_feel="balanced")),
+         trip=dict(nights=2, feelings=["curious", "connected"], day_start="09:30", day_end="18:00", stops_per_day=3, day_feel="balanced",
+                   party=dict(adults=2))),
     dict(key="family", who="A family of four (two children, 8 and 11) from Bristol; parks and boats, a gentle pace",
          profile=dict(based="uk", home_city="Bristol", company="family", budget_band="20_40", activity="gentle",
                       chronotype="morning", fields=["nature"], why_travel=["connected", "restored"]),
          swipes={6: "loved", 2: "loved", 11: "loved", 4: "fine", 7: "didnt_enjoy", 9: "havent_been"},
-         trip=dict(nights=1, feelings=["connected", "restored"], day_start="10:00", day_end="17:00", stops_per_day=3, day_feel="balanced")),
+         trip=dict(nights=1, feelings=["connected", "restored"], day_start="10:00", day_end="17:00", stops_per_day=3, day_feel="balanced",
+                   party=dict(adults=2, children=[8, 11]))),
     dict(key="jonas", who="Jonas, who lives in London and needs a quiet day to recharge; no plans to spend much",
          profile=dict(based="london", company="solo", budget_band="under_20", activity="gentle", chronotype="morning",
                       fields=["nature"], why_travel=["peaceful", "restored"]),
@@ -53,12 +55,14 @@ PEOPLE = [
          profile=dict(based="uk", home_city="Glasgow", company="friends", budget_band="40_70", activity="full_on",
                       chronotype="night", fields=["food"], why_travel=["excited", "connected"]),
          swipes={7: "loved", 9: "loved", 5: "loved", 15: "loved", 3: "fine", 4: "didnt_enjoy"},
-         trip=dict(nights=1, feelings=["excited", "connected"], day_start="11:00", day_end="21:00", stops_per_day=4, day_feel="full")),
+         trip=dict(nights=1, feelings=["excited", "connected"], day_start="11:00", day_end="21:00", stops_per_day=4, day_feel="full",
+                   party=dict(adults=4))),
     dict(key="margaret", who="Margaret and Alan, retired, from Norwich; art and the river, unhurried, happy to spend",
          profile=dict(based="uk", home_city="Norwich", company="partner", budget_band="70_plus", activity="gentle",
                       chronotype="morning", fields=["history_culture"], why_travel=["restored", "curious"]),
          swipes={8: "loved", 4: "loved", 2: "loved", 15: "didnt_enjoy", 7: "didnt_enjoy", 13: "fine"},
-         trip=dict(nights=2, feelings=["restored", "curious"], day_start="10:00", day_end="17:00", stops_per_day=2, day_feel="relaxed")),
+         trip=dict(nights=2, feelings=["restored", "curious"], day_start="10:00", day_end="17:00", stops_per_day=2, day_feel="relaxed",
+                   party=dict(adults=2))),
 ]
 
 
@@ -77,6 +81,37 @@ def built_from() -> str:
     return f"Brain commit {rev}" + (" with uncommitted changes" if dirty else "")
 
 
+def shared_trip(c, heads: dict) -> list[str]:
+    """m358: a trip planned together from three of the people's own accounts (each with their own answers above). Sam
+    starts it and agrees to be named; Priya and Dan's account joins and agrees; Jonas joins without agreeing to be
+    named, so he's counted, never named. What each member's app shows, for Sam's account."""
+    g = c.post("/v1/me/groups", headers=heads["sam"], json={"start_date": START.isoformat(), "nights": 1, "per_day": 3,
+                                                             "consent": True, "share_preferences": True}).json()
+    for key, named in (("priya", True), ("jonas", False)):
+        r = c.post("/v1/me/groups/join", headers=heads[key], json={"code": g["code"], "consent": True,
+                                                                   "share_preferences": named})
+        assert r.status_code == 201, r.text
+    out = ["## A shared trip: Sam, Priya and Dan, and Jonas, planning together", "",
+           "Each joined from their own account, with the answers above. Sam started it (Member A, agreed to be named); "
+           "Priya and Dan's account joined as Member B (agreed); Jonas joined as Member C and didn't agree to be named. "
+           "The app shows places for each day and why each is there; there are no times or routes yet.", ""]
+    for key in ("sam", "priya", "jonas"):
+        r = c.post(f"/v1/me/groups/{g['id']}/plan", headers=heads[key])
+        assert r.status_code == 200, r.text
+        plan = r.json()
+        if key == "sam":
+            for i, day in enumerate(plan["days"], 1):
+                out.append(f"### Day {i}")
+                for st in day:
+                    out += [f"**{st['title']}**", f"- Why: {st['why']}", ""]
+            for n in plan["notes"]:
+                out.append(f"> {n}")
+            out.append("")
+        out.append(f"- {plan['group']['you']} sees: \"For you: {plan['your_share']}.\"")
+    out += ["", "---", ""]
+    return out
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp()
     settings = Settings(database_url=f"sqlite:///{tmp}/examples.db", data_dir=DATA_DIR, admin_token="x",
@@ -89,11 +124,13 @@ def main() -> int:
            "These are for judging the product, not evidence about real travellers.", "",
            f"Trips start on Friday {START.day} December 2026. No weather forecast is used here, and no place to stay "
            "is chosen, so each day starts and ends at Charing Cross, the app's London centre.", ""]
+    heads = {}
     with TestClient(create_app(settings)) as c:
         for p in PEOPLE:
             r = c.post("/v1/installs", json={"channel": "stranger", "src": "examples",
                                              "consent": {"version": "2026-09", "research": True, "ai_processing": False}})
             h = {"Authorization": f"Bearer {r.json()['token']}"}
+            heads[p["key"]] = h
             assert c.put("/v1/me/profile", headers=h, json=p["profile"]).status_code == 204
             c.post("/v1/me/swipes", headers=h, json={"items": [{"item": i, "reaction": x} for i, x in p["swipes"].items()]})
             t = p["trip"]
@@ -125,6 +162,10 @@ def main() -> int:
                     if t.get("cost_gbp") is not None:   # m337: what the app's top line says (each price is per person)
                         out.append(f"> In the app: £{t['cost_gbp']:,.2f} per person, entry, food and fares; finishes at "
                                    f"{t.get('finish')}")
+                    if (pa := pl.get("party")):   # m356: each traveller and the whole party, as the app says it
+                        each = "; ".join(f"{x['label']} £{x['cost_gbp']:,.2f}" for x in pa["travellers"])
+                        out.append(f"> For all {len(pa['travellers'])} of you: about £{pa['total_gbp']:,.2f} ({each}). "
+                                   + " ".join(pa.get("notes") or []))
                     if (fa := pl.get("free_after")):   # m346: the time left at the end, as the app says it
                         out.append(f"> Free time: {fa['text']}")
                     out.append("")
@@ -147,6 +188,7 @@ def main() -> int:
                 out.append("")
             out.append("---")
             out.append("")
+        out += shared_trip(c, heads)
     path = HERE.parents[1] / "validation" / "london-examples" / "examples.md"
     path.write_text("\n".join(out), encoding="utf-8")
     print(path)

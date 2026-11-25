@@ -33,7 +33,7 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AlternativesIn, AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
+from .schemas import (GroupJoinIn, GroupTripIn, AlternativesIn, AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       PreviewCodeIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
                       ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StayCompareIn, StaySearchIn, SurveyIn, SwipesIn,
@@ -603,7 +603,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                      must_do: str | None = None, familiar: bool = True, keep: list[str] = (), exclude: list[str] = (),
                      blind: bool = False, end_window: tuple[int, int] | None = None,
                      post: DeltaPosterior | None = None, feelings: list[str] | None = None,
-                     fallback: bool = True, travel=None) -> tuple[dayplan.DayPlan, list[dict], dict]:
+                     fallback: bool = True, travel=None,
+                     children: tuple[int, ...] | None = None) -> tuple[dayplan.DayPlan, list[dict], dict]:
         """The person's plan as the app shows it: (the solver's plan, the app's stops, the plan's header fields).
         Used by "plan a day" and by the Test B pair (Build 2). `travel`: the times to plan with (a TfL day view, or
         the estimate for the Test B pair); by default the app's."""
@@ -617,7 +618,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
         disliked += dayplan.kept_out(ready, [(sw.item, sw.reaction) for sw in swipes], app.state.swipe_types,
                                      app.state.card_kinds, (user.profile or {}).get("company"),
-                                     (user.profile or {}).get("activity"))
+                                     (user.profile or {}).get("activity"), children)   # m358: the trip's children
         post = post or posterior(user, p)
 
         def run(keep: set[str], exclude: set[str]):
@@ -1333,6 +1334,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not dest.day_plans:
             raise HTTPException(422, "day plans aren't ready for that destination yet")
         today = datetime.now(ZoneInfo("Europe/London")).date()
+        kids = tuple(body.party.children) if body.party and body.party.children else None   # m358: age rules
         if body.start_date + timedelta(days=body.nights) < today:   # a trip under way can still plan its later days
             raise HTTPException(422, "this trip has ended")
         if body.start_date > today + timedelta(days=330):
@@ -1447,7 +1449,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
                 plan, stops, head = personal_day(s, user, p, brief, pool, familiar=False, exclude=sorted(used),
                                                  must_do=want if want in {m.id for m in pool} else None,
-                                                 post=post, feelings=feelings or None, fallback=False, travel=view)
+                                                 post=post, feelings=feelings or None, fallback=False, travel=view,
+                                                 children=kids)
                 if want and want not in {st["moment_id"].split("#")[0] for st in stops}:
                     want = None   # it didn't fit: the day's other tries go without it
                 if outlook:
@@ -1476,7 +1479,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 plan2, stops2, head2 = personal_day(
                     s, user, p, best[4], pool, familiar=False, exclude=sorted(used | set(back)),
                     must_do=want if want in {m.id for m in pool} and want not in back else None,
-                    post=post, feelings=feelings or None, fallback=False, travel=view)
+                    post=post, feelings=feelings or None, fallback=False, travel=view, children=kids)
                 if any(st["rateable"] for st in stops2) and not dayplan.backtracks(stops2, loved_cards) and \
                         not dayplan.meals_close(stops2):
                     early2 = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops2)
@@ -1582,6 +1585,131 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"total_days": total, "days": out, "start": start_name, "day_feel": day_feel,
                 "used": sorted(used)}   # sent back as `exclude` when planning the later days
 
+    # ---- group trips (m358) ---------------------------------------------------------------
+    GROUP_MAX = 6
+    LABELS = [f"Member {c}" for c in "ABCDEF"]
+
+    def _group_for(s: Session, gid: int, user: db.User) -> tuple[db.GroupTrip, db.GroupMember]:
+        """The trip and the caller's own membership; a trip they're not in is "not found", never "forbidden"."""
+        g = s.get(db.GroupTrip, gid)
+        me = next((m for m in (g.members if g else []) if m.user_id == user.id), None)
+        if g is None or me is None:
+            raise HTTPException(404, "no such group trip")
+        return g, me
+
+    def _group_view(g: db.GroupTrip, me: db.GroupMember) -> dict:
+        """What a member sees: the days, and the members by label (whether each agreed to be named), never anyone's
+        answers. The invite code only for the organiser, who shares it."""
+        return {"id": g.id, "settings": g.settings, "you": me.label,
+                "code": g.code if g.owner_id == me.user_id else None,
+                "members": [{"label": m.label, "you": m.user_id == me.user_id, "named": m.shares_preferences}
+                            for m in sorted(g.members, key=lambda m: m.label)]}
+
+    @app.post("/v1/me/groups", status_code=201)
+    def create_group(body: GroupTripIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358 (Abram, 25 Nov: "Include actual collaborative trip creation with separate adult accounts"): an organiser
+        starts a shared trip and gets a code to send to friends. Friends only: no strangers, no matching."""
+        code = secrets.token_hex(4).upper()
+        g = db.GroupTrip(owner_id=user.id, code=code, settings={"start_date": body.start_date.isoformat(),
+                                                                "nights": body.nights, "per_day": body.per_day})
+        s.add(g)
+        s.flush()
+        me = db.GroupMember(trip_id=g.id, user_id=user.id, label=LABELS[0], shares_preferences=body.share_preferences)
+        s.add(me)
+        s.commit()
+        s.refresh(g)
+        return _group_view(g, me)
+
+    @app.get("/v1/me/groups")
+    def my_groups(user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358: the shared trips this person is in, newest first, so the app can show them again after a restart."""
+        mine = sorted((m.trip_id for m in user.group_memberships), reverse=True)
+        out = []
+        for gid in mine:
+            g, me = _group_for(s, gid, user)
+            out.append(_group_view(g, me))
+        return {"groups": out}
+
+    @app.post("/v1/me/groups/join", status_code=201)
+    def join_group(body: GroupJoinIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358: a friend joins with the code, from their own account, agreeing that their own answers help plan this
+        trip; they choose whether the plan may name them. Joining twice changes nothing."""
+        g = s.scalar(select(db.GroupTrip).where(db.GroupTrip.code == body.code))
+        if g is None:
+            raise HTTPException(404, "no group trip has that code")
+        me = next((m for m in g.members if m.user_id == user.id), None)
+        if me is None:
+            if len(g.members) >= GROUP_MAX:
+                raise HTTPException(409, f"a group trip holds {GROUP_MAX} people")
+            used = {m.label for m in g.members}
+            me = db.GroupMember(trip_id=g.id, user_id=user.id, label=next(x for x in LABELS if x not in used),
+                                shares_preferences=body.share_preferences)
+            s.add(me)
+            s.commit()
+            s.refresh(g)
+        return _group_view(g, me)
+
+    @app.get("/v1/me/groups/{gid}")
+    def get_group(gid: int, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        g, me = _group_for(s, gid, user)
+        return _group_view(g, me)
+
+    @app.post("/v1/me/groups/{gid}/plan")
+    def plan_group(gid: int, user: db.User = Depends(current_user), s: Session = Depends(session),
+                   p: PopulationModel = Depends(pop)):
+        """m358: the shared days from every member's own answers (group.py: fair by the product of everyone's chances,
+        nobody's no overruled, the smallest budget, the slowest stated pace). Each stop says who it suits by label
+        only for members who agreed, else counted (m354); each member sees only their own share of favourites."""
+        from . import group as grp
+        from .catalogue import load_catalogue
+        from .discovery import Scorer
+        g, me = _group_for(s, gid, user)
+        if len(g.members) < 2:
+            raise HTTPException(422, "a group trip plans once a friend has joined")
+        if getattr(app.state, "group_catalogue", None) is None:   # read once; a moments reload clears it
+            app.state.group_catalogue = [x for x in load_catalogue()
+                                         if x.status == "ready" and x.id.startswith("xp:gb:london:")]
+        cands = app.state.group_catalogue
+        xp_of = {c: x.id for x in cands for c in x.legacy_ids}       # a moment card's id → its catalogue record
+        cards_at = app.state.swipe_cards
+
+        def said(u: db.User, reaction: str) -> list[str]:
+            """The ready places at the swipe places a member gave this answer to, in their order (D117: an answer
+            they marked "not right" doesn't count)."""
+            fixed = corrected(u)
+            return list(dict.fromkeys(xp_of[c] for sw in u.swipes if sw.reaction == reaction
+                                      and f"place:{sw.item}" not in fixed and sw.item in cards_at
+                                      for c in cards_at[sw.item][1] if c in xp_of))
+
+        people = []
+        for m in sorted(g.members, key=lambda m: m.label):
+            u = s.get(db.User, m.user_id)
+            # each member's own stored fit, read only: one member planning never rewrites another's record. m358: their
+            # own "Didn't enjoy it" places are a veto ("a place one of you said no to is left out", as the apps say),
+            # and the first place they loved that has a ready card is their must-see, so each brings something of theirs
+            people.append(grp.Member(m.label, Scorer(p, posterior(u, p).mean),
+                                     budget_per_day=BUDGET_BAND_GBP.get((u.profile or {}).get("budget_band")),
+                                     musts=tuple(said(u, "loved")[:1]), rejects=tuple(said(u, "didnt_enjoy")),
+                                     pace=(u.profile or {}).get("activity"), shares_preferences=m.shares_preferences))
+        st = g.settings
+        out = grp.plan(people, cands, days=int(st.get("nights", 0)) + 1, per_day=int(st.get("per_day", 3)),
+                       must_phrase="A place {who} loved")   # m358: their must-see is the first place they loved
+        s.add(db.Event(user_id=user.id, name="group_plan", props={"members": len(g.members), "days": len(out.days)}))
+        s.commit()
+        return {"group": _group_view(g, me), "method": out.method,
+                "days": [[{"id": x.id, "title": x.title, "why": out.why.get(x.id)} for x in day] for day in out.days],
+                "notes": out.notes,
+                # said to the person reading it ("…among your favourites"), not about them
+                "your_share": (out.shares.get(me.label) or "").replace("they're", "you're").replace(
+                    "their favourites", "your favourites") or None}
+
+    @app.post("/v1/me/groups/{gid}/leave", status_code=204)
+    def leave_group(gid: int, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358: anyone can leave; the organiser leaving ends the trip for everyone (it was theirs)."""
+        g, me = _group_for(s, gid, user)
+        s.delete(g if g.owner_id == user.id else me)
+        s.commit()
+
     # ---- sharing a rated moment (D114) -----------------------------------------------------
     @app.get("/v1/me/referral")
     def my_referral(user: db.User = Depends(current_user), s: Session = Depends(session)):
@@ -1619,6 +1747,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # ---- admin (Abram) ------------------------------------------------------------
     @app.post("/v1/admin/moments/reload", dependencies=[Depends(admin)])
     def reload_moments(s: Session = Depends(session)):
+        app.state.group_catalogue = None                         # m358: group plans read the cards again too
         return _reload_moments(s, settings)
 
     @app.get("/v1/admin/safety", dependencies=[Depends(admin)])

@@ -158,6 +158,7 @@ struct TripHome: View {
     var onHelp: () -> Void = {}
     var onData: () -> Void = {}
     @State private var planningDay = false
+    @State private var showGroups = false   // m358: a trip planned with friends
 
     var body: some View {
         let _ = model.clock   // journey round 2: Today / Tomorrow and the greeting follow the date after a night away
@@ -198,6 +199,7 @@ struct TripHome: View {
                 if !model.isVisitor, !model.pairDone, !model.client.demo {
                     PairInviteRow { model.showPair = true }.settle(3)
                 }
+                GroupInviteRow { showGroups = true }.settle(3)   // m358
                 if !model.trips.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Your trips").font(.subheadline).foregroundStyle(Theme.muted)
@@ -214,6 +216,7 @@ struct TripHome: View {
             .padding(.bottom, 32)
         }
         .skyBackground()
+        .sheet(isPresented: $showGroups) { GroupTripsView().brainFeedback() }
         .sheet(isPresented: $planningDay) {
             NavigationStack {
                 PlanFormView(onDone: { planningDay = false })

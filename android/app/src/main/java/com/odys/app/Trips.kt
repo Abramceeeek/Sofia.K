@@ -164,6 +164,7 @@ fun HomeStack(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
 @Composable
 fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
     var planningDay by remember { mutableStateOf(false) }
+    var showGroups by remember { mutableStateOf(false) }   // m358: a trip planned with friends
     @Suppress("UNUSED_VARIABLE") val tick = model.clock   // journey round 2: Today / Tomorrow follow the date
     val plan = model.plan
     val phase = model.homePhase()
@@ -201,6 +202,7 @@ fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
         }
         if (showDay) comingUp(plan!!, Modifier.settle(3))
         if (!model.isVisitor && !model.pairDone) Box(Modifier.settle(3)) { PairInviteRow { model.showPair = true } }
+        Box(Modifier.settle(3)) { GroupInviteRow { showGroups = true } }   // m358
         if (model.trips.isNotEmpty()) {
             Column(Modifier.settle(3), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Your trips", style = Theme.subheadline.copy(color = Theme.muted))
@@ -208,6 +210,7 @@ fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
             }
         }
     }
+    if (showGroups) GroupTripsScreen(model, { showGroups = false })
     if (planningDay) {
         FullSheet(model, { planningDay = false }) {
             Column(Modifier.fillMaxSize()) {
