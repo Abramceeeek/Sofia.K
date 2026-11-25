@@ -245,7 +245,7 @@ class ScreensTest {
     @Test fun groupPlan() {
         model.withGroups()
         compose.setContent { RootView(model); GroupTripsScreen(model, {}, demo = "plan") }
-        reach("Day 1")
+        reach("DAY 1")   // SectionLabel draws its text in capitals
         shoot("35c-groupplan")
     }
     @Test fun safetyPreview() {
