@@ -139,3 +139,29 @@ def test_the_trip_day_feel_wins_over_the_profile_default(client):
     trip = {"start_date": start, "nights": 0, "day_start": "10:00", "day_end": "18:00", "stops_per_day": 2}
     assert client.post("/v1/me/trips/days", headers=h, json=trip).json()["day_feel"] == "full"
     assert client.post("/v1/me/trips/days", headers=h, json={**trip, "day_feel": "relaxed"}).json()["day_feel"] == "relaxed"
+
+
+def test_pace_and_day_feel_are_separate(client):
+    """m346 (Abram: "Test these combinations: Gentle + Full. Gentle + Relaxed. Medium + Balanced. Full-on + Full.
+    Active + Relaxed. Do not assume that a gentle traveller wants fewer experiences"): the day feel sets how many
+    places, the pace sets how strenuous they are, and neither changes the other."""
+    from brain.config import DATA_DIR
+    from brain.moments import load_moments
+    active = {m.id for m in load_moments(DATA_DIR / "moments") if (m.features.place.get("active") or 0) >= 2}
+    start = (date.today() + timedelta(days=3)).isoformat()
+    trip = {"start_date": start, "nights": 1, "day_start": "10:00", "day_end": "19:00", "stops_per_day": 2}
+    got = {}
+    for pace, feel in (("gentle", "full"), ("gentle", "relaxed"), ("medium", "balanced"), ("full_on", "full"),
+                       ("full_on", "relaxed")):
+        h, _ = install(client)
+        assert client.put("/v1/me/profile", headers=h, json={"activity": pace}).status_code == 204
+        d = client.post("/v1/me/trips/days", headers=h, json={**trip, "day_feel": feel}).json()
+        places = [[st for st in x["plan"]["stops"] if st["rateable"] and not st.get("lunch")
+                   and not str(st.get("key") or "").endswith(("#lunch", "#dinner"))] for x in d["days"] if x["plan"]]
+        got[(pace, feel)] = sum(len(p) for p in places)
+        if feel == "relaxed":
+            assert all(len(p) <= 2 for p in places)                      # the places asked for, none added
+        if pace == "gentle":
+            assert not {st["moment_id"] for p in places for st in p} & active   # never strenuous at a gentle pace
+    assert got[("gentle", "full")] >= got[("gentle", "relaxed")]          # a gentle traveller can still have full days
+    assert got[("full_on", "full")] >= got[("full_on", "relaxed")]
