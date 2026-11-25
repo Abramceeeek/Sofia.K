@@ -1,6 +1,6 @@
 # ODYS: example London trips
 
-Made by `scripts/london_examples.py` on 25 Nov 2026, from Brain commit d6c6ab6 (no app build: the planner is called directly).
+Made by `scripts/london_examples.py` on 25 Nov 2026, from Brain commit 05ea04c (no app build: the planner is called directly).
 
 **Synthetic people.** Each person is invented. Their onboarding answers are listed, and the plans are exactly what ODYS's planner returns for them, in the words the app shows. Nothing was edited by hand. These are for judging the product, not evidence about real travellers.
 
@@ -60,7 +60,6 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You step out 15 floors up into a planted roof garden around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.
 - Best: At dusk, when the towers light up
 - Cost: free
-- If it rains: Leadenhall Market: Victorian arches on the site of Roman London, about 5 min away on foot. Free.
 - Why: You loved Borough Market, and this has somewhere local and new too.
 - Why: From your answers, it has what you like: local, new-to-you places.
 - Why: You're there at its best time, 15:29–16:29.
@@ -177,6 +176,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 09:30 · 6 stops, including lunch
 > Costs: about £15 for food and entry, all on foot
 > In the app: £15.00 per person, entry, food and fares; finishes at 16:13
+> For all 2 of you: about £30.00 (Adult 1 £15.00; Adult 2 £15.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 > Free time: The rest of the day is yours from 16:13, about 1 hr 47 min until 18:00. It's kept free rather than filled with a place that suits you less.
 
 **10:18–11:18 · British Museum: Egypt galleries, the Great Court, then the King's Library** · _Awe_
@@ -234,7 +234,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - From the middle of the bridge you look west to Parliament and the London Eye, then cross the road and look east to St Paul's and the City's towers catching the last light.
 - Best: Sunset; late autumn and winter skies are the best
 - Cost: free
-- If it rains: The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot. It costs £12, £12 more than this stop, and it still fits your day's budget. Free instead: Centuries of British faces at the National Portrait Gallery, about 15 min away.
+- If it rains: The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot. It costs £12 a person, and it still fits your day's budget. Free instead: Centuries of British faces at the National Portrait Gallery, about 15 min away.
 - Why: You loved British Museum, and this has history too.
 - Why: From your answers, it has what you like: history and culture, famous sights.
 - Why: You're there at its best time, 15:14–16:14.
@@ -246,6 +246,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 09:30 · 5 stops, including lunch
 > Costs: about £15 for food and entry, plus about £8.90 transport
 > In the app: £23.90 per person, entry, food and fares; finishes at 17:25
+> For all 2 of you: about £47.80 (Adult 1 £23.90; Adult 2 £23.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 
 **10:35–11:25 · The Natural History Museum: into the whale hall** · _Awe_
 - A gentle start: your first stop is at 10:35, so the time before it is yours.
@@ -305,6 +306,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 09:30 · 5 stops, including lunch
 > Costs: about £15 for food and entry, plus about £8.90 transport
 > In the app: £23.90 per person, entry, food and fares; finishes at 16:03
+> For all 2 of you: about £47.80 (Adult 1 £23.90; Adult 2 £23.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 > Free time: The rest of the day is yours from 16:03, about 1 hr 57 min until 18:00. It's kept free rather than filled with a place that suits you less.
 
 **10:55–11:58 · An unhurried hour in the Wellcome Collection's Reading Room** · _Quiet_
@@ -375,6 +377,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 10:00 · 5 stops, including lunch
 > Costs: about £15 for food and entry, plus about £6 transport
 > In the app: £21.00 per person, entry, food and fares; finishes at 15:45
+> For all 4 of you: about £84.00 (Adult 1 £21.00; Adult 2 £21.00; Child 1 (8) £21.00; Child 2 (11) £21.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split. Children's fares are shown at the adult fare: TfL's children's fares aren't checked yet, so the real total may be lower.
 > Free time: The rest of the day is yours from 15:45, about 1 hr 15 min until 17:00. It's kept free rather than filled with a place that suits you less.
 
 **10:29–11:09 · The Garden at 120: a rooftop garden among the City towers** · _Big views_
@@ -434,7 +437,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 10:00 · 5 stops, including lunch
 > Costs: about £28.90 for food and entry, plus about £6 transport
 > In the app: £34.90 per person, entry, food and fares; finishes at 16:12
-> Free time: The rest of the day is yours from 16:12, about 48 min until 17:00. It's kept free rather than filled with a place that suits you less. Liberty is open until 17:00 if you'd like to stay on.
+> For all 4 of you: about £139.60 (Adult 1 £34.90; Adult 2 £34.90; Child 1 (8) £34.90; Child 2 (11) £34.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split. Children's prices aren't known for The Uber Boat up the river from Greenwich to Battersea, by day, so the adult price is used. Children's fares are shown at the adult fare: TfL's children's fares aren't checked yet, so the real total may be lower.
+> Free time: The rest of the day is yours from 16:12, about 48 min until 17:00. It's kept free rather than filled with a place that suits you less. Liberty is open until 20:00 if you'd like to stay on.
 
 **10:52–11:47 · The whole of London from General Wolfe's hill, Greenwich Park** · _Awe_
 - Getting there: about 52 min by Tube or bus from Charing Cross to Cutty Sark DLR station.
@@ -558,6 +562,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 11:00 · 7 stops, including lunch
 > Costs: about £42 for food and entry, plus about £8.90 transport
 > In the app: £50.90 per person, entry, food and fares; finishes at 19:47
+> For all 4 of you: about £203.60 (Adult 1 £50.90; Adult 2 £50.90; Adult 3 £50.90; Adult 4 £50.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 > Free time: The rest of the day is yours from 19:47, about 1 hr 13 min until 21:00. It's kept free rather than filled with a place that suits you less.
 
 **12:00–13:02 · Mexican street food at Wahaca, in shipping containers on the Southbank** · _Lively_
@@ -638,6 +643,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 11:00 · 7 stops, including lunch
 > Costs: about £47.90 for food and entry, plus about £8.90 transport
 > In the app: £56.80 per person, entry, food and fares; finishes at 20:51
+> For all 4 of you: about £227.20 (Adult 1 £56.80; Adult 2 £56.80; Adult 3 £56.80; Adult 4 £56.80). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 
 **12:04–13:09 · A steak and dripping chips at Flat Iron, Covent Garden** · _Lively_
 - A gentle start: your first stop is at 12:04, so the time before it is yours.
@@ -657,7 +663,6 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.
 - You step out 15 floors up into a planted roof garden around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.
 - Cost: free
-- If it rains: Fish and chips at Poppie's, Spitalfields, about 20 min away on foot. It costs £22, £22 more than this stop, and it still fits your day's budget.
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved IFS Cloud Cable Car, and this has views too.
 - Why: You loved Hampstead Heath ponds (swimming), and this has green space too.
@@ -724,14 +729,52 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Trip: 3 day(s), 10:00–17:00, 2 places a day, days to feel relaxed
 - "So far, I've learned": You want to feel restored on a day out. You want to feel curious on a day out. You loved Tate Modern Turbine Hall: big modern spaces and art. You loved British Museum: big museums full of history. You loved Uber Boat on the Thames: seeing the city from the water. Hampstead Heath ponds (swimming) wasn't for you.
 
-### A curious day: the National Gallery and Tate Modern (2026-12-04)
-*A curious day: one big discovery, lunch, then a famous sight*
+### A curious day: Tate Modern and the Millennium Bridge (2026-12-04)
+*A curious day: some history, lunch, then the river*
+> Start: Charing Cross at 10:00 · 3 stops, including lunch
+> Costs: about £15 for food and entry, plus about £3 transport
+> In the app: £18.00 per person, entry, food and fares; finishes at 13:43
+> For all 2 of you: about £36.00 (Adult 1 £18.00; Adult 2 £18.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
+> Free time: A relaxed day, as you asked: the rest of it is yours from 13:43, about 3 hr 17 min until 17:00.
+
+**10:24–12:29 · Into the Turbine Hall and the free galleries of Tate Modern** · _Curious_
+- Getting there: about 24 min by Tube or bus from Charing Cross to Southwark or Blackfriars station.
+- Walk to the river at Bankside and go in through the Turbine Hall.
+- You walk down into the vast Turbine Hall, then up through free galleries of modern art, with the river below the windows.
+- Cost: free
+- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
+- Why: You loved Tate Modern Turbine Hall.
+- Why: You loved British Museum, and this has history too.
+- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: Free to visit.
+- Why: Good to know: it can be busy.
+
+**12:34–13:19 · Lunch near Tate Modern** · _Lunch_
+- Pick a café, pub or food stall nearby.
+- Food: about £15, ODYS's estimate
+- The price is ODYS's planning estimate for a meal nearby, not a menu price.
+
+**13:25–13:43 · Across the Millennium Bridge towards St Paul's dome** · _Wonder_
+- From Tate Modern's river side, step onto the south end of the bridge and walk north.
+- You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.
+- Cost: free
+- If it rains: Lift a real gold bar at the Bank of England Museum, about 20 min away on foot. Free.
+- Why: You go out to feel curious, and this has history.
+- Why: You go out to feel restored, and this has a sense of awe.
+- Why: From your answers, it has what you like: history and culture, reveals and contrast.
+- Why: 1 min on foot from Tate Modern.
+- Why: Good to know: it's in the open, so wrap up.
+
+
+### A curious day: the National Gallery and the British Museum (2026-12-05)
+*A curious day: some history, lunch, then one big reveal*
 > Start: Charing Cross at 10:00 · 3 stops, including lunch
 > Costs: about £15 for food and entry, all on foot
-> In the app: £15.00 per person, entry, food and fares; finishes at 15:15
-> Free time: A relaxed day, as you asked: the rest of it is yours from 15:15, about 1 hr 45 min until 17:00. Tate Modern is open until 17:00 if you'd like to stay on.
+> In the app: £15.00 per person, entry, food and fares; finishes at 14:07
+> For all 2 of you: about £30.00 (Adult 1 £15.00; Adult 2 £15.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
+> Free time: A relaxed day, as you asked: the rest of it is yours from 14:07, about 2 hr 53 min until 17:00. British Museum is open until 17:00 if you'd like to stay on.
 
-**10:04–11:39 · From Trafalgar Square into the quiet of the National Gallery** · _Curious_
+**10:06–11:41 · From Trafalgar Square into the quiet of the National Gallery** · _Curious_
 - Getting there: about 4 min on foot from Charing Cross.
 - Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance.
 - You leave the noise of Trafalgar Square for high, quiet rooms and wander the free collection of paintings at your own pace.
@@ -742,59 +785,22 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: 4 min on foot from Charing Cross.
 - Why: Good to know: it can be busy.
 
-**11:59–12:44 · Lunch near Waterloo station** · _Lunch_
-- Getting there: about 15 min on foot from The National Gallery.
+**11:53–12:38 · Lunch near Leicester Square or Covent Garden station** · _Lunch_
+- Getting there: about 7 min on foot from The National Gallery.
 - Pick a café, pub or food stall nearby.
 - Food: about £15, ODYS's estimate
 - The price is ODYS's planning estimate for a meal nearby, not a menu price.
 
-**13:10–15:15 · Into the Turbine Hall and the free galleries of Tate Modern** · _Curious_
-- Getting there: about 21 min on foot from Waterloo station.
-- Walk to the river at Bankside and go in through the Turbine Hall.
-- You walk down into the vast Turbine Hall, then up through free galleries of modern art, with the river below the windows.
-- Cost: free
-- Why: You loved Tate Modern Turbine Hall.
-- Why: You go out to feel curious, and this has history.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
-- Why: Free to visit.
-- Why: Good to know: it can be busy.
-
-
-### A curious day: the British Museum and the Hunterian (2026-12-05)
-*A curious day: one big reveal, lunch, then some history*
-> Start: Charing Cross at 10:00 · 3 stops, including lunch
-> Costs: about £15 for food and entry, all on foot
-> In the app: £15.00 per person, entry, food and fares; finishes at 14:05
-> Free time: A relaxed day, as you asked: the rest of it is yours from 14:05, about 2 hr 55 min until 17:00. Hunterian Museum is open until 17:00 if you'd like to stay on.
-
-**10:24–11:34 · British Museum: Egypt galleries, the Great Court, then the King's Library** · _Awe_
-- Getting there: about 24 min on foot from Charing Cross.
+**12:57–14:07 · British Museum: Egypt galleries, the Great Court, then the King's Library** · _Awe_
+- Getting there: about 14 min on foot from Leicester Square or Covent Garden station.
 - Go in by the main entrance and start in Room 4, the Egyptian sculpture gallery, on the west side of the Great Court.
 - From the stone statues of the Egypt gallery you step out into the huge white Great Court under its glass roof, cross it, and walk into the long King's Library: shelves of books, warm wood and gold, and cases of collected objects.
 - Cost: free
 - Why: You loved British Museum.
 - Why: You go out to feel curious, and this has history.
 - Why: From your answers, it has what you like: history and culture, reveals and contrast.
-- Why: Free to visit.
+- Why: 14 min on foot from Leicester Square or Covent Garden station.
 - Why: Good to know: it can be busy.
-
-**11:51–12:36 · Lunch near Holborn station** · _Lunch_
-- Getting there: about 12 min on foot from British Museum.
-- Pick a café, pub or food stall nearby.
-- Food: about £15, ODYS's estimate
-- The price is ODYS's planning estimate for a meal nearby, not a menu price.
-
-**12:45–14:05 · The Hunterian: the art and science of surgery** · _Curious_
-- Getting there: about 4 min on foot from Holborn station.
-- Walk across Lincoln's Inn Fields to the Royal College of Surgeons.
-- You see the art and science of surgery from ancient times to today, around John Hunter's collection of specimens.
-- Cost: free
-- Book ahead: Booking a free ticket ahead is recommended, to avoid queues at busy times
-- Why: You loved Tate Modern Turbine Hall, and this has a sense of awe too.
-- Why: It fits your interest in history & culture.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
-- Why: 4 min on foot from Holborn station.
-- Why: Free to visit.
 
 
 ### A curious day: the Queen's House and the river by Uber Boat (2026-12-06)
@@ -802,6 +808,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 > Start: Charing Cross at 10:00 · 3 stops, including lunch
 > Costs: about £37.90 for food and entry, plus about £3 transport
 > In the app: £40.90 per person, entry, food and fares; finishes at 14:15
+> For all 2 of you: about £81.80 (Adult 1 £40.90; Adult 2 £40.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 > Free time: A relaxed day, as you asked: the rest of it is yours from 14:15, about 2 hr 45 min until 17:00.
 
 **10:54–12:08 · The Tulip Stairs at the Queen's House, Greenwich** · _Quiet_
@@ -833,5 +840,39 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Food: about £15, ODYS's estimate
 - The price is ODYS's planning estimate for a meal nearby, not a menu price.
 
+
+---
+
+## A shared trip: Sam, Priya and Dan, and Jonas, planning together
+
+Each joined from their own account, with the answers above. Sam started it (Member A, agreed to be named); Priya and Dan's account joined as Member B (agreed); Jonas joined as Member C and didn't agree to be named. The app shows places for each day and why each is there; there are no times or routes yet.
+
+### Day 1
+**An unhurried hour in the Wellcome Collection's Reading Room**
+- Why: A favourite for Member A and one of you; a good match for Member B.
+
+**The Hunterian: the art and science of surgery**
+- Why: A favourite for Member A and one of you; a good match for Member B.
+
+**Quiet treasures in the British Library**
+- Why: Among Member B's favourites; a good match for Member A and one of you.
+
+### Day 2
+**The river's story at London Museum Docklands**
+- Why: A favourite for Member A and one of you; a good match for Member B.
+
+**A park break: the Serpentine in Hyde Park**
+- Why: A place one of you loved; a good match for Member A; less so for Member B.
+
+**Graze your way round Borough Market**
+- Why: A place Member A loved.
+
+> 2 place(s) left out because someone rejected them.
+> 3 strenuous place(s) left out because one of you asked for a gentle pace. To include one, split up for that stop.
+> A must-see of Member B was rejected by someone else, so it's left out.
+
+- Member A sees: "For you: 3 of the 6 stops you're there for are among your favourites."
+- Member B sees: "For you: 1 of the 6 stops you're there for is among your favourites."
+- Member C sees: "For you: 3 of the 6 stops you're there for are among your favourites."
 
 ---
