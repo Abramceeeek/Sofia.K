@@ -21,6 +21,13 @@
       about the same time (a walk of up to 30 min the Tube would shorten by less than 8); no stop along the stretch a
       ride covers on the same day (the boat past the Southbank, then back to it); no return to within 600 m of a place
       left earlier after going more than 3 km away. A place the person loved is exempt.
+  G13 (m353, Abram: "A false or contradictory explanation is a release blocker… It must not invent a connection
+      between two unrelated places") no reason that says the person loved a place the stop isn't, no "You loved X, and
+      this has Y too" where Y isn't what X is (its tag below 2), and no "open until" for a place that's always open.
+      Generic reasons ("suits most people") are measured, not blocking, with a target
+  G14 (m353, Abram: "Unexplained changes to itinerary costs: release blocker") the trip's first day planned again
+      with the other day feel (Relaxed for Full or Balanced, Full for Relaxed), as the app does when it's changed: if
+      the day changes, the plan says what changed, and its cost when that changes by 50p or more
   G11 (m350, "daily travel budget by pace") no day's travel is more than 20 min over its pace's budget (gentle 60,
       medium or unstated 90, full-on 120 min): one journey's slack, never a day of crossing London
 
@@ -83,7 +90,8 @@ from brain.dayplan import EXTRA_MIN_P, spans_lunch  # noqa: E402
 import brain.api as _api  # noqa: E402
 EXTRA_BY_FEEL = getattr(_api, "EXTRA_BY_FEEL", {"relaxed": 0, "balanced": 2, "full": 4})   # so older commits can run it
 from brain.sun import sunset as _sunset  # noqa: E402
-GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G3b", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12")
+GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G3b", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14")
+from brain.reasons import PHRASE as _PHRASE, LINK_MIN as _LINK, _mid  # noqa: E402
 from brain.travel import LondonEstimate as _LE  # noqa: E402
 from brain.moments import Point as _Pt  # noqa: E402
 from brain.planner import along_ride as _along, candidate_for as _cand  # noqa: E402
@@ -91,7 +99,8 @@ _EST = _LE()
 TRAVEL_SLACK = 20                     # G11: minutes over the pace's budget a day may run
 # m350 (Abram: "group budget and per-person versus party costs"): how many travel in each party, from the people's
 # own descriptions (london_examples.py); children's prices aren't used yet, so the party's cost is per person x size
-PARTY = {"sam": 1, "priya": 2, "family": 4, "jonas": 1, "friends": 4, "margaret": 2}
+PARTY = {"sam": (1, 0), "priya": (2, 0), "family": (2, 2), "jonas": (1, 0), "friends": (4, 0), "margaret": (2, 0)}
+from brain.dayplan import party_cost as _party  # noqa: E402
 from brain.moments import load_moments as _load  # noqa: E402
 MOMENTS = {m.id: m for m in _load(DATA_DIR / "moments")}
 BREAK_MIN, RUN_MAX = 20, 180          # G2b relaxed: a break is 20 min or more; at most 3 h of visits without one
@@ -240,8 +249,11 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
             fails["G11"].append(f"{d['date']} {q['travel'][d['date']]} min of travel, budget {budget} "
                                 f"({p['profile'].get('activity') or 'unstated'})")
         q.setdefault("cost", []).append((d["date"], (pl.get("totals") or {}).get("cost_gbp")))
+        ad, ch = PARTY.get(p["key"].split("+")[0], (1, 0))   # m353: the party at each person's own price
+        q.setdefault("party", []).append(_party(stops, MOMENTS, ad, ch))
         feel_day(d, t, stops, kinds, gaps, early, fails, q)
         route_day(d, stops, loved_cards, fails)
+        why_day(d, stops, sw, fails, q)
     if not reflected:
         fails["G3"].append("no stop reflects a loved place")
     # G3b: each loved place with a ready card, open on a day of the trip, is in it once, given enough days
@@ -259,6 +271,36 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
     fails["_free"] = stated
     fails["_q"] = q
     return fails
+
+
+def why_day(d: dict, stops: list, sw: dict, fails: dict, q: dict) -> None:
+    """m353: G13, reasons that are false or contradictory; and generic ones, counted."""
+    names = {_mid(ITEMS[i]["name"]): i for i, r in sw.items() if r == "loved"}
+    feature = {v: k for k, v in _PHRASE.items()}
+    day = d["date"]
+    for st in stops:
+        if not st.get("rateable"):
+            continue
+        mid = base(st["moment_id"])
+        texts = [r.get("you") or "" for r in st.get("reasons") or []]
+        q.setdefault("why", []).append(not texts or texts[0].startswith(
+            ("We don't know much", "Another that suits", "One more that most", "Also a good fit")))
+        for t in texts:
+            m1 = re.match(r"You loved (.+?)\.$", t)
+            m2 = re.match(r"You loved (.+?), and this has (.+?) too\.$", t)
+            if m2:
+                i, f = names.get(m2.group(1)), feature.get(m2.group(2))
+                tags = {**(ITEMS[i].get("place") or {}), **(ITEMS[i].get("moment") or {})} if i is not None else {}
+                if i is None or f is None or (tags.get(f) or 0) < _LINK:
+                    fails["G13"].append(f"{day} {st['title'][:30]}: \"{t[:70]}\"")
+            elif m1 and "," not in m1.group(1):
+                i = names.get(m1.group(1))
+                if i is None or mid not in (ITEMS[i].get("cards") or []):
+                    fails["G13"].append(f"{day} {st['title'][:30]}: \"{t[:70]}\" (not that place)")
+    fa = (d.get("plan") or {}).get("free_after") or {}
+    last = MOMENTS.get(base(stops[-1]["moment_id"])) if stops else None
+    if fa.get("stay_on") and last and re.search(r"always open|24 hours", last.best_time.hours or "", re.I):
+        fails["G13"].append(f"{day} \"open until\" for {last.title[:30]}, which is always open")
 
 
 def route_day(d: dict, stops: list, loved: set, fails: dict) -> None:
@@ -419,16 +461,23 @@ def quality(qual: list) -> list[str]:
         out.append(f"| {p['key']} | {q['feel'][0][1] if q['feel'] else '–'} | " + "; ".join(cells) + " |")
     from brain.api import BUDGET_BAND_GBP
     out += ["", "**Costs (m350, measured):** each day's cost per person (entry, food and fares, from the plan's own "
-                "summary) against the person's daily budget, and for the whole party. Children's prices aren't used "
-                "yet, so a family's total is per person times four, an overestimate where a child pays less.", "",
+                "summary) against the person's daily budget, and for the whole party at each person's own price "
+                "(m353: children's prices where the card's source gives them; otherwise the adult price, named). "
+                "Fares are TfL's adult fares for everyone: children's fares aren't verified yet.", "",
                 "| Traveller | Party | Budget a day | Each day: per person · whole party |", "|---|---|---|---|"]
     for p, q in qual:
         k = p["key"].split("+")[0]
         band = BUDGET_BAND_GBP.get(p["profile"].get("budget_band"))
-        cells = [f"£{c:,.2f}{' ⚠' if band is not None and c is not None and c > band else ''} · £{c * PARTY.get(k, 1):,.2f}"
-                 if c is not None else "–" for _, c in q.get("cost", [])]
-        out.append(f"| {p['key']} | {PARTY.get(k, 1)} | {'£' + str(band) if band is not None else 'none'} | "
-                   + "; ".join(cells) + " |")
+        cells = [f"£{c:,.2f}{' ⚠' if band is not None and c is not None and c > band else ''} · £{pc['total_gbp']:,.2f}"
+                 + (f" (children's price not known: {', '.join(t[:24] for t in pc['child_price_unknown'])})"
+                    if pc["child_price_unknown"] else "")
+                 if c is not None else "–" for (_, c), pc in zip(q.get("cost", []), q.get("party", []))]
+        ad, ch = PARTY.get(k, (1, 0))
+        out.append(f"| {p['key']} | {ad} adult{'s' if ad > 1 else ''}{f', {ch} children' if ch else ''} | "
+                   f"{'£' + str(band) if band is not None else 'none'} | " + "; ".join(cells) + " |")
+    gen = [g for _, q in qual for g in q.get("why", [])]
+    out += ["", f"**Generic reasons (measured; target: none for a traveller who answered onboarding, m353):** "
+                f"{sum(gen)} of {len(gen)} planned places give only a general reason (\"suits most people\")."]
     gaps_ = sorted({n for _, q in qual for n in q.get("loved_no_card", [])})
     out += ["", "**Loved places with no card yet** (catalogue gaps, measured): " + ("; ".join(gaps_) or "none"), ""]
     days_ = [(p["key"], *x) for p, q in qual for x in q["extras"]]
@@ -493,6 +542,21 @@ def one_run() -> dict:
             c.post("/v1/me/swipes", headers=h, json={"items": [{"item": i, "reaction": x} for i, x in p["swipes"].items()]})
             trip = c.post("/v1/me/trips/days", headers=h, json={"start_date": ex.START.isoformat(), **p["trip"]}).json()
             f = check(p, trip, chances(c.app, uid))
+            first = next((d for d in trip["days"] if d.get("plan") and d["index"] == 0), None)
+            if first:   # G14: the day planned again with the other day feel says what changed, its cost included
+                other = "full" if (p["trip"].get("day_feel") or "balanced") == "relaxed" else "relaxed"
+                again = c.post("/v1/me/trips/days", headers=h, json={
+                    "start_date": ex.START.isoformat(), **p["trip"], "day_feel": other, "days": [0],
+                    "exclude": [], "compare_to": {"0": first["plan"]["id"]}}).json()
+                d2 = next((d for d in again.get("days", []) if d.get("plan")), None)
+                if d2:
+                    ch = d2["plan"].get("change")
+                    same = [st["key"] for st in first["plan"]["stops"]] == [st["key"] for st in d2["plan"]["stops"]]
+                    if not same and not ch:
+                        f["G14"].append(f"{first['date']} planned again ({other}) without saying what changed")
+                    elif ch and abs(ch["cost_after_gbp"] - ch["cost_before_gbp"]) >= 0.5 and "costs about" not in ch["text"]:
+                        f["G14"].append(f"{first['date']} cost changed £{ch['cost_before_gbp']}→£{ch['cost_after_gbp']}, "
+                                        "not said")
             f.pop("_free")
             qual.append((p, f.pop("_q")))
             g2 = f.pop("G2orig")
@@ -542,7 +606,8 @@ def main(runs: int = RUNS) -> int:
            "reflected · G4 no disliked kind · G5 age and booking rules · G6 every Why and best-time line true · "
            "G7 a gentle pace kept · G8 no journey longer than its visit · **G9** open for the whole visit that date · "
            "**G10** a sunset stop at sunset · **G11** travel within 20 min of the pace's budget · **G12** no serious route "
-           "defect (a walkable link by Tube, back over a ride's course, a return after going far away)", "",
+           "defect (a walkable link by Tube, back over a ride's course, a return after going far away) · **G13** no false "
+           "or contradictory reason · **G14** a change to the day says what it changed, its cost included", "",
            "All of these block a release (m350). The measures further down are for a person to review.", "",
            "**G2 (original)** (no day ending more than 45 min early) is reported for comparison with the earlier "
            "reports, as Abram asked, and no longer blocks (m346).", "",

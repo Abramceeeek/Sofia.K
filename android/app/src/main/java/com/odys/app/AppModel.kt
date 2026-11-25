@@ -1067,7 +1067,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val yourDayIndex = keepFrom?.days?.firstOrNull { currentPlanId != null && it.plan?.id == currentPlanId }?.index
         run {
             if (kept.isEmpty() || todo.isNotEmpty()) {
-                val out = client.tripDays(daysRequest(trip, if (kept.isEmpty()) emptyList() else todo, exclude))
+                // m353: each day planned again says what changed against its plan before, its cost included
+                val before = (keepFrom?.days ?: emptyList()).mapNotNull { d -> d.plan?.let { "${d.index}" to it.id } }.toMap()
+                val out = client.tripDays(daysRequest(trip, if (kept.isEmpty()) emptyList() else todo, exclude)
+                    .copy(compareTo = before.ifEmpty { null }))
                 trip = trip.copy(days = (kept + out.days).sortedBy { it.index }, used = out.used, daysFrom = out.start)
             }
             trip = trip.copy(daysStale = false)

@@ -1866,6 +1866,12 @@ struct TripDayView: View {
                             if day.before != nil || !day.journeys("arrive").isEmpty {
                                 SectionLabel(text: "From your stay").padding(.top, 4)
                             }
+                            if let change = plan.change {   // m353: a day planned again says what changed
+                                Text(change.text)
+                                    .font(.footnote)
+                                    .foregroundStyle(Theme.inkSoft)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                             ForEach(plan.stops) { stop in
                                 if stop.mine != nil { MyTimeRow(stop: stop) } else { TripDayStop(stop: stop) }
                             }

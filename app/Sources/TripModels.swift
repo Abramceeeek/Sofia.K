@@ -385,6 +385,7 @@ struct TripDaysRequest: Encodable {
     let leave: TripEnd?
     var personal: [DayTime] = []          // m200
     var dayFeel: String? = nil            // m346: how full the days should be, stored with the trip
+    var compareTo: [String: Int]? = nil   // m353: each day's plan before ("index": plan id), so a change is explained
 }
 
 struct TripDayOut: Codable, Hashable {

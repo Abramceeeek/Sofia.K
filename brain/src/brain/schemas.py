@@ -413,6 +413,9 @@ class TripDaysIn(BaseModel):
     # m346 (Abram, 24 Nov: "stored with the trip, editable and available to the planner"): how full the days
     # should be, separate from activity pace. Wins over the profile's default; none means balanced.
     day_feel: Literal["relaxed", "balanced", "full"] | None = None
+    # m353 (Abram, 25 Nov: "Unexplained changes to itinerary costs: release blocker"): the plans this trip's days had
+    # before ("day index: plan id"); each day planned again says what changed, its cost included
+    compare_to: dict[int, int] = Field(default_factory=dict, max_length=31)
 
 
 class AlternativesIn(BaseModel):

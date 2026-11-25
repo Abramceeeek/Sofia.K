@@ -189,7 +189,8 @@ def test_a_large_group_is_told_the_trade_off_and_the_alternatives():
 def test_every_stop_says_who_it_suits_and_each_member_their_share():
     """m342 (Abram: "show why particular decisions were made, so nobody feels that one person's preferences
     dominate"): by member label only, never a name or an answer."""
-    gp = group.plan(members(), CANDS, days=2, per_day=3)
+    agreed = {"shares_preferences": True}
+    gp = group.plan(members(A=agreed, B=agreed, C=agreed), CANDS, days=2, per_day=3)
     assert set(gp.why) == {x.id for x in gp.stops}
     assert all(w.endswith(".") and "Member" in w for w in gp.why.values())
     assert set(gp.shares) == {"Member A", "Member B", "Member C"}
@@ -204,3 +205,15 @@ def test_a_gentle_member_keeps_strenuous_stops_out_for_everyone():
     assert not {x.id for x in group.plan(gentle, CANDS, days=2, per_day=3).stops} & strenuous
     assert any("gentle pace" in n for n in group.plan(gentle, CANDS, days=2, per_day=3).notes)
     assert not any("gentle pace" in n for n in group.plan(keen, CANDS, days=2, per_day=3).notes)
+
+
+def test_why_a_stop_suits_the_group_names_nobody_who_hasnt_agreed():
+    """m353 (Abram, 25 Nov: "don't expose one person's private preferences to the rest of the group without their
+    permission. Group-level explanations should be available without revealing personal answers unnecessarily")."""
+    gp = group.plan(members(), CANDS, days=2, per_day=3)
+    assert gp.why and not any("Member" in w for w in gp.why.values())
+    assert all("less so" not in w for w in gp.why.values())          # who it suits less is never said for them
+    assert all("Member" not in n for n in gp.notes if "favourite places" in n)
+    one = group.plan(members(B={"shares_preferences": True}), CANDS, days=2, per_day=3)
+    assert all("Member A" not in w and "Member C" not in w for w in one.why.values())
+

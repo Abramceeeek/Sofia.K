@@ -134,3 +134,36 @@ def test_a_place_called_at_sunset_is_planned_at_sunset_on_every_day_it_comes(cli
                 lo, hi = m.best_time.best_around_sunset
                 assert set_at + lo <= parse_hhmm(st["arrive"]) <= set_at + hi, (d["date"], st["title"], st["arrive"])
                 assert parse_hhmm(st["depart"]) >= set_at, (d["date"], st["title"], st["depart"])   # m352: there as it sets
+
+
+def test_two_food_stops_are_never_within_two_hours():
+    """m353 (Abram: "Sam should not have two food stops within two hours"): the named one that comes too soon is found."""
+    stops = [{"moment_id": "m_borough_market_graze", "key": "m_borough_market_graze", "arrive": "12:07",
+              "cost_kind": "food"},
+             {"moment_id": "m_padella_borough", "key": "m_padella_borough#lunch", "arrive": "13:29", "cost_kind": "food"},
+             {"moment_id": "m_beigel_bake_late", "key": "m_beigel_bake_late", "arrive": "17:15", "cost_kind": "food"}]
+    assert dayplan.meals_close(stops) == ["m_padella_borough"]
+    assert dayplan.meals_close([stops[0], stops[2]]) == []
+
+
+def test_a_return_after_crossing_london_is_found_but_never_for_a_loved_place():
+    """m353 (G12): back within 600 m of a place left earlier, after going more than 3 km away."""
+    pin = lambda lat, lon: {"lat": lat, "lon": lon}
+    stops = [{"moment_id": "m_a", "pin": pin(51.5055, -0.1166)}, {"moment_id": "m_b", "pin": pin(51.5100, -0.0800)},
+             {"moment_id": "m_c", "pin": pin(51.5082, -0.0650)}, {"moment_id": "m_d", "pin": pin(51.5060, -0.1170)}]
+    assert dayplan.backtracks(stops) == ["m_d"]
+    assert dayplan.backtracks(stops, loved={"m_d"}) == []
+
+
+def test_a_family_pays_each_persons_own_price_and_an_unknown_childs_price_is_named():
+    """m353 (Abram: "Verify children's fares, party totals and activity eligibility")."""
+    stops = [{"moment_id": "m_cutty_sark", "title": "Cutty Sark", "cost_gbp": 22.0, "cost_kind": "ticket",
+              "travel_min": 0, "travel_mode": "walk"},
+             {"moment_id": "m_national_maritime_museum", "title": "Maritime", "cost_gbp": 0.0, "travel_min": 0,
+              "travel_mode": "walk"},
+             {"moment_id": "m_horizon_22", "title": "Horizon 22", "cost_gbp": 5.0, "cost_kind": "ticket",
+              "travel_min": 0, "travel_mode": "walk"}]
+    pc = dayplan.party_cost(stops, CARDS, adults=2, children=2)
+    child_h22 = CARDS["m_horizon_22"].child_cost_gbp
+    assert child_h22 is None and pc["child_price_unknown"] == ["Horizon 22"]
+    assert pc["total_gbp"] == 2 * 22 + 2 * 11 + 4 * 5               # the Cutty Sark's child ticket is £11

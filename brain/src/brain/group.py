@@ -38,6 +38,7 @@ from .discovery import Scorer
 
 DELTA = 0.2          # GUESS: "likes" = in the member's own top 20% (Sato's top-Δ%)
 EPS = 1e-6
+REPAIR_OTHERS_MIN = 0.3   # m353 (GUESS): a favourite swapped in for one member is never poor (below this) for another
 GOOD = 0.5           # quality.GOOD: below this for every place, nothing here is a good match for that member
 
 
@@ -54,6 +55,9 @@ class Member:
     joins_first: dict[int, int] | None = None     # m256: day → how many of that day's stops they join (a later start
                                                   # or an earlier finish is the same count from the other end: GUESS)
     pace: str | None = None         # m342: their stated pace ("gentle", "medium", "full_on"); a gentle one holds for all
+    # m353 (Abram, 25 Nov: "don't expose one person's private preferences to the rest of the group without their
+    # permission"): only a member who agreed is named in why a stop is there; the others are counted, never named
+    shares_preferences: bool = False
 
 
 @dataclass
@@ -221,7 +225,10 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
             continue
         best_trial, best_v = None, -math.inf
         for y in fav_of[m.label]:
-            if y in chosen:
+            # m353 (Abram: "it mustn't force an inappropriate stop"): only a place that's a good match for them and not
+            # a poor one for anyone else (the pool already holds nobody's rejections, needs or pace)
+            if y in chosen or P[(m.label, y.id)] < GOOD or any(
+                    P[(o.label, y.id)] < REPAIR_OTHERS_MIN for o in members if o is not m):
                 continue
             for i, x in enumerate(chosen):
                 if x in fixed or any(x in fav_of[o.label] and sum(z in chosen for z in fav_of[o.label]) == 1
@@ -252,7 +259,10 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     prop = {m.label: any(x.id in favourites[m.label] for x in seen(m)) for m in members}   # only stops they're there for
     left_out = [m.label for m in members if not prop[m.label]]
     if left_out:          # m256: say the trade-off, and what would change it (Abram: "Do not hide this limitation")
-        notes.append(f"{', '.join(left_out)} {'has' if len(left_out) == 1 else 'have'} none of their favourite places in "
+        named = [x for x in left_out if any(o.label == x and o.shares_preferences for o in members)]
+        who = ", ".join(named + ([f"{len(left_out) - len(named)} of you" if len(left_out) - len(named) > 1 else
+                                  "one of you"] if len(left_out) > len(named) else []))   # m353: counted, unless they agreed
+        notes.append(f"{who} {'has' if len(left_out) == 1 else 'have'} none of their favourite places in "
                      f"this plan: {days * per_day} stops can't hold a favourite for all {len(members)} of you. To change "
                      "that: add a day or a stop, split up for one stop, or let them choose one stop.")
     why = {x.id: who_it_suits(members, x, P, favourites) for x in chosen}
@@ -267,17 +277,27 @@ def who_it_suits(members: list[Member], x: Experience, P: dict, favourites: dict
     """m342: why a stop is in a group's plan, in plain words, by member label only (never a name or an answer):
     whose favourites it is among, who it's a good match for (a chance of Good of at least GOOD), and who it isn't
     for. "Among Member A's favourites; a good match for Member C; less so for Member B." """
-    fav = [m.label for m in members if x.id in favourites.get(m.label, set())]
-    good = [m.label for m in members if m.label not in fav and P[(m.label, x.id)] >= GOOD]
-    rest = [m.label for m in members if m.label not in fav and m.label not in good]
+    fav = [m for m in members if x.id in favourites.get(m.label, set())]
+    good = [m for m in members if m not in fav and P[(m.label, x.id)] >= GOOD]
+    rest = [m for m in members if m not in fav and m not in good]
     join = lambda xs: xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
+
+    def who(ms: list[Member], own: bool = False) -> str:
+        """m353: members who agreed by label; the rest counted ("2 of you"), never named."""
+        named = [m.label + (chr(39) + "s" if own else "") for m in ms if m.shares_preferences]
+        k = len(ms) - len([m for m in ms if m.shares_preferences])
+        if k:
+            named.append("one of you" if k == 1 else f"{k} of you")
+        return join(named)
+
     parts = []
     if fav:
-        parts.append(f"Among {join([f'{f}' + chr(39) + 's' for f in fav])} favourites")
+        parts.append(f"Among {who(fav, own=True)} favourites" if all(m.shares_preferences for m in fav) else
+                     f"A favourite for {who(fav)}")
     if good:
-        parts.append(f"a good match for {join(good)}")
-    if rest:
-        parts.append(f"less so for {join(rest)}")
+        parts.append(f"a good match for {who(good)}")
+    if rest and all(m.shares_preferences for m in rest):   # m353: who it suits less is said only with their agreement
+        parts.append(f"less so for {who(rest)}")
     text = "; ".join(parts) + "."
     return text[:1].upper() + text[1:]
 

@@ -1290,6 +1290,7 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
         val plan = day?.plan
         if (day != null && plan != null) {
             if (day.before != null || day.journeys("arrive").isNotEmpty()) SectionLabel("From your stay", Modifier.padding(top = 4.dp))
+            plan.change?.let { Text(it.text, style = Theme.footnote) }   // m353: a day planned again says what changed
             for (stop in plan.stops) if (stop.mine != null) MyTimeRow(stop) else TripDayStop(stop)
             for (t in day.mine.orEmpty().filter { !it.planned }) {   // m200
                 Text("${if (t.kind == "plans") "Your plans" else "Free time"} at ${t.start}–${t.end} fall outside the hours planned for this day, so the plan doesn't go around them.",

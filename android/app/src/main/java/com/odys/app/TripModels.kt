@@ -241,6 +241,7 @@ data class TripDaysRequest(
     val leave: TripEnd?,
     val personal: List<DayTime> = emptyList(),   // m200
     val dayFeel: String? = null,                  // m346: how full the days should be, stored with the trip
+    val compareTo: Map<String, Int>? = null,      // m353: each day's plan before ("index" to plan id)
 )
 
 @Serializable

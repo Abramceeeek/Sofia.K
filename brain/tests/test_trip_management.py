@@ -165,3 +165,25 @@ def test_pace_and_day_feel_are_separate(client):
             assert not {st["moment_id"] for p in places for st in p} & active   # never strenuous at a gentle pace
     assert got[("gentle", "full")] >= got[("gentle", "relaxed")]          # a gentle traveller can still have full days
     assert got[("full_on", "full")] >= got[("full_on", "relaxed")]
+
+
+def test_a_paid_rain_option_says_its_price_budget_booking_and_a_free_one(client):
+    """m353 (Abram, 25 Nov: "Don't describe a paid alternative as a simple replacement without explaining the extra
+    expenditure"): the price, whether it fits the day's budget, any booking, and a free alternative where there is one."""
+    from brain.config import DATA_DIR
+    from brain.moments import load_moments
+    cards = {m.id: m for m in load_moments(DATA_DIR / "moments")}
+    h, _ = install(client)
+    body, plan = _day(client, h)
+    for st in plan["stops"]:
+        rid = st.get("rain_swap_id")
+        if not rid or rid not in cards:
+            continue
+        m = cards[rid]
+        if (m.cost_gbp or 0) > 0:
+            assert "It costs £" in st["rain_swap"] and ("fits your day's budget" in st["rain_swap"]
+                                                         or "isn't in the day's cost" in st["rain_swap"])
+            if m.best_time.book_ahead:
+                assert "Book ahead:" in st["rain_swap"]
+        else:
+            assert st["rain_swap"].endswith("Free.")

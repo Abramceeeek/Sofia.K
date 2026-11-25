@@ -49,6 +49,7 @@ features:
   place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 1, iconic: 0, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
   moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
 cost_gbp: 16   # CHECKED: adult £16, child (7-18) £9, 6 and under free, family £40
+child_cost_gbp: 9   # m353: CHECKED: gardenmuseum.org.uk, "£9 Child (7-18)"; 6 and under free (read 2026-11-24)
 cost_kind: ticket
 shot_card: null
 source: research

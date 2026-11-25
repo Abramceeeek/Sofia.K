@@ -1468,12 +1468,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 return None
             # m353 (G12): a day that crosses London and comes back to where it was loses the place it comes back to,
             # when a day without it is nearly as full (no more than BACK_EXCESS_MAX minutes more of what's still wrong)
-            if (back := dayplan.backtracks(best[1], loved_cards)) and not mine:
+            # m353: and a named food place within two hours of another food stop goes too (dayplan.meals_close)
+            if (back := dayplan.backtracks(best[1], loved_cards) + dayplan.meals_close(best[1])) and not mine:
                 plan2, stops2, head2 = personal_day(
                     s, user, p, best[4], pool, familiar=False, exclude=sorted(used | set(back)),
                     must_do=want if want in {m.id for m in pool} and want not in back else None,
                     post=post, feelings=feelings or None, fallback=False, travel=view)
-                if any(st["rateable"] for st in stops2) and not dayplan.backtracks(stops2, loved_cards):
+                if any(st["rateable"] for st in stops2) and not dayplan.backtracks(stops2, loved_cards) and \
+                        not dayplan.meals_close(stops2):
                     early2 = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops2)
                     excess2 = max(0, early2 - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
                         stops2, best[4].start_time, by_ready, best[4].end_time, best[4].weekday, best[4].date) + \
@@ -1542,6 +1544,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
                 if got := fill(fr.main, day, i, label, "main", blocks, relaxed=calm):
                     entry["plan"] = got[0]
+                    # m353: what changed against this day's plan before, when the app sends it (one of their own)
+                    if (old_id := body.compare_to.get(i)) is not None and (
+                            old := s.get(db.Plan, old_id)) is not None and old.user_id == user.id:
+                        entry["plan"]["change"] = dayplan.plan_change(old.stops, got[1])
                     # m337: the day's title names its own places; the feel line stays "how the day moves"
                     entry["title"] = reasons.day_title(got[1], {m.id: m for m in ready}, feelings or []) or label
                     planned = {int(st["moment_id"][4:st["moment_id"].index("@")])

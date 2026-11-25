@@ -160,3 +160,17 @@ def test_a_stored_plan_keeps_each_stops_prediction_but_the_app_is_never_sent_it(
     listed = client.get("/v1/me/plans", headers=h).json()
     one = client.get(f"/v1/me/plans/{p['id']}", headers=h).json()
     assert "predicted" not in str(listed) and "predicted" not in str(one)   # stored plans read back without it
+
+
+def test_a_loved_place_is_named_only_for_the_feature_that_defines_it():
+    """m353 (three reviews, 25 Nov: "You loved Sky Garden, and this has green space" on a bike loop; Abram: "It must not
+    invent a connection between two unrelated places"): the Sky Garden's green space is a 1, not what it is."""
+    sky = next(i for i, (name, *_) in CARDS.items() if name == "Sky Garden")
+    bike = BY_ID["m_park_bike_loop_hyde"]
+    r = reasons.stop_reasons(POP, delta(green_nature=0.6), bike, loved=[loved(sky)], feelings=[], rated=[],
+                             interests=[], n_choices=0)
+    assert not any("Sky Garden" in x["you"] for x in r)
+    boat = next(i for i, (_, cards, *_) in CARDS.items() if "m_uber_boat_west_day" in cards)
+    r = reasons.stop_reasons(POP, delta(movement_views=0.6), BY_ID["m_waterloo_bridge_sunset"], loved=[loved(boat)],
+                             feelings=[], rated=[], interests=[], n_choices=0)
+    assert r[0]["you"].endswith("and this has views too.")        # the boat is views: a real connection

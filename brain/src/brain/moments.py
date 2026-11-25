@@ -125,6 +125,9 @@ class Moment(BaseModel):
     best_time: BestTime = Field(default_factory=BestTime)
     features: Features = Field(default_factory=Features)
     cost_gbp: float | None = None
+    # m353 (Abram, 25 Nov: "Verify children's fares, party totals and activity eligibility"): a child's ticket, from the
+    # card's own source; None where the source doesn't say (a free place is free for children too)
+    child_cost_gbp: float | None = None
     # D100: what the price pays for, so a plan never calls food "entry". Empty: food if the food tag is 2, else entry.
     cost_kind: Literal["food", "entry", "ticket", "hire"] | None = None
     # D104: a card that is a meal ("Lunch in the crypt…") is only ever planned as the day's lunch stop

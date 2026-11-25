@@ -174,6 +174,50 @@ def backtracks(stops: list[dict], loved: set[str] | frozenset[str] = frozenset()
     return out
 
 
+def party_cost(stops: list[dict], by_id: Mapping[str, Moment], adults: int, children: int) -> dict:
+    """m353: what a day costs a party: each place at its adult price for the adults and its children's price for the
+    children (free places are free for all), meals and fares per person. Where a card doesn't give a children's price
+    the adult one is used and the place is named, so the total is never lower than the real one."""
+    total, unknown = 0.0, []
+    for st in stops:
+        c = float(st.get("cost_gbp") or 0)
+        m = by_id.get(_base(str(st.get("moment_id") or "")))
+        child = c if c == 0 else (m.child_cost_gbp if m is not None and m.child_cost_gbp is not None and
+                                  st.get("cost_kind") != "food" else None)
+        if children and child is None and c > 0 and st.get("cost_kind") != "food":
+            unknown.append(st.get("title") or st.get("moment_id"))
+        total += c * adults + (c if child is None else child) * children
+    fares = transport_gbp(stops)
+    return {"total_gbp": round(total + fares * (adults + children), 2), "adults": adults, "children": children,
+            "child_price_unknown": unknown, "fares_each_gbp": fares}
+
+
+MEALS_APART_MIN = 120   # m353: two food stops start at least two hours apart
+
+
+def _food_stop(st: dict) -> bool:
+    key, mid = str(st.get("key") or ""), str(st.get("moment_id") or "")
+    return mid.startswith(("lunch@", "dinner@")) or key.endswith(("#lunch", "#dinner")) or st.get("lunch") or \
+        st.get("cost_kind") == "food"
+
+
+def meals_close(stops: list[dict]) -> list[str]:
+    """m353 (Abram, 25 Nov: "Sam should not have two food stops within two hours without a sensible explanation"): the
+    named food places that start less than MEALS_APART_MIN after another food stop (Padella at 13:29 after grazing
+    Borough Market from 12:07). A generic meal slot isn't named here: it's the named place that goes."""
+    out, last = [], None
+    for st in stops:
+        if not _food_stop(st):
+            continue
+        at = parse_hhmm(st["arrive"])
+        mid = str(st.get("moment_id") or "")
+        if last is not None and at - last < MEALS_APART_MIN and not mid.startswith(("lunch@", "dinner@", "mine")):
+            out.append(_base(mid))
+            continue
+        last = at
+    return out
+
+
 TRANSFER_ALWAYS_OK = 30   # m329: a journey of up to this long is never called disproportionate
 
 
@@ -964,11 +1008,11 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
             and (m.variant_of is None or m.variant_of not in groups)]
     used: set[str] = set()
 
-    def pick(st, stop: dict, limit: float, any_time: bool):
+    def pick(st, stop: dict, limit: float, any_time: bool, free_only: bool = False):
         here = by_id[_base(st.moment_id)].start()
         best = None
         for m in pool:
-            if m.id in used:
+            if m.id in used or (free_only and (m.cost_gbp or 0) > 0):
                 continue
             c = cands[m.id]
             lo, hi = (day_start, day_end) if any_time else (max(day_start, st.arrive_min - 30),
@@ -986,23 +1030,40 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
                 best = (score, m, t, travel.mode(here, m.start()))
         return best
 
-    def line(m: Moment, t: float, mode: str) -> str:
+    def line(m: Moment, t: float, mode: str, st=None, stop: dict | None = None, limit: float = 20.0,
+             any_time: bool = False) -> str:
+        """m353 (Abram, 25 Nov: "A rainy-day alternative can require a ticket… provided ODYS tells the traveller the
+        admission price, whether booking is required, whether the alternative is already included in the day's
+        budget, how far away it is, and whether there is a free alternative"): every paid option says all five."""
         how = "on foot" if mode == "walk" else "by Tube or bus"
-        return f"{m.display_title()}, about {max(5, math.ceil(t / 5) * 5)} min away {how}."
+        out = f"{m.display_title()}, about {max(5, math.ceil(t / 5) * 5)} min away {how}."
+        cost = float(m.cost_gbp or 0)
+        if cost <= 0:
+            return out + " Free."
+        more = cost - float((stop or {}).get("cost_gbp") or 0)
+        out += f" It costs {_money(cost)}" + (f", {_money(more)} more than this stop" if more > 0 else "") + ", and "
+        out += ("it still fits your day's budget." if brief.budget_gbp is not None else
+                "that isn't in the day's cost above.")
+        if m.best_time.book_ahead:
+            out += f" Book ahead: {m.best_time.book_ahead.rstrip('.')}."
+        if st is not None and (free := pick(st, stop, limit, any_time, free_only=True)):
+            out += f" Free instead: {free[1].display_title()}, about {max(5, math.ceil(free[2] / 5) * 5)} min away."
+        return out
 
     real = [(st, s) for st, s in zip(plan.stops, stops) if _base(st.moment_id) in by_id]
     outdoor = [(st, s) for st, s in real if _outdoors(by_id[_base(st.moment_id)])]
     for st, s in outdoor:
         if (hit := pick(st, s, max_min, any_time=False)):
             used.add(hit[1].id)
-            s["rain_swap"] = line(hit[1], hit[2], hit[3])
+            s["rain_swap"] = line(hit[1], hit[2], hit[3], st, s, max_min)
             s["rain_swap_id"] = hit[1].id   # m341: so the app can swap to it in one tap
     indoor = [st for st, _ in real if (by_id[_base(st.moment_id)].features.place.get("outdoor_exposure") or 0) == 0]
     if outdoor and not used and not indoor:
         hits = [(h, s) for st, s in outdoor if (h := pick(st, s, 30.0, any_time=True))]
         if hits:
             hit, s = max(hits, key=lambda x: x[0][0])
-            s["rain_swap"] = line(hit[1], hit[2], hit[3])
+            st0 = next(st for st, s0 in outdoor if s0 is s)
+            s["rain_swap"] = line(hit[1], hit[2], hit[3], st0, s, 30.0, any_time=True)
             s["rain_swap_id"] = hit[1].id
 
 

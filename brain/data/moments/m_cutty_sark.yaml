@@ -44,6 +44,7 @@ features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 2}
   moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
 cost_gbp: 22   # CHECKED: adult ticket (child £11)
+child_cost_gbp: 11   # m353: CHECKED: rmg.co.uk, "Child | £11" (read 2026-11-24)
 cost_kind: ticket
 shot_card: null
 source: research

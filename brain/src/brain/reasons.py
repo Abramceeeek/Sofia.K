@@ -72,6 +72,9 @@ def about_you_observation(pop: PopulationModel, key: str, value: str | None) -> 
     return Observation(x=pop.vector(x), y=1, scale=pop.scales["conjoint"] * FEELING_SCALE)
 
 
+LINK_MIN = 2   # m353: a "You loved X, and this has Y too" link needs Y to define X (its tag at the top, 2)
+
+
 def _tags(m: Moment) -> dict[str, float]:
     return {k: float(v or 0) for k, v in {**m.features.place, **m.features.moment}.items()}
 
@@ -125,8 +128,11 @@ def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_
             break
         phrase = PHRASE[f]
         clear = d[f] > MIN_WEIGHT
-        place = None if not clear else next((n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= 1),
-                     None)
+        # m353 (reviews, 25 Nov: "You loved Sky Garden, and this has green space" on a bike loop; Abram: "It must not
+        # invent a connection between two unrelated places"): a loved place is named only when the feature is what
+        # defines it (LINK_MIN), never because the loved place has a little of it
+        place = None if not clear else next(
+            (n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= LINK_MIN), None)
         kind = None if not clear else next((k for k, km in loved_kinds if k not in used and _tags(km).get(f, 0) >= 1),
                                            None)
         if kind and not place:   # D116: a visitor's category card
@@ -151,7 +157,7 @@ def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_
             used.add(feel)
             continue
         good = None if not clear else next((rm for rm, r in rated if r >= 4 and rm.id != m.id
-                                            and _tags(rm).get(f, 0) >= 1 and rm.title not in used), None)
+                                                          and _tags(rm).get(f, 0) >= LINK_MIN and rm.title not in used), None)
         if good:
             out.append(_r(f"You rated {good.title} highly, and this has {phrase} too.",
                           f"I rated {good.title} highly, and this has {phrase} too."))
