@@ -137,7 +137,9 @@ def free_after(stops: list[dict], day_end: str | None, by_id: Mapping[str, Momen
         arrive = parse_hhmm(last["arrive"])
         close = max((hi for lo, hi in card.windows(weekday, date) if lo <= arrive <= hi), default=start)
         if close - start >= 20:
-            stay_on = f"{name} is open until {hhmm(min(close, end))} if you'd like to stay on."
+            # m355 (a review of d6c6ab6: "Tate Modern is open until 17:00" was the traveller's end, not the gallery's
+            # 18:00): the place's own closing time
+            stay_on = f"{name} is open until {hhmm(close)} if you'd like to stay on."
     head = (f"A relaxed day, as you asked: the rest of it is yours from {last['depart']}"
             if day_feel == "relaxed" else
             f"The rest of the day is yours from {last['depart']}")
@@ -190,6 +192,50 @@ def party_cost(stops: list[dict], by_id: Mapping[str, Moment], adults: int, chil
     fares = transport_gbp(stops)
     return {"total_gbp": round(total + fares * (adults + children), 2), "adults": adults, "children": children,
             "child_price_unknown": unknown, "fares_each_gbp": fares}
+
+
+def party_breakdown(stops: list[dict], by_id: Mapping[str, Moment], adults: int, children: list[int],
+                    adult_budgets: list[float | None] = (), group_budget: float | None = None) -> dict:
+    """m356 (Abram, 25 Nov: budgets per person, with a group total): each traveller's estimated cost and the party's,
+    with what's verified and what's estimated, how costs are split, and any budget a day goes over. Children pay a
+    card's own children's price where its source gives one; otherwise the adult price, named. TfL's children's fares
+    aren't verified, so children's fares are shown at the adult fare and said to be so (the total may be lower)."""
+    fares = transport_gbp(stops)
+    adult_cost, child_cost = {}, {}
+    unknown, not_for = [], []
+    for st in stops:
+        c = float(st.get("cost_gbp") or 0)
+        m = by_id.get(_base(str(st.get("moment_id") or "")))
+        adult_cost[id(st)] = c
+        food = st.get("cost_kind") == "food" or str(st.get("moment_id") or "").startswith(("lunch@", "dinner@"))
+        known = c == 0 or (m is not None and m.child_cost_gbp is not None and not food)
+        child_cost[id(st)] = c if c == 0 or food else (m.child_cost_gbp if known else c)
+        if children and not known and not food:
+            unknown.append(st.get("title") or st.get("moment_id"))
+        min_age = (m.rules or {}).get("min_age") if m is not None else None
+        if children and min_age and min(children) < min_age:
+            not_for.append(f"{st.get('title')}: from age {min_age}")
+    adult_day = round(sum(adult_cost.values()) + fares, 2)
+    child_day = round(sum(child_cost.values()) + fares, 2)
+    people = [{"label": f"Adult {i + 1}", "kind": "adult", "cost_gbp": adult_day,
+               "budget_gbp": (adult_budgets[i] if i < len(adult_budgets) else None)} for i in range(adults)]
+    people += [{"label": f"Child {i + 1} ({age})", "kind": "child", "cost_gbp": child_day, "budget_gbp": None}
+               for i, age in enumerate(children)]
+    for x in people:
+        x["over_gbp"] = round(x["cost_gbp"] - x["budget_gbp"], 2) if x["budget_gbp"] is not None and \
+            x["cost_gbp"] > x["budget_gbp"] + 0.5 else None
+    total = round(sum(x["cost_gbp"] for x in people), 2)
+    notes = ["Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is "
+             "split."]
+    if unknown:
+        notes.append("Children's prices aren't known for " + ", ".join(unknown) + ", so the adult price is used.")
+    if children and fares:
+        notes.append("Children's fares are shown at the adult fare: TfL's children's fares aren't checked yet, so the "
+                     "real total may be lower.")
+    over_group = round(total - group_budget, 2) if group_budget is not None and total > group_budget + 0.5 else None
+    return {"travellers": people, "total_gbp": total, "group_budget_gbp": group_budget, "over_group_gbp": over_group,
+            "verified": "Tickets: from each place's own page, with the date checked", "estimated":
+            "Meals without a named place, and fares", "notes": notes, "not_for_children": not_for}
 
 
 MEALS_APART_MIN = 120   # m353: two food stops start at least two hours apart
@@ -1002,9 +1048,13 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     planned = {_base(st.moment_id) for st in plan.stops}
     groups = {by_id[i].variant_of for i in planned if i in by_id and by_id[i].variant_of}
-    spend = sum(s["cost_gbp"] for s in stops)
+    # m355 (a review of d6c6ab6: Poppie's "£22… still fits your day's budget" against £70 was false: the day's fares were
+    # left out): the day's spending as its summary counts it, fares included
+    spend = sum(s["cost_gbp"] for s in stops) + transport_gbp(stops)
+    # m355 (review: fish and chips offered as the rain option for a free view): a meal is never a rain option
     pool = [m for m in by_id.values() if m.id not in planned and m.id in allowed and m.id in cands
-            and m.kind == "moment" and not m.meal and not _outdoors(m)
+            and m.kind == "moment" and not m.meal and not _outdoors(m) and m.cost_kind != "food"
+            and (m.features.place.get("food") or 0) < 2
             and (m.variant_of is None or m.variant_of not in groups)]
     used: set[str] = set()
 
@@ -1040,8 +1090,11 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
         cost = float(m.cost_gbp or 0)
         if cost <= 0:
             return out + " Free."
-        more = cost - float((stop or {}).get("cost_gbp") or 0)
-        out += f" It costs {_money(cost)}" + (f", {_money(more)} more than this stop" if more > 0 else "") + ", and "
+        here_cost = float((stop or {}).get("cost_gbp") or 0)
+        more = cost - here_cost
+        # m355 (review: "It costs £12, £12 more than this stop" read clumsily): the difference only when this stop costs too
+        out += f" It costs {_money(cost)} a person" + (f", {_money(more)} more than this stop" if here_cost > 0 and more > 0
+                                                       else "") + ", and "
         out += ("it still fits your day's budget." if brief.budget_gbp is not None else
                 "that isn't in the day's cost above.")
         if m.best_time.book_ahead:
@@ -1276,8 +1329,16 @@ def plan_totals(stops: list[dict], travel: LondonEstimate) -> dict:
     stop and to and from stations is not included, so the app says "between stops"."""
     spend, fare = sum(s["cost_gbp"] for s in stops), transport_gbp(stops)
     walk_min = sum(s["travel_min"] or 0 for s in stops if s.get("travel_mode") == "walk")
+    # m355 (Abram, 25 Nov: "Walking and public transport must have separate measurements… Keep the overall journey
+    # measurement, but don't combine everything into one number"): the Tube or bus legs (door to door: the walk to the
+    # station and the wait are inside the estimate) and the waits the day states, apart from walking
+    transit_min = sum(s["travel_min"] or 0 for s in stops if s.get("travel_mode") not in (None, "walk"))
+    wait_min = sum(int(s.get("free_before_min") or 0) for s in stops if s.get("free_before_kind") == "wait")
     return {"cost_gbp": round(spend + fare, 2), "spend_gbp": round(spend, 2), "transport_gbp": fare,
             "walk_min": round(walk_min), "walk_km": round(walk_min * travel.walking.speed_m_per_min / 1000, 1),
+            "transit_min": round(transit_min), "transit_legs": sum(1 for s in stops if s.get("travel_mode") not in
+                                                                  (None, "walk") and s.get("travel_min")),
+            "wait_min": wait_min, "journey_min": round(walk_min + transit_min),
             "finish": stops[-1]["depart"] if stops else None}
 
 

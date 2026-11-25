@@ -187,3 +187,23 @@ def test_a_paid_rain_option_says_its_price_budget_booking_and_a_free_one(client)
                 assert "Book ahead:" in st["rain_swap"]
         else:
             assert st["rain_swap"].endswith("Free.")
+
+
+def test_a_party_sees_each_travellers_cost_the_total_and_what_is_estimated(client):
+    """m356 (Abram, 25 Nov: "The default budget is per person… show individual estimated spending, total estimated group
+    spending, shared-cost allocation assumptions, children's applicable prices, clear estimated versus verified")."""
+    h, _ = install(client)
+    start = (date.today() + timedelta(days=3)).isoformat()
+    body = {"start_date": start, "nights": 0, "day_start": "10:00", "day_end": "17:00", "stops_per_day": 3,
+            "party": {"adults": 2, "children": [8, 11], "adult_budgets_gbp": [60, 40], "group_budget_gbp": 50}}
+    d = next(x for x in client.post("/v1/me/trips/days", headers=h, json=body).json()["days"] if x["plan"])
+    party = d["plan"]["party"]
+    labels = [x["label"] for x in party["travellers"]]
+    assert labels == ["Adult 1", "Adult 2", "Child 1 (8)", "Child 2 (11)"]
+    assert abs(party["total_gbp"] - sum(x["cost_gbp"] for x in party["travellers"])) < 0.01
+    assert party["verified"] and party["estimated"] and party["notes"][0].startswith("Each person pays")
+    adult = party["travellers"][0]["cost_gbp"]
+    assert all(x["cost_gbp"] <= adult + 0.01 for x in party["travellers"] if x["kind"] == "child")   # never more than an adult
+    assert (party["over_group_gbp"] is not None) == (party["total_gbp"] > 50.5)
+    one = client.post("/v1/me/trips/days", headers=h, json={**body, "party": None}).json()
+    assert all("party" not in (x["plan"] or {}) for x in one["days"])   # one adult: the usual per-person line only

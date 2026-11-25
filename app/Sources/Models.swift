@@ -248,6 +248,7 @@ struct Plan: Codable, Hashable, Identifiable {
     var createdAt: String? = nil   // m228: when the Brain made it, for "saved on this phone"
     var change: PlanChange? = nil  // m336: what this plan changed against the one it replaced (a swap)
     var freeAfter: FreeAfter? = nil  // m346: the time left at the end of a trip day, in the Brain's words
+    var party: PartyCost? = nil      // m356: each traveller's estimated cost and the whole party's
 
     var isBlind: Bool { blind == true }
 
@@ -256,6 +257,24 @@ struct Plan: Codable, Hashable, Identifiable {
         Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
              basis: basis, blind: blind, weather: weather, budget: budget, createdAt: createdAt)
     }
+}
+
+/// m356: what a day costs each traveller and the party, with what's estimated and how costs are split.
+struct PartyCost: Codable, Hashable {
+    struct Traveller: Codable, Hashable {
+        let label: String
+        let kind: String
+        let costGbp: Double
+        var overGbp: Double? = nil
+    }
+    let travellers: [Traveller]
+    let totalGbp: Double
+    var overGroupGbp: Double? = nil
+    var groupBudgetGbp: Double? = nil
+    let verified: String
+    let estimated: String
+    let notes: [String]
+    var notForChildren: [String]? = nil
 }
 
 /// m346: the end of a trip day that's the person's own ("A relaxed day, as you asked: the rest of it is yours…").

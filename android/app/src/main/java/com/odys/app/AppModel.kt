@@ -1118,7 +1118,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         return TripDaysRequest(trip.destination, trip.start, trip.nights, trip.feelings, trip.stay?.point,
             if (trip.stay == null) null else "your stay", days, exclude, hours?.first ?: trip.dayFrom,
             hours?.second ?: trip.dayTo, hours?.third ?: trip.placesPerDay, trip.travelLight, arrive, leave,
-            personal = (trip.personal ?: emptyList()).filter { !it.isEmpty }, dayFeel = trip.dayFeel)
+            personal = (trip.personal ?: emptyList()).filter { !it.isEmpty }, dayFeel = trip.dayFeel,
+            party = if (trip.adults > 1 || !trip.children.isNullOrEmpty()) PartyRequest(trip.adults, trip.children ?: emptyList()) else null)
     }
 
     /** "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and plan again. */

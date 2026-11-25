@@ -187,6 +187,7 @@ data class Plan(
     val createdAt: String? = null,    // m228: when the Brain made it, for "saved on this phone"
     val change: PlanChange? = null,   // m336: what this plan changed against the one it replaced (a swap)
     val freeAfter: FreeAfter? = null, // m346: the time left at the end of a trip day, in the Brain's words
+    val party: PartyCost? = null,     // m356: each traveller's estimated cost and the whole party's
 ) {
     val isBlind: Boolean get() = blind == true
 }
@@ -194,6 +195,22 @@ data class Plan(
 /** m336: what a replacement plan changes (brain.dayplan.plan_change): one plain line, and the finish it gives. */
 @Serializable
 data class PlanChange(val text: String, val finishAfter: String? = null)
+
+/** m356: what a day costs each traveller and the party, with what's estimated and how costs are split. */
+@Serializable
+data class PartyCost(
+    val travellers: List<Traveller>,
+    val totalGbp: Double,
+    val overGroupGbp: Double? = null,
+    val groupBudgetGbp: Double? = null,
+    val verified: String,
+    val estimated: String,
+    val notes: List<String>,
+    val notForChildren: List<String>? = null,
+) {
+    @Serializable
+    data class Traveller(val label: String, val kind: String, val costGbp: Double, val overGbp: Double? = null)
+}
 
 /** m346: the end of a trip day that's the person's own ("A relaxed day, as you asked: the rest of it is yours…"). */
 @Serializable

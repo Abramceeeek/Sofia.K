@@ -1071,6 +1071,41 @@
      "min": 116,
      "text": "The rest of the day is yours from 17:04, about 1 hr 56 min until 19:00. It's kept free rather than filled with a place that suits you less.",
      "stay_on": false
+    },
+    "party": {
+     "travellers": [
+      {
+       "label": "Adult 1",
+       "kind": "adult",
+       "cost_gbp": 18.0,
+       "budget_gbp": null,
+       "over_gbp": null
+      },
+      {
+       "label": "Adult 2",
+       "kind": "adult",
+       "cost_gbp": 18.0,
+       "budget_gbp": null,
+       "over_gbp": null
+      },
+      {
+       "label": "Child 1 (8)",
+       "kind": "child",
+       "cost_gbp": 18.0,
+       "budget_gbp": null,
+       "over_gbp": null
+      }
+     ],
+     "total_gbp": 54.0,
+     "group_budget_gbp": null,
+     "over_group_gbp": null,
+     "verified": "Tickets: from each place's own page, with the date checked",
+     "estimated": "Meals without a named place, and fares",
+     "notes": [
+      "Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.",
+      "Children's fares are shown at the adult fare: TfL's children's fares aren't checked yet, so the real total may be lower."
+     ],
+     "not_for_children": []
     }
    },
    "before": null,

@@ -803,6 +803,34 @@ fun FromStep(trip: Trip, onChange: (Trip) -> Unit, chooseAirport: () -> Unit) {
         Stepper("Who's going", "${trip.adults} ${if (trip.adults == 1) "adult" else "adults"}", trip.adults <= 1, trip.adults >= 6,
             "Fewer travellers", "More travellers",
             { onChange(trip.copy(adults = maxOf(1, trip.adults - 1))) }) { onChange(trip.copy(adults = minOf(6, trip.adults + 1))) }
+        // m356: children by age only (never names), so each pays their own price where a place gives one
+        val kids = trip.children ?: emptyList()
+        Stepper("Children", if (kids.isEmpty()) "None" else "${kids.size}", kids.isEmpty(), kids.size >= 6,
+            "One child fewer", "One child more",
+            { onChange(trip.copy(children = kids.dropLast(1).ifEmpty { null })) }) { onChange(trip.copy(children = kids + 8)) }
+        kids.forEachIndexed { i, age ->
+            Stepper("Child ${i + 1}", "$age ${if (age == 1) "year" else "years"} old", age <= 0, age >= 17,
+                "Child ${i + 1} younger", "Child ${i + 1} older",
+                { onChange(trip.copy(children = kids.toMutableList().also { it[i] = age - 1 })) }) {
+                onChange(trip.copy(children = kids.toMutableList().also { it[i] = age + 1 }))
+            }
+        }
+    }
+}
+
+/** m356: the day's estimated cost for each traveller and the whole party, and what's estimated. */
+@Composable
+fun PartyCostView(party: PartyCost) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Theme.surface).padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("About ${Money.text(party.totalGbp)} for all ${party.travellers.size} of you", style = Theme.body)
+        party.travellers.forEach { t ->
+            Text("${t.label}: ${Money.text(t.costGbp)}" + (t.overGbp?.let { ", ${Money.text(it)} over their budget" } ?: ""),
+                style = Theme.footnote)
+        }
+        party.overGroupGbp?.let { Text("${Money.text(it)} over the group's budget", style = Theme.footnote.copy(color = Theme.accent)) }
+        (party.notes + (party.notForChildren ?: emptyList())).forEach { Text(it, style = Theme.footnote) }
+        Text("${party.verified}. Estimated: ${party.estimated.lowercase()}.", style = Theme.footnote)
     }
 }
 
@@ -1290,6 +1318,7 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
         val plan = day?.plan
         if (day != null && plan != null) {
             if (day.before != null || day.journeys("arrive").isNotEmpty()) SectionLabel("From your stay", Modifier.padding(top = 4.dp))
+            plan.party?.let { PartyCostView(it) }   // m356: each of you, and all
             plan.change?.let { Text(it.text, style = Theme.footnote) }   // m353: a day planned again says what changed
             for (stop in plan.stops) if (stop.mine != null) MyTimeRow(stop) else TripDayStop(stop)
             for (t in day.mine.orEmpty().filter { !it.planned }) {   // m200

@@ -167,3 +167,41 @@ def test_a_family_pays_each_persons_own_price_and_an_unknown_childs_price_is_nam
     child_h22 = CARDS["m_horizon_22"].child_cost_gbp
     assert child_h22 is None and pc["child_price_unknown"] == ["Horizon 22"]
     assert pc["total_gbp"] == 2 * 22 + 2 * 11 + 4 * 5               # the Cutty Sark's child ticket is £11
+
+
+def test_open_until_gives_the_places_own_closing_time_not_the_travellers_end():
+    """m355 (a review of d6c6ab6: "Tate Modern is open until 17:00" when it closes at 18:00 and the day ended at 17:00)."""
+    tate = CARDS["m_tate_modern"]
+    close = max(hi for lo, hi in tate.windows("mon", "2026-12-07"))
+    stops = [{"moment_id": "m_tate_modern", "key": "m_tate_modern", "arrive": "13:00", "depart": "15:00"}]
+    fa = dayplan.free_after(stops, "17:00", CARDS, "mon", "2026-12-07", "relaxed")
+    assert fa and f"open until {dayplan.hhmm(close)}" in fa["text"] and close > parse_hhmm("17:00")
+
+
+def test_walking_and_tube_are_measured_apart_and_the_whole_journey_kept():
+    """m355 (Abram, 25 Nov: "A 25-minute walk and a 25-minute Tube journey are not necessarily equivalent… Keep the
+    overall journey measurement")."""
+    from brain.travel import LondonEstimate
+    stops = [{"cost_gbp": 0, "travel_min": 25, "travel_mode": "walk", "depart": "11:00"},
+             {"cost_gbp": 0, "travel_min": 25, "travel_mode": "transit", "depart": "12:00"},
+             {"cost_gbp": 0, "travel_min": 0, "travel_mode": "walk", "depart": "13:00", "free_before_min": 30,
+              "free_before_kind": "wait"}]
+    t = dayplan.plan_totals(stops, LondonEstimate())
+    assert (t["walk_min"], t["transit_min"], t["transit_legs"], t["wait_min"], t["journey_min"]) == (25, 25, 1, 30, 50)
+    assert t["walk_km"] > 0
+
+
+def test_journeys_stay_within_each_paces_walk_cap(client):
+    """m355: regression cases for a gentle family, a gentle solo traveller and a full-on one: no single walk over the
+    walking rule's 30 min, and no Tube or bus for a link walkable in about the same time."""
+    from brain.travel import LondonEstimate
+    est = LondonEstimate()
+    for pace, company in (("gentle", "family"), ("gentle", "solo"), ("full_on", "friends")):
+        h, _ = install(client)
+        assert client.put("/v1/me/profile", headers=h, json={"activity": pace, "company": company}).status_code == 204
+        body = {"start_date": (date.today() + timedelta(days=5)).isoformat(), "nights": 1, "day_start": "10:00",
+                "day_end": "18:00", "stops_per_day": 3}
+        for d in client.post("/v1/me/trips/days", headers=h, json=body).json()["days"]:
+            for st in (d.get("plan") or {}).get("stops", []):
+                if st.get("travel_mode") == "walk":
+                    assert (st.get("travel_min") or 0) <= est.WALK_PREFER_MAX + 1, (pace, st["title"])

@@ -96,6 +96,7 @@ from brain.travel import LondonEstimate as _LE  # noqa: E402
 from brain.moments import Point as _Pt  # noqa: E402
 from brain.planner import along_ride as _along, candidate_for as _cand  # noqa: E402
 _EST = _LE()
+from brain.api import BUDGET_BAND_GBP as BUDGET_BAND  # noqa: E402
 TRAVEL_SLACK = 20                     # G11: minutes over the pace's budget a day may run
 # m350 (Abram: "group budget and per-person versus party costs"): how many travel in each party, from the people's
 # own descriptions (london_examples.py); children's prices aren't used yet, so the party's cost is per person x size
@@ -136,7 +137,7 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
     bad_kinds = kinds_of({"didnt_enjoy"}, sw) - kinds_of({"loved", "fine"}, sw)
     reflected = False
     stated = []
-    q = {"waits": [], "starts": [], "unused": {}, "extras": [], "ends": [], "travel": {}, "time": {}, "meals": [], "fit": [], "pins": {}, "stops": set(),
+    q = {"_band": p["profile"].get("budget_band"), "waits": [], "starts": [], "unused": {}, "extras": [], "ends": [], "travel": {}, "time": {}, "meals": [], "fit": [], "pins": {}, "stops": set(),
          "free": [], "feel": [],
          "titles": [d["title"] for d in trip["days"] if d.get("plan")]}
     for d in trip["days"]:
@@ -244,10 +245,16 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
                 (st["title"][:36], pg[id(st)], KIND.get(base(st["moment_id"])) or "") for st in weak]))
         if early > EARLY_MAX:
             fails["G2orig"].append(f"{d['date']} ends {early} min early")
-        budget = TRAVEL_BUDGET.get(p["profile"].get("activity"), 90)   # G11
+        budget = TRAVEL_BUDGET.get(p["profile"].get("activity"), 90)   # G11 (unchanged: the whole journey)
+        tot = pl.get("totals") or {}
+        walk_, transit_ = tot.get("walk_min", 0), tot.get("transit_min", 0)
+        # m355 (Abram: "Report separate components and identify which rules fail"): walking, Tube or bus, waits
+        q.setdefault("journeys", []).append((d["date"], walk_, tot.get("walk_km", 0), transit_,
+                                             tot.get("transit_legs", 0), tot.get("wait_min", 0), walk_ + transit_))
         if q["travel"].get(d["date"], 0) > budget + TRAVEL_SLACK:
             fails["G11"].append(f"{d['date']} {q['travel'][d['date']]} min of travel, budget {budget} "
-                                f"({p['profile'].get('activity') or 'unstated'})")
+                                f"({p['profile'].get('activity') or 'unstated'}): {walk_} min walking, {transit_} min "
+                                f"by Tube or bus; mostly {'walking' if walk_ > transit_ else 'Tube or bus'}")
         q.setdefault("cost", []).append((d["date"], (pl.get("totals") or {}).get("cost_gbp")))
         ad, ch = PARTY.get(p["key"].split("+")[0], (1, 0))   # m353: the party at each person's own price
         q.setdefault("party", []).append(_party(stops, MOMENTS, ad, ch))
@@ -297,10 +304,27 @@ def why_day(d: dict, stops: list, sw: dict, fails: dict, q: dict) -> None:
                 i = names.get(m1.group(1))
                 if i is None or mid not in (ITEMS[i].get("cards") or []):
                     fails["G13"].append(f"{day} {st['title'][:30]}: \"{t[:70]}\" (not that place)")
+    # m355: a paid rain option that says the day's budget still holds must be right, fares included
+    band = BUDGET_BAND.get(q.get("_band"))
+    total = ((d.get("plan") or {}).get("totals") or {}).get("cost_gbp")
+    for st in stops:
+        rid, text = st.get("rain_swap_id"), st.get("rain_swap") or ""
+        if rid in MOMENTS and "fits your day's budget" in text and band is not None and total is not None and \
+                total - float(st.get("cost_gbp") or 0) + float(MOMENTS[rid].cost_gbp or 0) > band + 0.5:
+            fails["G13"].append(f"{day} rain option {MOMENTS[rid].title[:28]} said to fit the £{band} budget; it doesn't")
+        if rid in MOMENTS and (MOMENTS[rid].cost_kind == "food" or (MOMENTS[rid].features.place.get("food") or 0) >= 2):
+            fails["G13"].append(f"{day} a meal ({MOMENTS[rid].title[:28]}) offered as the rain option for {st['title'][:24]}")
     fa = (d.get("plan") or {}).get("free_after") or {}
     last = MOMENTS.get(base(stops[-1]["moment_id"])) if stops else None
     if fa.get("stay_on") and last and re.search(r"always open|24 hours", last.best_time.hours or "", re.I):
         fails["G13"].append(f"{day} \"open until\" for {last.title[:30]}, which is always open")
+    if fa.get("stay_on") and last and (m_ := re.search(r"open until (\d\d:\d\d)", fa.get("text") or "")):
+        wd = date.fromisoformat(day).strftime("%a").lower()
+        arrive = mins(stops[-1]["arrive"])
+        close = max((hi for lo, hi in last.windows(wd, day) if lo <= arrive <= hi), default=None)
+        if close is not None and mins(m_.group(1)) != close:
+            fails["G13"].append(f"{day} \"open until {m_.group(1)}\" for {last.title[:30]}, which closes at "
+                                f"{close // 60:02d}:{close % 60:02d}")
 
 
 def route_day(d: dict, stops: list, loved: set, fails: dict) -> None:
@@ -459,6 +483,19 @@ def quality(qual: list) -> list[str]:
                  f"{'–' if use is None else 'yes' if use else 'no'}"
                  for (_, _, n, a), (_, tot, lg, said, why, use) in zip(q["feel"], q["free"])]
         out.append(f"| {p['key']} | {q['feel'][0][1] if q['feel'] else '–'} | " + "; ".join(cells) + " |")
+    out += ["", "**Journeys (m355, measured; G11 still judges the whole journey):** walking (minutes and km), Tube or "
+                "bus (door to door: the walk to the station and the wait are inside the estimate; legs), the waits "
+                "the day states, and the whole journey. ⚠ marks walking over 45 min a day for a gentle traveller with "
+                "children, or Tube and bus over the pace's budget on their own.", "",
+                "| Traveller | Pace | Each day: walk min · km · Tube/bus min (legs) · waits · whole journey |", "|---|---|---|"]
+    for p, q in qual:
+        pace = p["profile"].get("activity")
+        kids = p["key"].split("+")[0] in CHILD_AGES
+        b = TRAVEL_BUDGET.get(pace, 90)
+        cells = [f"{w} · {km} km · {tr} ({lg}){' ⚠' if tr > b else ''} · {wt} · {tot}"
+                 + (" ⚠" if kids and pace == "gentle" and w > 45 else "")
+                 for _, w, km, tr, lg, wt, tot in q.get("journeys", [])]
+        out.append(f"| {p['key']} | {pace or 'unstated'} | " + "; ".join(cells) + " |")
     from brain.api import BUDGET_BAND_GBP
     out += ["", "**Costs (m350, measured):** each day's cost per person (entry, food and fares, from the plan's own "
                 "summary) against the person's daily budget, and for the whole party at each person's own price "

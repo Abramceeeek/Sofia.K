@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-25 — Batch 6: budgets, journeys, QA, six testers, group trips (branch only; London held)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m355 | **Abram's decisions (25 Nov).**<br>**A. Budgets:** per person by default. ODYS always shows each traveller's estimated cost and the whole party's, with how shared costs are split, children's own prices, and estimated against verified amounts. Each adult may set their own budget, and the organiser an optional group ceiling. No financial services.<br>**B. G11:** walking (minutes and km), Tube or bus, transfers and waits, and the whole journey are measured apart. G11 keeps judging the whole journey (not relaxed) and says which part drives a failure.<br>**C. The eight why lines:** a row each, with the card's fact, the traveller preference and whether it's supported. Not approved until Abram reviews them.<br>**D. QA:** a separate Brain and database, a separate app identity, provenance on every plan, no production data, nothing deployed or uploaded without approval and the Apple policy check.<br>**E. Six adults:** solo, couple, parent (fictional managed child profiles), gentle, friend-group organiser, invited friend; real collaborative planning with separate accounts; consent; minimal data; deletion on the agreed retention.<br>**Built first:** the two false statements from the batch 5 reviews:<br>• a paid rain option's "still fits your day's budget" now counts the day's fares, and a meal is never a rain option;<br>• "open until" gives the place's own closing time.<br>The gate's G13 checks both.<br>**Correction:** a card's `why_it_works` isn't shown to travellers anywhere (searched the Brain and both apps). Claude's m349 claim that the shared lines repeated on a traveller's screen was wrong. | m353's G11 judged one number | **Hours:** Claude ~1 h so far. |
+
 ## 2026-11-25 — Batch 5: routes, loved places, meals, reasons, transparency (branch only; London held)
 
 | # | Decision | Replaces | Why |

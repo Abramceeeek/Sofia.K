@@ -1362,6 +1362,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
         used = set(body.exclude)
         budget = BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
+        # m356: with several adults' own budgets, the day fits the smallest (everyone can afford it)
+        if body.party and (own_b := [b for b in body.party.adult_budgets_gbp if b is not None]):
+            budget = min(own_b + ([budget] if budget is not None else []))
         out = []
 
         own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
@@ -1489,6 +1492,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             dayplan.state_free_time(stops, brief.start_time, by_ready,   # G1: no silent wait
                                     brief.end_time, brief.weekday, brief.date)
             head["totals"] = dayplan.plan_totals(stops, app.state.travel)   # m345: the finish after longer stays
+            if body.party and (body.party.adults > 1 or body.party.children):   # m356: each traveller and the party
+                head["party"] = dayplan.party_breakdown(stops, by_ready, body.party.adults, body.party.children,
+                                                        body.party.adult_budgets_gbp, body.party.group_budget_gbp)
             # m346 (G2c): the time left at the end of the day is said as the person's own, with what they can do with it
             if free := dayplan.free_after(stops, brief.end_time, by_ready, brief.weekday, brief.date, day_feel):
                 head["free_after"] = free

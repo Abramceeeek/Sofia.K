@@ -242,7 +242,12 @@ data class TripDaysRequest(
     val personal: List<DayTime> = emptyList(),   // m200
     val dayFeel: String? = null,                  // m346: how full the days should be, stored with the trip
     val compareTo: Map<String, Int>? = null,      // m353: each day's plan before ("index" to plan id)
+    val party: PartyRequest? = null,              // m356: who's going, for each traveller's cost and the party's
 )
+
+/** m356 (Abram, 25 Nov): budgets per person, with the whole party's total. */
+@Serializable
+data class PartyRequest(val adults: Int, val children: List<Int>)
 
 @Serializable
 data class TripDayOut(
@@ -458,6 +463,7 @@ data class Trip(
     val changedDays: List<Int>? = null,
     val personal: List<DayTime>? = null,   // m200: the person's own time, by day
     val dayFeel: String? = null,           // m346: relaxed | balanced | full (none: balanced), separate from pace
+    val children: List<Int>? = null,       // m356: children's ages (never names), for their own prices
 ) {
     fun own(index: Int): DayTime = personal?.firstOrNull { it.day == index } ?: DayTime(index)
     val dayFrom: String get() = hoursFrom ?: "10:00"

@@ -390,6 +390,16 @@ class DayTimeIn(BaseModel):
     mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
 
 
+class PartyIn(BaseModel):
+    """m356 (Abram, 25 Nov: "The default budget is per person… show individual estimated spending, total estimated group
+    spending, shared-cost allocation assumptions, children's applicable prices"): who's going. Ages only for children
+    (fictional in tests), never names; each adult may give a daily budget, the organiser a group ceiling."""
+    adults: int = Field(default=1, ge=1, le=8)
+    children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
+    adult_budgets_gbp: list[Annotated[float, Field(ge=0, le=1000)] | None] = Field(default_factory=list, max_length=8)
+    group_budget_gbp: float | None = Field(default=None, ge=0, le=10000)
+
+
 class TripDaysIn(BaseModel):
     """D120: the days of a multi-day trip (ODYS Trips design: "How long for?", "How should the trip feel?")."""
     destination: str = Field(default="london", max_length=40)
@@ -416,6 +426,7 @@ class TripDaysIn(BaseModel):
     # m353 (Abram, 25 Nov: "Unexplained changes to itinerary costs: release blocker"): the plans this trip's days had
     # before ("day index: plan id"); each day planned again says what changed, its cost included
     compare_to: dict[int, int] = Field(default_factory=dict, max_length=31)
+    party: PartyIn | None = None   # m356: who's going; none means one adult
 
 
 class AlternativesIn(BaseModel):

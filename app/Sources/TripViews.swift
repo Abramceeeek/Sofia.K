@@ -1060,6 +1060,7 @@ struct FromStep: View {
             .padding(.horizontal, 18)
             .padding(.vertical, 12)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            ChildrenEditor(children: Binding(get: { trip.children ?? [] }, set: { trip.children = $0.isEmpty ? nil : $0 }))
         }
     }
 
@@ -1168,6 +1169,68 @@ struct FromStep: View {
 
     private func time(_ key: WritableKeyPath<Trip, String?>, _ fallback: String) -> Binding<String> {
         Binding(get: { trip[keyPath: key] ?? fallback }, set: { trip[keyPath: key] = $0 })
+    }
+}
+
+/// m356: children by age only (never names), so each pays their own price where a place gives one.
+struct ChildrenEditor: View {
+    @Binding var children: [Int]
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Children").font(.footnote).foregroundStyle(Theme.muted)
+                    Text(children.isEmpty ? "None" : "\(children.count)").foregroundStyle(Theme.ink)
+                }
+                Spacer()
+                RoundIcon(name: "minus", disabled: children.isEmpty) { children.removeLast() }
+                    .accessibilityLabel("One child fewer")
+                RoundIcon(name: "plus", disabled: children.count >= 6) { children.append(8) }
+                    .accessibilityLabel("One child more")
+            }
+            ForEach(children.indices, id: \.self) { i in
+                HStack {
+                    Text("Child \(i + 1): \(children[i]) \(children[i] == 1 ? "year" : "years") old").foregroundStyle(Theme.inkSoft)
+                    Spacer()
+                    RoundIcon(name: "minus", disabled: children[i] <= 0) { children[i] -= 1 }
+                        .accessibilityLabel("Child \(i + 1) younger")
+                    RoundIcon(name: "plus", disabled: children[i] >= 17) { children[i] += 1 }
+                        .accessibilityLabel("Child \(i + 1) older")
+                }
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+/// m356: the day's estimated cost for each traveller and the whole party, and what's estimated.
+struct PartyCostView: View {
+    let party: PartyCost
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("About \(Money.text(party.totalGbp)) for all \(party.travellers.count) of you")
+                .foregroundStyle(Theme.ink)
+            ForEach(party.travellers, id: \.label) { t in
+                Text("\(t.label): \(Money.text(t.costGbp))" + (t.overGbp.map { ", \(Money.text($0)) over their budget" } ?? ""))
+                    .font(.footnote).foregroundStyle(Theme.inkSoft)
+            }
+            if let over = party.overGroupGbp {
+                Text("\(Money.text(over)) over the group's budget").font(.footnote).foregroundStyle(Theme.accent)
+            }
+            ForEach(party.notes + (party.notForChildren ?? []), id: \.self) { n in
+                Text(n).font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            }
+            Text("\(party.verified). Estimated: \(party.estimated.lowercased()).")
+                .font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -1866,6 +1929,7 @@ struct TripDayView: View {
                             if day.before != nil || !day.journeys("arrive").isEmpty {
                                 SectionLabel(text: "From your stay").padding(.top, 4)
                             }
+                            if let party = plan.party { PartyCostView(party: party) }   // m356: each of you, and all
                             if let change = plan.change {   // m353: a day planned again says what changed
                                 Text(change.text)
                                     .font(.footnote)
