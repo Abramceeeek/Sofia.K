@@ -726,9 +726,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     p, post.mean, m, loved=loved_places, feelings=feelings, interests=mine, n_choices=n_choices)
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
-        said: set[str] = set()   # m349: a reason is said once a day ("We don't know much about you yet…" on one stop)
+        # m349: a reason is said once a day where the stop has another to show; every stop keeps one (D115), and the
+        # general one ("We don't know much about you yet…") is said shorter when it comes again
+        said: set[str] = set()
+        again = iter(("Another that suits most people and fits your route.",
+                      "One more that most people enjoy, close to your route.",
+                      "Also a good fit for most people, and on your way."))
         for st in out:
-            st["reasons"] = [r for r in st.get("reasons") or [] if not (r.get("you") in said or said.add(r.get("you")))]
+            own = st.get("reasons") or []
+            fresh = [r for r in own if r.get("you") not in said]
+            if not fresh and own:
+                r = dict(own[0])
+                if str(r.get("you") or "").startswith("We don't know much about you yet"):
+                    r["you"] = next(again, r["you"])
+                fresh = [r]
+            st["reasons"] = fresh
+            said.update(r.get("you") for r in fresh)
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
                 "budget": budget_block,   # m217: the day's money, line by line
