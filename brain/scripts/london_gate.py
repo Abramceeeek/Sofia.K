@@ -12,6 +12,18 @@
   G2c remaining time: time left at the end of a day (over 45 min) is said on the plan, from the last stop's end to
       the day's end; total and longest free time, and whether it's intentional and useful, are reported
   G2 (original, kept for comparison, not a blocker): no day ending more than 45 min before the person's end time
+  G9  (m350, Abram: "date-specific opening and closure rules") every stop is open for its whole visit on that date,
+      by the card's own hours for that weekday and its dated changes (Christmas, early closings, refurbishments)
+  G10 (m350, "actual sunset suitability") a stop that promises sunset in its title is there at sunset for that date
+      (the card's own window around sunset)
+  G11 (m350, "daily travel budget by pace") no day's travel is more than 20 min over its pace's budget (gentle 60,
+      medium or unstated 90, full-on 120 min): one journey's slack, never a day of crossing London
+
+RELEASE BLOCKERS AND MEASUREMENTS (m350, Abram: "Distinguish absolute release blockers from quality measurements"):
+G1, G2a-c and G3-G11 block: each is something a traveller would have to fix themselves, or would be misled by. The
+quality measures below the tables are for a person to review, never pass or fail: named and generic meals, the same
+stop for many travellers, going back across London (backtracking), total and longest unused time, the cost per person
+and for the whole party against the budget, the original G2, and the extra places' strength.
   G3  every traveller gets a stop reflecting a place they loved: that place's own card, or one of the same kind
   G4  no stop of a kind the person didn't enjoy (unless they loved or were fine with a place of that kind)
   G5  card rules hold: no stop below its minimum age for a party with children; a booking the card needs is said
@@ -60,8 +72,16 @@ from brain.moments import load_moments  # noqa: E402
 WINDOWS = {m.id: m.windows() for m in load_moments(DATA_DIR / "moments")}
 from brain.planner import PACE_TRAVEL_BUDGET  # noqa: E402
 from brain.dayplan import EXTRA_MIN_P, spans_lunch  # noqa: E402
-from brain.api import EXTRA_BY_FEEL  # noqa: E402
-GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G4", "G5", "G6", "G7", "G8")
+import brain.api as _api  # noqa: E402
+EXTRA_BY_FEEL = getattr(_api, "EXTRA_BY_FEEL", {"relaxed": 0, "balanced": 2, "full": 4})   # so older commits can run it
+from brain.sun import sunset as _sunset  # noqa: E402
+GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11")
+TRAVEL_SLACK = 20                     # G11: minutes over the pace's budget a day may run
+# m350 (Abram: "group budget and per-person versus party costs"): how many travel in each party, from the people's
+# own descriptions (london_examples.py); children's prices aren't used yet, so the party's cost is per person x size
+PARTY = {"sam": 1, "priya": 2, "family": 4, "jonas": 1, "friends": 4, "margaret": 2}
+from brain.moments import load_moments as _load  # noqa: E402
+MOMENTS = {m.id: m for m in _load(DATA_DIR / "moments")}
 BREAK_MIN, RUN_MAX = 20, 180          # G2b relaxed: a break is 20 min or more; at most 3 h of visits without one
 BALANCED_EARLY_MAX, DINNER_FROM = 90, 19 * 60 + 30
 VARIANTS = [("jonas", "full", "Jonas (gentle) choosing Full"),
@@ -151,6 +171,25 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
             if travel > 30 and travel > stay and mid not in loved_cards \
                     and not str(st["moment_id"]).startswith(("lunch@", "dinner@")):   # m331: a loved place is worth it
                 fails["G8"].append(f"{d['date']} {travel} min to a {stay}-min visit: {st['title'][:36]}")
+            m_ = MOMENTS.get(mid)
+            if m_ is not None and not meal_id.startswith(("lunch@", "dinner@", "mine")):   # G9: open for the visit
+                wd = date.fromisoformat(d["date"]).strftime("%a").lower()
+                wins = m_.windows(wd, d["date"])
+                if "sunset" in m_.title.lower() and m_.best_time.best_around_sunset:
+                    # a sunset place's hours are its sunset for that date (m345), not the fixed window the card was
+                    # written with; G10 checks it's there at sunset
+                    sun0 = mins(_sunset(date.fromisoformat(d["date"])))
+                    wins = [(sun0 + m_.best_time.best_around_sunset[0],
+                             sun0 + m_.best_time.best_around_sunset[1] + (depart - arrive))]
+                if not any(lo <= arrive and depart <= hi for lo, hi in wins):
+                    fails["G9"].append(f"{d['date']} {st['title'][:40]} {st['arrive']}-{st['depart']}: not open "
+                                       f"then ({', '.join(f'{lo // 60:02d}:{lo % 60:02d}-{hi // 60:02d}:{hi % 60:02d}' for lo, hi in m_.windows(wd, d['date'])) or 'closed'})")
+                if "sunset" in m_.title.lower() and m_.best_time.best_around_sunset:   # G10
+                    sun = mins(_sunset(date.fromisoformat(d["date"])))
+                    lo, hi = m_.best_time.best_around_sunset
+                    if not (sun + lo <= arrive <= sun + hi):
+                        fails["G10"].append(f"{d['date']} {st['title'][:40]} at {st['arrive']}, sunset "
+                                            f"{_sunset(date.fromisoformat(d['date']))}")
             if p["profile"].get("activity") == "gentle" and ((card.get("features") or {}).get("place") or {}).get("active", 0) >= 2:
                 fails["G7"].append(f"{d['date']} {st['title'][:40]} (strenuous, for a gentle day)")
             min_age = (card.get("rules") or {}).get("min_age")
@@ -183,6 +222,11 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
                 (st["title"][:36], pg[id(st)], KIND.get(base(st["moment_id"])) or "") for st in weak]))
         if early > EARLY_MAX:
             fails["G2orig"].append(f"{d['date']} ends {early} min early")
+        budget = TRAVEL_BUDGET.get(p["profile"].get("activity"), 90)   # G11
+        if q["travel"].get(d["date"], 0) > budget + TRAVEL_SLACK:
+            fails["G11"].append(f"{d['date']} {q['travel'][d['date']]} min of travel, budget {budget} "
+                                f"({p['profile'].get('activity') or 'unstated'})")
+        q.setdefault("cost", []).append((d["date"], (pl.get("totals") or {}).get("cost_gbp")))
         feel_day(d, t, stops, kinds, gaps, early, fails, q)
     if not reflected:
         fails["G3"].append("no stop reflects a loved place")
@@ -213,8 +257,11 @@ def feel_day(d: dict, t: dict, stops: list, kinds: list, gaps: list, early: int,
             fails["G2b"].append(f"{day} relaxed, but {n - asked} place(s) added")
         run, longest = 0, 0
         for st, k, gap in zip(stops, kinds, gaps):
-            if gap >= BREAK_MIN or k in ("meal", "rest", "mine"):
+            food = (CARDS.get(base(st["moment_id"]), {}).get("cost_kind") == "food")   # eating somewhere is a pause too
+            if gap >= BREAK_MIN or k in ("meal", "rest", "mine") or food:
                 run = 0
+                if food:
+                    continue
             if k in ("visit", "explore"):   # from arriving at the first place of the run: the journey there is apart
                 run += mins(st["depart"]) - mins(st["arrive"]) + ((st.get("travel_min") or 0) if run else 0)
                 longest = max(longest, run)
@@ -313,6 +360,18 @@ def quality(qual: list) -> list[str]:
                  f"{'–' if use is None else 'yes' if use else 'no'}"
                  for (_, _, n, a), (_, tot, lg, said, why, use) in zip(q["feel"], q["free"])]
         out.append(f"| {p['key']} | {q['feel'][0][1] if q['feel'] else '–'} | " + "; ".join(cells) + " |")
+    from brain.api import BUDGET_BAND_GBP
+    out += ["", "**Costs (m350, measured):** each day's cost per person (entry, food and fares, from the plan's own "
+                "summary) against the person's daily budget, and for the whole party. Children's prices aren't used "
+                "yet, so a family's total is per person times four, an overestimate where a child pays less.", "",
+                "| Traveller | Party | Budget a day | Each day: per person · whole party |", "|---|---|---|---|"]
+    for p, q in qual:
+        k = p["key"].split("+")[0]
+        band = BUDGET_BAND_GBP.get(p["profile"].get("budget_band"))
+        cells = [f"£{c:,.2f}{' ⚠' if band is not None and c is not None and c > band else ''} · £{c * PARTY.get(k, 1):,.2f}"
+                 if c is not None else "–" for _, c in q.get("cost", [])]
+        out.append(f"| {p['key']} | {PARTY.get(k, 1)} | {'£' + str(band) if band is not None else 'none'} | "
+                   + "; ".join(cells) + " |")
     days_ = [(p["key"], *x) for p, q in qual for x in q["extras"]]
     extra_n = sum(max(0, n - asked) for _, _, n, asked, _ in days_)
     broken = [(k, d) for k, d, n, asked, weak in days_ if len(weak) > asked]
@@ -422,7 +481,9 @@ def main(runs: int = RUNS) -> int:
            "G1 gap ≤ 20 min · **G2a** the places asked for (meals apart), no more than the day feel adds · **G2b** the "
            "day matches Relaxed, Balanced or Full · **G2c** time left at the end is said on the plan · G3 a loved place "
            "reflected · G4 no disliked kind · G5 age and booking rules · G6 every Why and best-time line true · "
-           "G7 a gentle pace kept · G8 no journey longer than its visit", "",
+           "G7 a gentle pace kept · G8 no journey longer than its visit · **G9** open for the whole visit that date · "
+           "**G10** a sunset stop at sunset · **G11** travel within 20 min of the pace's budget", "",
+           "All of these block a release (m350). The measures further down are for a person to review.", "",
            "**G2 (original)** (no day ending more than 45 min early) is reported for comparison with the earlier "
            "reports, as Abram asked, and no longer blocks (m346).", "",
            "| Traveller | Day feel | " + " | ".join(GATES) + " | G2 original |",
