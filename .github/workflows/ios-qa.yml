@@ -1,0 +1,70 @@
+# m357 (Abram, 25 Nov: "Separate iOS QA application and TestFlight configuration… Prepare the iOS upload process, but
+# do not upload or invite testers without explicit approval and verification of the applicable Apple policy
+# requirements"): the QA app, "ODYS QA", pointed at the QA Brain. It never touches the friends' round app: a QA bundle
+# identifier, the QA name and the QA Brain are set here, on this run only (project.yml is unchanged).
+# Today it builds for the simulator only. The upload job stops unless Abram has set the repository variable
+# QA_UPLOAD_APPROVED to "yes" after the Apple policy check (decisions/qa-build-path.md); it isn't wired to
+# TestFlight yet.
+name: ios-qa
+
+on:
+  workflow_dispatch:
+    inputs:
+      brain_url:
+        description: "The QA Brain's address (https://odys-brain-qa.onrender.com once Abram creates it)"
+        required: true
+        default: "https://odys-brain-qa.onrender.com"
+      upload:
+        description: "Upload to the QA TestFlight group (needs Abram's approval: QA_UPLOAD_APPROVED)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - name: Tools
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+      - name: Generate the Xcode project
+        run: xcodegen generate
+      - name: The QA identity (this run only)
+        env:
+          BRAIN_URL: ${{ inputs.brain_url }}
+        run: |
+          case "$BRAIN_URL" in https://*) ;; *) echo "::error::The QA Brain must be https"; exit 1;; esac
+          [ "$BRAIN_URL" != "https://moments-brain.onrender.com" ] || { echo "::error::That's the production Brain"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName ODYS QA" Info.plist
+          /usr/libexec/PlistBuddy -c "Set :BrainBaseURL $BRAIN_URL" Info.plist
+          echo "QA build: commit $GITHUB_SHA, run $GITHUB_RUN_NUMBER, Brain $BRAIN_URL" | tee qa-build.txt
+      - name: Build for the simulator (no signing)
+        run: |
+          xcodebuild build -project Face.xcodeproj -scheme Face -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO \
+            PRODUCT_BUNDLE_IDENTIFIER=com.example.face.qa CURRENT_PROJECT_VERSION=$GITHUB_RUN_NUMBER
+
+  upload:
+    needs: build
+    if: inputs.upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Abram's approval and the Apple policy check
+        env:
+          APPROVED: ${{ vars.QA_UPLOAD_APPROVED }}
+        run: |
+          if [ "$APPROVED" != "yes" ]; then
+            echo "::error::No QA upload without Abram's approval and the Apple policy check (QA_UPLOAD_APPROVED)."
+            exit 1
+          fi
+          echo "::error::The QA TestFlight upload isn't wired yet: it needs a QA App ID, profile and group first (decisions/qa-build-path.md)."
+          exit 1

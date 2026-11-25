@@ -1,0 +1,36 @@
+# m357 (Abram, 25 Nov: "Prepare the isolated QA environment… Separate test Brain and database… No production database
+# access… No production deployment"): the QA Brain, a Blueprint of its own. It is NOT render.yaml (m198: render.yaml
+# stays the production Brain's), and nothing here is created until Abram applies it in Render himself
+# (decisions/qa-build-path.md). It deploys the branch, never main, and shares nothing with production: its own
+# database, its own admin token, no safety webhook (QA has no real travellers), no flight or stay keys.
+services:
+  - type: web
+    name: odys-brain-qa
+    runtime: python
+    plan: free                 # $0; sleeps after 15 min idle
+    region: frankfurt
+    branch: claude/pensive-euler-fftd63
+    autoDeploy: false          # deployed by hand, at a recorded commit (GET /v1/health "version")
+    rootDir: brain
+    buildCommand: pip install -r requirements-app.txt
+    startCommand: uvicorn brain.api:app --app-dir src --host 0.0.0.0 --port $PORT --no-access-log
+    healthCheckPath: /v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.14"
+      - key: BRAIN_DATABASE_URL
+        fromDatabase:
+          name: odys-brain-qa-db
+          property: connectionString
+      - key: BRAIN_ADMIN_TOKEN
+        generateValue: true    # QA's own, never production's
+      - key: BRAIN_PLANNER_TIME_LIMIT_S
+        value: "1.0"
+      # Deliberately absent: BRAIN_ALERT_WEBHOOK_URL (no real people), DUFFEL_ACCESS_TOKEN and LITEAPI_KEY (labelled
+      # sample flights and stays only), and every production secret.
+
+databases:
+  - name: odys-brain-qa-db
+    plan: free                 # Render's free databases expire after 30 days: QA data is short-lived by design
+    region: frankfurt
+    ipAllowList: []            # no connections from the internet; only the QA web service
