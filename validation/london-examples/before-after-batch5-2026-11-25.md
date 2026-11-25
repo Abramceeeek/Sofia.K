@@ -9,7 +9,7 @@
 | London gate | `gate.md`, 3 runs of `d6c6ab6` |
 | Three independent reviews | of those examples and that gate (below) |
 | Android | run 56 (manual, `d6c6ab6`): built, every screen test passed |
-| iPhone | run 118 (manual simulator run, `d6c6ab6`): see `progress.md` for its result |
+| iPhone | run 118 (manual simulator run, `d6c6ab6`): compiled with screenshots, upload off |
 
 The commit after it, the batch 5 handover, changes only these documents.
 

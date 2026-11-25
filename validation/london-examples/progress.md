@@ -19,7 +19,8 @@
   - G1, G2a, G2c, G3, G3b and G4–G10 pass, and so do the new G12, G13 and G14.
   - Baseline `977ccfd` by the same script: G12 4, G13 28, G14 8, G2b 7, G11 5.
 - **Android:** run 56 built the app and passed every screen test.
-- **iPhone:** run 118, a manual simulator run with upload off; result below.
+- **iPhone:** run 118 compiled with screenshots at `d6c6ab6`. It was a manual simulator run with upload off, at $0 on a public repository.
+- **Brain CI:** green at `d6c6ab6` and on the handover commit.
 - **Reviews:** 3–7/10 per traveller; 5/10 against a well-informed friend; "not yet" (the families reviewer: "nearly"). See `before-after-batch5-2026-11-25.md`.
 
 ## Decisions for Abram
