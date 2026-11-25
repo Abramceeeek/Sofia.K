@@ -5,6 +5,11 @@
 name: android-qa
 
 on:
+  # also when this file changes, so a branch can prove the QA build works (GitHub runs a manual-only workflow
+  # only once it's on the default branch)
+  push:
+    paths:
+      - ".github/workflows/android-qa.yml"
   workflow_dispatch:
     inputs:
       brain_url:
@@ -31,13 +36,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a  # v4
       - name: Check the Brain is QA's
         env:
-          BRAIN_URL: ${{ inputs.brain_url }}
+          BRAIN_URL: ${{ inputs.brain_url || 'https://odys-brain-qa.onrender.com' }}
         run: |
           case "$BRAIN_URL" in https://*) ;; *) echo "::error::The QA Brain must be https"; exit 1;; esac
           [ "$BRAIN_URL" != "https://moments-brain.onrender.com" ] || { echo "::error::That's the production Brain"; exit 1; }
       - name: Build the QA APK
         env:
-          BRAIN_URL: ${{ inputs.brain_url }}
+          BRAIN_URL: ${{ inputs.brain_url || 'https://odys-brain-qa.onrender.com' }}
           BUILD_NUMBER: ${{ github.run_number }}
         run: ./gradlew --no-daemon assembleQa -PqaBrainUrl="$BRAIN_URL"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4

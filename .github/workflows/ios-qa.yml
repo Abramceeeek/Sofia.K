@@ -8,6 +8,11 @@
 name: ios-qa
 
 on:
+  # also when this file changes, so a branch can prove the QA build works (GitHub runs a manual-only workflow
+  # only once it's on the default branch)
+  push:
+    paths:
+      - ".github/workflows/ios-qa.yml"
   workflow_dispatch:
     inputs:
       brain_url:
@@ -40,7 +45,7 @@ jobs:
         run: xcodegen generate
       - name: The QA identity (this run only)
         env:
-          BRAIN_URL: ${{ inputs.brain_url }}
+          BRAIN_URL: ${{ inputs.brain_url || 'https://odys-brain-qa.onrender.com' }}
         run: |
           case "$BRAIN_URL" in https://*) ;; *) echo "::error::The QA Brain must be https"; exit 1;; esac
           [ "$BRAIN_URL" != "https://moments-brain.onrender.com" ] || { echo "::error::That's the production Brain"; exit 1; }
@@ -55,7 +60,7 @@ jobs:
 
   upload:
     needs: build
-    if: inputs.upload
+    if: github.event_name == 'workflow_dispatch' && inputs.upload
     runs-on: ubuntu-latest
     steps:
       - name: Abram's approval and the Apple policy check
