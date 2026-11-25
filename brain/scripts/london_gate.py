@@ -16,6 +16,11 @@
       by the card's own hours for that weekday and its dated changes (Christmas, early closings, refurbishments)
   G10 (m350, "actual sunset suitability") a stop that promises sunset in its title is there at sunset for that date:
       it starts within the card's own window around sunset and is still there when the sun sets (m352)
+  G12 (m353, Abram, 25 Nov: "Make serious routing defects blockers… measure unnecessary distance, journey time and
+      repeated crossings, with exceptions for genuinely loved experiences") no Tube or bus for a link walkable in
+      about the same time (a walk of up to 30 min the Tube would shorten by less than 8); no stop along the stretch a
+      ride covers on the same day (the boat past the Southbank, then back to it); no return to within 600 m of a place
+      left earlier after going more than 3 km away. A place the person loved is exempt.
   G11 (m350, "daily travel budget by pace") no day's travel is more than 20 min over its pace's budget (gentle 60,
       medium or unstated 90, full-on 120 min): one journey's slack, never a day of crossing London
 
@@ -25,6 +30,9 @@ quality measures below the tables are for a person to review, never pass or fail
 stop for many travellers, going back across London (backtracking), total and longest unused time, the cost per person
 and for the whole party against the budget, the original G2, and the extra places' strength.
   G3  every traveller gets a stop reflecting a place they loved: that place's own card, or one of the same kind
+  G3b (m353, Abram, 25 Nov: "Loved places should be protected across the entire trip… Test that favourite places are
+      considered across the complete trip") each place they loved that has a ready card, open on one of the trip's
+      days, is in the trip at least once, when the trip has at least as many days as such places
   G4  no stop of a kind the person didn't enjoy (unless they loved or were fine with a place of that kind)
   G5  card rules hold: no stop below its minimum age for a party with children; a booking the card needs is said
   G6  every "Why" and best-time line is true of the stop: no internal wording, no best time the visit misses
@@ -75,7 +83,11 @@ from brain.dayplan import EXTRA_MIN_P, spans_lunch  # noqa: E402
 import brain.api as _api  # noqa: E402
 EXTRA_BY_FEEL = getattr(_api, "EXTRA_BY_FEEL", {"relaxed": 0, "balanced": 2, "full": 4})   # so older commits can run it
 from brain.sun import sunset as _sunset  # noqa: E402
-GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11")
+GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G3b", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12")
+from brain.travel import LondonEstimate as _LE  # noqa: E402
+from brain.moments import Point as _Pt  # noqa: E402
+from brain.planner import along_ride as _along, candidate_for as _cand  # noqa: E402
+_EST = _LE()
 TRAVEL_SLACK = 20                     # G11: minutes over the pace's budget a day may run
 # m350 (Abram: "group budget and per-person versus party costs"): how many travel in each party, from the people's
 # own descriptions (london_examples.py); children's prices aren't used yet, so the party's cost is per person x size
@@ -229,11 +241,54 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
                                 f"({p['profile'].get('activity') or 'unstated'})")
         q.setdefault("cost", []).append((d["date"], (pl.get("totals") or {}).get("cost_gbp")))
         feel_day(d, t, stops, kinds, gaps, early, fails, q)
+        route_day(d, stops, loved_cards, fails)
     if not reflected:
         fails["G3"].append("no stop reflects a loved place")
+    # G3b: each loved place with a ready card, open on a day of the trip, is in it once, given enough days
+    planned = {base(st["moment_id"]) for d in trip["days"] if d.get("plan") for st in d["plan"]["stops"]}
+    dates = [date.fromisoformat(d["date"]) for d in trip["days"] if d.get("plan")]
+    sets = [(i, [c for c in ITEMS[i].get("cards") or [] if c in MOMENTS and MOMENTS[c].status == "ready"])
+            for i, r in sw.items() if r == "loved"]
+    sets = [(i, cs) for i, cs in sets if cs and any(MOMENTS[c].open_on(x.strftime("%a").lower(), x.isoformat())
+                                                     for c in cs for x in dates)]
+    if len(dates) >= len(sets):
+        for i, cs in sets:
+            if not set(cs) & planned:
+                fails["G3b"].append(f"{ITEMS[i]['name'][:36]}, loved, not in the {len(dates)}-day trip")
+    q["loved_no_card"] = [ITEMS[i]["name"] for i, r in sw.items() if r == "loved" and not ITEMS[i].get("cards")]
     fails["_free"] = stated
     fails["_q"] = q
     return fails
+
+
+def route_day(d: dict, stops: list, loved: set, fails: dict) -> None:
+    """m353: G12, the serious route defects a Londoner wouldn't make."""
+    pins = [(_Pt(lat=st["pin"]["lat"], lon=st["pin"]["lon"]) if st.get("pin") else None) for st in stops]
+    day = d["date"]
+    for i, st in enumerate(stops):
+        mid = base(st["moment_id"])
+        if mid in loved or i == 0 or not pins[i] or not pins[i - 1]:
+            continue
+        if st.get("travel_mode") not in (None, "walk") and st.get("travel_min"):
+            walk = _EST.walking.minutes(pins[i - 1], pins[i])
+            if walk <= _EST.WALK_PREFER_MAX and walk <= (st["travel_min"] or 0) + _EST.WALK_PREFER_SLACK:
+                fails["G12"].append(f"{day} {st['title'][:36]}: {st['travel_min']} min by Tube or bus, "
+                                    f"{round(walk)} min on foot")
+    rides = [(i, MOMENTS[base(st["moment_id"])]) for i, st in enumerate(stops)
+             if base(st["moment_id"]) in MOMENTS and MOMENTS[base(st["moment_id"])].route]
+    for i, m in rides:
+        c = _cand(m, 0.0)
+        for k, st in enumerate(stops):
+            if k != i and pins[k] and base(st["moment_id"]) not in loved and _along(pins[k], c):
+                fails["G12"].append(f"{day} {st['title'][:36]}: along the {m.title[:30]}'s own course, the same day")
+    for j in range(len(stops)):
+        for i in range(j - 1):
+            if pins[i] and pins[j] and base(stops[j]["moment_id"]) not in loved and _km(
+                    (pins[i].lat, pins[i].lon), (pins[j].lat, pins[j].lon)) < 0.6 and max(
+                    (_km((pins[i].lat, pins[i].lon), (pins[k].lat, pins[k].lon)) for k in range(i + 1, j) if pins[k]),
+                    default=0) > 3:
+                fails["G12"].append(f"{day} back to {stops[j]['title'][:30]} after going over 3 km away")
+                break
 
 
 def feel_day(d: dict, t: dict, stops: list, kinds: list, gaps: list, early: int, fails: dict, q: dict) -> None:
@@ -278,8 +333,9 @@ def feel_day(d: dict, t: dict, stops: list, kinds: list, gaps: list, early: int,
     else:
         if early > EARLY_MAX:
             fails["G2b"].append(f"{day} full, but ends {early} min early")
+        # as the product counts it (dayplan.say_no_dinner): an evening food stop (Beigel Bake at 17:15) is the dinner
         dinner = any(str(st.get("key") or "").endswith("#dinner") or str(st["moment_id"]).startswith("dinner@")
-                     for st in stops)
+                     or (st.get("cost_kind") == "food" and mins(st["arrive"]) >= 17 * 60 + 30 - 30) for st in stops)
         no_dinner_said = any("dinner" in ln.lower() and ("no " in ln.lower() or "budget" in ln.lower()) for ln in lines)
         if mins(win["end"]) >= DINNER_FROM and not dinner and not no_dinner_said:
             fails["G2b"].append(f"{day} full, to {win['end']}, but no dinner and no word on it")
@@ -373,6 +429,8 @@ def quality(qual: list) -> list[str]:
                  if c is not None else "–" for _, c in q.get("cost", [])]
         out.append(f"| {p['key']} | {PARTY.get(k, 1)} | {'£' + str(band) if band is not None else 'none'} | "
                    + "; ".join(cells) + " |")
+    gaps_ = sorted({n for _, q in qual for n in q.get("loved_no_card", [])})
+    out += ["", "**Loved places with no card yet** (catalogue gaps, measured): " + ("; ".join(gaps_) or "none"), ""]
     days_ = [(p["key"], *x) for p, q in qual for x in q["extras"]]
     extra_n = sum(max(0, n - asked) for _, _, n, asked, _ in days_)
     broken = [(k, d) for k, d, n, asked, weak in days_ if len(weak) > asked]
@@ -483,7 +541,8 @@ def main(runs: int = RUNS) -> int:
            "day matches Relaxed, Balanced or Full · **G2c** time left at the end is said on the plan · G3 a loved place "
            "reflected · G4 no disliked kind · G5 age and booking rules · G6 every Why and best-time line true · "
            "G7 a gentle pace kept · G8 no journey longer than its visit · **G9** open for the whole visit that date · "
-           "**G10** a sunset stop at sunset · **G11** travel within 20 min of the pace's budget", "",
+           "**G10** a sunset stop at sunset · **G11** travel within 20 min of the pace's budget · **G12** no serious route "
+           "defect (a walkable link by Tube, back over a ride's course, a return after going far away)", "",
            "All of these block a release (m350). The measures further down are for a person to review.", "",
            "**G2 (original)** (no day ending more than 45 min early) is reported for comparison with the earlier "
            "reports, as Abram asked, and no longer blocks (m346).", "",

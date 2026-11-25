@@ -53,15 +53,26 @@ class LondonEstimate:
         self.transit_m_per_min = transit_kmh * 1000.0 / 60.0
         self.walking = walking or WalkingEstimate()
 
+    # m353 (two reviews, 25 Nov: "takes the Tube from Hyde Park to Queensway for a playground you can walk to"): a walk
+    # of up to WALK_PREFER_MAX min is the way, when the Tube or bus would save less than WALK_PREFER_SLACK min of it
+    WALK_PREFER_MAX, WALK_PREFER_SLACK = 30.0, 8.0
+
+    def _transit(self, a: Point, b: Point) -> float:
+        return self.access_min + haversine_m(a, b) * 1.3 / self.transit_m_per_min + self.egress_min
+
+    def _walks(self, a: Point, b: Point) -> bool:
+        walk = self.walking.minutes(a, b)
+        return walk <= self.walk_max_min or (walk <= self.WALK_PREFER_MAX and
+                                              walk <= self._transit(a, b) + self.WALK_PREFER_SLACK)
+
     def mode(self, a: Point, b: Point) -> str:
-        return "walk" if self.walking.minutes(a, b) <= self.walk_max_min else "transit"
+        return "walk" if self._walks(a, b) else "transit"
 
     def minutes(self, a: Point, b: Point) -> float:
         walk = self.walking.minutes(a, b)
-        if walk <= self.walk_max_min:
+        if self._walks(a, b):
             return walk
-        transit = self.access_min + haversine_m(a, b) * 1.3 / self.transit_m_per_min + self.egress_min
-        return min(walk, transit)
+        return min(walk, self._transit(a, b))
 
 
 class MatrixTravelTimes:

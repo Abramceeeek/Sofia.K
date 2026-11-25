@@ -149,6 +149,31 @@ def free_after(stops: list[dict], day_end: str | None, by_id: Mapping[str, Momen
     return {"from": last["depart"], "until": day_end, "min": free, "text": text, "stay_on": bool(stay_on)}
 
 
+BACK_NEAR_KM, BACK_AWAY_KM = 0.6, 3.0   # m353: back within 600 m of a place left earlier, after going over 3 km away
+
+
+def backtracks(stops: list[dict], loved: set[str] | frozenset[str] = frozenset()) -> list[str]:
+    """m353 (Abram, 25 Nov: "repeated crossings"): the stops that come back within BACK_NEAR_KM of a place the day left
+    earlier, after going more than BACK_AWAY_KM away (a crossing of London twice). Never a place they loved, a meal
+    or their own time, which are worth the return."""
+    def km(a, b):
+        dy, dx = (a["lat"] - b["lat"]) * 111.2, (a["lon"] - b["lon"]) * 111.2 * math.cos(math.radians(a["lat"]))
+        return math.hypot(dx, dy)
+    out = []
+    pins = [st.get("pin") for st in stops]
+    for j, st in enumerate(stops):
+        mid = str(st.get("moment_id") or "")
+        if not pins[j] or _base(mid) in loved or mid.startswith(("lunch@", "dinner@", "mine")) or \
+                str(st.get("key") or "").endswith(("#lunch", "#dinner")):
+            continue
+        for i in range(j - 1):
+            if pins[i] and km(pins[i], pins[j]) < BACK_NEAR_KM and max(
+                    (km(pins[i], pins[k]) for k in range(i + 1, j) if pins[k]), default=0) > BACK_AWAY_KM:
+                out.append(_base(mid))
+                break
+    return out
+
+
 TRANSFER_ALWAYS_OK = 30   # m329: a journey of up to this long is never called disproportionate
 
 

@@ -60,6 +60,29 @@ class Candidate:
     rest: bool = False                      # m331: a rest (feel word "Resting"): never the day's first stop
     ride: bool = False                      # m333: a ride (the river bus): reached from somewhere near its start
     dinner: bool = False                    # m334: a dinner (a "dinner near X" slot or a food card): one a plan
+    route: tuple[Point, ...] = ()           # m353: a ride's course (its stops), start to end
+
+
+ALONG_M, ENDS_M = 700, 1500   # m353: within 700 m of a ride's course, and more than 1.5 km from where it starts and ends
+
+
+def _seg_m(p: Point, a: Point, b: Point) -> float:
+    """Metres from p to the segment a-b (an equirectangular projection: fine within a city)."""
+    k = math.cos(math.radians(p.lat))
+    ax, ay, bx, by, px, py = a.lon * k, a.lat, b.lon * k, b.lat, p.lon * k, p.lat
+    dx, dy = bx - ax, by - ay
+    t = 0.0 if dx == dy == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy)) * 111_320
+
+
+def along_ride(p: Point, ride: Candidate) -> bool:
+    """m353: p lies on the stretch of a ride's course away from its two ends (going there means going back over it)."""
+    pts = ride.route
+    if len(pts) < 2:
+        return False
+    if min(_seg_m(p, a, b) for a, b in zip(pts, pts[1:])) > ALONG_M:
+        return False
+    return _seg_m(p, pts[0], pts[0]) > ENDS_M and _seg_m(p, pts[-1], pts[-1]) > ENDS_M
 
 
 def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: str | None = None) -> Candidate:
@@ -67,7 +90,7 @@ def candidate_for(m: Moment, utility: float, weekday: str | None = None, date: s
     return Candidate(m.id, m.start(), m.end(), int(round(m.duration_min())), tuple(m.windows(weekday, date)),
                      float(utility), float(m.cost_gbp or 0.0), m.variant_of, m.kind,
                      theme="history" if moment_features(m).get("history_culture", 0) >= 1 else None,
-                     rest=(m.feel_word or "") == "Resting")
+                     rest=(m.feel_word or "") == "Resting", route=tuple(m.route))
 
 
 @dataclass(frozen=True)
@@ -310,6 +333,16 @@ def _solve(cands: list[Candidate], start_point: Point, day_start: int, day_end: 
                 if i != j and T[i][j] > RIDE_APPROACH_MAX:
                     solver.Add(routing.NextVar(routing.Start(0) if i == 0 else manager.NodeToIndex(i))
                                != manager.NodeToIndex(j))
+    # m353 (Abram, 25 Nov: "taking someone past the Southbank Centre on a boat and then sending them back by Tube to
+    # visit something they could have reached on foot is poor planning"): a stop along the stretch a ride covers, away
+    # from where it starts and ends, isn't on the same day as the ride (it would mean going back over the same water),
+    # unless it's a place they loved
+    for j, c in enumerate(cands, start=1):
+        if c.ride and c.route:
+            for k, o in enumerate(cands, start=1):
+                if k != j and not o.ride and not o.mine and not o.loved and along_ride(o.end, c):
+                    solver.Add(routing.ActiveVar(manager.NodeToIndex(j)) +
+                               routing.ActiveVar(manager.NodeToIndex(k)) <= 1)
     if travel_budget_min is not None and TRAVEL_OVER_COST:
         # m333 (Abram: "consider total daily travel burden"): each leg was judged on its own, so a day of 25-min
         # hops (Priya's Saturday, 135 min) looked fine leg by leg. A minute of travel past the pace's budget costs
@@ -422,6 +455,10 @@ def _greedy_route(cands: list[Candidate], T: list[list[int]], B: list[list[int]]
                 continue
             if (c.lunch and (meals or (lunch_not_first and not route))) or (c.rest and not route):
                 continue
+            if any(along_ride(c.end, cands[r - 1]) for r in route if cands[r - 1].ride and not c.loved) or (
+                    c.ride and c.route and any(along_ride(cands[r - 1].end, c) for r in route
+                                               if not cands[r - 1].mine and not cands[r - 1].loved)):
+                continue   # m353: never back over a ride's own course
             if c.ride and c.moment_id not in must and T[prev][j] > RIDE_APPROACH_MAX:   # m333: near its start
                 continue
             if c.dinner and dined:   # m334: one dinner

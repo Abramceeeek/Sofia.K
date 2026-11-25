@@ -87,7 +87,8 @@ EXTRA_PLACES_MAX = 4
 # beyond the person's own number follow how full they want their days, never their pace ("Do not assume that a gentle
 # traveller wants fewer experiences"). Pace still sets journeys, their budget and strenuous stops. No answer: balanced.
 EXTRA_BY_FEEL = {"relaxed": 0, "balanced": 2, "full": EXTRA_PLACES_MAX}
-SUN_TZ = {"GB": "Europe/London", "ES": "Europe/Madrid"}   # m349: the local clock a destination's sunset is told in
+SUN_TZ = {"GB": "Europe/London", "ES": "Europe/Madrid"}
+BACK_EXCESS_MAX = 45   # m353: minutes of early end, waits or travel over budget a day may gain to avoid a crossing back   # m349: the local clock a destination's sunset is told in
 # m346: what an extra place is worth to the solver, in utility units, by day feel: a full day ("make the most of the
 # available day") takes a strong match whose journey and wait cost a little more than a balanced day would accept
 EXTRA_BONUS_BY_FEEL = {"relaxed": 0.0, "balanced": 0.5, "full": 1.0}
@@ -1465,6 +1466,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     best = (plan, stops, head, excess, brief, outlook)
             if best is None:
                 return None
+            # m353 (G12): a day that crosses London and comes back to where it was loses the place it comes back to,
+            # when a day without it is nearly as full (no more than BACK_EXCESS_MAX minutes more of what's still wrong)
+            if (back := dayplan.backtracks(best[1], loved_cards)) and not mine:
+                plan2, stops2, head2 = personal_day(
+                    s, user, p, best[4], pool, familiar=False, exclude=sorted(used | set(back)),
+                    must_do=want if want in {m.id for m in pool} and want not in back else None,
+                    post=post, feelings=feelings or None, fallback=False, travel=view)
+                if any(st["rateable"] for st in stops2) and not dayplan.backtracks(stops2, loved_cards):
+                    early2 = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops2)
+                    excess2 = max(0, early2 - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
+                        stops2, best[4].start_time, by_ready, best[4].end_time, best[4].weekday, best[4].date) + \
+                        dayplan.travel_over(stops2, best[4].pace)
+                    if excess2 <= best[3] + BACK_EXCESS_MAX:
+                        if best[5]:
+                            head2["weather"] = best[5].out()
+                        best = (plan2, stops2, head2, excess2, best[4], best[5])
             plan, stops, head, _, brief, outlook = best
             # m326: the chosen plan, as before
             dayplan.state_free_time(stops, brief.start_time, by_ready,   # G1: no silent wait

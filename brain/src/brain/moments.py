@@ -116,6 +116,9 @@ class Moment(BaseModel):
     variant_of: str | None = None  # shared by variants of one moment (day / night): one per plan
     variant: str | None = None     # e.g. "day", "night"
     direction: str | None = None   # for routes where order matters, e.g. "Greenwich → Battersea"
+    # m353 (Abram, 25 Nov: "taking someone past the Southbank Centre on a boat and then sending them back by Tube… is
+    # poor planning"): a ride's own course, start to end (its stops' points), so a plan never goes back along it
+    route: list[Point] = Field(default_factory=list)
     place: Place
     approach: Approach = Field(default_factory=Approach)
     experience: Experience = Field(default_factory=Experience)

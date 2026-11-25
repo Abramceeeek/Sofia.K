@@ -81,14 +81,14 @@ items:
     types: [gallery]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Tate Modern Turbine Hall"
     phrase: "big modern spaces and art"
-    cards: []   # no moment card yet
+    cards: [m_tate_modern]   # m353: its ready card (m340 / m348), so a person who loved it is planned it
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
     moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 1}
   9:
     types: [tower, roof_garden]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Sky Garden"
     phrase: "views from the top of a tower"
-    cards: []   # no moment card yet
+    cards: [m_sky_garden]   # m353: its ready card (m340 / m348), so a person who loved it is planned it
     place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   10:

@@ -9,7 +9,7 @@
 # Coordinates: Overture Maps Places (open data), "Mildreds Kings Cross, 200 Pentonville Rd, N1 9JP" (51.531334, -0.11714), confidence 0.999, read 2026-11-24
 id: m_mildreds_kings_cross
 title: "Plant-based plates at Mildreds, King's Cross"
-status: ready
+status: draft   # m353: no price in pounds is verified (the page prints $), and a ready London card always has one, so day totals are complete (test_currency_audit); ready again once a £ price is checked
 swipe: false
 kind: moment
 place:
@@ -24,7 +24,7 @@ approach:
   step_free: true        # CHECKED: fully accessible for wheelchair users
 experience:
   what_happens: "You eat bright plant-based plates like gochujang tofu, a beetroot tikki burger or oyster mushroom shawarma."   # the dishes CHECKED; plant-based: each dish named is made without meat *
-  why_it_works: "A relaxed sit-down meal near King's Cross, mains about £17.50–£19."
+  why_it_works: "A relaxed sit-down meal of plant-based plates, a short walk from King's Cross."
   duration_min: [45, 75] # GUESS
   end_point: null
 best_time:
@@ -35,12 +35,12 @@ best_time:
   company: null
   crowd_window: null
   book_ahead: "Booking is recommended for evenings; walk-ins are welcome when there's room"   # CHECKED
-  opening_hours: "Mon-Thu 09:00-22:00, Fri-Sat 09:00-23:00, Sun 09:00-21:00; booking recommended for evenings; mains £17.50-£19. Christmas hours not on the page read. mildreds.com, read 2026-11-24"
+  opening_hours: "Mon-Thu 09:00-22:00, Fri-Sat 09:00-23:00, Sun 09:00-21:00; booking recommended for evenings; mains printed with a $ sign, so no price in pounds is shown. Christmas hours not on the page read. mildreds.com, read 2026-11-24"
   hours: "Daily from 09:00, to 22:00 (23:00 Fri–Sat, 21:00 Sun). Check Christmas hours before 24–26 Dec"   # shown on the stop
 features:
   place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
   moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
-cost_gbp: 18   # CHECKED: mains £17.50-£19 (printed with a $ sign; read as £)
+cost_gbp: null   # m353 (Abram, 25 Nov): "Never reinterpret dollar prices as pounds": the page prints its mains with a $ sign (17.50-19); no price in pounds is verified, so none is shown
 cost_kind: food
 shot_card: null
 source: research

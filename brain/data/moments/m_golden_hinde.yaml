@@ -10,7 +10,7 @@
 # Coordinates: Overture Maps Places (open data), "Golden Hinde, St Mary Overies Dock, Cathedral Street, SE1 9DE" (51.506367, -0.090271), confidence 0.985, read 2026-11-24
 id: m_golden_hinde
 title: "Aboard the Golden Hinde, Drake's galleon by Borough Market"
-status: ready
+status: draft   # m353 (Abram, 25 Nov): "An ambiguous time must not be interpreted as a closure. Keep the card in draft until the official information is clarified."
 swipe: false
 kind: moment
 place:
@@ -30,23 +30,13 @@ experience:
   end_point: null
 best_time:
   time_of_day: ["10:00-17:00"]   # CHECKED: daily in winter (to 18:00 Apr-Oct; planned to 17:00 all year); last admission 30 min before closing
-  time_of_day_dates:     # CHECKED: dated changes on the official page
-    "2026-11-24": []
-    "2026-12-05": []
-    "2026-12-10": []
-    "2026-12-11": []
-    "2026-12-13": []
-    "2026-12-25": []
-    "2026-12-26": []
-    "2026-12-29": []
-    "2027-01-07": []
-    "2027-01-09": []
-    "2027-01-16": []
+  # m353: the page's list of dates and times (24 Nov; 5, 10, 11, 13, 25, 26, 29 Dec; 7, 9, 16 Jan) doesn't say whether
+  # they're closures or opening times, so nothing is read from it until the Golden Hinde confirms it
   light: null
   weather: ["any"]
   company: null
   crowd_window: "School holidays (GUESS)"
-  opening_hours: "Nov-Mar daily 10:00-17:00, Apr-Oct 10:00-18:00, last admission 30 min before closing; dated changes listed on the page (planned as closed); adults £6, children 3-16 £6, family of four £20, under 3 free; no need to book. goldenhinde.co.uk, read 2026-11-24"
+  opening_hours: "Nov-Mar daily 10:00-17:00, Apr-Oct 10:00-18:00, last admission 30 min before closing; dated times listed on the page, unclear whether open or closed (not used); adults £6, children 3-16 £6, family of four £20, under 3 free; no need to book. goldenhinde.co.uk, read 2026-11-24"
   hours: "Daily 10:00–17:00 in winter, last admission 16:30. £6 each; family of four £20"   # shown on the stop
 features:
   place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 0, photo_potential: 1}
