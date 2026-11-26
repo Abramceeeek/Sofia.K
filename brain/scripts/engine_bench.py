@@ -96,6 +96,11 @@ ARCHETYPES = [
          profile=dict(based="london"), swipes={}, choices=None),
 ]
 GROUP = ("food", "quiet", "history")   # a shared trip: three different people, from their own accounts
+# Must-go trials (M3): a day planned with one place the traveller asked for (the planner's own "must include"), on the
+# Friday, 10:00-17:00 from Charing Cross, 3 places. Some are easy, some are against their tastes, one is a hard rule.
+MUST_GO = [("food", "m_bm_great_court"), ("quiet", "m_tate_modern"), ("history", "m_borough_market_graze"),
+           ("views", "m_sky_garden"), ("kids", "m_diana_playground"), ("art", "m_wahaca_southbank"),
+           ("sam", "m_bm_great_court")]   # Sam didn't enjoy the British Museum: the hard rule must hold
 
 
 def snapshot_hash() -> str:
@@ -156,7 +161,8 @@ def main() -> int:
     built = ex.built_from()
     commit = (built.split("commit ")[1].split()[0] if "commit " in built else "unknown")
     raw = {"commit": built, "snapshot": snapshot_hash(), "days": [d.isoformat() for d in DAYS], "solver_s": SOLVER_S,
-           "travellers": {}, "group": None}
+           "bench": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:16], "travellers": {}, "group": None,
+           "must_go": []}
     people = [dict(p, kind="gate") for p in ex.PEOPLE] + [dict(p, kind="archetype") for p in ARCHETYPES]
     heads = {}
     with TestClient(create_app(settings)) as c:
@@ -181,6 +187,19 @@ def main() -> int:
             plan = r.json() if r.status_code == 201 else {"days": [], "error": r.text[:200]}
             raw["travellers"][p["key"]] = {"who": p["who"], "kind": p["kind"], "must_go": list(must),
                                            "children": list(kids), "matches": per_day, "plan": plan}
+        for key, place in MUST_GO:
+            kids = T_kids = tuple(next((p.get("children") or () for p in people if p["key"] == key), ()))
+            body = {"start": {"lat": 51.5081, "lon": -0.1281}, "start_name": "Charing Cross", "start_time": "10:00",
+                    "end_time": "17:00", "date": DAYS[0].isoformat(), "stops": 3, "intent": {"must_do": place}}
+            pl = c.post("/v1/me/plans", headers=heads[key], json=body).json()
+            q = f"/v1/me/matches?date={DAYS[0].isoformat()}&must_go={place}" + (
+                "&children=" + ",".join(map(str, T_kids)) if kids else "")
+            m = next((x for x in c.get(q, headers=heads[key]).json()["matches"] if x["place"] == place), {})
+            raw["must_go"].append({"traveller": key, "place": place, "class": m.get("class"),
+                                   "restrictions": m.get("restrictions", []),
+                                   "planned": any(str(st.get("moment_id", "")).split("#")[0] == place
+                                                  for st in pl.get("stops", [])),
+                                   "stops": [st.get("title") for st in pl.get("stops", [])]})
         g = c.post("/v1/me/groups", headers=heads[GROUP[0]], json={"start_date": DAYS[0].isoformat(), "nights": 1,
                                                                     "per_day": 3, "consent": True,
                                                                     "share_preferences": True}).json()
@@ -202,7 +221,7 @@ def report(raw: dict, cards: dict) -> str:
     T = raw["travellers"]
     d0 = raw["days"][0]
     lines = [f"# Engine bench: {raw['commit']}", "",
-             f"Data snapshot `{raw['snapshot']}` · days {', '.join(raw['days'])} · solver {raw['solver_s']} s · "
+             f"Bench `{raw.get('bench', '?')}` · data snapshot `{raw['snapshot']}` · days {', '.join(raw['days'])} · solver {raw['solver_s']} s · "
              f"{len(T)} synthetic travellers ({sum(v['kind'] == 'gate' for v in T.values())} from the gate, "
              f"{sum(v['kind'] == 'archetype' for v in T.values())} archetypes) and one shared trip.", "",
              "**Shadow mode:** the engine (`brain.match`) judges every ready place for each traveller; the planner makes "
@@ -321,15 +340,19 @@ def measures(raw: dict, cards: dict) -> list[str]:
     out.append(f"- **Diversity:** mean overlap of two travellers' top 10 (must-go, strong, good) is "
                f"**{sum(jac) / len(jac):.0%}** over {len(pairs)} pairs (highest {max(jac):.0%}, lowest {min(jac):.0%}). "
                "Lower is more personal.")
-    # must-go
-    asked = [(k, m) for k, v in T.items() for m in v["must_go"]]
-    kept = [(k, m) for k, m in asked if any(x["place"] == m and x["class"] == "must_go"
-                                           for x in T[k]["matches"][d0]["matches"])]
-    in_plan = [(k, m) for k, m in asked if any(str(st.get("moment_id", "")).split("#")[0] == m
-                                               for day in T[k]["plan"].get("days", []) for st in (day.get("plan") or {}).get("stops", []))]
-    out.append(f"- **Must-go:** {len(kept)} of {len(asked)} requests classed must-go by the engine; {len(in_plan)} of "
-               f"{len(asked)} in the planner's trip (the bench's trip request doesn't pass a must-go yet, so this "
-               "measures what today's planner does unasked).")
+    # must-go (M3): the planner's own "must include", one place a day
+    mg = raw.get("must_go", [])
+    feasible = [x for x in mg if x["class"] == "must_go"]
+    ruled = [x for x in mg if x["class"] == "not_suitable"]
+    out.append(f"- **Must-go preservation:** of {len(feasible)} feasible requests, the planner kept "
+               f"**{sum(x['planned'] for x in feasible)}**. Of {len(ruled)} the engine rules out, the planner planned "
+               f"**{sum(x['planned'] for x in ruled)}**, and the engine said why for {sum(bool(x['restrictions']) for x in ruled)}. "
+               "Where they disagree, it's a request for a place the traveller said they didn't enjoy: the planner lets "
+               "the request win (`dayplan`: `disliked_ids - {must_do}`), the engine doesn't. Abram's decision.")
+    for x in mg:
+        out.append(f"  - {x['traveller']} asked for `{x['place']}`: engine **{(x['class'] or '?').replace('_', ' ')}**"
+                   f"{' (' + '; '.join(x['restrictions']) + ')' if x['restrictions'] else ''}; planned: "
+                   f"**{'yes' if x['planned'] else 'no'}** ({'; '.join(s[:28] for s in x['stops'] if s)})")
     # dislikes
     bad = 0
     for k, v in T.items():
