@@ -9,7 +9,7 @@
 | London gate, 3 runs, every run identical | **NOT PASSED:** G2b 5, G11 5, G13 0 (now with the evidence rule), G15 0, everything else 0 (`gate.md`, recorded under `06721a0`, results only) |
 | Examples | `examples.md`, from the same code |
 | Android | run 62: built, every screen test passed |
-| iPhone | run 122: simulator build with screenshots, upload off (result in the PR) |
+| iPhone | run 122: compiled with screenshots (simulator build, upload off) |
 | Independent review | `decisions/engine-review-batch8.md`, kept apart from these decisions |
 
 **What this is and isn't:**
