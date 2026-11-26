@@ -712,10 +712,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
                 u = inner.get("predicted")
                 prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
+                # m363 (work package D): "it has what you like" names only features that define this stop (tag 2),
+                # and the interest it serves by name, not "one of your interests"
+                defining = {n for n in taste if n not in match_engine.TAG_NAMES or
+                            (card_m is not None and int(card_m.tag(n) or 0) >= reasons.LINK_MIN)}
+                interest = amap.labels(amap.fields_of(card_m) & fields) if (amap and card_m) else []
+                labels = {**dayplan.APP_LABELS,
+                          **({"aspiration_match": f"your interest in {interest[0].lower()}"} if interest else {})}
                 st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows(brief.weekday, brief.date) if card_m else [],
                                              hours_text=inner.get("hours") or "", budget=budget_block,
-                                             travel_source=legs_from, labels=dayplan.APP_LABELS,
-                                             taste=taste)
+                                             travel_source=legs_from, labels=labels,
+                                             taste=defining)
         for st in out:
             base = st["moment_id"].split("#")[0]
             if st["rateable"] and base in by_id:

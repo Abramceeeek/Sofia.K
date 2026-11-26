@@ -40,12 +40,17 @@ def test_a_feeling_is_a_stated_choice_that_moves_its_own_features():
 
 
 def test_reasons_cite_only_what_really_raises_the_stop():
+    """m363: the stop must be defined by the feature (tag 2): the Sky Garden's views, not Waterloo Bridge's (views 1 on
+    its card, a data question for the place model: "movement and views" is one tag for two things)."""
     boat = next(i for i, (_, cards, *_) in CARDS.items() if "m_uber_boat_west_day" in cards)
-    m = BY_ID["m_waterloo_bridge_sunset"]
+    m = BY_ID["m_sky_garden"]
     lean = delta(movement_views=0.6)
     r = reasons.stop_reasons(POP, lean, m, loved=[loved(boat)], feelings=[], rated=[], interests=[], n_choices=0)
     assert r[0]["you"] == f"You loved {CARDS[boat][0]}, and this has views too."
     assert r[0]["me"].startswith("I loved")
+    bridge = reasons.stop_reasons(POP, lean, BY_ID["m_waterloo_bridge_sunset"], loved=[loved(boat)], feelings=[],
+                                  rated=[], interests=[], n_choices=0)
+    assert not any("views" in x["you"] for x in bridge)        # views 1 on the bridge's card: no claim
     # the same loved place, but no personal lean on the shared feature: not a reason
     r = reasons.stop_reasons(POP, delta(), m, loved=[loved(boat)], feelings=[], rated=[], interests=[], n_choices=0)
     assert r == [{"you": "We don't know much about you yet: this one suits most people and fits your route.",
@@ -93,8 +98,9 @@ def test_the_line_beside_the_price_names_factors_and_never_a_chance():
     line = lambda m, d, **kw: reasons.factor_line(POP, d, m, **{"loved": [], "feelings": [], "interests": [],
                                                                 "n_choices": 0, **kw})
     assert line(BY_ID["m_uber_boat_west_day"], delta(), loved=[loved(boat)]) == "Recommended because you loved it"
-    bridge = BY_ID["m_waterloo_bridge_sunset"]
+    bridge = BY_ID["m_sky_garden"]   # m363: views define it (tag 2); Waterloo Bridge's views are a 1
     assert line(bridge, delta(movement_views=0.6)) == "Recommended because of your lean towards views"
+    assert line(BY_ID["m_waterloo_bridge_sunset"], delta(movement_views=0.6)) == reasons.NOT_YET
     # no lean of their own on what the stop has: it says the stop fits the route and hours, and claims nothing
     assert line(bridge, delta()) == reasons.NOT_YET
     assert line(bridge, delta(movement_views=0.1)) == reasons.NOT_YET          # under the clear-lean line
@@ -171,6 +177,6 @@ def test_a_loved_place_is_named_only_for_the_feature_that_defines_it():
                              interests=[], n_choices=0)
     assert not any("Sky Garden" in x["you"] for x in r)
     boat = next(i for i, (_, cards, *_) in CARDS.items() if "m_uber_boat_west_day" in cards)
-    r = reasons.stop_reasons(POP, delta(movement_views=0.6), BY_ID["m_waterloo_bridge_sunset"], loved=[loved(boat)],
+    r = reasons.stop_reasons(POP, delta(movement_views=0.6), BY_ID["m_sky_garden"], loved=[loved(boat)],
                              feelings=[], rated=[], interests=[], n_choices=0)
-    assert r[0]["you"].endswith("and this has views too.")        # the boat is views: a real connection
+    assert r[0]["you"].endswith("and this has views too.")        # views define both: a real connection (m363)

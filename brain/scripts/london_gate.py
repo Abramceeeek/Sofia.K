@@ -24,6 +24,8 @@
   G13 (m353, Abram: "A false or contradictory explanation is a release blocker… It must not invent a connection
       between two unrelated places") no reason that says the person loved a place the stop isn't, no "You loved X, and
       this has Y too" where Y isn't what X is (its tag below 2), and no "open until" for a place that's always open.
+      m363: and no feature claimed for a stop ("this has views", "your lean towards views") that the stop's own card
+      has below 2
       Generic reasons ("suits most people") are measured, not blocking, with a target
   G14 (m353, Abram: "Unexplained changes to itinerary costs: release blocker") the trip's first day planned again
       with the other day feel (Relaxed for Full or Balanced, Full for Relaxed), as the app does when it's changed: if
@@ -97,6 +99,8 @@ from brain.sun import sunset as _sunset  # noqa: E402
 GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G3b", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14",
          "G15")
 from brain.reasons import PHRASE as _PHRASE, LINK_MIN as _LINK, _mid  # noqa: E402
+from brain.reasons import LEAN as _LEAN  # noqa: E402
+_LEAN_BY_WORDS = {v: k for k, v in _LEAN.items()}
 from brain.travel import LondonEstimate as _LE  # noqa: E402
 from brain.moments import Point as _Pt  # noqa: E402
 from brain.planner import along_ride as _along, candidate_for as _cand  # noqa: E402
@@ -310,6 +314,18 @@ def why_day(d: dict, stops: list, sw: dict, fails: dict, q: dict) -> None:
                 i = names.get(m1.group(1))
                 if i is None or mid not in (ITEMS[i].get("cards") or []):
                     fails["G13"].append(f"{day} {st['title'][:30]}: \"{t[:70]}\" (not that place)")
+        # m363 (the engine bench found 116): a feature claimed for this stop ("this has views", "your lean towards
+        # views") must define it: the stop's own tag at 2, not 1. Judged from the card's tags, not the reasons' code
+        card = MOMENTS.get(mid)
+        claims = [(t, feature[g]) for t in texts for g in re.findall(r"this has (.+?)(?: too)?\.$", t) if g in feature]
+        line = st.get("match") or ""
+        if "your lean towards " in line:
+            tail = line.split("your lean towards ", 1)[1].split(" and your ")[0]
+            claims += [(line, f) for lean, f in _LEAN_BY_WORDS.items() if re.search(rf"\b{re.escape(lean)}\b", tail)]
+        for t, f in claims:
+            if card is not None and int(card.tag(f) or 0) < _LINK:
+                fails["G13"].append(f"{day} {st['title'][:30]}: \"{t[:60]}\" claims {f}, which is {int(card.tag(f) or 0)} "
+                                    "on its card")
     # m355: a paid rain option that says the day's budget still holds must be right, fares included
     band = BUDGET_BAND.get(q.get("_band"))
     total = ((d.get("plan") or {}).get("totals") or {}).get("cost_gbp")

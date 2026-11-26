@@ -122,7 +122,9 @@ def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_
 
     # this stop's features that the person leans towards, strongest first. A feeling they picked is itself the
     # evidence, so any positive lean it gives counts; a loved place or a rating needs a clear lean (MIN_WEIGHT)
-    leans = sorted((f for f in PHRASE if tags.get(f, 0) >= 1 and d.get(f, 0) > 0), key=lambda f: -tags[f] * d[f])
+    # m363 (work package D; the engine bench found 116 shown claims on a tag of 1): a reason claims a feature for this
+    # stop only where it defines the stop (its tag at LINK_MIN, 2), never where the stop has a little of it
+    leans = sorted((f for f in PHRASE if tags.get(f, 0) >= LINK_MIN and d.get(f, 0) > 0), key=lambda f: -tags[f] * d[f])
     for f in leans:
         if len(out) >= MAX_REASONS:
             break
@@ -203,7 +205,7 @@ def factor_line(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: li
     d = dict(zip(pop.personal_names, (float(v) for v in delta)))
     tags = _tags(m)
     felt = {f for w in feelings for f, v in FEELINGS.get(w, {}).items() if v > 0}
-    leans = sorted((f for f in LEAN if tags.get(f, 0) >= 1 and (d.get(f, 0) > MIN_WEIGHT or (f in felt and d.get(f, 0) > 0))),
+    leans = sorted((f for f in LEAN if tags.get(f, 0) >= LINK_MIN and (d.get(f, 0) > MIN_WEIGHT or (f in felt and d.get(f, 0) > 0))),   # m363
                    key=lambda f: -tags[f] * d[f])
     factors = [("interest", f"your interest in {interests[0].lower()}")] if interests else []
     factors += [("lean", LEAN[f]) for f in leans]
