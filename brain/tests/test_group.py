@@ -42,7 +42,7 @@ def test_rejections_budgets_and_must_sees_always_hold():
     q = group.plan(tight, CANDS, days=2, per_day=3)
     assert X["m_courtauld_gallery"].id not in [x.id for x in q.stops]
     # m358: named only with their agreement (m353), else counted
-    assert any("A must-see of one of you" in n and "smallest budget" in n for n in q.notes)
+    assert any(n.startswith("A must-see, ") and "smallest budget" in n for n in q.notes)   # m361: nobody named
     assert not any("Member B" in n for n in q.notes)
     assert all(sum(x.price.value.amount for x in day) <= 5.0 for day in q.days)
 
@@ -127,7 +127,7 @@ def test_when_nothing_suits_a_member_it_is_said():
     ms = [Member("Member A", Scorer(pop, d)), Member("Member B", Scorer(pop, None))]
     gp = plan(ms, _london(), 1, 3)
     # m358: named only with their agreement; otherwise counted (m353's privacy rule)
-    assert any("Nothing here ranks well for one of you" in n for n in gp.notes)
+    assert any("Nothing here ranks well for someone in the group" in n for n in gp.notes)   # two haven't agreed
     assert not any("Member A" in n for n in gp.notes)
     ms = [Member("Member A", Scorer(pop, d), shares_preferences=True), Member("Member B", Scorer(pop, None))]
     assert any("Nothing here ranks well for Member A" in n for n in plan(ms, _london(), 1, 3).notes)
@@ -209,11 +209,12 @@ def test_a_gentle_member_keeps_strenuous_stops_out_for_everyone():
     keen = members(A={"pace": "full_on"})
     gentle = members(A={"pace": "full_on"}, C={"pace": "gentle"})
     assert not {x.id for x in group.plan(gentle, CANDS, days=2, per_day=3).stops} & strenuous
-    assert any("gentle pace" in n for n in group.plan(gentle, CANDS, days=2, per_day=3).notes)
-    assert not any("gentle pace" in n for n in group.plan(keen, CANDS, days=2, per_day=3).notes)
+    assert any("strenuous place" in n for n in group.plan(gentle, CANDS, days=2, per_day=3).notes)
+    assert not any("strenuous place" in n for n in group.plan(keen, CANDS, days=2, per_day=3).notes)
     # m358: who asked for it is named only with their agreement (m353's privacy rule)
     notes = group.plan(gentle, CANDS, days=2, per_day=3).notes
-    assert any("because one of you asked for a gentle pace" in n for n in notes) and not any("Member C" in n for n in notes)
+    assert any("left out to keep the pace gentle for everyone" in n for n in notes)   # m361: the rule, not who
+    assert not any("Member C" in n or "one of you" in n for n in notes)
     named = members(A={"pace": "full_on"}, C={"pace": "gentle", "shares_preferences": True})
     assert any("because Member C asked for a gentle pace" in n for n in group.plan(named, CANDS, days=2, per_day=3).notes)
 
@@ -228,3 +229,18 @@ def test_why_a_stop_suits_the_group_names_nobody_who_hasnt_agreed():
     one = group.plan(members(B={"shares_preferences": True}), CANDS, days=2, per_day=3)
     assert all("Member A" not in w and "Member C" not in w for w in one.why.values())
 
+
+
+def test_nobody_is_found_by_elimination_in_a_small_group():
+    """m361 (two batch 6 reviewers: with Members A and B named, "because one of you asked for a gentle pace" can only
+    mean the third member): with one member who hasn't agreed, nothing is said about them at all, in a reason or a
+    note; with two or more, only "someone in the group", never a count."""
+    agreed = {"shares_preferences": True}
+    ms = members(A={**agreed, "pace": "full_on"}, B=agreed, C={"pace": "gentle"})
+    gp = group.plan(ms, CANDS, days=2, per_day=3)
+    text = list(gp.why.values()) + gp.notes
+    assert not any("one of you" in w or "someone" in w or "Member C" in w for w in text), text
+    assert any("to keep the pace gentle for everyone" in n for n in gp.notes)
+    two = group.plan(members(A=agreed), CANDS, days=2, per_day=3)   # B and C haven't agreed
+    words = " ".join(list(two.why.values()) + two.notes)
+    assert "Member B" not in words and "Member C" not in words and " of you" not in words.replace("all 3 of you", "")

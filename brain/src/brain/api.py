@@ -1474,14 +1474,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 return None
             # m353 (G12): a day that crosses London and comes back to where it was loses the place it comes back to,
             # when a day without it is nearly as full (no more than BACK_EXCESS_MAX minutes more of what's still wrong)
-            # m353: and a named food place within two hours of another food stop goes too (dayplan.meals_close)
-            if (back := dayplan.backtracks(best[1], loved_cards) + dayplan.meals_close(best[1])) and not mine:
+            # m353, m360: and a named substantial meal within three hours of another one goes too (dayplan.meals_close)
+            if (back := dayplan.backtracks(best[1], loved_cards)
+                    + dayplan.meals_close(best[1], app.state.card_kinds)) and not mine:
                 plan2, stops2, head2 = personal_day(
                     s, user, p, best[4], pool, familiar=False, exclude=sorted(used | set(back)),
                     must_do=want if want in {m.id for m in pool} and want not in back else None,
                     post=post, feelings=feelings or None, fallback=False, travel=view, children=kids)
                 if any(st["rateable"] for st in stops2) and not dayplan.backtracks(stops2, loved_cards) and \
-                        not dayplan.meals_close(stops2):
+                        not dayplan.meals_close(stops2, app.state.card_kinds):
                     early2 = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops2)
                     excess2 = max(0, early2 - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
                         stops2, best[4].start_time, by_ready, best[4].end_time, best[4].weekday, best[4].date) + \

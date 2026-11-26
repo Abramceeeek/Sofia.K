@@ -33,8 +33,9 @@
 
 **Read the consent script, and note each "yes" on the results sheet** (initials only):
 - *"I'm testing an app I'm building, not you. There are no wrong answers. If something is confusing, that's the app's fault and exactly what I need to see."*
-- *"I'll take written notes of what you do and say. I won't record audio or video unless you say yes now. If you do, the recording is deleted once my notes are typed up, within 7 days."* (Guardrail: transcribe, then delete raw recordings.)
-- *"Your answers in the app go to a test server that's separate from the real app. At the end, we'll delete them together in the app (You → Your data → Delete my data). The whole test server is deleted within 30 days of the last session."*
+- *"I'll take written notes of what you do and say, using a code (P1–P6), not your name."*
+- **Separately, and only then:** *"Would you be happy for me to record the screen or audio as well? It's entirely up to you: saying no makes no difference to taking part. If you say yes, the recording is deleted within 7 days, once my notes are typed up."* (Guardrail: transcribe, then delete raw recordings.)
+- *"Your answers in the app go to a test server that's separate from the real app. At the end, we'll delete them together in the app (You → Your data → Delete my data). The whole test server is deleted within 30 days of the last session, and my notes use your code, not your name."*
 - *"Please don't put your name, phone number or email anywhere in the app, and don't use Help & safety for anything real today: it's a test copy and nobody is watching it."*
 - For P5 and P6: *"You'll plan one trip together, each on your own phone. The app asks each of you to agree before your answers help plan it, and asks whether it may name you by a letter (Member A, Member B). Saying no is fine: you'll be counted, not named."*
 - *"In an emergency on a real trip, always call 999."*
@@ -98,14 +99,28 @@ Then one open question: **"What confused or disappointed you?"** Write the answe
 2. **Tick "deleted in the app"** on their results block.
 3. **If a recording was made:** delete it once the notes are typed up, within 7 days, and write the date on the sheet.
 
-## Retention (proposed by Claude; Abram to agree)
+## Retention and deletion (approved by Abram, 26 Nov; m360)
 
-No retention process for these sessions is written down anywhere in this repository yet. This one is a proposal, and needs Abram's yes before the first session:
-- **In the app:** deleted at the end of each session, as above.
-- **The QA Brain's database:** deleted within 30 days of the last session. Render's free database expires 30 days after it's made in any case (`decisions/qa-build-path.md`).
-- **The results sheet:** P1–P6 and initials only. No names, phone numbers or emails on it. It's kept until Checkpoint 3, then reduced to the summary.
-- **The consent list** (who P1–P6 are): kept apart from the results, and deleted once the summary is written (within 30 days of the last session).
-- **Recordings:** none by default. If one is made, it's deleted within 7 days.
+**These rules hold before the first session, and Abram follows them for every one.**
+
+| Data | Kept | How it's deleted |
+|---|---|---|
+| Each participant's data in the QA Brain | Until the end of their session | With them, in the app: You → Your data → Delete my data. This removes everything about that install, including their place in a shared trip |
+| The QA database (`odys-brain-qa-db`) | **Deleted within 30 days of the final session** | Abram deletes the database in Render. Render's free database also expires 30 days after it's made, so it can't outlive that |
+| Raw audio or video recordings | **Deleted within 7 days** | Abram deletes each file once his notes are typed up, and writes the date on the results sheet |
+| Research notes and the results sheet | De-identified as soon as possible | Participant codes (P1–P6) and initials only; no names, phone numbers or emails. Anything identifying written on the day is removed when the notes are typed up |
+| The consent list (who P1–P6 are) | Until the summary is written (within 30 days of the last session) | Kept apart from the results, then deleted |
+| Anonymous aggregate results | May be kept for product research | Counts, scores and de-identified quotes only |
+
+**Conditions (Abram's):**
+- **Recording is optional, with its own consent.** It's asked as a separate question after the main consent, and a "no" changes nothing else: the person still takes part. No recording without that yes.
+- **The QA Brain and database are separate from production** (`render-qa.yaml`), and the QA apps can't reach the production Brain (`decisions/qa-build-path.md`).
+- **Exports and backups:**
+  - The QA Brain has **no backup job**. The nightly backup workflow seals the production Brain's database and runs only on `main`.
+  - **Render's own backups of a free database: UNVERIFIED.** Abram checks the QA database's page in Render. Any backup there is deleted with the database, or at its own expiry, which he writes down.
+  - Any export Abram takes from the QA Brain (`/v1/admin/export`) is a file on his own computer. He deletes it with the QA database, and writes down where it was kept.
+- **Fictional child profiles only:** a parent enters made-up ages on "Who's going". No real child's details are ever entered, and children never take part.
+- **Participant codes, not names,** in every research report.
 
 ## What goes on the results sheet (`results-template.md`)
 

@@ -28,6 +28,10 @@
   G14 (m353, Abram: "Unexplained changes to itinerary costs: release blocker") the trip's first day planned again
       with the other day feel (Relaxed for Full or Balanced, Full for Relaxed), as the app does when it's changed: if
       the day changes, the plan says what changed, and its cost when that changes by 50p or more
+  G15 (m360, Abram, 26 Nov: "A substantial restaurant lunch followed by another substantial lunch 141 minutes later
+      should be rejected") two substantial meals (a restaurant, a meal card, the day's lunch or dinner) start at least
+      three hours apart. A market tasting, a bakery, a snack or coffee never counts. Judged here from the catalogue's
+      own kinds, not by the planner's function
   G11 (m350, "daily travel budget by pace") no day's travel is more than 20 min over its pace's budget (gentle 60,
       medium or unstated 90, full-on 120 min): one journey's slack, never a day of crossing London
 
@@ -90,7 +94,8 @@ from brain.dayplan import EXTRA_MIN_P, spans_lunch  # noqa: E402
 import brain.api as _api  # noqa: E402
 EXTRA_BY_FEEL = getattr(_api, "EXTRA_BY_FEEL", {"relaxed": 0, "balanced": 2, "full": 4})   # so older commits can run it
 from brain.sun import sunset as _sunset  # noqa: E402
-GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G3b", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14")
+GATES = ("G1", "G2a", "G2b", "G2c", "G3", "G3b", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14",
+         "G15")
 from brain.reasons import PHRASE as _PHRASE, LINK_MIN as _LINK, _mid  # noqa: E402
 from brain.travel import LondonEstimate as _LE  # noqa: E402
 from brain.moments import Point as _Pt  # noqa: E402
@@ -260,6 +265,7 @@ def check(p: dict, trip: dict, chance: dict | None = None) -> dict[str, list[str
         q.setdefault("party", []).append(_party(stops, MOMENTS, ad, ch))
         feel_day(d, t, stops, kinds, gaps, early, fails, q)
         route_day(d, stops, loved_cards, fails)
+        meals_day(d, stops, fails)
         why_day(d, stops, sw, fails, q)
     if not reflected:
         fails["G3"].append("no stop reflects a loved place")
@@ -325,6 +331,28 @@ def why_day(d: dict, stops: list, sw: dict, fails: dict, q: dict) -> None:
         if close is not None and mins(m_.group(1)) != close:
             fails["G13"].append(f"{day} \"open until {m_.group(1)}\" for {last.title[:30]}, which closes at "
                                 f"{close // 60:02d}:{close % 60:02d}")
+
+
+MEAL_KINDS_G15 = {"restaurant"}
+MEALS_APART_G15 = 180
+_CARD_KINDS = None
+
+
+def meals_day(d: dict, stops: list, fails: dict) -> None:
+    """m360: G15, two substantial meals under three hours apart (a tasting or a snack never counts)."""
+    global _CARD_KINDS
+    if _CARD_KINDS is None:
+        from brain.dayplan import load_card_kinds
+        _CARD_KINDS = load_card_kinds(DATA_DIR / "catalogue" / "london.yaml")
+    meals = []
+    for st in stops:
+        key, mid = str(st.get("key") or ""), str(st["moment_id"])
+        if mid.startswith(("lunch@", "dinner@")) or key.endswith(("#lunch", "#dinner")) or st.get("lunch") or \
+                _CARD_KINDS.get(base(mid)) in MEAL_KINDS_G15:
+            meals.append((mins(st["arrive"]), st["title"][:36]))
+    for (a, ta), (b, tb) in zip(meals, meals[1:]):
+        if b - a < MEALS_APART_G15:
+            fails["G15"].append(f"{d['date']} {tb} at {b // 60:02d}:{b % 60:02d}, {b - a} min after {ta}")
 
 
 def route_day(d: dict, stops: list, loved: set, fails: dict) -> None:
@@ -644,7 +672,8 @@ def main(runs: int = RUNS) -> int:
            "G7 a gentle pace kept · G8 no journey longer than its visit · **G9** open for the whole visit that date · "
            "**G10** a sunset stop at sunset · **G11** travel within 20 min of the pace's budget · **G12** no serious route "
            "defect (a walkable link by Tube, back over a ride's course, a return after going far away) · **G13** no false "
-           "or contradictory reason · **G14** a change to the day says what it changed, its cost included", "",
+           "or contradictory reason · **G14** a change to the day says what it changed, its cost included · **G15** "
+           "two substantial meals at least three hours apart (a tasting or a snack never counts)", "",
            "All of these block a release (m350). The measures further down are for a person to review.", "",
            "**G2 (original)** (no day ending more than 45 min early) is reported for comparison with the earlier "
            "reports, as Abram asked, and no longer blocks (m346).", "",

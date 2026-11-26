@@ -89,7 +89,7 @@ def test_each_members_own_no_is_kept_and_a_place_they_loved_comes_in(client):
     out = client.post(f"/v1/me/groups/{g['id']}/plan", headers=b).json()
     stops = {st["id"]: st for d in out["days"] for st in d}
     market = next(i for i in stops if "borough-market" in i)
-    assert stops[market]["why"].startswith("A place one of you loved")     # A didn't agree to be named
+    assert stops[market]["why"].startswith("A place someone in the group loved")   # neither agreed (m361)
     assert not any("uber-boat" in i for i in stops)
     assert any("rejected" in n for n in out["notes"])
 

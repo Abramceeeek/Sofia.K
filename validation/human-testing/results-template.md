@@ -14,7 +14,8 @@ The app's version and build are in its settings; the Brain commit is the QA Brai
 - **App build:**
 - **Brain commit:**
 - **Consent given:** yes / no
-- **Recording:** none / audio (deleted on __ ) / screen (deleted on __ )
+- **Recording consent (asked separately):** yes / no
+- **Recording:** none / audio (deleted on __, within 7 days) / screen (deleted on __, within 7 days)
 - **Deleted in the app at the end:** yes / no (date: __ )
 
 | Task | Done unaided / with a hint / not done | Time (mm:ss) | What confused them (their words) |

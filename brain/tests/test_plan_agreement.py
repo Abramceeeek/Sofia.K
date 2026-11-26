@@ -136,14 +136,39 @@ def test_a_place_called_at_sunset_is_planned_at_sunset_on_every_day_it_comes(cli
                 assert parse_hhmm(st["depart"]) >= set_at, (d["date"], st["title"], st["depart"])   # m352: there as it sets
 
 
-def test_two_food_stops_are_never_within_two_hours():
-    """m353 (Abram: "Sam should not have two food stops within two hours"): the named one that comes too soon is found."""
-    stops = [{"moment_id": "m_borough_market_graze", "key": "m_borough_market_graze", "arrive": "12:07",
-              "cost_kind": "food"},
-             {"moment_id": "m_padella_borough", "key": "m_padella_borough#lunch", "arrive": "13:29", "cost_kind": "food"},
-             {"moment_id": "m_beigel_bake_late", "key": "m_beigel_bake_late", "arrive": "17:15", "cost_kind": "food"}]
+def _food(mid, at, key=None):
+    return {"moment_id": mid, "key": key or mid, "arrive": at, "cost_kind": "food"}
+
+
+def test_two_substantial_lunches_141_minutes_apart_are_rejected():
+    """m360 (Abram, 26 Nov: "A substantial restaurant lunch followed by another substantial lunch 141 minutes later
+    should be rejected"): three hours between the starts of substantial meals; the later named one goes."""
+    stops = [_food("m_wahaca_southbank", "12:00", "m_wahaca_southbank#lunch"), _food("m_padella_borough", "14:21")]
     assert dayplan.meals_close(stops) == ["m_padella_borough"]
-    assert dayplan.meals_close([stops[0], stops[2]]) == []
+    slot = [{"moment_id": "lunch@m_tate_modern", "key": "lunch@m_tate_modern", "arrive": "12:30", "lunch": True},
+            _food("m_flat_iron_covent_garden", "14:45")]
+    assert dayplan.meals_close(slot) == ["m_flat_iron_covent_garden"]   # a named restaurant after the lunch slot
+    assert dayplan.meals_close([stops[0], _food("m_dishoom_covent_garden", "15:00")]) == []   # 180 min: allowed
+
+
+def test_a_tasting_or_a_snack_is_never_held_apart_from_a_meal():
+    """m360 (Abram: "Do not suppress genuine food discoveries simply because they are close together"): a market
+    tasting, a bakery or a street-food snack doesn't count as a meal, before or after one."""
+    stops = [_food("m_borough_market_graze", "12:07"), _food("m_padella_borough", "13:29", "m_padella_borough#lunch"),
+             _food("m_beigel_bake_late", "15:15")]
+    assert dayplan.meals_close(stops) == []
+    assert not dayplan.substantial_meal(stops[0]) and not dayplan.substantial_meal(stops[2])
+    assert dayplan.substantial_meal(stops[1])
+
+
+def test_a_food_focused_day_keeps_every_discovery():
+    """m360: Sam, who loves food, can graze a market, have lunch, a salt beef bagel and dinner in one day."""
+    day = [_food("m_borough_market_graze", "10:45"),
+           {"moment_id": "lunch@m_tate_modern", "key": "lunch@m_tate_modern", "arrive": "13:00", "lunch": True},
+           _food("m_beigel_bake_late", "15:30"),
+           _food("m_dishoom_covent_garden", "18:45", "m_dishoom_covent_garden#dinner")]
+    assert dayplan.meals_close(day) == []
+    assert [dayplan.substantial_meal(st) for st in day] == [False, True, False, True]
 
 
 def test_a_return_after_crossing_london_is_found_but_never_for_a_loved_place():

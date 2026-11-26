@@ -49,9 +49,17 @@ def _history(x: Experience) -> bool:
     return (x.features.get("history_culture") or 0) >= 2   # the planner's "history" theme (tag 2, D127)
 
 
-def _who(m: "Member") -> str:
-    """m358 (m353's rule): a member in a note, by label only if they agreed to be named, else counted."""
-    return m.label if m.shares_preferences else "one of you"
+def people(ms: list["Member"], members: list["Member"]) -> str | None:
+    """m361 (two batch 6 reviewers: with Members A and B named, "one of you asked for a gentle pace" can only mean the
+    third): the members in an explanation. Those who agreed, by letter. The others never by letter and never counted:
+    only as "someone in the group", and only when at least two in the whole group haven't agreed, so nobody is found
+    by elimination. None when nobody can be said."""
+    named = [m.label for m in ms if m.shares_preferences]
+    if any(not m.shares_preferences for m in ms) and sum(not m.shares_preferences for m in members) >= 2:
+        named.append("someone else in the group" if named else "someone in the group")
+    if not named:
+        return None
+    return named[0] if len(named) == 1 else ", ".join(named[:-1]) + " and " + named[-1]
 
 
 def _m(a: Experience, b: Experience) -> float:
@@ -140,10 +148,10 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     gentle = [m.label for m in members if m.pace == "gentle"]
     # m358 (m353's rule, Abram: "don't expose one person's private preferences to the rest of the group without their
     # permission"): a note names a member only if they agreed; otherwise they're counted
+    # m361: a pace is said by letter only for members who agreed; otherwise the note gives the rule, not who asked
     gentle_named = [m.label for m in members if m.pace == "gentle" and m.shares_preferences]
-    gentle_who = ", ".join(gentle_named + ([("one of you" if len(gentle) - len(gentle_named) == 1 else
-                                             f"{len(gentle) - len(gentle_named)} of you")]
-                                           if len(gentle) > len(gentle_named) else []))
+    gentle_why = (f"because {', '.join(gentle_named)} asked for a gentle pace" if gentle_named and
+                  len(gentle_named) == len(gentle) else "to keep the pace gentle for everyone")
     strenuous = {x.id for x in candidates if gentle and (x.features.get("active") or 0) >= 2}
     vetoed_pace = strenuous - vetoed
     vetoed |= strenuous
@@ -167,8 +175,8 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     if rejected:
         notes.append(f"{len(rejected)} place(s) left out because someone rejected them.")
     if vetoed_pace:
-        notes.append(f"{len(vetoed_pace)} strenuous place(s) left out because {gentle_who} asked for a gentle "
-                     "pace. To include one, split up for that stop.")
+        notes.append(f"{len(vetoed_pace)} strenuous place(s) left out {gentle_why}. To include one, split up "
+                     "for that stop.")
     if not_step_free:
         notes.append(f"{len(not_step_free)} place(s) left out because their own sources say they aren't step-free: "
                      + "; ".join(x.title for x in candidates if x.id in not_step_free) + ".")
@@ -180,9 +188,9 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                      "be checked against the smallest budget: " + "; ".join(x.title for x in unpriced) + ".")
     for m in members:
         if pool and max(P[(m.label, x.id)] for x in pool) < GOOD:
-            notes.append(f"Nothing here ranks well for {m.label if m.shares_preferences else 'one of you'} by their "
-                         "answers so far, whatever we choose, so it's "
-                         "said rather than hidden.")   # m275: a ranking, not a claim about how they'll feel
+            if (w := people([m], members)) is not None:   # m361: never about someone found by elimination
+                notes.append(f"Nothing here ranks well for {w} by their answers so far, whatever we choose, so it's "
+                             "said rather than hidden.")   # m275: a ranking, not a claim about how they'll feel
     def fits_budget(xs: list[Experience]) -> bool:   # the trip's cost per person within the smallest budget overall
         return cap is None or sum(_price(x, currency, rates) for x in xs) <= cap * days + 1e-9
 
@@ -198,7 +206,7 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     queues = [[i for i in m.musts if i in by_id] for m in members]
     for m in members:
         if any(i in vetoed for i in m.musts):
-            notes.append(f"A must-see of {_who(m)} was rejected by someone else, so it's left out.")
+            notes.append("A must-see was left out because someone else said no to it.")   # m361: nobody named
     while any(queues) and len(chosen) < n:
         for m, q in zip(members, queues):
             while q and by_id[q[0]] in chosen:
@@ -208,8 +216,8 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
                 if fits_budget(chosen + [x]):
                     chosen.append(x)
                 else:
-                    notes.append(f"A must-see of {_who(m)}, {x.title}, doesn't fit the smallest budget, so it's left for "
-                                 "the group to decide.")
+                    notes.append(f"A must-see, {x.title}, doesn't fit the smallest budget, so it's left for the group "
+                                 "to decide.")   # m361: nobody named
     fixed = list(chosen)
 
     rest = [x for x in pool if x not in chosen]
@@ -322,13 +330,12 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
     favourites = {m.label: set(x.id for x in sorted(pool, key=lambda y: -P[(m.label, y.id)])[:k]) for m in members}
     prop = {m.label: any(x.id in favourites[m.label] for x in seen(m)) for m in members}   # only stops they're there for
     left_out = [m.label for m in members if not prop[m.label]]
-    if left_out:          # m256: say the trade-off, and what would change it (Abram: "Do not hide this limitation")
-        named = [x for x in left_out if any(o.label == x and o.shares_preferences for o in members)]
-        who = ", ".join(named + ([f"{len(left_out) - len(named)} of you" if len(left_out) - len(named) > 1 else
-                                  "one of you"] if len(left_out) > len(named) else []))   # m353: counted, unless they agreed
-        notes.append(f"{who} {'has' if len(left_out) == 1 else 'have'} none of their favourite places in "
-                     f"this plan: {days * per_day} stops can't hold a favourite for all {len(members)} of you. To change "
-                     "that: add a day or a stop, split up for one stop, or let them choose one stop.")
+    # m256: say the trade-off, and what would change it (Abram: "Do not hide this limitation"). m361: about whom only
+    # as `people` allows; each member always sees their own share
+    if left_out and (who := people([m for m in members if m.label in left_out], members)) is not None:
+        notes.append(f"{who} {'has' if who.count(' and ') == 0 and ', ' not in who else 'have'} none of their favourite "
+                     f"places in this plan: {days * per_day} stops can't hold a favourite for all {len(members)} of "
+                     "you. To change that: add a day or a stop, split up for one stop, or let them choose one stop.")
     why = {x.id: who_it_suits(members, x, P, favourites, must_phrase) for x in chosen}
     def share(m: Member) -> str:
         k = sum(x.id in favourites[m.label] for x in seen(m))
@@ -339,33 +346,25 @@ def plan(members: list[Member], candidates: list[Experience], days: int, per_day
 
 def who_it_suits(members: list[Member], x: Experience, P: dict, favourites: dict[str, set[str]],
                  must_phrase: str = "A must-see for {who}") -> str:
-    """m342: why a stop is in a group's plan, in plain words, by member label only (never a name or an answer):
-    whose favourites it is among, who it's a good match for (a chance of Good of at least GOOD), and who it isn't
-    for. "Among Member A's favourites; a good match for Member C; less so for Member B." """
-    # m358: whose must-see it is comes first ("A place Member A loved" from the app), and they aren't counted again
+    """m342: why a stop is in a group's plan, in plain words, by member label only (never a name or an answer): whose
+    must-see it is, whose favourites it is among, who it's a good match for (a chance of Good of at least GOOD), and,
+    only with their agreement, who it suits less. m361: members who haven't agreed only as `people` allows."""
     asked = [m for m in members if x.id in m.musts]
-    members = [m for m in members if m not in asked]
-    fav = [m for m in members if x.id in favourites.get(m.label, set())]
-    good = [m for m in members if m not in fav and P[(m.label, x.id)] >= GOOD]
-    rest = [m for m in members if m not in fav and m not in good]
-    join = lambda xs: xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
-
-    def who(ms: list[Member], own: bool = False) -> str:
-        """m353: members who agreed by label; the rest counted ("2 of you"), never named."""
-        named = [m.label + (chr(39) + "s" if own else "") for m in ms if m.shares_preferences]
-        k = len(ms) - len([m for m in ms if m.shares_preferences])
-        if k:
-            named.append("one of you" if k == 1 else f"{k} of you")
-        return join(named)
-
-    parts = [must_phrase.format(who=who(asked))] if asked else []
-    if fav:
-        parts.append(f"among {who(fav, own=True)} favourites" if all(m.shares_preferences for m in fav) else
-                     f"a favourite for {who(fav)}")   # capitalised below when it comes first
-    if good:
-        parts.append(f"a good match for {who(good)}")
+    others = [m for m in members if m not in asked]
+    fav = [m for m in others if x.id in favourites.get(m.label, set())]
+    good = [m for m in others if m not in fav and P[(m.label, x.id)] >= GOOD]
+    rest = [m for m in others if m not in fav and m not in good]
+    parts = []
+    if asked and (w := people(asked, members)):
+        parts.append(must_phrase.format(who=w))
+    if fav and (w := people(fav, members)):
+        parts.append(f"a favourite for {w}")
+    if good and (w := people(good, members)):
+        parts.append(f"a good match for {w}")
     if rest and all(m.shares_preferences for m in rest):   # m353: who it suits less is said only with their agreement
-        parts.append(f"less so for {who(rest)}")
+        parts.append(f"less so for {people(rest, members)}")
+    if not parts:
+        return "Chosen for the group: it fits the day, and nobody said no to it."
     text = "; ".join(parts) + "."
     return text[:1].upper() + text[1:]
 

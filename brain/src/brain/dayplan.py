@@ -238,22 +238,38 @@ def party_breakdown(stops: list[dict], by_id: Mapping[str, Moment], adults: int,
             "Meals without a named place, and fares", "notes": notes, "not_for_children": not_for}
 
 
-MEALS_APART_MIN = 120   # m353: two food stops start at least two hours apart
+MEALS_APART_MIN = 180   # m360 (Abram, 26 Nov): three hours between the starts of two substantial meals (was 120, m353)
+# m360: what a substantial meal is. A restaurant meal, a card that is a meal (`meal: lunch`), and the day's lunch and
+# dinner slots. Coffee, pastries, a market tasting, a bakery or a street-food snack aren't, and are never held apart:
+# "Do not suppress genuine food discoveries simply because they are close together" (Abram)
+MEAL_KINDS = frozenset({"restaurant"})
 
 
-def _food_stop(st: dict) -> bool:
+@lru_cache(maxsize=1)
+def _default_kinds() -> dict[str, str]:
+    from .config import DATA_DIR
+    return load_card_kinds(DATA_DIR / "catalogue" / "london.yaml")
+
+
+def substantial_meal(st: dict, card_kinds: Mapping[str, str] | None = None) -> bool:
+    """m360: a stop that is a full lunch or dinner, as opposed to a tasting, a snack or coffee."""
     key, mid = str(st.get("key") or ""), str(st.get("moment_id") or "")
-    return mid.startswith(("lunch@", "dinner@")) or key.endswith(("#lunch", "#dinner")) or st.get("lunch") or \
-        st.get("cost_kind") == "food"
+    if mid.startswith(("lunch@", "dinner@")) or key.endswith(("#lunch", "#dinner")) or st.get("lunch"):
+        return True
+    base = _base(mid)
+    kinds = card_kinds if card_kinds is not None else _default_kinds()
+    m_kind = kinds.get(base)
+    return m_kind in MEAL_KINDS or (st.get("meal") == "lunch")
 
 
-def meals_close(stops: list[dict]) -> list[str]:
-    """m353 (Abram, 25 Nov: "Sam should not have two food stops within two hours without a sensible explanation"): the
-    named food places that start less than MEALS_APART_MIN after another food stop (Padella at 13:29 after grazing
-    Borough Market from 12:07). A generic meal slot isn't named here: it's the named place that goes."""
+def meals_close(stops: list[dict], card_kinds: Mapping[str, str] | None = None) -> list[str]:
+    """m353, m360 (Abram, 26 Nov: "A substantial restaurant lunch followed by another substantial lunch 141 minutes
+    later should be rejected"): the named substantial meals that start less than MEALS_APART_MIN after another one.
+    A tasting, a snack or coffee is never counted. A generic meal slot, or the person's own plan, isn't named here:
+    it's the named place that goes."""
     out, last = [], None
     for st in stops:
-        if not _food_stop(st):
+        if not substantial_meal(st, card_kinds):
             continue
         at = parse_hhmm(st["arrive"])
         mid = str(st.get("moment_id") or "")
