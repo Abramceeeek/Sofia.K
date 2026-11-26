@@ -2,6 +2,29 @@
 
 Abram's required first deliverable (m362), before any large implementation: what the recommendation engine does today, what is partial or missing, the proposed architecture, what is reused, and how improvement is measured. **Everything below is read from the code and data at `388d7dc`**, with file references. Nothing here is customer evidence: ODYS has no real ratings yet.
 
+## Abram's decisions on this document (26 Nov, m363)
+
+1. **Six classifications, not five.** Each place gets one:
+   - **explicit must-go:** the traveller asked for it;
+   - **strong match;**
+   - **good discovery;**
+   - **low confidence:** we don't know enough to judge;
+   - **poor match;**
+   - **not suitable:** a hard restriction or explicit exclusion.
+
+   **A must-go records intent, not predicted enjoyment.** It never overrides opening hours, safety or eligibility.
+2. **Scores are provisional ranking measures, not probabilities.** No score is described as a chance of enjoyment. "0.75" never means a 75% chance of a good visit. Calibration needs real labelled feedback and its own validation.
+3. **A proper place knowledge model, not six more tags.** It covers:
+   - what makes a place special, and what a visitor does there;
+   - how it feels, and which interests it serves;
+   - who might enjoy it and who might not;
+   - duration, cost, effort, suitability for children, the best time, and its limitations;
+   - how reliable each fact is.
+
+   One place can appeal to different people for different reasons. Proposal: `decisions/place-knowledge-model.md`.
+4. **The friends' round stays behind the gate.** G2b and G11 still fail, and the gate isn't weakened to start it.
+5. **Batch 8 is approved:** the first central person-to-place engine, **in shadow mode**. It runs beside the planner and changes none of its decisions. The six classes replace the five bands of §2. §2's thresholds survive only as provisional score cut-offs (GUESSES), never as chances.
+
 ## Decision first
 
 - **Keep the core. It is the right shape, and rewriting it would throw away tested work:**
@@ -11,18 +34,18 @@ Abram's required first deliverable (m362), before any large implementation: what
 - **What holds ODYS back is narrower than "the algorithm":**
   1. **Places are described thinly.** There are 74 ready London cards. Each has 15 hand-set tags from 0 to 2. There is no atmosphere, art, shopping, nightlife or cuisine, and facts are checked for only 35 cards (§1.2).
   2. **The traveller model can only learn what the tags describe.** A taste for art, nightlife or a cuisine has nowhere to go (§1.1).
-  3. **Whether a place suits a person is decided in seven places, with no single answer** (§1.3). Must-go, strong match, good discovery, poor match and not suitable exist only as scattered rules.
+  3. **Whether a place suits a person is decided in seven places, with no single answer** (§1.3). Must-go, strong match, good discovery, low confidence, poor match and not suitable exist only as scattered rules, or not at all.
   4. **Reasons can cite a feature the stop barely has.** That caused every "stretched reason" the reviews found (§1.5).
   5. **Every measure is synthetic** (§1.6).
 - **Proposal: one `match` step that every planner uses** (§2):
-  - it gives each (person, place, day) a band, a score and the evidence behind it;
+  - it gives each (person, place, day) a class, a provisional score and the evidence behind it;
   - richer place records, built on the existing catalogue;
   - reasons that need strong evidence on both sides.
 - **The day planner, trip days, food and group trips all consume the same match**, so group planning stops being a second, weaker engine.
 - **Measure first** (§3): a fixed "engine bench" of travellers, dates and settings, run on every version beside the London gate, with raw results kept.
 - **Next step proposed** (§6, about 14 h of Claude's time):
   - the engine bench;
-  - the match step with its five bands, compared against today with no change to plans yet;
+  - the match step with its six classes (m363), compared against today with no change to plans yet;
   - the evidence rule for reasons.
 - **Milestones M1–M7 with proposed numbers for Abram to agree** (§4). Every threshold is a GUESS until agreed. None is made easier to pass.
 
@@ -179,7 +202,7 @@ So "something absorbing to do" is said of a quiet terrace, and "a sense of awe" 
  (answers, ratings,  │      ┌────────────────────────┐     ┌──────────────────────┐
   hard rules, list   ├────▶ │ match(person, place,    │ ──▶ │ Day builder          │ ──▶ plan, reasons
   of must-go)        │      │       day, context)     │     │ (planner.py, dayplan) │
- Place record ───────┘      │ → band, score, evidence │     └──────────────────────┘
+ Place record ───────┘      │ → class, score, evidence│     └──────────────────────┘
  (catalogue facts with      └────────────────────────┘        ▲ also: trip days, discovery,
   source and date)                                              food, group (Nash on members' matches)
 ```
@@ -201,20 +224,25 @@ So "something absorbing to do" is said of a quiet terrace, and "a sense of awe" 
 - **"not this time" for each trip**, as distinct from a "Didn't enjoy";
 - **appetite for discovery:** familiar or new, derived from the swipes' "Haven't been" share and the `local_novel` weight, with no new question.
 
-**3. Match:** a new `match.py` of about 250 lines. `match(person, place, day, context)` returns:
-- **band**, the first that applies:
-  1. **Not suitable:** a hard rule (closed that date, an age rule, a step-free need, a veto);
-  2. **Must-go:** the person or group asked for it;
-  3. **Strong match:** a predicted chance of Good of 0.75 or more, with at least one piece of strong evidence;
-  4. **Good discovery:** 0.5 to 0.75, or a strong fact about something they've never tried;
-  5. **Poor match:** below the floor.
-- **score:** the utility, kept inside, never shown as a chance (m275);
-- **evidence:** a list of (the person's signal, the place's fact) pairs, each strong on both sides;
-- **blockers and uncertainties:** from `quality.assess`.
+**3. Match:** `brain/src/brain/match.py` (built in batch 8, m363). `match(traveller, place, day)` returns the **class**, the first that applies:
+1. **Not suitable:** a hard restriction or explicit exclusion. Examples: closed that date, an age rule, a place they didn't enjoy (or a place of that kind), too strenuous for a gentle pace, dry-weather only on a rainy day.
+2. **Explicit must-go:** the traveller asked for it. This is intent, not predicted enjoyment, and it never overrides class 1.
+3. **Low confidence:** the score rests on the population average. Nothing the person has said touches this place's defining features, and no direct signal does (loved, disliked, rated, asked for, an interest or a feeling).
+4. **Strong match:** score at least the strong cut-off, with at least one piece of evidence that is strong on both sides.
+5. **Good discovery:** at or above the planner's floor.
+6. **Poor match:** below the floor.
 
-It reuses `kept_out`, the opening rules, `quality.assess`, `scoring`, and the reasons' evidence. The planner takes the bands:
-- prizes come from Must-go, Strong and Good only;
-- a Poor match comes in only to fill a day where that's allowed today;
+It also returns:
+- **score:** the person's utility for the place, in the model's own units. It's **a provisional ranking measure, never a chance**. The floor is the planner's existing −0.75. The strong cut-off is 1.1 above it (+0.35, a GUESS: the position of the old "0.75" line, kept only as a score cut-off);
+- **factors:** the strongest positive and negative terms, each labelled with its person side (a stated answer or the population default) and its place side (a defining tag, a partial tag, or a checked fact);
+- **evidence:** references to the card's field, the checked source and its date, and the person's answer;
+- **missing:** place facts not known (step-free, a child's price, checked hours) and traveller facts not known;
+- **confidence:** how much rests on the person's own answers, and how much of the place's side is checked rather than hand-set;
+- **reason:** one sentence, only when the evidence is strong on both sides; otherwise none, and the class says why.
+
+It reuses `kept_out`, the opening rules, `quality.assess`, `scoring`, and the reasons' evidence. **In batch 8 it runs in shadow mode only.** Later, once comparisons justify it and Abram approves, the planner takes the classes:
+- prizes come from Must-go, Strong and Good discovery;
+- Low confidence and Poor come in only to fill a day where that's allowed today;
 - Not suitable never comes in.
 
 **4. The day builder:** `planner.py` as it is. It's fed matches instead of raw candidates, and carries the evidence into each stop's reasons.
@@ -241,7 +269,7 @@ All are synthetic, with fixed dates, seeds and solver settings.
 | Not suitable in any plan (must be 0) | Safety and trust |
 | Must-go kept, where it can be | M3 |
 | A disliked kind or place shown | M2 |
-| Bands of planned stops (Strong / Good / Poor) | Personal fit |
+| Classes of planned stops (must-go, strong, good discovery, low confidence, poor) | Personal fit, and how much rests on guesses |
 | How different travellers' top 10 overlap (mean pairwise Jaccard) | Personalisation, not popularity |
 | Reasons backed by strong evidence on both sides | No invented reasons |
 | The least-served traveller, as well as the average | Fairness, and groups |
@@ -270,20 +298,20 @@ All are synthetic, with fixed dates, seeds and solver settings.
 |---|---|---|---|
 | Person model (`personal`, `population`, `scoring`, observations) | All | New features only when places carry the facet | 2 |
 | Catalogue and checked layer | All | Facet vocabulary; food facets | 6, plus about 12 to fill 74 London places from official sources (D91) |
-| `match.py` | `kept_out`, `quality`, `scoring`, reasons' evidence | New: bands, evidence, blockers | 8 including tests |
+| `match.py` | `kept_out`, `quality`, `scoring`, reasons' evidence | New: classes, evidence, blockers | 8 including tests |
 | Planner and `dayplan` | All | Take matches; a must-go list for each trip | 4 |
 | Reasons | Wording | The evidence rule (tag 2 on the stop); a time-of-day check | 3 |
 | Engine bench | Gate personas, benchmark profiles | New script and archetypes | 6 |
 | Food from open data | The Overture and OSM pilot | A candidate pipeline, unchecked or checked | 8 (later phase) |
 | Group onto the engine | `group.py` fairness and privacy | Members' matches, then the day builder | 8 (later phase) |
 
-**Phase 1** (bench, match, evidence rule, facets for London) is about 41 h of Claude's time, over about three batches. Abram's part is about 1 h: agree the bands and milestone numbers, and the facet vocabulary.
+**Phase 1** (bench, match, evidence rule, facets for London) is about 41 h of Claude's time, over about three batches. Abram's part is about 1 h: agree the milestone numbers (the classes and facets are decided, m363).
 
 ## 6. Proposed order
 
 1. **Batch 8 (about 14 h): measure first.**
    - The engine bench and its baseline at `388d7dc`.
-   - `match.py` with the five bands, run beside today's planner with no change to plans, reporting where the two disagree.
+   - `match.py` with the six classes, run beside today's planner with no change to plans, reporting where the two disagree.
    - The evidence rule for reasons, with G13 extended to check it.
 2. **Batch 9 (about 18 h).**
    - Facets for the 74 ready London places, from official sources, with Abram's one-line review list (D91).
@@ -298,10 +326,13 @@ All are synthetic, with fixed dates, seeds and solver settings.
 
 ## 7. Decisions for Abram
 
-1. **The five bands and their thresholds** (Strong at 0.75 or more, Good at 0.5 to 0.75): accept or change.
-2. **The milestone numbers** in §4: accept or change. They become gates only once agreed, and are never made easier afterwards.
-3. **The facet vocabulary** in §2.1, in particular atmosphere, art, shopping and nightlife. Each needs data for every place before it can be used.
-4. **Real evidence:** only real ratings can show whether the model's assumptions hold. When should the friends' round run? It waits for the gate today (m327).
+Answered on 26 Nov (m363; see the top of this document):
+1. **The classes:** six, with must-go as intent.
+2. **The thresholds:** not probabilities; provisional score cut-offs only.
+3. **The place model:** a proper knowledge model.
+4. **The friends' round:** stays behind the gate.
+
+**Still open:** the milestone numbers in §4. They become gates only once agreed, and are never made easier afterwards.
 
 ## 8. Where ODYS stands (facts, 26 Nov)
 

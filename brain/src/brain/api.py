@@ -33,6 +33,8 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
+from . import match as match_engine
+from .catalogue import load_checked
 from .schemas import (GroupJoinIn, GroupTripIn, AlternativesIn, AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       PreviewCodeIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
@@ -760,6 +762,62 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                   p: PopulationModel = Depends(pop)):
         """The person's plan, from the same engine as the Test B plans (brain.dayplan, D107)."""
         return plan_for(body, user, s, p)
+
+    def traveller_for(s: Session, user: db.User, p: PopulationModel, *, must_go: tuple[str, ...] = (),
+                      children: tuple[int, ...] = (), budget_gbp: float | None = None) -> match_engine.Traveller:
+        """m363: the person as the match engine sees them, from the same answers and rules the planner uses."""
+        post = posterior(user, p)
+        fixed = corrected(user)
+        swipes = [sw for sw in user.swipes if f"place:{sw.item}" not in fixed]
+        cards_at, items = app.state.swipe_cards, app.state.swipe_items
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        loved = {cid: cards_at[sw.item][0] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at
+                 for cid in cards_at[sw.item][1]}
+        disliked = {cid: cards_at[sw.item][0] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at
+                    for cid in cards_at[sw.item][1]}
+        prof = user.profile or {}
+        out = {}
+        for why, ids in dayplan.kept_out(ready, [(sw.item, sw.reaction) for sw in swipes], app.state.swipe_types,
+                                         app.state.card_kinds, prof.get("company"), prof.get("activity"),
+                                         children or None):
+            for cid in ids:
+                out.setdefault(cid, why)
+        loved_tags = tuple((items[sw.item].place.name if sw.item not in cards_at else cards_at[sw.item][0],
+                            {**items[sw.item].features.place, **items[sw.item].features.moment})
+                           for sw in swipes if sw.reaction == "loved" and sw.item in items)
+        rated = {r.moment_id: r.rating for r in sorted(user.ratings, key=lambda r: r.id)}
+        n = sum(sw.reaction in ("loved", "fine", "didnt_enjoy") for sw in swipes) + \
+            sum(ch.choice in ("A", "B") for ch in user.choices) + len(user.ratings)
+        return match_engine.Traveller(
+            delta=post.mean, delta_sd=post.sd(), loved=loved, disliked=disliked, loved_tags=loved_tags, kept_out=out,
+            must_go=must_go, rated=rated, fields=person_fields(user),
+            feelings=tuple(f for f in prof.get("why_travel", []) if f in reasons.FEELINGS), activity=prof.get("activity"),
+            budget_gbp=budget_gbp if budget_gbp is not None else BUDGET_BAND_GBP.get(prof.get("budget_band")),
+            children=children, n_answers=n)
+
+    @app.get("/v1/me/matches")
+    def my_matches(day: date | None = Query(default=None, alias="date"), must_go: str = Query(default="", max_length=400),
+                   children: str = Query(default="", max_length=60), rain_prob: float | None = Query(default=None, ge=0, le=1),
+                   user: db.User = Depends(current_user), s: Session = Depends(session),
+                   p: PopulationModel = Depends(pop)):
+        """m363 (Abram, 26 Nov: "the first central person-to-place engine, without changing the live planner's
+        decisions yet"): every ready place judged for this person on a day, in shadow mode. Read-only: nothing is
+        stored, and no plan uses it. Scores are provisional ranking measures, never chances."""
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        ids = {m.id for m in ready}
+        wanted = tuple(x for x in (v.strip() for v in must_go.split(",")) if x in ids)
+        kids = tuple(int(v) for v in children.split(",") if v.strip().isdigit() and int(v) <= 17)[:8]
+        t = traveller_for(s, user, p, must_go=wanted, children=kids)
+        d = match_engine.Day(weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
+                             rain_prob=rain_prob)
+        if getattr(app.state, "checked_cards", None) is None:
+            app.state.checked_cards = load_checked("london", settings.data_dir).get("cards", {})
+        out = match_engine.rank([match_engine.match(p, t, m, d, amap=app.state.amap,
+                                                    checked=app.state.checked_cards.get(m.id)) for m in ready])
+        counts = {c: sum(r.cls == c for r in out) for c in match_engine.CLASSES}
+        return {"date": d.date, "classes": counts, "matches": [r.out() for r in out],
+                "note": "Shadow mode: these judgements change no plan. A score is a provisional ranking measure, "
+                        "not a chance of enjoying a place."}
 
     @app.post("/v1/me/plans/alternatives", status_code=201)
     def plan_alternatives(body: AlternativesIn, user: db.User = Depends(current_user), s: Session = Depends(session),

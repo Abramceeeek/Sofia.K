@@ -2,6 +2,12 @@
 
 Founder decisions that amend `KICKOFF_PROMPT.md`. Newest first. Where this log and the kickoff brief disagree, this log wins.
 
+## 2026-11-26 — Batch 8: the first central person-to-place engine, in shadow mode (branch only; London held)
+
+| # | Decision | Replaces | Why |
+|---|---|---|---|
+| m363 | **Abram's decisions on the architecture (26 Nov), and batch 8 approved.**<br>**1. Six classifications:** explicit must-go (intent, not predicted enjoyment, and never above a hard rule), strong match, good discovery, low confidence, poor match, not suitable.<br>**2. Scores are provisional ranking measures, never probabilities.** Calibration needs real labelled feedback.<br>**3. A proper place knowledge model:** proposed in `decisions/place-knowledge-model.md`, with nothing built yet.<br>**4. The friends' round stays behind the gate.**<br>**Built, in shadow mode** (no planner decision changed; `test_asking_for_matches_changes_no_plan`):<br>• `brain/src/brain/match.py`. Hard restrictions are kept apart from ranking: the planner's own exclusions, carried over as they are, plus opening, rain and budget. Must-go is intent. Low confidence means no direct signal and under 20% of the score's weight on what the traveller said (GUESS). Strong: a score of +0.35 or more (GUESS; a cut-off, not a chance) with a reason strong on both sides; also a place they loved, or rated 4 or 5. Good: at or above the planner's floor of −0.75. Poor: below it. Every judgement returns its factors, each labelled with its traveller side (their answers or most people) and place side (defining, partial; card or checked), plus evidence, missing facts and confidence.<br>• `GET /v1/me/matches`: read-only, stores nothing, and no app uses it.<br>• `scripts/engine_bench.py`: 6 gate travellers and 8 archetypes, fixed days, data hash, solver and commit; one place across many people; the planner's plans judged by the engine; a shared trip.<br>**Fixed during the first runs:**<br>• links on any shared feature;<br>• positive reasons on poor matches;<br>• a loved place only as "good";<br>• a weight that came wholly from the traveller labelled "most people";<br>• a key collision in the bench.<br>**Found:** **116 reasons shown in today's plans claim a feature the stop has only at tag 1**, and Tate Modern is tagged history 2 because there is no art dimension. | m362's five bands | Abram's decisions. **Hours:** Claude ~8 h so far |
+
 ## 2026-11-26 — Batch 7: the person-to-place engine first (branch only; London held)
 
 | # | Decision | Replaces | Why |
