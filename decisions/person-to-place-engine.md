@@ -307,5 +307,11 @@ All are synthetic, with fixed dates, seeds and solver settings.
 
 - **Not launched.** No friend has been invited. The round waits for the London gate (`validation/friends-round.md`).
 - **Branch `claude/pensive-euler-fftd63`:** nothing on it is merged, deployed or uploaded.
-- **The London gate:** NOT PASSED at `05ea04c`. G2b fails 6 times and G11 5 times. The run at `388d7dc` adds G15.
+- **The London gate, the engine work's baseline:** **NOT PASSED** at `388d7dc`, 3 runs, every run identical. The file records `d0c6dfe`, the audit's own commit, which changes only this document.
+  - G2b fails 5 times and G11 5 times; G15 (new) and every other check pass.
+  - At `05ea04c` it was G2b 6, G11 5. The friends' Friday no longer ends 73 min early.
+  - Unused time is 1,781 min (1,881 at `05ea04c`).
+  - What still fails:
+    - **G2b:** Full and Balanced days ending 65–117 min early, and the friends' Relaxed day with 397 min of visits and no break;
+    - **G11:** the family's days at 96–102 min of travel against 60, mostly Tube or bus; Jonas's at 83, mostly walking.
 - **Other cities:** Seville is a read-only preview for Abram's own phone (m320). Paris is development data only. Neither has day plans.
