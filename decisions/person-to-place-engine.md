@@ -240,7 +240,7 @@ It also returns:
 - **confidence:** how much rests on the person's own answers, and how much of the place's side is checked rather than hand-set;
 - **reason:** one sentence, only when the evidence is strong on both sides; otherwise none, and the class says why.
 
-It reuses `kept_out`, the opening rules, `quality.assess`, `scoring`, and the reasons' evidence. **In batch 8 it runs in shadow mode only.** Later, once comparisons justify it and Abram approves, the planner takes the classes:
+It reuses `kept_out`, the opening rules, `scoring`, and the reasons' evidence. It does **not** yet use `quality.assess`, whose four perspectives are a next step (the batch 8 review caught an earlier claim that it did). **In batch 8 it runs in shadow mode only.** Later, once comparisons justify it and Abram approves, the planner takes the classes:
 - prizes come from Must-go, Strong and Good discovery;
 - Low confidence and Poor come in only to fill a day where that's allowed today;
 - Not suitable never comes in.

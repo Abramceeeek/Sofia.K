@@ -289,13 +289,16 @@ def report(raw: dict, cards: dict) -> str:
                      f"{len(strong)}{': ' + '; '.join(x['title'][:30] for x in strong[:2]) if strong else ''} |")
     lines += ["", f"**All travellers:** {totals['planned']} planned stops: {totals['must_go']} must-go, "
               f"{totals['strong_match']} strong, {totals['good_discovery']} good discovery, {totals['low_confidence']} low "
-              f"confidence, {totals['poor_match']} poor, **{totals['not_suitable']} not suitable** (the engine and the "
-              "planner apply the same hard rules, so this must be 0).", ""]
+              f"confidence, {totals['poor_match']} poor, **{totals['not_suitable']} not suitable**. The engine and the "
+              "planner share the hard rules and the floor, so 0 not suitable and 0 poor are **true by construction**: "
+              "agreement, not proof that either is right (the independent review, batch 8).", ""]
     # 4. explanations shown today, against the evidence rule
     lines += ["## 4. The reasons the app shows today, against the evidence rule", "",
               f"A shown reason claims a feature for the stop (\"this has a sense of awe\", \"your lean towards views\"). "
               f"The rule (m363, work package D): the stop's own tag for that feature must be 2, its defining value. "
-              f"**Claims on a weaker tag: {len(unsupported)}.**", ""]
+              f"**Claims on a weaker tag: {len(unsupported)}.** This check tests the rule the app now applies, so after "
+              "the change it is 0 by construction. What it can't test: whether a tag of 2 is right (50 of the 74 ready "
+              "cards have three or more tags at 2; one has eight), or whether a link names the real reason.", ""]
     if unsupported:
         lines += ["| Traveller | Stop | Claim | Feature | Stop's tag |", "|---|---|---|---|---|"]
         seen = set()
@@ -316,7 +319,9 @@ def report(raw: dict, cards: dict) -> str:
               "| Day | Place | " + " | ".join(raw["group"]["members"]) + " |", "|---|---|" + "---|" * len(raw["group"]["members"])]
     for i, day in enumerate(gp.get("days", []), 1):
         for st in day:
-            mid = next((c for c in cards if st["id"].endswith(c.replace("m_", "").replace("_", "-"))), None)
+            # the catalogue's id is xp:gb:london:<the card id without its m_ or a_ prefix, with hyphens> (the
+            # independent review found the old .replace("m_", "") broke ids like m_museum_docklands)
+            mid = next((c for c in cards if st["id"].endswith(":" + re.sub(r"^[ma]_", "", c).replace("_", "-"))), None)
             row = []
             for key in raw["group"]["members"]:
                 ms = {x["place"]: x for x in T[key]["matches"][d0]["matches"]}
@@ -355,12 +360,15 @@ def measures(raw: dict, cards: dict) -> list[str]:
                    f"**{'yes' if x['planned'] else 'no'}** ({'; '.join(s[:28] for s in x['stops'] if s)})")
     # dislikes
     bad = 0
-    for k, v in T.items():
-        nots = {x["place"] for x in v["matches"][d0]["matches"] if any("exclusion" in r or "planner's rule" in r for r in x["restrictions"])}
-        bad += sum(str(st.get("moment_id", "")).split("#")[0] in nots
-                   for day in v["plan"].get("days", []) for st in (day.get("plan") or {}).get("stops", []))
+    for k, v in T.items():   # each day against its own day's judgements, the stop on the way in ("before") included
+        for day in v["plan"].get("days", []):
+            ms = v["matches"].get(day["date"], v["matches"][d0])["matches"]
+            nots = {x["place"] for x in ms if any("exclusion" in r or "planner's rule" in r for r in x["restrictions"])}
+            bad += sum(str(st.get("moment_id", "")).split("#")[0] in nots
+                       for part in ("before", "plan") for st in (day.get(part) or {}).get("stops", []))
     out.append(f"- **Explicit dislikes avoided:** {bad} planned stops at a place the traveller (or the planner's rule) "
-               "excludes. Must be 0.")
+               "excludes. Must be 0. **True by construction:** the engine carries the planner's own exclusions over, "
+               "so this checks they agree, not that the exclusions are right.")
     # evidence and confidence
     allm = [x for v in T.values() for x in v["matches"][d0]["matches"]]
     rec = [x for x in allm if x["class"] in ("strong_match", "good_discovery", "must_go")]
