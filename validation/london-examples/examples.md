@@ -1,6 +1,6 @@
 # ODYS: example London trips
 
-Made by `scripts/london_examples.py` on 25 Nov 2026, from Brain commit 05ea04c (no app build: the planner is called directly).
+Made by `scripts/london_examples.py` on 26 Nov 2026, from Brain commit 06721a0 (no app build: the planner is called directly).
 
 **Synthetic people.** Each person is invented. Their onboarding answers are listed, and the plans are exactly what ODYS's planner returns for them, in the words the app shows. Nothing was edited by hand. These are for judging the product, not evidence about real travellers.
 
@@ -28,8 +28,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You eat Mexican street food in a colourful, many-levelled restaurant built from recycled shipping containers above the river walk.
 - Food: about £17
 - Why: You loved Borough Market, and this has good food too.
-- Why: You loved Brick Lane for food, and this has somewhere local and new too.
-- Why: From your answers, it has what you like: food, one of your interests.
+- Why: It fits your interest in food.
+- Why: From your answers, it has what you like: food, your interest in food.
 - Why: 13 min on foot from Charing Cross.
 
 **13:10–13:58 · A rest in the Royal Festival Hall's free foyers by the river** · _Resting_
@@ -37,8 +37,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk to the Southbank Centre by the river and go into the Royal Festival Hall.
 - You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.
 - Cost: free
-- Why: You go out to feel curious, and this has somewhere local and new.
-- Why: From your answers, it has what you like: local, new-to-you places.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: 3 min on foot from Wahaca Southbank.
 - Why: Free to visit.
 
@@ -50,8 +49,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Food: about £15
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved Borough Market.
-- Why: You loved Camden Market, and this has good food too.
-- Why: From your answers, it has what you like: food, one of your interests.
+- Why: You loved Brick Lane for food, and this has good food too.
+- Why: From your answers, it has what you like: food, your interest in food.
 - Why: Good to know: it can be busy.
 
 **15:59–16:44 · The Garden at 120: a rooftop garden among the City towers** · _Big views_
@@ -60,7 +59,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You step out 15 floors up into a planted roof garden around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.
 - Best: At dusk, when the towers light up
 - Cost: free
-- Why: You loved Borough Market, and this has somewhere local and new too.
+- Why: You go out to feel curious, and this has somewhere local and new.
 - Why: From your answers, it has what you like: local, new-to-you places.
 - Why: You're there at its best time, 15:29–16:29.
 - Why: Free to visit.
@@ -70,8 +69,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk along Euston Road to the British Library's piazza and go in at the main entrance.
 - You walk slowly round the free Treasures Gallery, among some of the most inspiring items in the Library's collection, in a calm room away from the traffic of Euston Road.
 - Cost: free
-- Why: You go out to feel excited, and this has something absorbing to do.
-- Why: From your answers, it has what you like: local, new-to-you places.
+- Why: Another that suits most people and fits your route.
 - Why: Free to visit.
 - Why: The trade-off: 31 min by Tube or bus from The Garden at 120.
 
@@ -82,10 +80,10 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Best: Dusk, when Coal Drops Yard is lit
 - Cost: free
 - Dinner isn't in the plan: with about £22 for it, today would go over your £40 budget.
-- Why: You loved Brick Lane for food, and this has good food too.
-- Why: From your answers, it has what you like: local, new-to-you places, food.
+- Why: You loved Borough Market, and this has somewhere local and new too.
+- Why: From your answers, it has what you like: local, new-to-you places.
 - Why: You're there at its best time, 15:39–19:14.
-- Why: Good to know: it can be busy.
+- Why: 13 min on foot from British Library.
 
 
 ### A curious day: Flat Iron, Dr Johnson's House and a Brick Lane bagel (2026-12-05)
@@ -103,8 +101,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Food: about £19.50
 - Book ahead: Tables can be booked on flatironsteak.co.uk
 - Why: You loved Borough Market, and this has good food too.
-- Why: You loved Brick Lane for food, and this has somewhere local and new too.
-- Why: From your answers, it has what you like: food, one of your interests.
+- Why: It fits your interest in food.
+- Why: From your answers, it has what you like: food, your interest in food.
 - Why: 7 min on foot from Charing Cross.
 
 **13:02–14:07 · Through the courts off Fleet Street to Dr Johnson's House** · _Curious_
@@ -112,8 +110,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Turn off Fleet Street into the narrow courts that open into Gough Square.
 - You leave the traffic of Fleet Street through narrow courts into a quiet square, then climb the townhouse where Samuel Johnson made his Dictionary, up to the garret.
 - Ticket: £10
-- Why: You go out to feel curious, and this has somewhere local and new.
-- Why: You go out to feel excited, and this has something absorbing to do.
+- Why: You loved Brick Lane for food, and this has somewhere local and new too.
 - Why: From your answers, it has what you like: local, new-to-you places.
 
 **14:26–15:39 · A wander through Covent Garden and Soho** · _Wandering_
@@ -122,8 +119,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - An unplanned wander through Covent Garden's streets into Soho.
 - Cost: free
 - If it rains: Centuries of British faces at the National Portrait Gallery, about 10 min away on foot. Free.
-- Why: You loved Camden Market, and this has good food too.
-- Why: From your answers, it has what you like: food, local, new-to-you places.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
 - Why: Good to know: it can be busy.
 
@@ -132,20 +128,18 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front.
 - You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.
 - Cost: free
-- Why: You loved Borough Market, and this has somewhere local and new too.
-- Why: From your answers, it has what you like: local, new-to-you places.
+- Why: Another that suits most people and fits your route.
 - Why: 10 min on foot from Soho Square.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
 
 **16:54–17:25 · Burlington Arcade: a covered shopping street from 1819** · _Browsing_
 - Getting there: about 10 min on foot from Liberty.
 - Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy.
 - You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.
 - Cost: free
-- Why: You loved Borough Market, and this has somewhere local and new too.
-- Why: From your answers, it has what you like: local, new-to-you places.
+- Why: One more that most people enjoy, close to your route.
 - Why: 10 min on foot from Liberty.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
 
 **18:05–18:55 · Beigel Bake: a salt beef bagel on Brick Lane** · _Lively_
 - Getting there: about 37 min. Walk to Green Park or Piccadilly Circus station, then take the Tube or bus to Liverpool Street or Aldgate East station.
@@ -155,7 +149,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Food: about £7.50
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved Brick Lane for food.
-- Why: It fits your interest in food.
+- Why: You loved Camden Market, and this has good food too.
 - Why: From your answers, it has what you like: food, local, new-to-you places.
 - Why: The trade-off: 37 min by Tube or bus from Burlington Arcade.
 
@@ -187,7 +181,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Cost: free
 - Why: You loved British Museum.
 - Why: You loved walking from South Kensington tube to the Natural History Museum, and this has history too.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: Free to visit.
 - Why: Good to know: it can be busy.
 
@@ -202,20 +196,17 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy.
 - You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.
 - Cost: free
-- Why: You loved Big Ben and Parliament Square, and this has history too.
-- Why: You go out to feel connected, and this has somewhere to bring people.
-- Why: From your answers, it has what you like: history and culture.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
-- Why: Good to know: it can be busy.
 
 **13:21–14:38 · From Trafalgar Square into the quiet of the National Gallery** · _Curious_
 - Getting there: about 16 min on foot from Burlington Arcade.
 - Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance.
 - You leave the noise of Trafalgar Square for high, quiet rooms and wander the free collection of paintings at your own pace.
 - Cost: free
-- Why: You go out to feel curious, and this has history.
+- Why: You loved Big Ben and Parliament Square, and this has history too.
 - Why: It fits your interest in history & culture.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: Free to visit.
 
 **14:54–15:37 · A rest in the Royal Festival Hall's free foyers by the river** · _Resting_
@@ -223,9 +214,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk to the Southbank Centre by the river and go into the Royal Festival Hall.
 - You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.
 - Cost: free
-- Why: You loved British Museum, and this has history too.
-- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has a famous sight too.
-- Why: From your answers, it has what you like: history and culture, famous sights.
+- Why: Another that suits most people and fits your route.
 - Why: Free to visit.
 
 **15:43–16:13 · Waterloo Bridge at sunset, both ways** · _Awe_
@@ -235,8 +224,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Best: Sunset; late autumn and winter skies are the best
 - Cost: free
 - If it rains: The Courtauld Gallery: Van Gogh's bandaged ear and Manet's barmaid, about 5 min away on foot. It costs £12 a person, and it still fits your day's budget. Free instead: Centuries of British faces at the National Portrait Gallery, about 15 min away.
-- Why: You loved British Museum, and this has history too.
-- Why: From your answers, it has what you like: history and culture, famous sights.
+- Why: You go out to feel connected, and this has somewhere to bring people.
+- Why: From your answers, it has what you like: famous sights.
 - Why: You're there at its best time, 15:14–16:14.
 - Why: Good to know: it's in the open, so wrap up.
 
@@ -257,7 +246,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved walking from South Kensington tube to the Natural History Museum.
 - Why: You loved British Museum, and this has history too.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: Free to visit.
 - Why: The trade-off: 31 min by Tube or bus from Charing Cross.
 
@@ -273,7 +262,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Cost: free
 - Why: You loved Big Ben and Parliament Square, and this has history too.
 - Why: It fits your interest in history & culture.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: Right by South Kensington station: no travel.
 - Why: Free to visit.
 
@@ -282,11 +271,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front.
 - You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.
 - Cost: free
-- Why: You go out to feel curious, and this has history.
-- Why: You go out to feel connected, and this has somewhere to bring people.
-- Why: From your answers, it has what you like: history and culture.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
-- Why: Good to know: it can be busy.
 
 **16:05–17:25 · London from the Sky Garden, at the top of a City tower** · _Awe_
 - Getting there: about 32 min. Walk to Oxford Circus station, then take the Tube or bus to Monument station.
@@ -316,8 +302,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You climb to the Reading Room on level 2, part library and part museum, and settle into a comfortable seat among books, artworks and objects, for as long as you like.
 - Cost: free
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
-- Why: You loved British Museum, and this has history too.
-- Why: From your answers, it has what you like: history and culture.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
 
 **12:10–12:57 · Quiet treasures in the British Library** · _Quiet_
@@ -325,9 +310,9 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk along Euston Road to the British Library's piazza and go in at the main entrance.
 - You walk slowly round the free Treasures Gallery, among some of the most inspiring items in the Library's collection, in a calm room away from the traffic of Euston Road.
 - Cost: free
-- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has history too.
-- Why: You loved Big Ben and Parliament Square, and this has a famous sight too.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: You loved British Museum, and this has history too.
+- Why: It fits your interest in history & culture.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: 12 min on foot from Wellcome Collection.
 - Why: Free to visit.
 
@@ -343,9 +328,9 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.
 - Cost: free
 - If it rains: Into the Turbine Hall and the free galleries of Tate Modern, about 5 min away on foot. Free.
-- Why: You go out to feel curious, and this has history.
-- Why: You go out to feel connected, and this has somewhere to bring people.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has history too.
+- Why: You loved Big Ben and Parliament Square, and this has a famous sight too.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: Free to visit.
 - Why: Good to know: it's in the open, so wrap up.
 
@@ -355,9 +340,10 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.
 - Best: Sunset
 - Cost: free
-- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has a famous sight too.
-- Why: From your answers, it has what you like: history and culture.
+- Why: You loved British Museum, and this has a famous sight too.
+- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has a sense of awe too.
 - Why: You're there at its best time, 15:13–16:13.
+- Why: Free to visit.
 - Why: Good to know: it's in the open, so wrap up.
 
 
@@ -389,7 +375,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved Hyde Park, and this has green space too.
 - Why: You loved Uber Boat on the Thames, and this has views too.
-- Why: From your answers, it has what you like: green spaces and nature, one of your interests.
+- Why: From your answers, it has what you like: green spaces and nature, your interest in nature.
 - Why: Free to visit.
 
 **11:15–11:50 · St Dunstan-in-the-East: a ruined church garden hidden in the City** · _Calm_
@@ -399,8 +385,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Cost: free
 - If it rains: Level 58: the City from Horizon 22, about 10 min away on foot. Free.
 - Why: You loved the view from the top of Greenwich Park, and this has green space too.
-- Why: You go out to feel connected, and this has somewhere to bring people.
-- Why: From your answers, it has what you like: green spaces and nature, one of your interests.
+- Why: It fits your interest in nature.
+- Why: From your answers, it has what you like: green spaces and nature, your interest in nature.
 - Why: 6 min on foot from The Garden at 120.
 - Why: Free to visit.
 
@@ -426,10 +412,9 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk into Kensington Gardens to the playground by Kensington Palace.
 - Children climb a great wooden pirate ship and explore the playground around it while you watch from the benches.
 - Cost: free
-- Why: It fits your interest in nature.
-- Why: From your answers, it has what you like: green spaces and nature, one of your interests.
+- Why: You go out to feel connected, and this has somewhere to bring people.
+- Why: From your answers, it has what you like: green spaces and nature, your interest in nature.
 - Why: Free to visit.
-- Why: Good to know: it can be busy.
 
 
 ### A sociable, restoring day: Greenwich Park, the river by Uber Boat and Liberty (2026-12-05)
@@ -462,7 +447,6 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: You go out to feel connected, and this has somewhere to bring people.
 - Why: From your answers, it has what you like: movement and views.
 - Why: 6 min on foot from General Wolfe statue.
-- Why: Good to know: it can be busy.
 
 **13:05–13:50 · Lunch near Battersea Power Station Pier** · _Lunch_
 - A cheaper lunch: a bakery, market stall or supermarket nearby.
@@ -474,20 +458,17 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy.
 - You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.
 - Cost: free
-- Why: You loved the view from the top of Greenwich Park, and this has somewhere to bring people too.
-- Why: From your answers, it has what you like: places to bring people.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
-- Why: Good to know: it can be busy.
 
 **15:07–16:12 · Liberty's wooden galleries, built from two old warships** · _Browsing_
 - Getting there: about 10 min on foot from Burlington Arcade.
 - Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front.
 - You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.
 - Cost: free
-- Why: You go out to feel restored, and this has a sense of awe.
-- Why: From your answers, it has what you like: places to bring people.
+- Why: Another that suits most people and fits your route.
 - Why: 10 min on foot from Burlington Arcade.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
 
 
 ---
@@ -529,8 +510,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Walk along Euston Road to number 183, go in and take the stairs or the lift to level 2.
 - You climb to the Reading Room on level 2, part library and part museum, and settle into a comfortable seat among books, artworks and objects, for as long as you like.
 - Cost: free
-- Why: You loved Regent's Canal walk from Little Venice, and this has somewhere local and new too.
-- Why: From your answers, it has what you like: local, new-to-you places.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
 
 **15:08–16:00 · A park break: the Serpentine in Hyde Park** · _Calm_
@@ -541,9 +521,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved Hyde Park.
 - Why: You loved Primrose Hill at sunset, and this has green space too.
-- Why: From your answers, it has what you like: green spaces and nature, one of your interests.
+- Why: From your answers, it has what you like: green spaces and nature, your interest in nature.
 - Why: Free to visit.
-- Why: Good to know: it can be busy.
 
 
 ---
@@ -557,72 +536,67 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Trip: 2 day(s), 11:00–21:00, 4 places a day, days to feel full
 - "So far, I've learned": You want to feel excited on a day out. You want to feel connected on a day out. You loved Camden Market: busy markets and street food. You loved Sky Garden: views from the top of a tower. You loved IFS Cloud Cable Car: views from up high. You loved Hampstead Heath ponds (swimming): a cold outdoor swim.
 
-### Wahaca, a bike ride in Hyde Park and the City's towers (2026-12-04)
-*Good food, a green break, one active high point, the river, a big view, a reveal, then dinner*
-> Start: Charing Cross at 11:00 · 7 stops, including lunch
-> Costs: about £42 for food and entry, plus about £8.90 transport
-> In the app: £50.90 per person, entry, food and fares; finishes at 19:47
-> For all 4 of you: about £203.60 (Adult 1 £50.90; Adult 2 £50.90; Adult 3 £50.90; Adult 4 £50.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
-> Free time: The rest of the day is yours from 19:47, about 1 hr 13 min until 21:00. It's kept free rather than filled with a place that suits you less.
+### A bike ride in Hyde Park, Wahaca and a Brick Lane bagel (2026-12-04)
+*A long green break, good food, a photo spot, the river, a big view, a reveal, dinner, then somewhere new*
+> Start: Charing Cross at 11:00 · 8 stops, including lunch
+> Costs: about £49.50 for food and entry, plus about £8.90 transport
+> In the app: £58.40 per person, entry, food and fares; finishes at 20:43
+> For all 4 of you: about £233.60 (Adult 1 £58.40; Adult 2 £58.40; Adult 3 £58.40; Adult 4 £58.40). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 
-**12:00–13:02 · Mexican street food at Wahaca, in shipping containers on the Southbank** · _Lively_
-- A gentle start: your first stop is at 12:00, so the time before it is yours.
-- Getting there: about 13 min on foot from Charing Cross.
+**12:03–12:59 · A bike loop round Hyde Park** · _Active_
+- A gentle start: your first stop is at 12:03, so the time before it is yours.
+- Getting there: about 23 min by Tube or bus from Charing Cross to Hyde Park Corner.
+- Take a Santander Cycle from a docking station at Hyde Park Corner and ride into the park on the permitted routes.
+- You hire a Santander Cycle and ride an easy loop on the park's cycle routes, along Serpentine Road beside the lake and up the Broad Walk, then dock it again.
+- Hire: £3
+- If it rains: Burlington Arcade: a covered shopping street from 1819, about 20 min away on foot. Free.
+- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
+- Why: You loved Hampstead Heath ponds (swimming), and this has something active too.
+- Why: From your answers, it has what you like: being active, green spaces and nature.
+
+**13:25–14:27 · Mexican street food at Wahaca, in shipping containers on the Southbank** · _Lively_
+- Getting there: about 26 min. Walk to Hyde Park Corner station, then take the Tube or bus to Waterloo station.
 - Walk to the Queen Elizabeth Hall terrace on the Southbank.
 - You eat Mexican street food in a colourful, many-levelled restaurant built from recycled shipping containers above the river walk.
 - Food: about £17
-- Why: You loved Sky Garden, and this has views too.
-- Why: You go out to feel connected, and this has somewhere to bring people.
-- Why: From your answers, it has what you like: one of your interests.
-- Why: 13 min on foot from Charing Cross.
-- Why: Good to know: it can be busy.
+- Why: You go out to feel connected, and this has good food.
+- Why: It fits your interest in food.
+- Why: From your answers, it has what you like: your interest in food.
 
-**13:16–14:04 · A park break in Victoria Embankment Gardens** · _Calm_
+**14:41–15:26 · A park break in Victoria Embankment Gardens** · _Calm_
 - Getting there: about 9 min on foot from Wahaca Southbank.
 - Walk into the gardens beside the station.
 - A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.
 - Cost: free
 - If it rains: A rest in the Royal Festival Hall's free foyers by the river, about 10 min away on foot. Free.
 - Why: You loved Hampstead Heath ponds (swimming), and this has green space too.
-- Why: You go out to feel excited, and this has something absorbing to do.
 - Why: From your answers, it has what you like: green spaces and nature.
 - Why: 9 min on foot from Wahaca Southbank.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
 
-**14:30–15:26 · A bike loop round Hyde Park** · _Active_
-- Getting there: about 24 min. Walk to Embankment station, then take the Tube or bus to Hyde Park Corner.
-- Take a Santander Cycle from a docking station at Hyde Park Corner and ride into the park on the permitted routes.
-- You hire a Santander Cycle and ride an easy loop on the park's cycle routes, along Serpentine Road beside the lake and up the Broad Walk, then dock it again.
-- Hire: £3
-- If it rains: Burlington Arcade: a covered shopping street from 1819, about 20 min away on foot. Free.
-- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
-- Why: You loved IFS Cloud Cable Car, and this has views too.
-- Why: From your answers, it has what you like: being active, green spaces and nature.
-- Why: Good to know: it can be busy.
-
-**15:50–16:23 · Down Villiers Street until the river opens up** · _Wonder_
-- Getting there: about 24 min. Walk to Hyde Park Corner station, then take the Tube or bus to Charing Cross station, on the Strand.
+**15:30–16:03 · Down Villiers Street until the river opens up** · _Wonder_
+- Getting there: about 4 min on foot from Victoria Embankment Gardens.
 - From the Strand, walk down Villiers Street to Embankment station.
 - You leave the busy Strand, walk down the narrow slope of Villiers Street, then climb the steps onto the footbridge as the Thames opens up wide on both sides.
 - Best: Sunset and evening
 - Cost: free
 - Why: You loved Hampstead Heath ponds (swimming), and this has time outdoors too.
-- Why: From your answers, it has what you like: being outdoors, movement and views.
+- Why: From your answers, it has what you like: being outdoors.
 - Why: You're there at its best time, 15:24–19:54.
-- Why: Good to know: it can be busy.
+- Why: 4 min on foot from Victoria Embankment Gardens.
 
-**16:53–18:00 · London from the Sky Garden, at the top of a City tower** · _Awe_
+**16:33–17:43 · London from the Sky Garden, at the top of a City tower** · _Awe_
 - Getting there: about 27 min. Walk to Embankment station, then take the Tube or bus to Monument station.
 - Walk up Philpot Lane to the entrance on Sky Garden Walk.
 - You go up to a free garden under glass at the top of a City tower and look out over London, the river and Tower Bridge.
 - Cost: free
 - Book ahead: A free ticket is needed: book online, released weekly up to three weeks ahead
 - Why: You loved Sky Garden.
+- Why: You loved IFS Cloud Cable Car, and this has views too.
 - Why: From your answers, it has what you like: movement and views.
 - Why: Free to visit.
-- Why: Good to know: it can be busy.
 
-**18:12–18:47 · Through the City towers, Bank to Liverpool Street** · _Wonder_
+**17:52–18:27 · Through the City towers, Bank to Liverpool Street** · _Wonder_
 - Getting there: about 9 min on foot from Sky Garden.
 - Walk east along Cornhill and turn right into Gracechurch Street.
 - You turn off Gracechurch Street into Leadenhall Market under its high glass roof, come out by Lloyd's and the Leadenhall Building, then go up St Mary Axe past the Gherkin and along Bishopsgate to Liverpool Street, among people heading to work.
@@ -630,12 +604,23 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: You loved Hampstead Heath ponds (swimming), and this has time outdoors too.
 - Why: From your answers, it has what you like: being outdoors.
 - Why: 9 min on foot from Sky Garden.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
 
-**18:47–19:47 · Dinner near Liverpool Street station** · _Dinner_
+**18:37–19:37 · Dinner near Old Spitalfields Market** · _Dinner_
+- Getting there: about 10 min on foot from Liverpool Street station.
 - Pick a restaurant, pub or food hall nearby.
 - Food: about £22, ODYS's estimate
 - The price is ODYS's planning estimate for a meal nearby, not a menu price.
+
+**19:53–20:43 · Beigel Bake: a salt beef bagel on Brick Lane** · _Lively_
+- Getting there: about 11 min on foot from Old Spitalfields Market.
+- Walk up Brick Lane to number 159.
+- You queue at a counter that never closes and eat a hot salt beef bagel with mustard on the pavement.
+- Allow about 10 min to queue.
+- Food: about £7.50
+- Why: You loved Sky Garden, and this has somewhere to bring people too.
+- Why: From your answers, it has what you like: places to bring people.
+- Why: 11 min on foot from Old Spitalfields Market.
 
 
 ### Flat Iron, the Garden at 120 and King's Cross (2026-12-05)
@@ -656,7 +641,6 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: You go out to feel connected, and this has good food.
 - Why: From your answers, it has what you like: places to bring people.
 - Why: 7 min on foot from Charing Cross.
-- Why: Good to know: it can be busy.
 
 **13:47–14:27 · The Garden at 120: a rooftop garden among the City towers** · _Big views_
 - Getting there: about 28 min. Walk to Covent Garden station, then take the Tube or bus to Bank, Monument or Fenchurch Street station.
@@ -685,7 +669,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.
 - Best: Sunset
 - Cost: free
-- Why: You go out to feel excited, and this has something absorbing to do.
+- Why: You loved Sky Garden, and this has views too.
+- Why: You loved Hampstead Heath ponds (swimming), and this has time outdoors too.
 - Why: From your answers, it has what you like: movement and views.
 - Why: You're there at its best time, 15:14–16:14.
 - Why: Free to visit.
@@ -696,7 +681,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You swim lengths in a 50 m pool heated to 25 C under an open sky: warm water, cold air, and floodlights after dark.
 - Best: After dark under the floodlights, or a crisp morning
 - Entry: £6.40
-- Why: You loved Hampstead Heath ponds (swimming), and this has something active too.
+- Why: You go out to feel excited, and this has something active.
 - Why: From your answers, it has what you like: being active.
 - Why: You're there at its best time, 16:30–20:00.
 - Why: The trade-off: 34 min by Tube or bus from Alderman Stairs.
@@ -707,7 +692,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You sit on the wide steps down to Regent's Canal, walk through the fountains in Granary Square, and wander under the curved roofs of Coal Drops Yard, among the new tech offices.
 - Best: Dusk, when Coal Drops Yard is lit
 - Cost: free
-- Why: You loved Hampstead Heath ponds (swimming), and this has time outdoors too.
+- Why: You loved Sky Garden, and this has somewhere to bring people too.
 - Why: From your answers, it has what you like: places to bring people.
 - Why: You're there at its best time, 15:39–19:14.
 - Why: The trade-off: 35 min by Tube or bus from London Fields Lido.
@@ -729,78 +714,78 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Trip: 3 day(s), 10:00–17:00, 2 places a day, days to feel relaxed
 - "So far, I've learned": You want to feel restored on a day out. You want to feel curious on a day out. You loved Tate Modern Turbine Hall: big modern spaces and art. You loved British Museum: big museums full of history. You loved Uber Boat on the Thames: seeing the city from the water. Hampstead Heath ponds (swimming) wasn't for you.
 
-### A curious day: Tate Modern and the Millennium Bridge (2026-12-04)
-*A curious day: some history, lunch, then the river*
-> Start: Charing Cross at 10:00 · 3 stops, including lunch
-> Costs: about £15 for food and entry, plus about £3 transport
-> In the app: £18.00 per person, entry, food and fares; finishes at 13:43
-> For all 2 of you: about £36.00 (Adult 1 £18.00; Adult 2 £18.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
-> Free time: A relaxed day, as you asked: the rest of it is yours from 13:43, about 3 hr 17 min until 17:00.
-
-**10:24–12:29 · Into the Turbine Hall and the free galleries of Tate Modern** · _Curious_
-- Getting there: about 24 min by Tube or bus from Charing Cross to Southwark or Blackfriars station.
-- Walk to the river at Bankside and go in through the Turbine Hall.
-- You walk down into the vast Turbine Hall, then up through free galleries of modern art, with the river below the windows.
-- Cost: free
-- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
-- Why: You loved Tate Modern Turbine Hall.
-- Why: You loved British Museum, and this has history too.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
-- Why: Free to visit.
-- Why: Good to know: it can be busy.
-
-**12:34–13:19 · Lunch near Tate Modern** · _Lunch_
-- Pick a café, pub or food stall nearby.
-- Food: about £15, ODYS's estimate
-- The price is ODYS's planning estimate for a meal nearby, not a menu price.
-
-**13:25–13:43 · Across the Millennium Bridge towards St Paul's dome** · _Wonder_
-- From Tate Modern's river side, step onto the south end of the bridge and walk north.
-- You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.
-- Cost: free
-- If it rains: Lift a real gold bar at the Bank of England Museum, about 20 min away on foot. Free.
-- Why: You go out to feel curious, and this has history.
-- Why: You go out to feel restored, and this has a sense of awe.
-- Why: From your answers, it has what you like: history and culture, reveals and contrast.
-- Why: 1 min on foot from Tate Modern.
-- Why: Good to know: it's in the open, so wrap up.
-
-
-### A curious day: the National Gallery and the British Museum (2026-12-05)
-*A curious day: some history, lunch, then one big reveal*
+### A curious day: the National Gallery and Tate Modern (2026-12-04)
+*A curious day: one big discovery, lunch, then a famous sight*
 > Start: Charing Cross at 10:00 · 3 stops, including lunch
 > Costs: about £15 for food and entry, all on foot
-> In the app: £15.00 per person, entry, food and fares; finishes at 14:07
+> In the app: £15.00 per person, entry, food and fares; finishes at 15:15
 > For all 2 of you: about £30.00 (Adult 1 £15.00; Adult 2 £15.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
-> Free time: A relaxed day, as you asked: the rest of it is yours from 14:07, about 2 hr 53 min until 17:00. British Museum is open until 17:00 if you'd like to stay on.
+> Free time: A relaxed day, as you asked: the rest of it is yours from 15:15, about 1 hr 45 min until 17:00. Tate Modern is open until 20:30 if you'd like to stay on.
 
-**10:06–11:41 · From Trafalgar Square into the quiet of the National Gallery** · _Curious_
+**10:04–11:39 · From Trafalgar Square into the quiet of the National Gallery** · _Curious_
 - Getting there: about 4 min on foot from Charing Cross.
 - Walk up to Trafalgar Square and go in through the Sainsbury Wing entrance.
 - You leave the noise of Trafalgar Square for high, quiet rooms and wander the free collection of paintings at your own pace.
 - Cost: free
 - Why: You loved British Museum, and this has history too.
-- Why: You loved Tate Modern Turbine Hall, and this has a big reveal too.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: It fits your interest in history & culture.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: 4 min on foot from Charing Cross.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
 
-**11:53–12:38 · Lunch near Leicester Square or Covent Garden station** · _Lunch_
-- Getting there: about 7 min on foot from The National Gallery.
+**11:59–12:44 · Lunch near Waterloo station** · _Lunch_
+- Getting there: about 15 min on foot from The National Gallery.
 - Pick a café, pub or food stall nearby.
 - Food: about £15, ODYS's estimate
 - The price is ODYS's planning estimate for a meal nearby, not a menu price.
 
-**12:57–14:07 · British Museum: Egypt galleries, the Great Court, then the King's Library** · _Awe_
-- Getting there: about 14 min on foot from Leicester Square or Covent Garden station.
+**13:10–15:15 · Into the Turbine Hall and the free galleries of Tate Modern** · _Curious_
+- Getting there: about 21 min on foot from Waterloo station.
+- Walk to the river at Bankside and go in through the Turbine Hall.
+- You walk down into the vast Turbine Hall, then up through free galleries of modern art, with the river below the windows.
+- Cost: free
+- Why: You loved Tate Modern Turbine Hall.
+- Why: You go out to feel curious, and this has history.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
+- Why: Free to visit.
+- Why: Good to know: it can be busy.
+
+
+### A curious day: the British Museum and the Hunterian (2026-12-05)
+*A curious day: one big reveal, lunch, then some history*
+> Start: Charing Cross at 10:00 · 3 stops, including lunch
+> Costs: about £15 for food and entry, all on foot
+> In the app: £15.00 per person, entry, food and fares; finishes at 14:05
+> For all 2 of you: about £30.00 (Adult 1 £15.00; Adult 2 £15.00). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
+> Free time: A relaxed day, as you asked: the rest of it is yours from 14:05, about 2 hr 55 min until 17:00. Hunterian Museum is open until 17:00 if you'd like to stay on.
+
+**10:24–11:34 · British Museum: Egypt galleries, the Great Court, then the King's Library** · _Awe_
+- Getting there: about 24 min on foot from Charing Cross.
 - Go in by the main entrance and start in Room 4, the Egyptian sculpture gallery, on the west side of the Great Court.
 - From the stone statues of the Egypt gallery you step out into the huge white Great Court under its glass roof, cross it, and walk into the long King's Library: shelves of books, warm wood and gold, and cases of collected objects.
 - Cost: free
 - Why: You loved British Museum.
 - Why: You go out to feel curious, and this has history.
 - Why: From your answers, it has what you like: history and culture, reveals and contrast.
-- Why: 14 min on foot from Leicester Square or Covent Garden station.
+- Why: Free to visit.
 - Why: Good to know: it can be busy.
+
+**11:51–12:36 · Lunch near Holborn station** · _Lunch_
+- Getting there: about 12 min on foot from British Museum.
+- Pick a café, pub or food stall nearby.
+- Food: about £15, ODYS's estimate
+- The price is ODYS's planning estimate for a meal nearby, not a menu price.
+
+**12:45–14:05 · The Hunterian: the art and science of surgery** · _Curious_
+- Getting there: about 4 min on foot from Holborn station.
+- Walk across Lincoln's Inn Fields to the Royal College of Surgeons.
+- You see the art and science of surgery from ancient times to today, around John Hunter's collection of specimens.
+- Cost: free
+- Book ahead: Booking a free ticket ahead is recommended, to avoid queues at busy times
+- Why: It fits your interest in history & culture.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
+- Why: 4 min on foot from Holborn station.
+- Why: Free to visit.
 
 
 ### A curious day: the Queen's House and the river by Uber Boat (2026-12-06)
@@ -819,8 +804,8 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Book ahead: Entry is free with a ticket: book online ahead to be sure of a place (you can normally turn up on the day)
 - Why: You loved British Museum, and this has history too.
-- Why: You loved Tate Modern Turbine Hall, and this has a big reveal too.
-- Why: From your answers, it has what you like: history and culture, one of your interests.
+- Why: It fits your interest in history & culture.
+- Why: From your answers, it has what you like: history and culture, your interest in history & culture.
 - Why: Free to visit.
 - Why: The trade-off: 54 min by Tube or bus from Charing Cross.
 
@@ -830,10 +815,7 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - You pull away from Greenwich with the Old Royal Naval College behind you, then pass Canary Wharf, Tower Bridge, the City, Parliament and the London Eye in about an hour, and get off at Battersea Power Station.
 - Ticket: £22.90
 - Why: You loved Uber Boat on the Thames.
-- Why: You go out to feel curious, and this has history.
-- Why: From your answers, it has what you like: history and culture.
 - Why: 10 min on foot from Queen's House.
-- Why: Good to know: it can be busy.
 
 **13:30–14:15 · Lunch near Battersea Power Station Pier** · _Lunch_
 - Pick a café, pub or food stall nearby.
@@ -849,27 +831,27 @@ Each joined from their own account, with the answers above. Sam started it (Memb
 
 ### Day 1
 **An unhurried hour in the Wellcome Collection's Reading Room**
-- Why: A favourite for Member A and one of you; a good match for Member B.
+- Why: A favourite for Member A; a good match for Member B.
 
 **The Hunterian: the art and science of surgery**
-- Why: A favourite for Member A and one of you; a good match for Member B.
+- Why: A favourite for Member A; a good match for Member B.
 
 **Quiet treasures in the British Library**
-- Why: Among Member B's favourites; a good match for Member A and one of you.
+- Why: A favourite for Member B; a good match for Member A.
 
 ### Day 2
 **The river's story at London Museum Docklands**
-- Why: A favourite for Member A and one of you; a good match for Member B.
+- Why: A favourite for Member A; a good match for Member B.
 
 **A park break: the Serpentine in Hyde Park**
-- Why: A place one of you loved; a good match for Member A; less so for Member B.
+- Why: A good match for Member A; less so for Member B.
 
 **Graze your way round Borough Market**
 - Why: A place Member A loved.
 
 > 2 place(s) left out because someone rejected them.
-> 3 strenuous place(s) left out because one of you asked for a gentle pace. To include one, split up for that stop.
-> A must-see of Member B was rejected by someone else, so it's left out.
+> 3 strenuous place(s) left out to keep the pace gentle for everyone. To include one, split up for that stop.
+> A must-see was left out because someone else said no to it.
 
 - Member A sees: "For you: 3 of the 6 stops you're there for are among your favourites."
 - Member B sees: "For you: 1 of the 6 stops you're there for is among your favourites."
