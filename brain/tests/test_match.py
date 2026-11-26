@@ -131,3 +131,13 @@ def test_asking_for_matches_changes_no_plan(real):
     assert len(real.get("/v1/me/plans", headers=h).json()) == n_plans
     after = real.post("/v1/me/plans", headers=h, json=body).json()
     assert [s["moment_id"] for s in before["stops"]] == [s["moment_id"] for s in after["stops"]]
+
+
+def test_you_picked_is_said_only_after_this_or_that_answers(real):
+    """m363 (the bench: "You picked quieter days" said to travellers who never answered a "this or that" day): without
+    those answers the engine says what their answers lean towards, never that they picked."""
+    h = _person(real, {7: "didnt_enjoy", 6: "loved", 16: "loved", 3: "didnt_enjoy"}, profile={"why_travel": ["peaceful"]})
+    out = _matches(real, h)
+    words = [x["reason"] or "" for x in out["matches"]] + [x["against"] or "" for x in out["matches"]]
+    assert not any("You picked" in w for w in words)
+    assert any("Your answers lean" in w for w in words)

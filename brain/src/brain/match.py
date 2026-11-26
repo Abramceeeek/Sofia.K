@@ -67,6 +67,7 @@ class Traveller:
     budget_gbp: float | None = None       # a day, per person
     children: tuple[int, ...] = ()
     n_answers: int = 0                    # swipes, choices and ratings that carry information
+    n_choices: int = 0                    # "this or that" days answered (A or B)
 
 
 @dataclass(frozen=True)
@@ -203,7 +204,9 @@ def _reason(pop: PopulationModel, t: Traveller, m: Moment, amap: AspirationMap |
             return (f"You go out to feel {felt[f]}, and {PHRASE[f]} is what this place is about.",
                     [{"traveller": f"feeling: {felt[f]}", "place": f"{f} = 2 (defines it)", "place_source": "card"}])
     if d.get("crowds", 0) < -MIN_WEIGHT and _person_side(pop, t, "crowds")[0] == "theirs" and _tag(m, "crowds") <= QUIET_MAX:
-        return ("You picked quieter days, and this is a quiet place.",
+        # m363: "you picked" only when they answered the "this or that" days, as reasons.py says it
+        said = "You picked quieter days" if t.n_choices else "Your answers lean towards quieter places"
+        return (f"{said}, and this is a quiet place.",
                 [{"traveller": "your answers lowered 'crowds'", "place": "crowds = 0 (quiet)", "place_source": "card"}])
     return None, []
 
@@ -212,7 +215,9 @@ def _against(pop: PopulationModel, t: Traveller, m: Moment) -> str | None:
     """Why it may not suit them, with evidence on both sides, or None."""
     d = dict(zip(pop.personal_names, (float(v) for v in t.delta)))
     if d.get("crowds", 0) < -MIN_WEIGHT and _person_side(pop, t, "crowds")[0] == "theirs" and _tag(m, "crowds") >= LINK_MIN:
-        return "You picked quieter days, and this place is busy."
+        # m363 (the bench: said to travellers who never answered a "this or that" day): only then "you picked"
+        return ("You picked quieter days" if t.n_choices else "Your answers lean away from crowds") + \
+            ", and this place is busy."
     for f in PHRASE:
         if _tag(m, f) >= LINK_MIN and d.get(f, 0) < -MIN_WEIGHT and _person_side(pop, t, f)[0] == "theirs":
             return f"Your answers lean away from {PHRASE[f]}, and that's what this place is about."

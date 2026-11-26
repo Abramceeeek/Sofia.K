@@ -800,7 +800,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             must_go=must_go, rated=rated, fields=person_fields(user),
             feelings=tuple(f for f in prof.get("why_travel", []) if f in reasons.FEELINGS), activity=prof.get("activity"),
             budget_gbp=budget_gbp if budget_gbp is not None else BUDGET_BAND_GBP.get(prof.get("budget_band")),
-            children=children, n_answers=n)
+            children=children, n_answers=n, n_choices=sum(ch.choice in ("A", "B") for ch in user.choices))
 
     @app.get("/v1/me/matches")
     def my_matches(day: date | None = Query(default=None, alias="date"), must_go: str = Query(default="", max_length=400),
