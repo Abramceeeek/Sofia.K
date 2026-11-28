@@ -129,8 +129,14 @@ def test_one_place_ranks_differently_for_different_people(real):
     # the day, so it lowers confidence (missing, never negative); on a Saturday it's negative evidence.
     assert q["class"] == "low_confidence"
     assert q["against"] == "You picked quieter days, and this place is busy on Saturday afternoons."
+    # a Saturday with no time given is still unknown (the batch 9 review); a Saturday afternoon is negative evidence
     sat = _one(_matches(real, quiet, date="2026-12-05"), "m_borough_market_graze")
-    assert sat["class"] == "poor_match" and sat["against"] == q["against"]
+    assert sat["class"] == "low_confidence" and sat["against"] == q["against"]
+    aft = _one(_matches(real, quiet, date="2026-12-05", window="saturday_afternoon"), "m_borough_market_graze")
+    assert aft["class"] == "poor_match"
+    assert aft["against"] == "You picked quieter days, and this place is busy on Saturday afternoons."
+    morning = _one(_matches(real, quiet, date="2026-12-05", window="saturday_morning"), "m_borough_market_graze")
+    assert morning["class"] != "poor_match" or not morning["against"].endswith("on Saturday afternoons.")
 
 
 def test_asking_for_matches_changes_no_plan(real):
@@ -168,3 +174,12 @@ def test_the_history_enthusiast_at_borough_market_is_unknown_not_poor(real):
     assert not (bm["against"] or "").startswith("Your answers lean away from")
     assert "food_discovery" in bm["confidence"]["missing"]
     assert any("whether you enjoy trying food" in x for x in bm["missing"])
+
+
+def test_asked_for_and_asked_not_to_visit_at_once_keeps_it_out_and_names_it(real):
+    """The batch 9 review: both in one request resolved by list order, and the message showed the card's id."""
+    h = _person(real, {3: "loved"})
+    sg = _one(_matches(real, h, must_go="m_sky_garden", avoid="m_sky_garden"), "m_sky_garden")
+    assert sg["class"] == "not_suitable"
+    assert sg["restrictions"] == ["explicit exclusion: you asked not to visit London from the Sky Garden, at the top "
+                                  "of a City tower"]

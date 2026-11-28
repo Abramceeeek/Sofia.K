@@ -1,6 +1,6 @@
 # ODYS: example London trips
 
-Made by `scripts/london_examples.py` on 28 Nov 2026, from Brain commit 417594a (no app build: the planner is called directly).
+Made by `scripts/london_examples.py` on 28 Nov 2026, from Brain commit 2082790 with uncommitted changes (no app build: the planner is called directly).
 
 **Synthetic people.** Each person is invented. Their onboarding answers are listed, and the plans are exactly what ODYS's planner returns for them, in the words the app shows. Nothing was edited by hand. These are for judging the product, not evidence about real travellers.
 
@@ -15,12 +15,11 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Trip: 2 day(s), 11:00–20:00, 3 places a day, days to feel full
 - "So far, I've learned": You want to feel excited on a day out. You want to feel curious on a day out. You loved Borough Market: food with a bit of atmosphere. You loved Brick Lane for food: local food with a bit of history. You loved Camden Market: busy markets and street food. British Museum wasn't for you.
 
-### A curious day: Wahaca, Leadenhall Market and King's Cross (2026-12-04)
-*A curious day: good food, some history, a famous sight, a wow moment, then somewhere new*
-> Start: Charing Cross at 11:00 · 5 stops, including lunch
+### A curious day: Wahaca, the Southbank and King's Cross (2026-12-04)
+*A curious day: good food, the river, a famous sight, a reveal, some history, then somewhere new*
+> Start: Charing Cross at 11:00 · 6 stops, including lunch
 > Costs: about £32 for food and entry, plus about £6 transport
-> In the app: £38.00 per person, entry, food and fares; finishes at 18:48
-> Free time: The rest of the day is yours from 18:48, about 1 hr 12 min until 20:00. It's kept free rather than filled with a place that suits you less.
+> In the app: £38.00 per person, entry, food and fares; finishes at 19:38
 
 **12:00–13:02 · Mexican street food at Wahaca, in shipping containers on the Southbank** · _Lively_
 - A gentle start: your first stop is at 12:00, so the time before it is yours.
@@ -33,65 +32,70 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: From your answers, it has what you like: food, your interest in food.
 - Why: 13 min on foot from Charing Cross.
 
-**13:38–14:11 · Leadenhall Market: Victorian arches on the site of Roman London** · _Curious_
-- Getting there: about 26 min. Walk to Waterloo station, then take the Tube or bus to Bank or Monument station.
-- Walk along Gracechurch Street and turn in under the market's arches.
-- You walk in under painted Victorian arches to a covered market street of shops, pubs and restaurants, on the spot that was the centre of Roman London.
+**13:10–13:58 · A rest in the Royal Festival Hall's free foyers by the river** · _Resting_
+- Getting there: about 3 min on foot from Wahaca Southbank.
+- Walk to the Southbank Centre by the river and go into the Royal Festival Hall.
+- You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.
 - Cost: free
-- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: We don't know much about you yet: this one suits most people and fits your route.
+- Why: 3 min on foot from Wahaca Southbank.
 - Why: Free to visit.
 
-**14:29–15:54 · Graze your way round Borough Market** · _Lively_
-- Getting there: about 18 min on foot from Leadenhall Market.
+**14:21–15:41 · Graze your way round Borough Market** · _Lively_
+- Getting there: about 23 min. Walk to Waterloo or Embankment station, then take the Tube or bus to London Bridge station.
 - Walk into the market; it sits right beside the station.
 - You taste your way round the stalls, pick a few things, and eat standing up among the traders.
 - Allow about 10 min to queue.
 - Food: about £15
+- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved Borough Market.
 - Why: You loved Brick Lane for food, and this has good food too.
 - Why: From your answers, it has what you like: food, your interest in food.
 - Why: Good to know: it can be busy.
 
-**16:25–17:12 · Quiet treasures in the British Library** · _Quiet_
-- Getting there: about 31 min. Walk to London Bridge station, then take the Tube or bus to King's Cross St Pancras station.
+**15:59–16:44 · The Garden at 120: a rooftop garden among the City towers** · _Big views_
+- Getting there: about 18 min on foot from Borough Market.
+- Go into Hogarth Court from Fenchurch Street or Fenchurch Avenue, pass an airport-style security check, and take the lift to floor 15.
+- You step out 15 floors up into a planted roof garden around a water feature, with the City's towers all around and views to the Thames and Tower Bridge.
+- Best: At dusk, when the towers light up
+- Cost: free
+- Why: You go out to feel curious, and this has somewhere local and new.
+- Why: From your answers, it has what you like: local, new-to-you places.
+- Why: You're there at its best time, 15:29–16:29.
+- Why: Free to visit.
+
+**17:15–18:00 · Quiet treasures in the British Library** · _Quiet_
+- Getting there: about 31 min. Walk to Bank, Monument or Fenchurch Street station, then take the Tube or bus to King's Cross St Pancras station.
 - Walk along Euston Road to the British Library's piazza and go in at the main entrance.
 - You walk slowly round the free Treasures Gallery, among some of the most inspiring items in the Library's collection, in a calm room away from the traffic of Euston Road.
 - Cost: free
 - Why: Another that suits most people and fits your route.
 - Why: Free to visit.
-- Why: The trade-off: 31 min by Tube or bus from Borough Market.
+- Why: The trade-off: 31 min by Tube or bus from The Garden at 120.
 
-**17:25–18:48 · Canal steps and Coal Drops Yard at King's Cross** · _Wandering_
+**18:15–19:38 · Canal steps and Coal Drops Yard at King's Cross** · _Wandering_
 - Getting there: about 13 min on foot from British Library.
 - Walk north from the station up King's Boulevard to Granary Square.
 - You sit on the wide steps down to Regent's Canal, walk through the fountains in Granary Square, and wander under the curved roofs of Coal Drops Yard, among the new tech offices.
 - Best: Dusk, when Coal Drops Yard is lit
 - Cost: free
 - Dinner isn't in the plan: with about £22 for it, today would go over your £40 budget.
-- Why: You go out to feel curious, and this has somewhere local and new.
+- Why: You loved Borough Market, and this has somewhere local and new too.
 - Why: From your answers, it has what you like: local, new-to-you places.
 - Why: You're there at its best time, 15:39–19:14.
 - Why: 13 min on foot from British Library.
 
 
-### A curious day: Flat Iron, a Brick Lane bagel and London Fields Lido (2026-12-05)
-*A curious day: some history, good food, a green break, the river, somewhere new, one place to share, then something hands-on*
-> Start: Charing Cross at 11:00 · 7 stops, including lunch
-> Costs: about £33.40 for food and entry, plus about £6 transport
-> In the app: £39.40 per person, entry, food and fares; finishes at 19:46
+### A curious day: Flat Iron, Dr Johnson's House and a Brick Lane bagel (2026-12-05)
+*A curious day: good food, some history, a place to share, a photo spot, a reveal, then one big discovery*
+> Start: Charing Cross at 11:00 · 6 stops, including lunch
+> Costs: about £37 for food and entry, plus about £3 transport
+> In the app: £40.00 per person, entry, food and fares; finishes at 18:55
+> Free time: The rest of the day is yours from 18:55, about 1 hr 5 min until 20:00. It's kept free rather than filled with a place that suits you less.
 
-**11:05–12:12 · Centuries of British faces at the National Portrait Gallery** · _Curious_
-- Getting there: about 5 min on foot from Charing Cross.
-- Walk to St Martin's Place, beside the National Gallery, and go in.
-- You walk past the portraits of kings and queens, writers, scientists and people in today's news, and put faces to names you know.
-- Cost: free
-- Why: We don't know much about you yet: this one suits most people and fits your route.
-- Why: 5 min on foot from Charing Cross.
-- Why: Free to visit.
-
-**12:19–13:24 · A steak and dripping chips at Flat Iron, Covent Garden** · _Lively_
-- Getting there: about 7 min on foot from National Portrait Gallery.
+**11:30–12:35 · A steak and dripping chips at Flat Iron, Covent Garden** · _Lively_
+- A gentle start: your first stop is at 11:30, so the time before it is yours.
+- Getting there: about 7 min on foot from Charing Cross.
 - Walk to Henrietta Street, off the Covent Garden piazza.
 - You sit down to a flat iron steak, sliced at the table, with a side of beef dripping chips.
 - Food: about £19.50
@@ -99,59 +103,55 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: You loved Borough Market, and this has good food too.
 - Why: It fits your interest in food.
 - Why: From your answers, it has what you like: food, your interest in food.
-- Why: 7 min on foot from National Portrait Gallery.
+- Why: 7 min on foot from Charing Cross.
 
-**13:37–14:22 · A park break in Victoria Embankment Gardens** · _Calm_
-- Getting there: about 8 min on foot from Flat Iron.
-- Walk into the gardens beside the station.
-- A slow walk through the long riverside gardens between the Embankment and the Strand, with benches, flower beds and the old York Water Gate.
-- Cost: free
-- Why: Another that suits most people and fits your route.
-- Why: 8 min on foot from Flat Iron.
-- Why: Free to visit.
-
-**14:30–15:18 · A rest in the Royal Festival Hall's free foyers by the river** · _Resting_
-- Getting there: about 8 min on foot from Victoria Embankment Gardens.
-- Walk to the Southbank Centre by the river and go into the Royal Festival Hall.
-- You find a seat in the big, open foyers, free to anyone, and rest with a coffee or a book while the river path bustles outside.
-- Cost: free
-- Why: One more that most people enjoy, close to your route.
-- Why: 8 min on foot from Victoria Embankment Gardens.
-- Why: Free to visit.
-
-**15:48–16:58 · Browsing Old Spitalfields Market** · _Wandering_
-- Getting there: about 30 min. Walk to Waterloo or Embankment station, then take the Tube or bus to Liverpool Street station.
-- No set route: wander between the stalls and the shops around them.
-- You browse the market's stalls, shops and food traders under one roof; on Thursdays there's an antiques market.
-- Cost: free
-- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
+**13:02–14:07 · Through the courts off Fleet Street to Dr Johnson's House** · _Curious_
+- Getting there: about 22 min on foot from Flat Iron.
+- Turn off Fleet Street into the narrow courts that open into Gough Square.
+- You leave the traffic of Fleet Street through narrow courts into a quiet square, then climb the townhouse where Samuel Johnson made his Dictionary, up to the garret.
+- Ticket: £10
 - Why: You loved Brick Lane for food, and this has somewhere local and new too.
 - Why: From your answers, it has what you like: local, new-to-you places.
+
+**14:26–15:39 · A wander through Covent Garden and Soho** · _Wandering_
+- Getting there: about 19 min on foot from Dr Johnson's House.
+- No set route: wander from the Piazza towards Soho.
+- An unplanned wander through Covent Garden's streets into Soho.
+- Cost: free
+- If it rains: Centuries of British faces at the National Portrait Gallery, about 10 min away on foot. Free.
+- Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
 - Why: Good to know: it can be busy.
 
-**17:09–17:59 · Beigel Bake: a salt beef bagel on Brick Lane** · _Lively_
-- Getting there: about 11 min on foot from Old Spitalfields Market.
+**15:49–16:44 · Liberty's wooden galleries, built from two old warships** · _Browsing_
+- Getting there: about 10 min on foot from Soho Square.
+- Walk down Regent Street, turn left into Great Marlborough Street and go in through the timbered front.
+- You climb through wooden galleries around three open atriums, in a 1924 Tudor-style shop built from the timbers of two old warships; their decks are now the floors.
+- Cost: free
+- Why: Another that suits most people and fits your route.
+- Why: 10 min on foot from Soho Square.
+- Why: Free to visit.
+
+**16:54–17:25 · Burlington Arcade: a covered shopping street from 1819** · _Browsing_
+- Getting there: about 10 min on foot from Liberty.
+- Walk along Piccadilly and turn in at the arcade's entrance, beside the Royal Academy.
+- You walk the length of a covered arcade from 1819, between Piccadilly and Bond Street, past small shops for watches, jewellery, shoes and perfume.
+- Cost: free
+- Why: One more that most people enjoy, close to your route.
+- Why: 10 min on foot from Liberty.
+- Why: Free to visit.
+
+**18:05–18:55 · Beigel Bake: a salt beef bagel on Brick Lane** · _Lively_
+- Getting there: about 37 min. Walk to Green Park or Piccadilly Circus station, then take the Tube or bus to Liverpool Street or Aldgate East station.
 - Walk up Brick Lane to number 159.
 - You queue at a counter that never closes and eat a hot salt beef bagel with mustard on the pavement.
 - Allow about 10 min to queue.
 - Food: about £7.50
+- Fares are estimated: £3.00 a Tube or bus journey, at most £8.90 a day (TfL's fares, read Sep 2026). TfL charges the real fare.
 - Why: You loved Brick Lane for food.
 - Why: You loved Camden Market, and this has good food too.
 - Why: From your answers, it has what you like: food, local, new-to-you places.
-- Why: 11 min on foot from Old Spitalfields Market.
-
-**18:26–19:46 · A heated outdoor swim at London Fields Lido** · _Active_
-- Getting there: about 25 min. Walk to Liverpool Street or Aldgate East station, then take the Tube or bus to London Fields station.
-- Walk into London Fields park to the lido on its west side.
-- You swim lengths in a 50 m pool heated to 25 C under an open sky: warm water, cold air, and floodlights after dark.
-- Best: After dark under the floodlights, or a crisp morning
-- Entry: £6.40
-- Dinner isn't in the plan: with about £22 for it, today would go over your £40 budget.
-- Why: You go out to feel curious, and this has somewhere local and new.
-- Why: You go out to feel excited, and this has something absorbing to do.
-- Why: From your answers, it has what you like: local, new-to-you places.
-- Why: You're there at its best time, 16:30–20:00.
+- Why: The trade-off: 37 min by Tube or bus from Burlington Arcade.
 
 
 ---
@@ -288,14 +288,15 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 
 
 ### A curious day: the Wellcome Collection, the Millennium Bridge and Tower Bridge at sunset (2026-12-06)
-*A curious day: some history, the river, lunch, a famous sight, then a big view*
+*A curious day: some history, a wow moment, lunch, the river, then a big view*
 > Start: Charing Cross at 09:30 · 5 stops, including lunch
 > Costs: about £15 for food and entry, plus about £8.90 transport
 > In the app: £23.90 per person, entry, food and fares; finishes at 16:03
 > For all 2 of you: about £47.80 (Adult 1 £23.90; Adult 2 £23.90). Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.
 > Free time: The rest of the day is yours from 16:03, about 1 hr 57 min until 18:00. It's kept free rather than filled with a place that suits you less.
 
-**10:11–11:19 · An unhurried hour in the Wellcome Collection's Reading Room** · _Quiet_
+**10:55–11:58 · An unhurried hour in the Wellcome Collection's Reading Room** · _Quiet_
+- A gentle start: your first stop is at 10:55, so the time before it is yours.
 - Getting there: about 25 min by Tube or bus from Charing Cross to Euston or Euston Square station.
 - Walk along Euston Road to number 183, go in and take the stairs or the lift to level 2.
 - You climb to the Reading Room on level 2, part library and part museum, and settle into a comfortable seat among books, artworks and objects, for as long as you like.
@@ -304,35 +305,37 @@ Trips start on Friday 4 December 2026. No weather forecast is used here, and no 
 - Why: We don't know much about you yet: this one suits most people and fits your route.
 - Why: Free to visit.
 
-**11:48–12:06 · Across the Millennium Bridge towards St Paul's dome** · _Wonder_
-- Getting there: about 29 min. Walk to Euston or Euston Square station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).
-- From Tate Modern's river side, step onto the south end of the bridge and walk north.
-- You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.
+**12:10–12:57 · Quiet treasures in the British Library** · _Quiet_
+- Getting there: about 12 min on foot from Wellcome Collection.
+- Walk along Euston Road to the British Library's piazza and go in at the main entrance.
+- You walk slowly round the free Treasures Gallery, among some of the most inspiring items in the Library's collection, in a calm room away from the traffic of Euston Road.
 - Cost: free
 - Why: You loved British Museum, and this has history too.
-- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has a famous sight too.
+- Why: It fits your interest in history & culture.
 - Why: From your answers, it has what you like: history and culture, your interest in history & culture.
+- Why: 12 min on foot from Wellcome Collection.
 - Why: Free to visit.
-- Why: Good to know: it's in the open, so wrap up.
 
-**12:09–12:54 · Lunch near St Paul's Cathedral** · _Lunch_
+**13:08–13:53 · Lunch near Russell Square station** · _Lunch_
+- Getting there: about 11 min on foot from British Library.
 - Pick a café, pub or food stall nearby.
 - Food: about £15, ODYS's estimate
 - The price is ODYS's planning estimate for a meal nearby, not a menu price.
 
-**13:12–14:57 · Into the Turbine Hall and the free galleries of Tate Modern** · _Curious_
-- Getting there: about 13 min on foot from St Paul's Cathedral.
-- Walk to the river at Bankside and go in through the Turbine Hall.
-- You walk down into the vast Turbine Hall, then up through free galleries of modern art, with the river below the windows.
+**14:30–14:48 · Across the Millennium Bridge towards St Paul's dome** · _Wonder_
+- Getting there: about 26 min. Walk to Russell Square station, then take the Tube or bus to Tate Modern, Bankside (Southwark or Blackfriars station).
+- From Tate Modern's river side, step onto the south end of the bridge and walk north.
+- You walk north across the steel footbridge, and St Paul's dome sits dead ahead, growing with every step.
 - Cost: free
-- Why: You loved Big Ben and Parliament Square, and this has history too.
-- Why: It fits your interest in history & culture.
+- If it rains: Into the Turbine Hall and the free galleries of Tate Modern, about 5 min away on foot. Free.
+- Why: You loved walking from South Kensington tube to the Natural History Museum, and this has history too.
+- Why: You loved Big Ben and Parliament Square, and this has a famous sight too.
 - Why: From your answers, it has what you like: history and culture, your interest in history & culture.
-- Why: 13 min on foot from St Paul's Cathedral.
-- Why: Good to know: it can be busy.
+- Why: Free to visit.
+- Why: Good to know: it's in the open, so wrap up.
 
 **15:21–16:03 · Tower Bridge at sunset from Alderman Stairs** · _Awe_
-- Getting there: about 24 min. Walk to Southwark or Blackfriars station, then take the Tube or bus to Tower Hill station.
+- Getting there: about 25 min. Walk to St Paul's station, then take the Tube or bus to Tower Hill station.
 - Walk east along St Katharine's Way past St Katharine Docks to Millers Wharf; beside Alderman Stairs, follow the Thames Path sign between the buildings to the raised terrace.
 - You stand still on a quiet riverside terrace while the light goes over Tower Bridge and the city keeps rushing past on the water and the roads.
 - Best: Sunset

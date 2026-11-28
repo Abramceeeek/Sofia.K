@@ -18,6 +18,7 @@ from brain.population import load_population
 
 FRI = engine.Day(weekday="fri", date="2026-12-04")
 SAT = engine.Day(weekday="sat", date="2026-12-05")
+SAT_AFTERNOON = engine.Day(weekday="sat", date="2026-12-05", window="saturday_afternoon")
 T0 = datetime(2026, 10, 1, tzinfo=timezone.utc)
 
 
@@ -196,7 +197,7 @@ def test_a_clear_negative_on_a_primary_appeal_is_a_poor_match(world):
 def test_conflicting_evidence_is_low_confidence_with_both_sides(world):
     """Abram's table: likes food, dislikes crowds; food 2 and crowded 2, both evidenced (a Saturday)."""
     t = person(world[0], {"crowds": -0.8}, fields=frozenset({"food"}))
-    r = judge(world, t, "m_borough_market_graze", SAT)
+    r = judge(world, t, "m_borough_market_graze", SAT_AFTERNOON)
     assert r.cls == "low_confidence" and "the evidence conflicts" in r.confidence["why_low"]
     assert r.reason and "food" in r.reason
     assert r.against.endswith("this place is busy on Saturday afternoons.")
@@ -289,3 +290,73 @@ def test_matches_change_no_card(world):
     for c in list(cards)[:20]:
         judge(world, person(pop, {"food": 0.5}), c)
     assert {c: dict(m.features.place) for c, m in cards.items()} == before
+
+
+# ---- the batch 9 review's defects, fixed --------------------------------------------------------------------------
+
+def test_ratings_are_combined_not_newest_wins(world):
+    """Ratings of 5, 5 and then 2 are a place they mostly loved (mean 4), not a poor match."""
+    pop = world[0]
+    rs = tuple(I("rated", "m_tate_modern", days=d, value=v, source="rating", label="Tate Modern")
+               for d, v in ((1, 5), (2, 5), (3, 2)))
+    r = judge(world, person(pop, instructions=rs), "m_tate_modern")
+    assert r.cls == "strong_match" and r.reason == "You rated it 4 of 5."
+
+
+def test_a_request_beats_recorded_evidence_however_recent(world):
+    """"No museums" (this trip's request), then a later swipe that they didn't enjoy the British Museum: the
+    request still keeps every museum out (the review: the swipe lifted the exclusion)."""
+    pop = world[0]
+    t = person(pop, instructions=(I("dislike_kind", "museum", days=1, label="museums", source="request"),
+                                  I("dislike_place", "m_bm_great_court", days=5, label="British Museum")))
+    assert judge(world, t, "m_bm_great_court").cls == "not_suitable"
+    t2 = person(pop, instructions=(I("dislike_kind", "museum", days=1, label="museums", source="request"),
+                                   I("love_place", "m_nhm_whale_hall", days=5, label="the NHM")))
+    assert judge(world, t2, "m_nhm_whale_hall").cls == "not_suitable"
+
+
+def test_a_replaced_item_no_longer_speaks_for_other_places(world):
+    """Loved Tate Modern, later rated it 1: no other place hears "You loved Tate Modern"."""
+    pop, cards, know, *_ = world
+    t = person(pop, instructions=(I("love_place", "m_tate_modern", label="Tate Modern"),
+                                  I("rated", "m_tate_modern", days=9, value=1, source="rating", label="Tate Modern")))
+    ev = engine.dim_evidence(pop, t, know)
+    assert not any(x["sign"] > 0 for x in ev.get("art", []))
+    assert all("You loved Tate Modern" not in (judge(world, t, c).reason or "") for c in cards)
+
+
+def test_a_spot_inside_a_place_is_a_caution_not_its_crowding(world):
+    """The Rosetta Stone's crowds are one spot in one room: not "the British Museum is busy" every day."""
+    t = person(world[0], {"crowds": -0.8})
+    r = judge(world, t, "m_bm_great_court")
+    assert r.cls != "poor_match" or "busy" not in (r.against or "")
+
+
+def test_card_only_reasons_are_a_first_reading_and_galleries_arent_history(world):
+    pop, cards, know, amap, kinds = world
+    t = person(pop, {"history_culture": 0.8}, fields=frozenset({"history_culture"}), feelings=("curious",))
+    for c in [c for c, k in kinds.items() if k == "gallery" and c in cards and c not in know.records]:
+        r = judge(world, t, c)
+        assert "history" not in (r.reason or ""), (c, r.reason)
+    for c in cards:
+        r = judge(world, t, c)
+        if r.reason and c not in know.records and r.evidence and r.evidence[0]["place_source"] == "card (inferred)":
+            assert "what this place is about" not in r.reason
+            assert "first reading" in r.reason or "not yet checked" in r.reason
+
+
+def test_the_spread_reads_the_cost_weight_on_its_log_scale(world):
+    """The review: without the Jacobian, a paid place's spread tracked its price. With no answers it's the prior's
+    for a free place and a paid one alike."""
+    pop = world[0]
+    none = person(pop, n_answers=0)
+    for c in ("m_tate_modern", "m_borough_market_graze"):       # free, and £15
+        assert judge(world, none, c).confidence["predictive_ratio"] == pytest.approx(1.0)
+
+
+def test_an_expired_annual_closure_warns_instead_of_lapsing(world):
+    pop, cards, _, amap, kinds = world
+    know = engine.Knowledge.build(load_places(DATA_DIR / "places"), kinds, "2027-12-25")
+    r = engine.match(pop, person(pop), cards["m_nhm_whale_hall"], engine.Day(weekday="sat", date="2027-12-25"),
+                     amap=amap, know=know)
+    assert any("now out of date" in w and "may close on this date" in w for w in r.warnings)

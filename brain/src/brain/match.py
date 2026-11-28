@@ -243,17 +243,47 @@ def _applies(i: Instruction, m: Moment, kind: str | None) -> bool:
     return i.target == m.id
 
 
-def stance(t: Traveller, m: Moment, kind: str | None) -> tuple[Instruction | None, list[Instruction]]:
-    """The instruction that decides this place, and the older ones it wins over (Abram's rule, m364).
+REQUESTS = ("must_go", "avoid", "dislike_kind")      # what they ask for: the newest decides (Abram, m364)
 
-    The newest wins; at the same time the more specific (a place over a kind). Hard rules are judged elsewhere,
-    and always win over every instruction.
+
+def recorded(t: Traveller, card: str) -> Instruction | None:
+    """What they've recorded about one place, combined: their ratings (real visits) over their swipe, and the
+    ratings averaged, never the newest alone (the batch 9 review: ratings 5, 5 then 2 made a poor match)."""
+    rel = [i for i in instructions(t) if i.target == card and i.kind not in REQUESTS]
+    rates = [i for i in rel if i.kind == "rated" and i.value is not None]
+    if rates:
+        mean = sum(i.value for i in rates) / len(rates)
+        last = max(rates, key=lambda i: i.at)
+        label = next((i.label for i in rel if i.source == "swipe"), last.label)
+        return Instruction("rated", card, last.at, "rating", label, int(round(mean)), last.context)
+    swipes = [i for i in rel if i.kind in ("love_place", "dislike_place", "fine_place")]
+    return max(swipes, key=lambda i: i.at) if swipes else None
+
+
+def evidence_by_place(t: Traveller) -> list[Instruction]:
+    """Each place's recorded evidence, combined (`recorded`): what other places learn from, so an item a later one
+    replaced (a love, then a rating of 1) no longer speaks for them (the batch 9 review)."""
+    cards = dict.fromkeys(i.target for i in instructions(t) if i.kind not in REQUESTS)
+    return [r for c in cards if (r := recorded(t, c)) is not None]
+
+
+def stance(t: Traveller, m: Moment, kind: str | None) -> tuple[Instruction | None, list[Instruction]]:
+    """What decides this place, and what it wins over (Abram's rule, m364, as the batch 9 review sharpened it).
+
+    - **Requests** (a must-go, "not this place", "no museums") are instructions: the newest decides, and at the same
+      time the more specific (a place over a kind), with "not this place" over a must-go when both are asked at once.
+    - **A request beats what they've recorded** (swipes and ratings), however recent: it's this trip's instruction.
+    - **What they've recorded** is evidence, combined (`recorded`), never "newest wins".
+    Hard rules are judged elsewhere, and win over everything.
     """
-    rel = [i for i in instructions(t) if _applies(i, m, kind)]
-    if not rel:
-        return None, []
-    rel.sort(key=lambda i: (i.at, SPECIFIC.get(i.kind, 0)))
-    return rel[-1], list(reversed(rel[:-1]))
+    reqs = [i for i in instructions(t) if i.kind in REQUESTS and _applies(i, m, kind)]
+    rec = recorded(t, m.id)
+    if reqs:
+        reqs.sort(key=lambda i: (i.at, SPECIFIC.get(i.kind, 0), i.kind == "avoid"))
+        win = reqs[-1]
+        older = list(reversed(reqs[:-1])) + ([rec] if rec else [])
+        return win, older
+    return (rec, []) if rec else (None, [])
 
 
 def _negative_stance(i: Instruction | None) -> bool:
@@ -347,7 +377,7 @@ def dim_evidence(pop: PopulationModel, t: Traveller, know: Knowledge | None) -> 
     if t.children:
         add("play", 1, "stated", "you're travelling with children")
     if know:
-        for i in instructions(t):
+        for i in evidence_by_place(t):
             rec = know.records.get(i.target)
             if not rec:
                 continue
@@ -405,10 +435,17 @@ def _predictive_ratio(pop: PopulationModel, t: Traveller, x: dict[str, float]) -
     v = np.array([x.get(n, 0.0) for n in names], dtype=float)
     if not np.any(v):
         return None
+    # the score's gradient in δ: x on the linear features; x·b_pop·e^δ on the log-scale ones (cost, D88). The batch
+    # 9 review found the Jacobian missing, so the spread tracked the price, not what they'd said.
+    bp = pop.b_pop[pop.personal_idx]
+    logm = pop.log_mask
+    d = np.asarray(t.delta, dtype=float)
+    g_post = np.where(logm, v * bp * np.exp(d), v)
+    g_prior = np.where(logm, v * bp, v)
     prior = pop.delta_prior_sd
     cov = t.delta_cov if t.delta_cov is not None else np.diag(np.asarray(t.delta_sd, dtype=float) ** 2)
-    num = float(v @ cov @ v)
-    den = float(v @ np.diag(prior ** 2) @ v)
+    num = float(g_post @ cov @ g_post)
+    den = float(g_prior @ np.diag(prior ** 2) @ g_prior)
     return math.sqrt(num / den) if den > 0 else None
 
 
@@ -417,17 +454,25 @@ WINDOW_WORDS = {"weekend": "at weekends", "saturday_afternoon": "on Saturday aft
 
 
 def _window_applies(w: str, day: Day) -> bool | None:
-    """Whether a record's time window covers this day: True, False, or None (can't tell)."""
+    """Whether a record's time window covers this visit: True, False, or None (can't tell).
+
+    The batch 9 review: an afternoon window was applied to the whole of Saturday, and a spot inside a place
+    ("around the Rosetta Stone") to the whole place every day. Now a time of day applies only when the visit's own
+    time is known to match, and a spot is a caution, never the place's crowding."""
     wd = day.weekday
     if day.window and w == day.window:
         return True
-    if w in ("weekend", "weekend_afternoon"):
+    part = day.window.split("_")[-1] if day.window else None      # "saturday_afternoon" → "afternoon"
+    if w == "weekend":
         return None if wd is None else wd in ("sat", "sun")
-    if w == "saturday_afternoon":
-        return None if wd is None else (wd == "sat")
-    if w == "school_holidays":
-        return None
-    return True     # a place within it ("around the Rosetta Stone"), not a time: always
+    if w in ("weekend_afternoon", "saturday_afternoon"):
+        days = ("sat", "sun") if w == "weekend_afternoon" else ("sat",)
+        if wd is not None and wd not in days:
+            return False
+        if part is None or wd is None:
+            return None
+        return part == "afternoon"
+    return None     # school holidays (dates unknown here), or a spot within the place: a caution only
 
 
 def crowded_for_day(place: Place, exp, day: Day) -> tuple[int | str, str | None, list[str], str | None]:
@@ -495,14 +540,14 @@ def match(pop: PopulationModel, t: Traveller, m: Moment, day: Day, *, amap: Aspi
         adj_note = {"adjustment": -round(DISLIKE_PLACE * f, 3), "why": "a place they didn't enjoy", "context": why}
     elif win is None or win.kind not in ("must_go", "love_place", "rated"):
         worst, src = 0.0, None
-        for i in instructions(t):
+        for i in evidence_by_place(t):
             if not _negative_stance(i) or i.target == m.id:
                 continue
             sim = similarity(m.id, i.target, know)
             if sim > worst:
                 worst, src = sim, i
         # the planner's own caveat, kept: a similar place they loved or found fine halves it
-        liked = max((similarity(m.id, i.target, know) for i in instructions(t)
+        liked = max((similarity(m.id, i.target, know) for i in evidence_by_place(t)
                      if i.kind in ("love_place", "fine_place") or _positive_stance(i)), default=0.0)
         if src is not None:
             f, why = _context_factor(src, day)
@@ -528,7 +573,12 @@ def match(pop: PopulationModel, t: Traveller, m: Moment, day: Day, *, amap: Aspi
         today = _d.fromisoformat(know.today) if know and know.today else None
         if today:
             for c in unverified_hard(rec[0], today):
-                if c.status != "unknown":
+                if c.status == "verified":       # verified once, now out of date: say it, never drop it silently
+                    hit = c.dates and day.date and c.closed_on(day.date)
+                    warnings.append(f"{c.claim} (checked {c.checked}, now out of date"
+                                    + ("; it may close on this date: check before going" if hit else "")
+                                    + "; said, never applied)")
+                elif c.status != "unknown":
                     warnings.append(f"{c.claim} ({c.status}, not verified: said, never applied)")
 
     # experience-level evidence, or the card's own tags where there's no record
@@ -614,14 +664,14 @@ def match(pop: PopulationModel, t: Traveller, m: Moment, day: Day, *, amap: Aspi
                      "place_source": "place record"}]
         strong_evidence = best["role"] == "primary" and best["strength"] in ("clear", "stated")
     elif not rec:
-        reason, evidence = _card_reason(pop, t, m, amap)
+        reason, evidence = _card_reason(pop, t, m, amap, kind)
 
     if against is None and place_neg and place_neg[0]["dim"] != "crowds":
         r = place_neg[0]
         against = f"Your answers lean away from {DIM_PHRASE.get(r['dim'], r['dim'])}, and that's what " \
                   f"{r['experience']} is about."
     if against is None and not rec:
-        against = _card_against(pop, t, m)
+        against = _card_against(pop, t, m, kind)
     if against is None and busy_against:
         against = busy_against
 
@@ -720,49 +770,64 @@ def match(pop: PopulationModel, t: Traveller, m: Moment, day: Day, *, amap: Aspi
                  warnings=warnings, model_score=model_score, misfit=misfit)
 
 
-def _card_reason(pop: PopulationModel, t: Traveller, m: Moment, amap: AspirationMap | None) -> tuple[str | None, list[dict]]:
-    """A place known only by its card: the batch 8 reasons, with the sign test, labelled inferred (a card's tags
-    are hand-set). It can make a place a good discovery, never a strong match."""
+ART_KINDS = ("gallery", "arts_centre")   # their cards' history_culture stands for art (the vocabulary splits them)
+FIRST_READ = "ODYS's first reading of this place"   # a card's tags: hand-set, inferred, not yet checked
+
+
+def _card_tags(m: Moment, kind: str | None) -> list[str]:
+    """The card's tags at 2 a reason may name. history_culture on a gallery is art, so it isn't said as history
+    (the batch 9 review: 185 "history" reasons at art galleries)."""
+    return [f for f in PHRASE if _tag(m, f) >= LINK_MIN and not (f == "history_culture" and kind in ART_KINDS)]
+
+
+def _card_reason(pop: PopulationModel, t: Traveller, m: Moment, amap: AspirationMap | None,
+                 kind: str | None = None) -> tuple[str | None, list[dict]]:
+    """A place known only by its card: the batch 8 reasons, with the sign test, **worded as ODYS's own first
+    reading** (a card's tags are hand-set and inferred, never "what this place is about"; Abram, m364). It can make
+    a place a good discovery, never a strong match."""
     if amap and t.fields:
         hit = amap.fields_of(m) & set(t.fields)
+        if kind in ART_KINDS:
+            hit -= {"history_culture"}
         if hit:
             label = amap.labels(hit)[0]
-            return (f"It's one of London's places for your interest in {label.lower()}.",
+            return (f"You picked {label.lower()} as an interest, and ODYS lists this place under it (not yet checked "
+                    "against its own pages).",
                     [{"traveller": f"interest: {label}", "place": f"mapped to {label} (data/aspiration.yaml)",
                       "place_source": "card (inferred)"}])
     d = dict(zip(pop.personal_names, (float(v) for v in t.delta)))
     felt = {f: w for w in t.feelings for f, v in FEELINGS.get(w, {}).items() if v > 0}
-    for f in sorted((f for f in PHRASE if _tag(m, f) >= LINK_MIN), key=lambda f: -d.get(f, 0.0)):
+    for f in sorted(_card_tags(m, kind), key=lambda f: -d.get(f, 0.0)):
         sign, _ = lean(pop, t, f)
         link = next((name for name, tags in t.loved_tags if (tags.get(f) or 0) >= LINK_MIN), None)
         if link and sign > 0:
-            return (f"You loved {link}, and {PHRASE[f]} is what this place is about too.",
-                    [{"traveller": f"loved {link} ({f} = 2 there)", "place": f"{f} = 2 (defines it)",
+            return (f"You loved {link}, and {FIRST_READ} includes {PHRASE[f]} too.",
+                    [{"traveller": f"loved {link} ({f} = 2 there)", "place": f"{f} = 2 on its card",
                       "place_source": "card (inferred)"}])
         if sign > 0:
-            return (f"Your answers lean towards {PHRASE[f]}, and that's what this place is about.",
-                    [{"traveller": f"your answers raised '{pop.spec(f).label}'", "place": f"{f} = 2 (defines it)",
+            return (f"Your answers lean towards {PHRASE[f]}, and {FIRST_READ} includes it.",
+                    [{"traveller": f"your answers raised '{pop.spec(f).label}'", "place": f"{f} = 2 on its card",
                       "place_source": "card (inferred)"}])
         if f in felt and d.get(f, 0) > 0:
-            return (f"You go out to feel {felt[f]}, and {PHRASE[f]} is what this place is about.",
-                    [{"traveller": f"feeling: {felt[f]}", "place": f"{f} = 2 (defines it)",
+            return (f"You go out to feel {felt[f]}, and {FIRST_READ} includes {PHRASE[f]}.",
+                    [{"traveller": f"feeling: {felt[f]}", "place": f"{f} = 2 on its card",
                       "place_source": "card (inferred)"}])
     if lean(pop, t, "crowds")[0] < 0 and _tag(m, "crowds") <= QUIET_MAX:
         said = "You picked quieter days" if t.n_choices else "Your answers lean towards quieter places"
-        return (f"{said}, and this is a quiet place.",
-                [{"traveller": "your answers lowered 'crowds'", "place": "crowds = 0 (quiet)",
+        return (f"{said}, and {FIRST_READ} is that it's quiet.",
+                [{"traveller": "your answers lowered 'crowds'", "place": "crowds = 0 on its card",
                   "place_source": "card (inferred)"}])
     return None, []
 
 
-def _card_against(pop: PopulationModel, t: Traveller, m: Moment) -> str | None:
-    """Why a card-only place may not suit them, with a clear lean and a tag of 2, or None."""
+def _card_against(pop: PopulationModel, t: Traveller, m: Moment, kind: str | None = None) -> str | None:
+    """Why a card-only place may not suit them, with a clear lean and a tag of 2, worded as a first reading."""
     if lean(pop, t, "crowds")[0] < 0 and _tag(m, "crowds") >= LINK_MIN:
         return ("You picked quieter days" if t.n_choices else "Your answers lean away from crowds") + \
-            ", and this place is busy."
-    for f in PHRASE:
-        if f != "crowds" and _tag(m, f) >= LINK_MIN and lean(pop, t, f)[0] < 0:
-            return f"Your answers lean away from {PHRASE[f]}, and that's what this place is about."
+            f", and {FIRST_READ} is that it's busy."
+    for f in _card_tags(m, kind):
+        if f != "crowds" and lean(pop, t, f)[0] < 0:
+            return f"Your answers lean away from {PHRASE[f]}, and {FIRST_READ} includes it."
     return None
 
 

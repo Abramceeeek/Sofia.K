@@ -812,8 +812,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                   (("window", "weekend" if at(r.created_at).weekday() >= 5 else "weekday"),))
                 for r in user.ratings]
         now_ = datetime.now(timezone.utc)
-        ins += [I("must_go", c, now_, "request", c) for c in must_go]
-        ins += [I("avoid", c, now_, "request", c) for c in avoid]
+        names = {m.id: m.display_title() for m in ready}
+        # asked for and asked not to visit in the same request: kept out, and said (the batch 9 review)
+        ins += [I("must_go", c, now_, "request", names.get(c, c)) for c in must_go if c not in avoid]
+        ins += [I("avoid", c, now_, "request", names.get(c, c)) for c in avoid]
         ins += [I("dislike_kind", k, now_, "request", k.replace("_", " ")) for k in avoid_kinds]
         return match_engine.Traveller(
             delta=post.mean, delta_sd=post.sd(), loved=loved, disliked=disliked, loved_tags=loved_tags, kept_out=out,
