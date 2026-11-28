@@ -67,9 +67,9 @@ LOW_RATING = 2       # a rating at or below this is a dislike of that place
 CONTEXT_OTHER = 0.5  # a negative said in another context counts half
 RATIO_LEARNED = 0.85  # their answers narrowed the predictive spread to under this share of the prior's
 RATIO_LITTLE = 0.93   # over this share, their answers barely touch this place. Both set from the first hidden-bench
-                      # run (travellers 0-3, where the score's error rose past ~0.93) and checked on fresh travellers
-                      # (4-7) the thresholds never saw: `validation/engine-bench/hidden-*.md`. GUESSES until real
-                      # ratings can check them.
+                      # run (travellers 0-3, where the score's error rose past ~0.93). On fresh travellers (4-7)
+                      # the check FAILED: low and medium confidence don't differ in error
+                      # (`validation/engine-bench/hidden-travellers-4-7.md`). GUESSES, not yet informative.
 TAG_NAMES = ("movement_views", "food", "green_nature", "history_culture", "iconic", "local_novel", "crowds",
              "walking_effort", "active", "outdoor_exposure", "photo_potential", "contrast_reveal", "absorption",
              "awe", "social_pull")
