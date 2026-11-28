@@ -280,17 +280,43 @@ All are synthetic, with fixed dates, seeds and solver settings.
 - the six moderated sessions;
 - once the round runs, the friends' ratings through `evaluate_export.py` (calibration of predicted against rated, and their rank correlation).
 
-## 4. Milestones, with proposed numbers (for Abram to agree; GUESSES until then)
+## 4. Milestones: what each measures, how, and how independent the measure is (revised 28 Nov, m364; for Abram to agree)
 
-| Milestone | Proposed pass criteria |
-|---|---|
-| **M1 Place intelligence** | Every ready London place has every new facet filled or explicitly unknown. Hours, price, age, booking and dated closures are from a source checked within 180 days for 100% of ready places. A random audit of 20 facts finds 0 false. |
-| **M2 Personal matching** | On the bench: no Not suitable place is ever planned. Distinct archetypes' top 10 overlap 40% or less on average. Each archetype's top 10 holds at least 6 places whose evidence names their stated interests. A disliked kind or place is shown 0 times. |
-| **M3 Must-go reliability** | At least 95% of feasible must-go requests are planned, and 100% of infeasible ones are explained. G11 and G12 are no worse with them than without. |
-| **M4 Excellent days** | G1–G15 pass in 3 of 3 runs. The three AI reviews give each traveller 7/10 or more. No false statement is found. |
-| **M5 London validation** | M1–M4, plus the six moderated sessions: a median of 4/5 or more on "I would trust this plan", and no task failed unaided by more than 2 of 6. In the friends' round, a mean rating of 3.5/5 or more for planned stops, and a positive rank correlation between predicted and rated whose 95% interval excludes 0 (the sample size needed: `validation/stage2-sample-size.md`). |
-| **M6 Second city** | The same bench and gate on a city with at least 50 checked places, passing M1–M4's criteria. |
-| **M7 Public launch** | The legal gates (`CLAUDE.md`), operations, privacy controls and support are ready. Abram's call. |
+**Abram's principles (m364):**
+- hard safety and eligibility rules: 100%;
+- explicit exclusions: 100%;
+- explanations: no unsupported claims;
+- personal matching: improves against an *independent* benchmark;
+- real-world satisfaction: measured separately, from real feedback;
+- no target is ever lowered because the algorithm struggles.
+
+**Three kinds of measure, never mixed** (Abram, m364):
+- **[R] Rule-keeping:** does the engine obey its own rules? Necessary, but it proves nothing about whether the rules are right.
+- **[S] Synthetic recovery:** does it recover hidden preferences it can't see, from a generator that shares none of its scoring code? Evidence about the method, never about real people.
+- **[H] Human:** do real travellers enjoy what it recommends? The only evidence of satisfaction.
+
+| Milestone | Measure | How it's calculated | Kind | Proposed threshold |
+|---|---|---|---|---|
+| **M1 Place knowledge** | Records to the standard | Share of ready places whose experiences pass `experiences.py`'s validation (every claim has a status, a source or "unknown", and a date) | R | 100% of ready London places |
+| | Planner-critical facts verified | Share of ready places with hours, price, age, booking and dated closures **verified** and unexpired (`evidence-rules.md` §4) | R | 100% |
+| | Facts are true | A random audit of 20 verified claims against their sources, by someone other than the author | H (a person checks) | 0 false |
+| | Scoring consistency | Agreement between two independent scorings of a sample (`place-vocabulary.md` §3), for each dimension | S (two assessors) | at least 80% exact agreement on primary appeals; disagreements resolved in writing |
+| **M2 Personal matching** | Eligibility | Plans that include a place failing a verified hard rule | R | 0 |
+| | Explicit exclusions | Plans that include a place the traveller currently excluded, or a category they explicitly excluded | R | 0 |
+| | Unsupported reasons | Shown reasons whose place side isn't verified or researched at 2, or whose traveller side isn't clear evidence | R | 0 |
+| | Recovery of hidden tastes | Rank correlation and top-10 precision between the engine's ranking and the hidden-truth ranking (`scripts/hidden_bench.py`), against a population-only and a random baseline | S | above both baselines for every archetype, and better than the previous engine version |
+| | Appropriate difference | Top-10 overlap between travellers whose hidden tastes overlap, against travellers whose don't (relevance, not maximum difference: Abram) | S | overlap tracks hidden similarity (positive correlation) |
+| | Honest uncertainty | Of the engine's low-confidence judgements, how often its ranking is wrong against hidden truth, compared with its confident ones | S | confident judgements wrong less often than low-confidence ones |
+| **M3 Must-go reliability** | Requests kept | Feasible requests planned; infeasible ones explained | R | 95% kept; 100% explained |
+| | The cost of keeping them | G11 and G12 with and without the requests | R | no worse |
+| **M4 Excellent days** | The gate | G1–G15, 3 runs | R | pass in 3 of 3 |
+| | Reviewers | Three AI reviewers per traveller (direction only) | S | 7/10 or more; no false statement |
+| **M5 London validation** | Moderated sessions | Median of "I would trust this plan" across six sessions; tasks failed unaided | H | median 4/5 or more; no task failed by more than 2 of 6 |
+| | Friends' round | Mean rating of planned stops; rank correlation between predicted and rated, with its 95% interval (`validation/stage2-sample-size.md`) | H | mean 3.5/5 or more; correlation above 0 with its interval excluding 0 |
+| **M6 Second city** | The same measures | M1–M4 on a city with at least 50 places to the standard | R, S | the same thresholds |
+| **M7 Public launch** | Readiness | The legal gates (`CLAUDE.md`), operations, privacy, support | — | Abram's call |
+
+**Every threshold is a proposal until Abram agrees it,** and none is made easier afterwards. Each R measure is labelled as rule-keeping wherever it is reported, so a 100% there is never read as proof that the rule is right.
 
 ## 5. What is reused, what changes, and the hours
 
