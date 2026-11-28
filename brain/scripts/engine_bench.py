@@ -252,7 +252,7 @@ def report(raw: dict, cards: dict) -> str:
             why = m["reason"] or m["against"] or ("; ".join(m["restrictions"]) if m["restrictions"] else
                                                   "not enough evidence about this traveller for this place" if m["class"] == "low_confidence"
                                                   else f"no reason strong on both sides; held back most by {neg['label']} "
-                                                       f"({neg['traveller']}; the place: {neg['place']})" if neg
+                                                       f"({neg['traveller']}; the place: {neg.get('place', 'see its experiences')})" if neg
                                                   else "no reason strong on both sides")
             lines.append(f"| {k} | {m['class'].replace('_', ' ')} | {m['score']:+.2f} | {why} |")
         lines.append("")
@@ -352,8 +352,9 @@ def measures(raw: dict, cards: dict) -> list[str]:
     out.append(f"- **Must-go preservation:** of {len(feasible)} feasible requests, the planner kept "
                f"**{sum(x['planned'] for x in feasible)}**. Of {len(ruled)} the engine rules out, the planner planned "
                f"**{sum(x['planned'] for x in ruled)}**, and the engine said why for {sum(bool(x['restrictions']) for x in ruled)}. "
-               "Where they disagree, it's a request for a place the traveller said they didn't enjoy: the planner lets "
-               "the request win (`dayplan`: `disliked_ids - {must_do}`), the engine doesn't. Abram's decision.")
+               "A request for a place the traveller said they didn't enjoy: the planner lets the request win "
+               "(`dayplan`: `disliked_ids - {must_do}`), and since batch 9 the engine does too (Abram, m364: the newest, "
+               "specific instruction wins, under hard rules).")
     for x in mg:
         out.append(f"  - {x['traveller']} asked for `{x['place']}`: engine **{(x['class'] or '?').replace('_', ' ')}**"
                    f"{' (' + '; '.join(x['restrictions']) + ')' if x['restrictions'] else ''}; planned: "

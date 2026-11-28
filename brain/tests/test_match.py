@@ -155,3 +155,16 @@ def test_you_picked_is_said_only_after_this_or_that_answers(real):
     words = [x["reason"] or "" for x in out["matches"]] + [x["against"] or "" for x in out["matches"]]
     assert not any("You picked" in w for w in words)
     assert any("Your answers lean" in w for w in words)
+
+
+def test_the_history_enthusiast_at_borough_market_is_unknown_not_poor(real):
+    """Abram (m364, decision 5): "Your answers lean away from good food" for a history enthusiast should normally be
+    uncertainty, not a poor match. The bench's history traveller, through the API: nothing they said is about food,
+    and the market's low score rests on most people's weights, so it's low confidence, with no claim about food."""
+    h = _person(real, {4: "loved", 1: "loved", 12: "loved", 7: "fine", 14: "fine"},
+                profile={"fields": ["history_culture"], "why_travel": ["curious"]})
+    bm = _one(_matches(real, h), "m_borough_market_graze")
+    assert bm["class"] == "low_confidence"
+    assert not (bm["against"] or "").startswith("Your answers lean away from")
+    assert "food_discovery" in bm["confidence"]["missing"]
+    assert any("whether you enjoy trying food" in x for x in bm["missing"])

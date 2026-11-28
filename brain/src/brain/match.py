@@ -668,6 +668,8 @@ def match(pop: PopulationModel, t: Traveller, m: Moment, day: Day, *, amap: Aspi
             "person_known": round(person_known, 2), "direct_signal": direct,
             "place_checked": sorted(checked) if checked else []}
 
+    # a low score is theirs only when their own answers drive its biggest negative term
+    own_negative = bool(neg) and neg[0]["traveller"] == "your answers" and person_known >= 0.2
     # the class, the first that applies
     hard = [r for r, _ in restr]
     misfit = False
@@ -689,8 +691,16 @@ def match(pop: PopulationModel, t: Traveller, m: Moment, day: Day, *, amap: Aspi
         cls, basis = "strong_match", "your evidence and the place record"
     elif score >= FLOOR:
         cls, basis = "good_discovery", "your evidence" if person_known >= 0.2 else "mostly the population"
+    elif own_negative and not (rec and missing_dims):
+        cls, basis = "poor_match", "your evidence"
     else:
-        cls, basis = "poor_match", "your evidence" if person_known >= 0.2 else "mostly the population"
+        # m366 (the engine bench: the history enthusiast's Borough Market was still "poor", held back by most
+        # people's weights on crowds and cost): below the floor on the population's weights, or with what the place
+        # is about unknown for them, is "we don't know", not "it won't suit you" (Abram, m364, decision 5)
+        cls, basis = "low_confidence", "mostly the population"
+        conf["level"] = "low"
+        conf["why_low"].append("its low score rests on most people's weights, not on anything they said"
+                               if not own_negative else "what this place is about is unknown for them")
     if adj_note:
         prefs.append({"instruction": "adjustment", **adj_note})
 
