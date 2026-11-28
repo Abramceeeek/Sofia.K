@@ -1,6 +1,6 @@
 # The London gate (m326)
 
-Run on 26 Nov 2026, from Brain commit 06721a0.
+Run on 28 Nov 2026, from Brain commit 417594a.
 
 **NOT PASSED.** Six synthetic travellers, and two more Day Feel combinations, through the real planner (`scripts/london_gate.py`). London passes only when every check passes in every run.
 
@@ -29,9 +29,9 @@ Failures in total (run 1): G1 0, G2a 0, G2b 5, G2c 0, G3 0, G3b 0, G4 0, G5 0, G
 
 | Run | G1 | G2a | G2b | G2c | G3 | G3b | G4 | G5 | G6 | G7 | G8 | G9 | G10 | G11 | G12 | G13 | G14 | G15 | G2 original (six; all eight) | Unused time | Waits mid-day | Days over the travel budget | Minutes over it | Different places |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 9; 11 | 1781 min | 0, 0 min | 11 of 16 | 236 min | 83 |
-| 2 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 9; 11 | 1781 min | 0, 0 min | 11 of 16 | 236 min | 83 |
-| 3 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 9; 11 | 1781 min | 0, 0 min | 11 of 16 | 236 min | 83 |
+| 1 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 9; 11 | 1818 min | 0, 0 min | 11 of 16 | 228 min | 83 |
+| 2 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 9; 11 | 1873 min | 0, 0 min | 11 of 16 | 236 min | 83 |
+| 3 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 | 0 | 9; 11 | 1867 min | 0, 0 min | 11 of 16 | 239 min | 83 |
 
 ## Quality measures (reviewed, not pass or fail)
 
@@ -42,11 +42,11 @@ Unused time is the day's window with nothing planned: a later start, waits and a
 | Traveller | Unused per day | Rest | Meals | Wandering | Waits (count, total, longest) | Later starts | Travel per day | Meals named | Titles |
 |---|---|---|---|---|---|---|---|---|---|
 | sam | 76 min, 96 min | 93 min | 127 min | 156 min | 0, 0 min, 0 min | 47 min, 23 min | 101 min ⚠, 105 min ⚠ | 2 of 2 | ok |
-| priya | 136 min, 74 min, 196 min | 153 min | 135 min | 0 min | 0, 0 min, 0 min | 24 min, 34 min, 60 min | 90 min, 96 min ⚠, 99 min ⚠ | 0 of 3 | 0 alike, 2 long ⚠ |
+| priya | 136 min, 74 min, 141 min | 111 min | 135 min | 0 min | 0, 0 min, 0 min | 24 min, 34 min | 90 min, 96 min ⚠, 91 min ⚠ | 0 of 3 | 0 alike, 2 long ⚠ |
 | family | 80 min, 63 min | 86 min | 90 min | 0 min | 0, 0 min, 0 min | none | 102 min ⚠, 96 min ⚠ | 0 of 2 | 0 alike, 1 long ⚠ |
 | jonas | 140 min | 132 min | 45 min | 0 min | 0, 0 min, 0 min | none | 83 min ⚠ | 0 of 1 | ok |
 | friends | 70 min, 86 min | 75 min | 247 min | 73 min | 0, 0 min, 0 min | 40 min, 57 min | 119 min, 129 min ⚠ | 2 of 4 | ok |
-| margaret | 115 min, 185 min, 170 min | 74 min | 135 min | 0 min | 0, 0 min, 0 min | none | 40 min, 40 min, 64 min ⚠ | 0 of 3 | ok |
+| margaret | 207 min, 185 min, 170 min | 74 min | 135 min | 0 min | 0, 0 min, 0 min | none | 25 min, 25 min, 64 min ⚠ | 0 of 3 | ok |
 | jonas+full | 91 min | 169 min | 45 min | 0 min | 0, 0 min, 0 min | none | 105 min ⚠ | 0 of 1 | ok |
 | friends+relaxed | 160 min, 43 min | 30 min | 247 min | 73 min | 0, 0 min, 0 min | 30 min, 23 min | 115 min, 156 min ⚠ | 2 of 4 | ok |
 
@@ -55,11 +55,11 @@ Unused time is the day's window with nothing planned: a later start, waits and a
 | Traveller | Day feel | Each day: main places / asked · free time · longest · said · why · useful |
 |---|---|---|
 | sam | full | 4/3 · 69 min · 47 min · yes · waits for a time · –; 5/3 · 88 min · 65 min · yes · nothing strong enough to add · no |
-| priya | balanced | 4/3 · 131 min · 107 min · yes · nothing strong enough to add · no; 4/3 · 69 min · 35 min · yes · waits for a time · –; 4/3 · 177 min · 117 min · yes · nothing strong enough to add · no |
+| priya | balanced | 4/3 · 131 min · 107 min · yes · nothing strong enough to add · no; 4/3 · 69 min · 35 min · yes · waits for a time · –; 4/3 · 117 min · 117 min · yes · nothing strong enough to add · no |
 | family | balanced | 4/3 · 75 min · 75 min · yes · nothing strong enough to add · no; 4/3 · 48 min · 48 min · yes · nothing strong enough to add · yes |
 | jonas | relaxed | 3/3 · 120 min · 120 min · yes · chosen (relaxed) · no |
 | friends | full | 6/4 · 40 min · 40 min · yes · waits for a time · –; 5/4 · 57 min · 57 min · yes · waits for a time · – |
-| margaret | relaxed | 2/2 · 105 min · 105 min · yes · chosen (relaxed) · yes; 2/2 · 175 min · 175 min · yes · chosen (relaxed) · yes; 2/2 · 165 min · 165 min · yes · chosen (relaxed) · no |
+| margaret | relaxed | 2/2 · 197 min · 197 min · yes · chosen (relaxed) · no; 2/2 · 173 min · 173 min · yes · chosen (relaxed) · yes; 2/2 · 165 min · 165 min · yes · chosen (relaxed) · no |
 | jonas+full | full | 4/3 · 81 min · 81 min · yes · nothing strong enough to add · yes |
 | friends+relaxed | relaxed | 4/4 · 145 min · 115 min · yes · chosen (relaxed) · no; 4/4 · 23 min · 23 min · yes · chosen (relaxed) · – |
 
@@ -68,11 +68,11 @@ Unused time is the day's window with nothing planned: a later start, waits and a
 | Traveller | Pace | Each day: walk min · km · Tube/bus min (legs) · waits · whole journey |
 |---|---|---|
 | sam | medium | 47 · 3.5 km · 54 (2) · 0 · 101; 68 · 5.1 km · 37 (1) · 0 · 105 |
-| priya | medium | 90 · 6.8 km · 0 (0) · 0 · 90; 5 · 0.4 km · 91 (3) ⚠ · 0 · 96; 23 · 1.7 km · 76 (3) · 0 · 99 |
+| priya | medium | 90 · 6.8 km · 0 (0) · 0 · 90; 5 · 0.4 km · 91 (3) ⚠ · 0 · 96; 13 · 1.0 km · 78 (3) · 0 · 91 |
 | family | gentle | 31 · 2.3 km · 71 (2) ⚠ · 0 · 102; 16 · 1.2 km · 80 (2) ⚠ · 0 · 96 |
 | jonas | gentle | 53 · 4.0 km · 30 (1) · 0 · 83 |
 | friends | full_on | 43 · 3.2 km · 76 (3) · 0 · 119; 32 · 2.4 km · 97 (3) · 0 · 129 |
-| margaret | gentle | 40 · 3.0 km · 0 (0) · 0 · 40; 40 · 3.0 km · 0 (0) · 0 · 40; 10 · 0.8 km · 54 (1) · 0 · 64 |
+| margaret | gentle | 1 · 0.1 km · 24 (1) · 0 · 25; 25 · 1.9 km · 0 (0) · 0 · 25; 10 · 0.8 km · 54 (1) · 0 · 64 |
 | jonas+full | gentle | 46 · 3.5 km · 59 (2) · 0 · 105 |
 | friends+relaxed | full_on | 40 · 3.0 km · 75 (3) · 0 · 115; 7 · 0.5 km · 149 (4) ⚠ · 0 · 156 |
 
@@ -85,7 +85,7 @@ Unused time is the day's window with nothing planned: a later start, waits and a
 | family | 2 adults, 2 children | £40.0 | £21.00 · £84.00; £34.90 · £139.60 (children's price not known: The Uber Boat up the riv) |
 | jonas | 1 adult | £20.0 | £18.00 · £18.00 |
 | friends | 4 adults | £70.0 | £58.40 · £233.60; £56.80 · £227.20 |
-| margaret | 2 adults | none | £15.00 · £30.00; £15.00 · £30.00; £40.90 · £81.80 |
+| margaret | 2 adults | none | £18.00 · £36.00; £15.00 · £30.00; £40.90 · £81.80 |
 | jonas+full | 1 adult | £20.0 | £12.00 · £12.00 |
 | friends+relaxed | 4 adults | £70.0 | £50.90 · £203.60; £56.80 · £227.20 |
 
@@ -107,13 +107,13 @@ Unused time is the day's window with nothing planned: a later start, waits and a
 - jonas+full 2026-12-04 (4 places, 3 asked): The Hunterian: the art and science o (museum) 0.63; Quiet treasures in the British Libra (gallery) 0.52
 - friends+relaxed 2026-12-05 (5 places, 4 asked): A steak and dripping chips at Flat I (restaurant) 0.64
 
-**How each day ends:** sam: Canal steps and Coal Drops Yard at Kin at 19:38, Beigel Bake: a salt beef bagel on Bric at 18:55; priya: Waterloo Bridge at sunset, both ways at 16:13, London from the Sky Garden, at the top at 17:25, Tower Bridge at sunset from Alderman S at 16:03; family: A pirate-ship afternoon at the Diana M at 15:45, Liberty's wooden galleries, built from at 16:12; jonas: A park break: the Serpentine in Hyde P at 16:00; friends: Beigel Bake: a salt beef bagel on Bric at 20:43, Dinner near Granary Square and Coal Dr at 20:51; margaret: Into the Turbine Hall and the free gal at 15:15, The Hunterian: the art and science of  at 14:05, Lunch near Battersea Power Station Pie at 14:15; jonas+full: Quiet treasures in the British Library at 16:39; friends+relaxed: Dinner near Sky Garden at 19:05, Dinner near Granary Square and Coal Dr at 21:00
+**How each day ends:** sam: Canal steps and Coal Drops Yard at Kin at 19:38, Beigel Bake: a salt beef bagel on Bric at 18:55; priya: Waterloo Bridge at sunset, both ways at 16:13, London from the Sky Garden, at the top at 17:25, Tower Bridge at sunset from Alderman S at 16:03; family: A pirate-ship afternoon at the Diana M at 15:45, Liberty's wooden galleries, built from at 16:12; jonas: A park break: the Serpentine in Hyde P at 16:00; friends: Beigel Bake: a salt beef bagel on Bric at 20:43, Dinner near Granary Square and Coal Dr at 20:51; margaret: Across the Millennium Bridge towards S at 13:43, British Museum: Egypt galleries, the G at 14:07, Lunch near Battersea Power Station Pie at 14:15; jonas+full: Quiet treasures in the British Library at 16:39; friends+relaxed: Dinner near Sky Garden at 19:05, Dinner near Granary Square and Coal Dr at 21:00
 
-**Unused time, all 16 days:** 1781 min, a mean of 111 min a day.
+**Unused time, all 16 days:** 1818 min, a mean of 114 min a day.
 
 **The largest waits, and what they wait for:**
 
-**The same stop for 3 or more of the 6 travellers** (variety; fewer is better): m_garden_at_120 (4), m_wellcome_reading_room (3), m_wahaca_southbank (3), m_st_dunstan_garden (3), m_sky_garden (3), m_park_break_hyde (3), m_liberty_timber_galleries (3), m_hunterian_museum (3), m_flat_iron_covent_garden (3), m_burlington_arcade (3), m_british_library_treasures (3), m_alderman_stairs_sunset (3), a_kings_cross_canal (3)
+**The same stop for 3 or more of the 6 travellers** (variety; fewer is better): m_garden_at_120 (4), m_wellcome_reading_room (3), m_wahaca_southbank (3), m_st_dunstan_garden (3), m_sky_garden (3), m_park_break_hyde (3), m_liberty_timber_galleries (3), m_flat_iron_covent_garden (3), m_burlington_arcade (3), m_alderman_stairs_sunset (3), a_kings_cross_canal (3)
 
 **The test measures a good trip; it doesn't define one.** Never make a traveller's day worse to turn a check green (Abram, 24 Nov).
 
@@ -131,8 +131,8 @@ Unused time is the day's window with nothing planned: a later start, waits and a
 - family G2 (original, not a blocker): 2026-12-05 ends 48 min early
 - **jonas G11:** 2026-12-04 83 min of travel, budget 60 (gentle): 53 min walking, 30 min by Tube or bus; mostly walking
 - jonas G2 (original, not a blocker): 2026-12-04 ends 120 min early
-- margaret G2 (original, not a blocker): 2026-12-04 ends 105 min early
-- margaret G2 (original, not a blocker): 2026-12-05 ends 175 min early
+- margaret G2 (original, not a blocker): 2026-12-04 ends 197 min early
+- margaret G2 (original, not a blocker): 2026-12-05 ends 173 min early
 - margaret G2 (original, not a blocker): 2026-12-06 ends 165 min early
 - **jonas+full G2b:** 2026-12-04 full, but ends 81 min early
 - **jonas+full G11:** 2026-12-04 105 min of travel, budget 60 (gentle): 46 min walking, 59 min by Tube or bus; mostly Tube or bus
