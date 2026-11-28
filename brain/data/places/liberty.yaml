@@ -1,0 +1,92 @@
+# Reference place 7 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026; see tate_modern.yaml for the conventions.
+# Liberty's own heritage page was read on 30 Sep 2026 (the card's source); on 28 Nov libertylondon.com and
+# Historic England's listing both refused the fetch, so nothing newer was read directly.
+id: p_liberty
+name: Liberty
+kind: shop
+area: Soho, Great Marlborough Street
+official_url: https://www.libertylondon.com/uk/information/our-heritage.html
+location: {lat: 51.51383, lon: -0.14016}
+legacy:
+  card: m_liberty_timber_galleries
+  from: [e_timber_galleries]
+facts:
+  - id: lib_hours
+    claim: "Open Monday to Saturday 10:00-20:00, Sunday 12:00-18:00"
+    fact_type: hours
+    status: researched
+    source: Liberty help centre (via search, 2026-09-30)
+    source_type: official
+    checked: 2026-09-30
+    confidence: medium
+    note: "Search only, never read directly: no hard rule can use it."
+  - id: lib_free
+    claim: "Free to browse"
+    fact_type: price
+    status: inferred
+    source_type: odys
+    checked: 2026-09-30
+    confidence: low
+    note: "A shop: no admission. Not stated on a page read."
+experiences:
+  - id: e_timber_galleries
+    title: "The timber galleries of the Tudor building"
+    what_you_do: "Climb through the wooden galleries round the atriums of the 1924 Tudor-style shop built from two warships' timbers"
+    activity: shop
+    status: ready
+    claims:
+      - id: lib_building
+        claim: "The Great Marlborough Street shop (1924), designed by Edwin T. Hall and Edwin S. Hall, was built from the timbers of HMS Impregnable and HMS Hindustan, their decks now the floors, around three atriums"
+        fact_type: history
+        status: verified
+        source: https://www.libertylondon.com/uk/information/our-heritage.html
+        source_type: official
+        checked: 2026-09-30
+        confidence: high
+        central: true
+        note: "Read directly on 30 Sep. On 28 Nov a search of Historic England's listing (entry 1357064) agreed: Grade II*, 1922-24, the same two ships."
+      - id: lib_listing
+        claim: "Listed Grade II* as a Tudor Arts and Crafts building reusing the timbers of two early-19th-century warships"
+        fact_type: history
+        status: researched
+        source: https://historicengland.org.uk/listing/the-list/list-entry/1357064
+        source_type: reference
+        checked: 2026-11-28
+        confidence: medium
+        central: true
+        note: "Search results; the listing page refused the fetch."
+      - id: lib_shop
+        claim: "It is a shop: browsing and buying are the visit"
+        fact_type: contents
+        status: researched
+        source: https://www.libertylondon.com/uk/information/our-heritage.html
+        source_type: official
+        checked: 2026-09-30
+        confidence: medium
+        note: "The heritage page calls it 'the Great Marlborough Street shop'; what it sells wasn't read."
+      - id: lib_busy_guess
+        claim: "Weekend afternoons are busiest"
+        fact_type: crowding
+        status: inferred
+        source_type: odys
+        checked: 2026-09-30
+        confidence: low
+        note: "The card's GUESS."
+    scores:
+      architecture: {value: 2, claims: [lib_building, lib_listing]}
+      history: {value: 1, claims: [lib_building]}   # the timbers' story; the visit isn't about the past
+      shopping: {value: 1, claims: [lib_shop]}
+      food_discovery: {value: 0, claims: [lib_shop]}
+    primary: [architecture]
+    secondary: [history, shopping]
+    atmosphere:
+      historic: {value: 2, claims: [lib_building]}
+      unusual: {value: 2, claims: [lib_building]}   # a shop built from warships: researched at most (interpretive)
+      sheltered: {value: 2, claims: [lib_building]}
+      crowded:
+        - {value: 1, claims: [lib_busy_guess], window: "weekend_afternoon"}
+        - {value: unknown}
+    effort: {value: 1, claims: [lib_building]}
+    duration_min: [30, 60]
+    duration_status: inferred
+    needs: ["a direct read of Liberty's hours", "what it sells", "step-free access"]

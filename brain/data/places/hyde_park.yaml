@@ -1,0 +1,160 @@
+# Reference place 5 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026; see tate_modern.yaml for the conventions.
+# The Royal Parks pages describe the lake, the wildlife and the park's history. "Peaceful" isn't stated, so it's
+# inferred only: the park break is a nature experience first, and real ratings will say whether it calms people.
+id: p_hyde_park
+name: Hyde Park
+kind: park
+area: Hyde Park and Knightsbridge
+official_url: https://www.royalparks.org.uk/visit/parks/hyde-park
+location: {lat: 51.50528, lon: -0.16944}
+legacy:
+  card: m_park_break_hyde
+  from: [e_serpentine]
+  other_cards: [m_park_bike_loop_hyde]
+facts:
+  - id: hp_gates
+    claim: "Pedestrian gates open 05:00 to midnight"
+    fact_type: hours
+    status: verified
+    source: https://www.royalparks.org.uk/visit/parks/hyde-park
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Pedestrian gates 5am - midnight"
+  - id: hp_size
+    claim: "350 acres, a mix of habitats and ecosystems"
+    fact_type: contents
+    status: verified
+    source: https://www.royalparks.org.uk/visit/parks/hyde-park/wildlife
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Hyde Park’s 350 acres are a unique mix of habitats and ecosystems"
+  - id: hp_henry
+    claim: "Henry VIII acquired the land in 1536 from the monks of Westminster Abbey as a hunting ground"
+    fact_type: history
+    status: verified
+    source: https://www.royalparks.org.uk/visit/parks/hyde-park/history
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "in 1536 he also acquired the land that now forms Hyde Park from the monks of Westminster Abbey"
+  - id: hp_free
+    claim: "Entry to the park is free"
+    fact_type: price
+    status: inferred
+    source_type: odys
+    checked: 2026-11-28
+    confidence: low
+    note: "Not stated on the pages read (Claude's own knowledge, *)."
+experiences:
+  - id: e_serpentine
+    title: "By the Serpentine"
+    what_you_do: "Walk the lakeside paths of the Serpentine and watch the herons, geese and swimmers"
+    activity: walk
+    status: ready
+    claims:
+      - id: hp_serpentine
+        claim: "The Serpentine is at the park's heart, with lakeside paths, waterfront cafés and wildlife to spot"
+        fact_type: contents
+        status: verified
+        source: https://www.royalparks.org.uk/visit/parks/hyde-park
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "At its heart is the Serpentine, boasting panoramic lake-side paths, waterfront cafés, and an abundance of wildlife to spot."
+      - id: hp_wildlife
+        claim: "Herons nest on Serpentine Island near the boathouses; Egyptian geese walk the paths"
+        fact_type: contents
+        status: verified
+        source: https://www.royalparks.org.uk/visit/parks/hyde-park/wildlife
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "look for their delightfully messy nests on to Serpentine Island near the boathouses"
+      - id: hp_caroline
+        claim: "Queen Caroline created the Serpentine by damming the Westbourne stream"
+        fact_type: history
+        status: verified
+        source: https://www.royalparks.org.uk/visit/parks/hyde-park/history
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        quote: "Queen Caroline also created the iconic Serpentine by damming the Westbourne Stream."
+      - id: hp_calm_guess
+        claim: "A place to slow down by the water"
+        kind: interpretation
+        fact_type: interpretation
+        status: inferred
+        source_type: odys
+        checked: 2026-11-28
+        confidence: low
+        note: "The card's own words; no source says peaceful."
+    scores:
+      nature: {value: 2, claims: [hp_serpentine, hp_wildlife]}
+      views: {value: 1, claims: [hp_serpentine]}      # across the water; 'panoramic' is the page's word
+      history: {value: 1, claims: [hp_caroline, hp_henry]}
+      art: {value: 0, claims: [hp_serpentine]}
+      food_discovery: {value: 0, claims: [hp_serpentine]}
+    primary: [nature]
+    secondary: [views, history]
+    atmosphere:
+      green: {value: 2, claims: [hp_serpentine, hp_size]}
+      outdoors: {value: 2, claims: [hp_serpentine]}
+      peaceful: {value: 1, claims: [hp_calm_guess]}
+    effort: {value: 1, claims: [hp_serpentine]}
+    duration_min: [30, 45]
+    duration_status: inferred
+    needs: ["busy times", "what the walk is like in rain or after dark"]
+  - id: e_meadows
+    title: "The meadows and the rose garden"
+    what_you_do: "Explore the winding paths and meadows in the north of the park, or the rose garden"
+    activity: walk
+    status: ready
+    claims:
+      - id: hp_meadows
+        claim: "Winding paths and meadows in the north of the park, and a rose garden"
+        fact_type: contents
+        status: verified
+        source: https://www.royalparks.org.uk/visit/parks/hyde-park
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "explore the winding paths and picturesque meadows in the north of the park or head for the rose garden"
+    scores:
+      nature: {value: 2, claims: [hp_meadows]}
+      history: {value: 0, claims: [hp_meadows]}
+    primary: [nature]
+    secondary: []
+    atmosphere:
+      green: {value: 2, claims: [hp_meadows]}
+      outdoors: {value: 2, claims: [hp_meadows]}
+    effort: {value: 1, claims: [hp_meadows]}
+    needs: ["the rose garden's season", "no card yet: not plannable"]
+  - id: e_boating
+    title: "Boating on the Serpentine"
+    what_you_do: "Hire a boat on the lake"
+    activity: ride
+    status: draft
+    claims:
+      - id: hp_boating
+        claim: "Hyde Park has boating, with an offer advertised for December 2026"
+        fact_type: contents
+        status: researched
+        source: https://www.royalparks.org.uk/visit/parks/hyde-park
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+        quote: "Save 40% off Hyde Park Boating this December"
+        note: "A news banner only: where, when, the price and the season aren't stated."
+    scores:
+      adventure: {value: 1, claims: [hp_boating]}
+      nature: {value: 1, claims: [hp_boating]}
+    primary: []
+    secondary: [adventure, nature]
+    atmosphere:
+      outdoors: {value: 2, claims: [hp_boating]}
+    needs: ["the operator's page: season, hours, price, age rules"]

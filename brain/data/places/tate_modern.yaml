@@ -1,0 +1,190 @@
+# Reference place 1 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026, to the standard in
+# decisions/place-vocabulary.md and decisions/evidence-rules.md, checked by brain/src/brain/experiences.py.
+# Every score cites the claims behind it; a dimension not listed is unknown (missing evidence, never negative).
+# Quotes are short and verbatim from the page named. Nothing here changes a plan (legacy tags are only compared).
+id: p_tate_modern
+name: Tate Modern
+kind: gallery
+area: Bankside
+official_url: https://www.tate.org.uk/visit/tate-modern
+location: {lat: 51.507778, lon: -0.099444}   # Wikidata Q193375, read 2026-11-24 (the card's source)
+legacy:
+  card: m_tate_modern          # "Into the Turbine Hall and the free galleries of Tate Modern"
+  from: [e_turbine_hall, e_collection]
+facts:
+  - id: tm_hours
+    claim: "Open Sunday to Thursday 10:00-18:00 and Friday to Saturday 10:00-21:00; last entry 30 minutes before closing"
+    fact_type: hours
+    status: verified
+    source: https://www.tate.org.uk/visit/tate-modern
+    source_type: official
+    checked: 2026-11-24
+    confidence: high
+    quote: "Sunday to Thursday 10.00–18.00"
+    note: "Christmas hours aren't on the page read."
+  - id: tm_free
+    claim: "Entry to the collection is free"
+    fact_type: price
+    status: verified
+    source: https://www.tate.org.uk/visit/tate-modern
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Entry to the collection is free for everyone."
+  - id: tm_lifts
+    claim: "Eight lifts in the Blavatnik Building and four in the Natalie Bell Building, by the main stairs on each floor"
+    fact_type: access
+    status: verified
+    source: https://www.tate.org.uk/visit/tate-modern
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "There are four lifts in the Natalie Bell Building, by the main stairs on each floor"
+  - id: tm_step_free
+    claim: "Whether there is a step-free route from the entrance"
+    fact_type: access
+    status: unknown
+    source: https://www.tate.org.uk/visit/tate-modern
+    source_type: official
+    checked: 2026-11-28
+    confidence: low
+    note: "The page lists lifts but doesn't state a step-free route. Unknown, not 'no'."
+experiences:
+  - id: e_collection
+    title: "The free collection galleries"
+    what_you_do: "Walk through the free galleries of modern and contemporary art"
+    activity: look
+    status: ready
+    claims:
+      - id: tm_art
+        claim: "Tate Modern shows modern and contemporary art"
+        fact_type: contents
+        status: verified
+        source: https://www.tate.org.uk/visit/tate-modern
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "See some of the world’s most exciting modern and contemporary art at Tate Modern."
+        note: "'most exciting' is marketing, not evidence; the fact is modern and contemporary art."
+      - id: tm_busy_guess
+        claim: "Likely busy at weekends: free, central and widely known"
+        kind: interpretation
+        fact_type: crowding
+        status: inferred
+        source_type: odys
+        checked: 2026-11-28
+        confidence: low
+        note: "No busy-times statement on the page read. The card's crowds 2 was Claude's judgement."
+    scores:
+      art: {value: 2, claims: [tm_art]}
+      history: {value: 0, claims: [tm_art]}       # the sources describe art, not the past
+      culture: {value: 0, claims: [tm_art]}       # living traditions and performance are the Tanks' (below)
+      food_discovery: {value: 0, claims: [tm_art]}
+      nature: {value: 0, claims: [tm_art]}
+    primary: [art]
+    secondary: []
+    atmosphere:
+      contemporary: {value: 2, claims: [tm_art]}
+      sheltered: {value: 2, claims: [tm_art]}     # indoor galleries
+      outdoors: {value: 0, claims: [tm_art]}
+      crowded: {value: 1, claims: [tm_busy_guess]}
+    effort: {value: 1, claims: [tm_busy_guess]}   # GUESS: walking through several floors; replace with a source
+    duration_min: [60, 120]
+    duration_status: inferred
+    needs: ["what's on show changes: the free displays aren't named", "busy times", "a step-free route"]
+  - id: e_turbine_hall
+    title: "The Turbine Hall"
+    what_you_do: "Walk into the vast former turbine hall and see the large-scale work on show there"
+    activity: look
+    status: ready
+    claims:
+      - id: tm_turbine
+        claim: "The Turbine Hall is a vast space for large-scale sculpture and site-specific installation art"
+        fact_type: contents
+        status: verified
+        source: https://www.tate.org.uk/visit/tate-modern/turbine-hall
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "Visit this vast, iconic space for large-scale sculpture and site-specific installation art"
+      - id: tm_turbine_space
+        claim: "The hall itself, vast and industrial, is presented as part of the visit: a place to take photos and meet friends"
+        kind: interpretation
+        fact_type: interpretation
+        status: researched
+        source: https://www.tate.org.uk/visit/tate-modern/5-free-things-to-do-at-tate-modern
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+        central: true
+        quote: "Vast and industrial, the Turbine Hall is a memorable spot to take photos, meet friends"
+    scores:
+      art: {value: 2, claims: [tm_turbine]}
+      architecture: {value: 2, claims: [tm_turbine_space]}
+      social: {value: 1, claims: [tm_turbine_space]}
+      history: {value: 0, claims: [tm_turbine]}
+    primary: [art, architecture]
+    secondary: [social]
+    atmosphere:
+      grand: {value: 2, claims: [tm_turbine, tm_turbine_space]}
+      contemporary: {value: 2, claims: [tm_turbine]}
+      sheltered: {value: 2, claims: [tm_turbine]}
+    effort: {value: 0, claims: [tm_turbine_space]}
+    duration_min: [15, 30]
+    duration_status: inferred
+    needs: ["the current commission isn't named on the page read"]
+  - id: e_tanks
+    title: "The Tanks: live performance and video"
+    what_you_do: "Go down to the underground Tanks for live performance and video works"
+    activity: look
+    status: draft
+    claims:
+      - id: tm_tanks
+        claim: "The Tanks are an underground space dedicated to live performances and video"
+        fact_type: contents
+        status: verified
+        source: https://www.tate.org.uk/visit/tate-modern
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "our underground Tanks, a striking space dedicated to live performances and video"
+    scores:
+      art: {value: 2, claims: [tm_tanks]}
+      culture: {value: 1, claims: [tm_tanks]}     # performance
+    primary: [art]
+    secondary: [culture]
+    atmosphere:
+      sheltered: {value: 2, claims: [tm_tanks]}
+    needs: ["what's on and when: draft until a programme source is read"]
+  - id: e_view_level10
+    title: "The free view from Level 10"
+    what_you_do: "Take the lift to the Level 10 café in the Blavatnik Building and look out over the Thames and London"
+    activity: look
+    status: ready
+    claims:
+      - id: tm_view
+        claim: "A panoramic view of the Thames and London from the Level 10 café in the Blavatnik Building, reached by lift"
+        fact_type: contents
+        status: verified
+        source: https://www.tate.org.uk/visit/tate-modern/5-free-things-to-do-at-tate-modern
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "Take the lift to the Level 10 café in the Blavatnik Building"
+        note: "'breathtaking' on the page is marketing; the fact is a panoramic view, listed among the free things."
+    scores:
+      views: {value: 2, claims: [tm_view]}
+      art: {value: 0, claims: [tm_view]}
+    primary: [views]
+    secondary: []
+    atmosphere:
+      urban: {value: 2, claims: [tm_view]}
+      sheltered: {value: 2, claims: [tm_view]}
+    effort: {value: 0, claims: [tm_view]}
+    duration_min: [10, 20]
+    duration_status: inferred
+    needs: ["whether the café level is open whenever the gallery is"]

@@ -1,0 +1,249 @@
+# Reference place 3 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026; see tate_modern.yaml for the conventions.
+# One place, several experiences, each with its own appeals (Abram, m364): the Mammals hall, the Dinosaurs gallery,
+# Hintze Hall, the family activities, and the founder's approach from South Kensington (draft).
+# The museum's building page returned 404, so architecture is unknown everywhere: missing, not low.
+id: p_natural_history_museum
+name: Natural History Museum
+kind: museum
+area: South Kensington
+official_url: https://www.nhm.ac.uk/visit.html
+location: {lat: 51.49651, lon: -0.176}   # the Mammals hall card's coordinates
+legacy:
+  card: m_nhm_whale_hall
+  from: [e_mammals]
+  other_cards: [m_southken_nhm_reveal]
+facts:
+  - id: nhm_hours
+    claim: "Open daily 10:00-17:50, last entry 17:30; closed 24-26 December"
+    fact_type: hours
+    status: verified
+    source: https://www.nhm.ac.uk/visit.html
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Open daily 10:00–17:50 (last entry 17:30) Closed 24–26 December"
+  - id: nhm_xmas
+    claim: "Closed 24-26 December"
+    fact_type: closure
+    status: verified
+    source: https://www.nhm.ac.uk/visit.html
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Closed 24–26 December"
+  - id: nhm_free
+    claim: "The galleries are free; a free entry ticket can be booked"
+    fact_type: price
+    status: verified
+    source: https://www.nhm.ac.uk/visit.html
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Our galleries are free to explore."
+  - id: nhm_booking
+    claim: "A free entry ticket can be booked online"
+    fact_type: booking
+    status: verified
+    source: https://www.nhm.ac.uk/visit.html
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Book a free entry ticket"
+    note: "The page doesn't say booking is required."
+  - id: nhm_busy
+    claim: "It can get busy at weekends and in school holidays, with a queue to enter"
+    fact_type: crowding
+    status: verified
+    source: https://www.nhm.ac.uk/visit.html
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Sometimes during weekends and school holidays we can get busy and you may have to queue to enter."
+  - id: nhm_step_free
+    claim: "Step-free access"
+    fact_type: access
+    status: unknown
+    source_type: official
+    checked: 2026-11-28
+    confidence: low
+    note: "No access page was read. Unknown, not 'no'."
+experiences:
+  - id: e_mammals
+    title: "The Mammals hall and the blue whale model"
+    what_you_do: "Walk into the Mammals hall and look up at the blue whale model among the cetacean skeletons"
+    activity: look
+    status: ready
+    claims:
+      - id: nhm_mammals
+        claim: "The Mammals hall shows the biggest mammals, with a blue whale model among cetacean skeletons hung from the ceiling"
+        fact_type: contents
+        status: verified
+        source: https://www.nhm.ac.uk/visit/galleries-and-museum-map/mammals-and-blue-whale.html
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "Look up and see our blue whale model, seemingly swimming with the other cetacean skeletons"
+        note: "Ground floor of the North Wing; free, permanent gallery. The page doesn't say life-size: the card's 'life-size' is the founder's."
+      - id: nhm_families
+        claim: "The museum presents its dinosaurs, volcanoes and mammals galleries as things for families to explore"
+        fact_type: contents
+        status: verified
+        source: https://www.nhm.ac.uk/visit/galleries-and-museum-map.html
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        quote: "There is so much for families to explore in the galleries, including your favourite dinosaurs, volcanoes and mammals."
+      - id: nhm_founder_hall
+        claim: "Walking from smaller galleries into the huge hall is the moment: you feel tiny"
+        kind: interpretation
+        fact_type: interpretation
+        status: researched
+        source: brain/data/moments/m_nhm_whale_hall.yaml
+        source_type: founder
+        checked: 2026-09-26
+        confidence: medium
+    scores:
+      science: {value: 2, claims: [nhm_mammals]}
+      nature: {value: 1, claims: [nhm_mammals]}    # animals, as specimens and models: not being in nature
+      history: {value: 0, claims: [nhm_mammals]}   # natural history, not the human past (vocabulary §1)
+      art: {value: 0, claims: [nhm_mammals]}
+      learning: {value: 1, claims: [nhm_mammals]}
+    primary: [science]
+    secondary: [nature, learning]
+    atmosphere:
+      family_friendly: {value: 2, claims: [nhm_families]}
+      grand: {value: 1, claims: [nhm_founder_hall]}
+      sheltered: {value: 2, claims: [nhm_mammals]}
+      crowded:
+        - {value: 2, claims: [nhm_busy], window: "weekend"}
+        - {value: 2, claims: [nhm_busy], window: "school_holidays"}
+        - {value: unknown}
+    effort: {value: 1, claims: [nhm_founder_hall]}
+    duration_min: [20, 40]
+    duration_status: researched       # the founder's own timing
+    cautions: [nhm_busy]
+    needs: ["step-free route", "weekday crowd levels"]
+  - id: e_dinosaurs
+    title: "The Dinosaurs gallery"
+    what_you_do: "Walk among the fossils, see a Triceratops skull and meet the roaring T. rex"
+    activity: look
+    status: ready
+    claims:
+      - id: nhm_dinos
+        claim: "The Dinosaurs gallery has a roaring T. rex, a Triceratops skull and fossils, including the first Iguanodon skeleton known to science"
+        fact_type: contents
+        status: verified
+        source: https://www.nhm.ac.uk/visit/galleries-and-museum-map/dinosaurs.html
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "Meet the roaring T. rex, see the skull of a Triceratops and wander among fossils"
+      - id: nhm_stomp
+        claim: "'Stomp like a dinosaur' in the Dinosaurs gallery is listed among six free things for families"
+        fact_type: contents
+        status: verified
+        source: https://www.nhm.ac.uk/visit/activities-for-families-and-kids.html
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        quote: "Stomp like a dinosaur"
+    scores:
+      science: {value: 2, claims: [nhm_dinos]}
+      history: {value: 0, claims: [nhm_dinos]}
+      play: {value: 1, claims: [nhm_stomp]}
+      learning: {value: 1, claims: [nhm_dinos]}
+    primary: [science]
+    secondary: [play, learning]
+    atmosphere:
+      family_friendly: {value: 2, claims: [nhm_families, nhm_stomp]}
+      playful: {value: 1, claims: [nhm_stomp]}
+      sheltered: {value: 2, claims: [nhm_dinos]}
+      crowded:
+        - {value: 2, claims: [nhm_busy], window: "weekend"}
+        - {value: unknown}
+    duration_min: [30, 45]
+    duration_status: inferred
+    cautions: [nhm_busy]
+    needs: ["whether the gallery has a timed queue", "no card yet: not plannable"]
+  - id: e_hintze_hall
+    title: "Hintze Hall and Hope, the blue whale skeleton"
+    what_you_do: "Stand under the 25-metre blue whale skeleton suspended in the main hall"
+    activity: look
+    status: ready
+    claims:
+      - id: nhm_hope
+        claim: "A 25-metre blue whale skeleton is suspended in Hintze Hall"
+        fact_type: contents
+        status: verified
+        source: https://www.nhm.ac.uk/visit/galleries-and-museum-map/hintze-hall.html
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "a 25-metre [blue whale skeleton], suspended in the air"
+    scores:
+      science: {value: 2, claims: [nhm_hope]}
+      architecture: {value: unknown}               # the building page returned 404: missing, not low
+    primary: [science]
+    secondary: []
+    atmosphere:
+      grand: {value: 2, claims: [nhm_hope]}       # an official dimension, 25 m
+      sheltered: {value: 2, claims: [nhm_hope]}
+    duration_min: [10, 20]
+    duration_status: inferred
+    needs: ["a source on the hall's architecture", "no card yet: not plannable"]
+  - id: e_family_trail
+    title: "The free family trail: six things to do"
+    what_you_do: "Follow the museum's six free things for families: stomp like a dinosaur, quake in the earthquake gallery, say hello to Hope"
+    activity: play
+    status: ready
+    claims:
+      - id: nhm_six
+        claim: "The museum lists six free things to do with children across the galleries, and self-guided family tours"
+        fact_type: contents
+        status: verified
+        source: https://www.nhm.ac.uk/visit/activities-for-families-and-kids.html
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "Six free things to do at the Museum"
+    scores:
+      play: {value: 2, claims: [nhm_six]}
+      science: {value: 1, claims: [nhm_six]}
+      learning: {value: 1, claims: [nhm_six]}
+    primary: [play]
+    secondary: [science, learning]
+    atmosphere:
+      family_friendly: {value: 2, claims: [nhm_six]}
+      playful: {value: 2, claims: [nhm_six]}
+      sheltered: {value: 2, claims: [nhm_six]}
+    duration_min: [60, 120]
+    duration_status: inferred
+    needs: ["the ages it suits aren't stated", "no card yet: not plannable"]
+  - id: e_approach
+    title: "Arriving from South Kensington: the building opens up"
+    what_you_do: "Come up from the tube and walk out to see the museum's huge building in front of you"
+    activity: walk
+    status: draft
+    claims:
+      - id: nhm_reveal
+        claim: "From dark underground transport straight to a huge, castle-like building opening up in front of you"
+        kind: interpretation
+        fact_type: interpretation
+        status: researched
+        source: brain/data/moments/m_southken_nhm_reveal.yaml
+        source_type: founder
+        checked: 2026-09-26
+        confidence: medium
+        central: true
+    scores:
+      architecture: {value: unknown}   # the founder's account describes the building; no source on it was read
+    primary: []
+    secondary: []
+    atmosphere:
+      grand: {value: 1, claims: [nhm_reveal]}
+      outdoors: {value: 2, claims: [nhm_reveal]}
+    needs: ["Abram's route (the card's gaps)", "a source on the building and its architect"]

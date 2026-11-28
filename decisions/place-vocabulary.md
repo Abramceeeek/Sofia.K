@@ -15,6 +15,7 @@ Each is scored for an **experience**, not a whole place (`place-knowledge-model.
 | `culture` | living traditions, performance, how people live now | `history` (past) and `art` (works) |
 | `art` | works of art and design to look at: galleries, collections, public art | `history`; a building that is itself beautiful (`architecture`) |
 | `architecture` | the building or structure as the thing to see | general visual appeal (`views`, `grand`) |
+| `science` | the natural world and science explained: specimens, fossils, instruments, experiments (added 28 Nov, when the Natural History Museum had no honest home) | `nature` (being in it) and `learning` (the format) |
 | `nature` | plants, animals, water, open green and wild space | a city view (`views`) |
 | `views` | seeing a wide scene: a skyline, a river, from height or across water | `photography` (a reason someone comes, see §4) |
 | `food_discovery` | tasting, browsing and trying food as the experience | `dining` |
@@ -91,5 +92,9 @@ A traveller's signal maps onto the vocabulary. **The mapping never merges distin
 | Feelings ("peaceful", "excited"…) | `peaceful`; `lively` and `adventure`… (the `reasons.FEELINGS` table, re-pointed to the new terms) | A stated choice: moderate evidence |
 | "This or that" choices | crowds, cost, transfers, pace, weather | As today |
 | Photography (Test A's "how much do photos matter") | a **reason someone comes**, matched to `views`, `architecture`, `grand` | Never a dimension of a place on its own |
+
+**Interpretations are capped, whatever the source** (`experiences.cap`):
+- `peaceful`, `grand`, `unusual`, `immersive` and `lively` are **researched at most**. A verified fact (a 25-metre skeleton) supports "grand" only as ODYS's reading of it.
+- `romantic`, `intimate`, `thought_provoking` and `noisy` are **inferred at most**, so they can never score 2.
 
 **What the mapping can't do yet:** tell art lovers from history lovers. The onboarding interests merge them, so until a traveller rates or swipes an art place, their art interest is **unknown**, not low.

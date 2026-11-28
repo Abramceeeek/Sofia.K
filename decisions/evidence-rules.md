@@ -15,7 +15,7 @@
 | `kind` | **fact** (checkable: hours, price, contents, rules) or **interpretation** (subjective: peaceful, grand, romantic) |
 | `status` | **verified**, **researched**, **inferred** or **unknown** (§2) |
 | `source` | URL or file, with the quote where there is one |
-| `source_type` | official, reference (e.g. a museum's own collection page), map data, crowd label (Overture or OSM), ODYS's own reading |
+| `source_type` | official, reference (a listing body, an encyclopedia, a museum's map), map data, crowd label (Overture or OSM), founder (Abram's own visit: first-hand, one person's, so researched at most), ODYS's own reading (inferred at most) |
 | `checked` | date |
 | `confidence` | high, medium or low (§2) |
 | `expires` | when it must be checked again (§4) |
@@ -33,6 +33,8 @@
 - **high:** verified, fresh, and factual.
 - **medium:** researched; or verified but near its expiry.
 - **low:** inferred, a crowd label, or stale.
+
+**A page read only through search results** (the site refused the fetch) is **researched**, never verified: the British Museum's pages on 28 Nov. So no hard rule comes from it until a page is read directly.
 
 ## 3. Facts and interpretations
 
