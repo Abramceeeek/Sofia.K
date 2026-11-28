@@ -30,6 +30,7 @@ facts:
     source_type: official
     checked: 2026-11-28
     confidence: high
+    dates: ["12-24", "12-25", "12-26"]
     quote: "Closed 24–26 December"
   - id: nhm_free
     claim: "The galleries are free; a free entry ticket can be booked"
@@ -105,12 +106,11 @@ experiences:
         confidence: medium
     scores:
       science: {value: 2, claims: [nhm_mammals]}
-      nature: {value: 1, claims: [nhm_mammals]}    # animals, as specimens and models: not being in nature
+      nature: {value: 0, claims: [nhm_mammals]}    # specimens and models are science; nature is met directly (§1)
       history: {value: 0, claims: [nhm_mammals]}   # natural history, not the human past (vocabulary §1)
       art: {value: 0, claims: [nhm_mammals]}
-      learning: {value: 1, claims: [nhm_mammals]}
     primary: [science]
-    secondary: [nature, learning]
+    secondary: []
     atmosphere:
       family_friendly: {value: 2, claims: [nhm_families]}
       grand: {value: 1, claims: [nhm_founder_hall]}
@@ -153,9 +153,8 @@ experiences:
       science: {value: 2, claims: [nhm_dinos]}
       history: {value: 0, claims: [nhm_dinos]}
       play: {value: 1, claims: [nhm_stomp]}
-      learning: {value: 1, claims: [nhm_dinos]}
     primary: [science]
-    secondary: [play, learning]
+    secondary: [play]
     atmosphere:
       family_friendly: {value: 2, claims: [nhm_families, nhm_stomp]}
       playful: {value: 1, claims: [nhm_stomp]}
@@ -213,9 +212,8 @@ experiences:
     scores:
       play: {value: 2, claims: [nhm_six]}
       science: {value: 1, claims: [nhm_six]}
-      learning: {value: 1, claims: [nhm_six]}
     primary: [play]
-    secondary: [science, learning]
+    secondary: [science]
     atmosphere:
       family_friendly: {value: 2, claims: [nhm_six]}
       playful: {value: 2, claims: [nhm_six]}

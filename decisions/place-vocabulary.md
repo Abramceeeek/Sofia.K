@@ -16,13 +16,13 @@ Each is scored for an **experience**, not a whole place (`place-knowledge-model.
 | `art` | works of art and design to look at: galleries, collections, public art | `history`; a building that is itself beautiful (`architecture`) |
 | `architecture` | the building or structure as the thing to see | general visual appeal (`views`, `grand`) |
 | `science` | the natural world and science explained: specimens, fossils, instruments, experiments (added 28 Nov, when the Natural History Museum had no honest home) | `nature` (being in it) and `learning` (the format) |
-| `nature` | plants, animals, water, open green and wild space | a city view (`views`) |
+| `nature` | living nature met directly: plants, animals, water, open green and wild space | a city view (`views`); specimens and models in a museum (`science`) |
 | `views` | seeing a wide scene: a skyline, a river, from height or across water | `photography` (a reason someone comes, see §4) |
 | `food_discovery` | tasting, browsing and trying food as the experience | `dining` |
-| `dining` | a sit-down meal as the experience | `food_discovery` |
+| `dining` | a sit-down meal as the experience | `food_discovery`; a café on site that isn't why you go |
 | `shopping` | browsing or buying goods as the experience | a market's food (`food_discovery`) |
 | `nightlife` | after-dark social life: bars, music, late venues | an evening opening of a gallery (that's `art`, at night) |
-| `learning` | structured explanation: labels, talks, hands-on discovery | `history` (subject matter) |
+| `learning` | structured explanation: labels, talks, hands-on discovery, **stated by a source** (never assumed because it's a museum) | `history` (subject matter) |
 | `play` | activities for fun, especially for children | `adventure` |
 | `adventure` | physical challenge or thrill | `play`, `walking` |
 | `social` | being with others, or bringing people | `lively` (energy, §2) |
@@ -58,6 +58,12 @@ These are **separate dimensions, not opposites.** "Crowded" is not the opposite 
 | **0** | No meaningful evidence that the experience offers this. **Not the same as unknown:** "unknown" is recorded when no source has been read on it. | Borough Market's `art`: nothing in its sources mentions art |
 | **1** | Present, but secondary or limited: it adds to the visit without being why the visit exists. Needs at least one stated source. | the Natural History Museum's dinosaur gallery's `architecture` (the building around it) |
 | **2** | Central: the experience is organised around it, and that is **strongly evidenced** (verified or researched, §4 of `evidence-rules.md`). | Tate Modern's free collection: `art` (the official page describes galleries of modern and contemporary art) |
+
+**0 or unknown (corrected after the consistency review, 28 Nov):** the second assessor and Claude disagreed on 135 of 225 scores, all of them this. The rule is now:
+- **0:** the experience's own description was read, and this dimension isn't in it.
+- **unknown:** no source read describes that aspect at all (the building, when no building page was read; what's on, when no programme was read).
+
+A 1 needs at least one claim. **An inferred claim may support a 1** (a partial appeal, `evidence-rules.md` §2), never a 2.
 
 **Primary appeal (at most two for each experience)** is the reason the experience exists. It needs:
 1. a score of 2;

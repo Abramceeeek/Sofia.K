@@ -60,10 +60,14 @@ def test_someone_with_no_answers_gets_low_confidence_not_invented_tastes(real):
     assert judged and all(x["class"] == "low_confidence" and x["reason"] is None for x in judged)
 
 
-def test_an_explicit_dislike_is_not_suitable_and_never_planned(real):
+def test_a_place_they_didnt_enjoy_is_a_strong_negative_not_a_ban(real):
+    """m364 (Abram): "place-specific dislike: a strong negative for that place". Never recommended unasked, but never
+    a hard rule (batch 8 made it not suitable)."""
     h = _person(real, {4: "didnt_enjoy", 3: "loved"})
     bm = _one(_matches(real, h), "m_bm_great_court")
-    assert bm["class"] == "not_suitable" and any("didn't enjoy British Museum" in r for r in bm["restrictions"])
+    assert bm["class"] == "poor_match" and bm["restrictions"] == []
+    assert bm["against"] == "You said you didn't enjoy British Museum."
+    assert bm["score"] < bm["model_score"]
 
 
 def test_a_loved_place_is_a_strong_match_with_its_own_reason(real):
@@ -73,12 +77,19 @@ def test_a_loved_place_is_a_strong_match_with_its_own_reason(real):
     assert bm["evidence"] and bm["evidence"][0]["place"] == "this is that place"
 
 
-def test_must_go_is_intent_and_never_beats_a_hard_rule(real):
+def test_must_go_is_intent_beats_an_older_dislike_and_never_a_hard_rule(real):
+    """m364 (Abram): "the traveller's most recent, specific instruction takes priority over an older preference,
+    subject to hard constraints". Today's request beats the older swipe; the age rule beats the request."""
     h = _person(real, {4: "didnt_enjoy", 6: "loved"})
     out = _matches(real, h, must_go="m_tate_modern,m_bm_great_court")
     assert _one(out, "m_tate_modern")["class"] == "must_go"
-    bm = _one(out, "m_bm_great_court")                     # asked for, but they didn't enjoy it: the rule holds
-    assert bm["class"] == "not_suitable" and bm["restrictions"][0].startswith("you asked for it, but")
+    bm = _one(out, "m_bm_great_court")
+    assert bm["class"] == "must_go" and bm["reason"] == "Included because you specifically asked to visit."
+    top = bm["preferences"][0]
+    assert top["decides"] and top["instruction"] == "must_go" and "the newer request wins" in top["note"]
+    assert any(x["instruction"] == "dislike_place" and x["overridden_by"] == "must_go" for x in bm["preferences"])
+    bike = _one(_matches(real, h, must_go="m_park_bike_loop_hyde", children="8"), "m_park_bike_loop_hyde")
+    assert bike["class"] == "not_suitable" and bike["restrictions"][0].startswith("you asked for it, but")
 
 
 def test_a_childs_age_rule_is_not_suitable_for_a_party_with_a_young_child(real):
@@ -114,9 +125,12 @@ def test_one_place_ranks_differently_for_different_people(real):
     assert real.post("/v1/me/conjoint", headers=quiet, json={"items": pick}).status_code == 204
     f, q = (_one(_matches(real, h), "m_borough_market_graze") for h in (food, quiet))
     assert f["class"] == "strong_match" and f["score"] > q["score"]
-    assert q["class"] in ("poor_match", "not_suitable")      # busy, for someone who picked quieter days
-    if q["class"] == "poor_match":
-        assert q["against"] == "You picked quieter days, and this place is busy."
+    # m366: the market's own page says Saturday afternoons are busy. On a Friday that's a caution, not a fact about
+    # the day, so it lowers confidence (missing, never negative); on a Saturday it's negative evidence.
+    assert q["class"] == "low_confidence"
+    assert q["against"] == "You picked quieter days, and this place is busy on Saturday afternoons."
+    sat = _one(_matches(real, quiet, date="2026-12-05"), "m_borough_market_graze")
+    assert sat["class"] == "poor_match" and sat["against"] == q["against"]
 
 
 def test_asking_for_matches_changes_no_plan(real):

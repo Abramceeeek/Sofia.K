@@ -66,10 +66,9 @@ experiences:
         confidence: medium
     scores:
       history: {value: 2, claims: [bmu_room4]}
-      art: {value: 1, claims: [bmu_room4]}       # sculpture, shown as ancient objects
-      learning: {value: 1, claims: [bmu_room4]}
-    primary: [history]
-    secondary: [art, learning]
+      art: {value: 2, claims: [bmu_room4]}       # consistency review: the gallery is organised around sculpture too
+    primary: [history, art]
+    secondary: []
     atmosphere:
       crowded: {value: 2, claims: [bmu_room4_busy], window: "around the Rosetta Stone"}
       historic: {value: 2, claims: [bmu_room4]}
@@ -133,9 +132,8 @@ experiences:
       history: {value: 2, claims: [bmu_room1]}
       architecture: {value: 1, claims: [bmu_room1, bmu_room1_founder]}
       science: {value: 1, claims: [bmu_room1]}
-      learning: {value: 1, claims: [bmu_room1]}
     primary: [history]
-    secondary: [architecture, science, learning]
+    secondary: [architecture, science]
     atmosphere:
       historic: {value: 2, claims: [bmu_room1]}
       sheltered: {value: 2, claims: [bmu_room1]}

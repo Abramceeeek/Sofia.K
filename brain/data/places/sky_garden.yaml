@@ -28,6 +28,7 @@ facts:
     source_type: official
     checked: 2026-11-24
     confidence: high
+    dates: ["12-25"]
     quote: "On the first Monday of every month (subject to change), The Sky Garden is closed for maintenance until 6 pm."
   - id: sg_ticket
     claim: "Entry is by a free ticket, booked online, released weekly up to three weeks ahead"

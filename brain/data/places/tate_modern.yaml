@@ -174,8 +174,8 @@ experiences:
         checked: 2026-11-28
         confidence: high
         central: true
-        quote: "Take the lift to the Level 10 café in the Blavatnik Building"
-        note: "'breathtaking' on the page is marketing; the fact is a panoramic view, listed among the free things."
+        quote: "best free views over London from the top of Tate Modern"
+        note: "Also: 'Take the lift to the Level 10 café in the Blavatnik Building'. 'Breathtaking' on the page is marketing; the fact is a panoramic view, listed among the free things."
     scores:
       views: {value: 2, claims: [tm_view]}
       art: {value: 0, claims: [tm_view]}

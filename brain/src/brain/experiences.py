@@ -101,6 +101,10 @@ class Claim:
     central: bool = False         # the source is about this, not merely mentions it (the primary-appeal test)
     note: str | None = None
     expires: date | None = None
+    dates: tuple[str, ...] = ()   # a closure's dates: "MM-DD" every year, or "YYYY-MM-DD" once
+
+    def closed_on(self, iso: str) -> bool:
+        return iso in self.dates or iso[5:] in self.dates
 
     def expiry(self) -> date | None:
         if self.expires:
@@ -209,7 +213,8 @@ def _claim(d: dict) -> Claim:
         id=str(d["id"]), claim=str(d["claim"]), kind=d.get("kind", "fact"), fact_type=d.get("fact_type", "contents"),
         status=d.get("status", UNKNOWN), source=d.get("source"), source_type=d.get("source_type", "official"),
         checked=_date(d.get("checked")), confidence=d.get("confidence", "low"), quote=d.get("quote"),
-        central=bool(d.get("central", False)), note=d.get("note"), expires=_date(d.get("expires")))
+        central=bool(d.get("central", False)), note=d.get("note"), expires=_date(d.get("expires")),
+        dates=tuple(str(x) for x in d.get("dates") or ()))
 
 
 def _score(v) -> Score:
@@ -445,6 +450,14 @@ def hard_facts(place: Place, today: date) -> dict[str, list[Claim]]:
         if c.fact_type in HARD_TYPES and c.status == "verified" and c.is_current(today):
             out.setdefault(c.fact_type, []).append(c)
     return out
+
+
+def closed_by_record(place: Place, iso: str, today: date) -> Claim | None:
+    """A verified, current closure of the place on that date, if its record has one."""
+    for c in hard_facts(place, today).get("closure", []):
+        if c.closed_on(iso):
+            return c
+    return None
 
 
 def unverified_hard(place: Place, today: date) -> list[Claim]:

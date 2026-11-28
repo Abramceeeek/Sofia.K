@@ -25,6 +25,30 @@ Abram's required first deliverable (m362), before any large implementation: what
 4. **The friends' round stays behind the gate.** G2b and G11 still fail, and the gate isn't weakened to start it.
 5. **Batch 8 is approved:** the first central person-to-place engine, **in shadow mode**. It runs beside the planner and changes none of its decisions. The six classes replace the five bands of §2. §2's thresholds survive only as provisional score cut-offs (GUESSES), never as chances.
 
+## What batch 9 built (28 Nov, m366; shadow mode, the planner unchanged)
+
+The engine is `brain/src/brain/match.py`, reached by `GET /v1/me/matches` (now also `avoid`, `avoid_kinds` and `window`). Abram's m364 rules, as the code applies them:
+
+| Rule (Abram, m364) | What the engine does | Test |
+|---|---|---|
+| The newest, most specific instruction wins, under hard rules | Every swipe, rating and request is an `Instruction` with its time and source. The newest decides the place; at the same time, a place beats a kind. A hard rule beats all of them. `preferences` lists what decided and what it won over. | `test_a_current_must_go_beats_an_older_dislike`, `test_a_current_avoid_beats_an_older_must_go`, `test_a_request_never_beats_a_hard_rule` |
+| "Included because you specifically asked to visit." | The must-go reason, and a note when it wins over an older dislike | the same |
+| A place dislike: a strong negative, not a ban | −1.5 on its score (GUESS), never a restriction; poor match unless asked for | `test_a_place_dislike_is_a_strong_negative_never_a_ban` |
+| An experience dislike: a negative for similar places | Up to −0.6 × similarity (GUESS). Similarity: shared primary appeals where both places have records, else ½ for the same catalogue kind. A similar place they loved or found fine halves it (the planner's own caveat). | `test_a_similar_experience_loses_a_little_by_how_similar`, `test_one_disliked_museum_doesnt_exclude_all_museums` |
+| An explicit category dislike, respected until changed | `avoid_kinds`: not suitable, basis "your instruction", until a newer request for one place | `test_an_explicit_category_dislike_is_respected_until_changed` |
+| Context matters | A negative said in one context (a rating on a weekend) counts half in another, and says so | `test_a_negative_said_in_one_context_counts_half_in_another` |
+| Missing is never negative | A record says what an experience is about. Where the traveller has no evidence on its primary appeal, that's missing: low confidence, never poor. Low-confidence places rank with everything else by score, never below. | `test_missing_is_not_negative` |
+| Positive, negative, missing, conflicting | Each experience's appeals get one of the four, with where the traveller's side came from. Conflicts are low confidence, with both sides said. | `test_conflicting_evidence_is_low_confidence_with_both_sides` |
+| Confidence is its own axis | `confidence`: a level with its parts: the answers, the posterior's predictive spread for this place (√xᵀΣx against the prior's), whether they touch its primary appeals, the place's evidence (record or card), conflicts, and how much rests on the population. Never a probability. | `test_confidence_reads_the_posterior` |
+| "Your answers" needs a clear lean | A lean counts as theirs only when δ moved past 0.15 **and** the posterior puts 0.8 on its sign (`delta_sd` is now read) | `test_your_answers_needs_a_clear_sign` |
+| Hard rules use verified facts only | A record's verified, current closure applies even where the card misses it (the Natural History Museum, 24–26 Dec). A researched closure is a warning, never a rule. `basis` says "verified" only for a verified fact. | `test_basis_is_verified_only_for_a_verified_fact` |
+| Strong reasons need evidence on both sides | A strong match needs the traveller's own love or rating, or a clear or stated interest in a **primary appeal from a place record** (verified or researched). A card's tags are inferred, so a card-only place is never a strong match unless they loved it. | `test_reasons_rest_on_evidence_and_card_only_places_are_never_strong` |
+| A loved place the model can't explain | Still a strong match on their word, with `misfit: true` when the model scores it below the floor | `test_a_loved_place_the_model_scores_low_is_flagged_not_hidden` |
+
+**The ranking (`rank`)** puts what they asked for first and not suitable last, and orders everything else **by score**. The class is the label, not the order. Ordering by class put low-confidence places below poor matches, which made missing evidence count against a place.
+
+**What the planner still does differently** (shadow mode, by Abram's instruction): it bans a whole kind after one "didn't enjoy" (`dayplan.kept_out`), and it reads the cards' own closures, so it would plan the Natural History Museum on 25 December. Both are reported, not changed.
+
 ## Decision first
 
 - **Keep the core. It is the right shape, and rewriting it would throw away tested work:**

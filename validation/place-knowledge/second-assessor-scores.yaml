@@ -1,0 +1,113 @@
+# Second assessor, blind (28 Nov 2026). Read only place-vocabulary.md, evidence-rules.md, blind_input.yaml.
+# Convention used for 0 versus unknown (the rubric leaves this open, see notes):
+# - Every experience has an official content claim and an hours claim, so dimensions about what the
+#   experience consists of (history, culture, art, science, nature, views, food_discovery, dining,
+#   shopping, nightlife, play, adventure) are scored 0 unless a claim evidences them.
+# - architecture, learning and social are not implied by a description of contents, so they stay
+#   unknown unless a claim speaks to the structure, the format of explanation, or company.
+# - Inferred claims may support a 1 (vocabulary §4 lets inferred-at-most terms score 1), never a 2 or a primary.
+
+- experience_id: p_borough_market/e_graze
+  scores: {history: 1, culture: 1, art: 0, architecture: unknown, science: 0, nature: 0, views: 0, food_discovery: 2, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: 1}
+  cite: {history: [bm_history], culture: [bm_history, bm_lively], food_discovery: [bm_food], social: [bm_social_guess]}
+  primary: [food_discovery]
+  secondary: [history, culture, social]
+  notes: "culture 1 reads a 1,000-year market still trading as a living tradition (a judgement); social 1 rests only on an inferred ODYS claim; shopping 0 because §1 assigns a market's food to food_discovery; architecture unknown because bm_level is an access claim, not a description of the structure."
+
+- experience_id: p_british_museum/e_egyptian_sculpture
+  scores: {history: 2, culture: 0, art: 2, architecture: unknown, science: 0, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {history: [bmu_room4], art: [bmu_room4]}
+  primary: [history, art]
+  secondary: []
+  notes: "Ancient sculpture sits on the art/history line: monumental statues read as art, objects from temples and tombs plus the Rosetta Stone as history; both central, so both primary. Friday to 20:30 is a gallery evening, not nightlife; bmu_room4_busy bears on crowded, not social."
+
+- experience_id: p_british_museum/e_great_court
+  scores: {history: 0, culture: 0, art: 0, architecture: 2, science: 0, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {architecture: [bmu_court]}
+  primary: [architecture]
+  secondary: []
+  notes: "history 0: the Reading Room is named but no claim says anything about its past; a two-acre covered court is scale (grand), not a view. bmu_room4_closed is attached here but irrelevant to this experience."
+
+- experience_id: p_british_museum/e_enlightenment
+  scores: {history: 2, culture: 0, art: 1, architecture: 2, science: 1, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {history: [bmu_room1], art: [bmu_room1], architecture: [bmu_room1, bmu_room1_founder], science: [bmu_room1]}
+  primary: [history, architecture]
+  secondary: [art, science]
+  notes: "Architecture made primary although the official claim gives the room's origin only in parentheses; it rests on the title, what_you_do and the founder's researched claim, and primary rule 2 ('the official description is about it') is unclear on whether founder evidence can carry it. Fossils and shells give science 1, Greek vases art 1."
+
+- experience_id: p_hyde_park/e_serpentine
+  scores: {history: 1, culture: 0, art: 0, architecture: unknown, science: 0, nature: 2, views: 1, food_discovery: 0, dining: 1, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {history: [hp_caroline], nature: [hp_serpentine, hp_wildlife, hp_size], views: [hp_serpentine], dining: [hp_serpentine]}
+  primary: [nature]
+  secondary: [views, history, dining]
+  notes: "history 1 rests on hp_caroline (the lake itself was made by damming a stream); hp_henry is park-level context only. dining 1 from 'waterfront cafés' is a stretch, since a café is neither clearly a sit-down meal nor food discovery. 'Panoramic lake-side paths' read as views across water; wildlife watched outdoors is nature, not science."
+
+- experience_id: p_hyde_park/e_meadows
+  scores: {history: 0, culture: 0, art: 0, architecture: unknown, science: 0, nature: 2, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {nature: [hp_meadows, hp_size]}
+  primary: [nature]
+  secondary: []
+  notes: "history 0: hp_henry is a park-level fact about who acquired the land, and nothing on this walk makes it present; scoring it 1 would copy a place-level appeal to every experience (§3 'Never'). 'Picturesque' is visual appeal, not a wide view; the rose garden is planting (nature), not art or architecture."
+
+- experience_id: p_liberty/e_timber_galleries
+  scores: {history: 1, culture: 0, art: 0, architecture: 2, science: 0, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 2, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {history: [lib_building, lib_listing], architecture: [lib_building, lib_listing], shopping: [lib_shop]}
+  primary: [architecture, shopping]
+  secondary: [history]
+  notes: "The title and what_you_do are about the building, but lib_shop states browsing and buying are the visit, so both pass the primary test. The warships' timbers are scored history 1 (a past made present), though they could be read as the building's materials only (architecture). 'Arts and Crafts' describes the building, so art 0; 'climb' is not a physical challenge."
+
+- experience_id: p_natural_history_museum/e_mammals
+  scores: {history: 0, culture: 0, art: 0, architecture: 0, science: 2, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 1, adventure: 0, social: unknown}
+  cite: {science: [nhm_mammals], play: [nhm_families]}
+  primary: [science]
+  secondary: [play]
+  notes: "The founder's 'huge hall, you feel tiny' is scale and reveal (grand), not the building as a thing to see, so architecture 0 rather than 1. play 1 reads 'for families to explore' as limited fun for children, but it may belong only to family_friendly (not scored here); family claims were not taken as social. Specimens and models indoors are science, not nature."
+
+- experience_id: p_natural_history_museum/e_dinosaurs
+  scores: {history: 0, culture: 0, art: 0, architecture: unknown, science: 2, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 1, adventure: 0, social: unknown}
+  cite: {science: [nhm_dinos], play: [nhm_stomp]}
+  primary: [science]
+  secondary: [play]
+  notes: "Fossils are science by §1, so the Iguanodon 'first known to science' was not scored as history. The roaring T. rex was read as spectacle, not a physical thrill (adventure 0), but 'thrill' is undefined. 'Stomp like a dinosaur' is a play activity, secondary to the gallery."
+
+- experience_id: p_natural_history_museum/e_hintze_hall
+  scores: {history: 0, culture: 0, art: 0, architecture: unknown, science: 2, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {science: [nhm_hope]}
+  primary: [science]
+  secondary: []
+  notes: "Only nhm_hope describes this experience. The family trail's 'say hello to Hope' hints at play here, but it is not a claim on this experience, so play 0 (arguably unknown). No claim describes Hintze Hall as a building, so architecture unknown."
+
+- experience_id: p_natural_history_museum/e_family_trail
+  scores: {history: 0, culture: 0, art: 0, architecture: unknown, science: 1, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: 1, play: 2, adventure: 0, social: unknown}
+  cite: {science: [nhm_six], learning: [nhm_six], play: [nhm_six]}
+  primary: [play]
+  secondary: [science, learning]
+  notes: "science 1 rests on nhm_six ('across the galleries') plus the galleries named in what_you_do, not on a content claim of this experience's own. 'Self-guided family tours' read as learning 1. Doing things with children could count as social, but family claims were kept under family_friendly (not scored)."
+
+- experience_id: p_sky_garden/e_garden_view
+  scores: {history: 0, culture: 0, art: 0, architecture: 0, science: 0, nature: 1, views: 2, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {nature: [sg_highest], views: [sg_view, sg_highest]}
+  primary: [views]
+  secondary: [nature]
+  notes: "The title names both garden and view, but the official framing (sg_view) makes the view the reason to come, so the garden scores 1. architecture 0: the only structural claim (glass enclosure) is inferred and doesn't present the building as a thing to see. Open to 21:00 at weekends but no claim of bars or music, so nightlife 0."
+
+- experience_id: p_tate_modern/e_collection
+  scores: {history: 0, culture: 0, art: 2, architecture: unknown, science: 0, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {art: [tm_art, tm_free]}
+  primary: [art]
+  secondary: []
+  notes: "tm_art is a place-level statement, applied here because this experience is the collection galleries (tm_free names the collection). Friday and Saturday to 21:00 is art at night, not nightlife; contemporary art is not culture in §1's sense. tm_busy_guess bears on crowded only."
+
+- experience_id: p_tate_modern/e_turbine_hall
+  scores: {history: 0, culture: 0, art: 2, architecture: 2, science: 0, nature: 0, views: 0, food_discovery: 0, dining: 0, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: 1}
+  cite: {art: [tm_turbine], architecture: [tm_turbine, tm_turbine_space], social: [tm_turbine_space]}
+  primary: [art, architecture]
+  secondary: [social]
+  notes: "'Vast' is grand, but 'industrial', the former turbine hall and official text about the space itself make the structure central; which comes first in a hall built for site-specific art is a judgement. The former industrial use was scored as architecture (a building's past), not history. 'Meet friends' gives social 1; photos are not a place dimension."
+
+- experience_id: p_tate_modern/e_view_level10
+  scores: {history: 0, culture: 0, art: 0, architecture: unknown, science: 0, nature: 0, views: 2, food_discovery: 0, dining: 1, shopping: 0, nightlife: 0, learning: unknown, play: 0, adventure: 0, social: unknown}
+  cite: {views: [tm_view], dining: [tm_view]}
+  primary: [views]
+  secondary: [dining]
+  notes: "tm_view is marked verified but its quote covers only the lift to the café, not the panoramic view. art 0 because no claim puts art in this experience (copying the collection's art would breach §3). dining 1 rests only on the venue being a café; the Thames seen from height is views, not nature."

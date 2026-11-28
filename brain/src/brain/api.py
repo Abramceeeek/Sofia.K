@@ -35,6 +35,7 @@ from .popularity import load_popularity
 from .population import PopulationModel, load_population
 from . import match as match_engine
 from .catalogue import load_checked
+from .experiences import load_places
 from .schemas import (GroupJoinIn, GroupTripIn, AlternativesIn, AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
                       PreviewCodeIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
@@ -771,8 +772,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return plan_for(body, user, s, p)
 
     def traveller_for(s: Session, user: db.User, p: PopulationModel, *, must_go: tuple[str, ...] = (),
-                      children: tuple[int, ...] = (), budget_gbp: float | None = None) -> match_engine.Traveller:
-        """m363: the person as the match engine sees them, from the same answers and rules the planner uses."""
+                      children: tuple[int, ...] = (), budget_gbp: float | None = None,
+                      avoid: tuple[str, ...] = (), avoid_kinds: tuple[str, ...] = ()) -> match_engine.Traveller:
+        """m363: the person as the match engine sees them, from the same answers and rules the planner uses.
+
+        m366 (batch 9): with every instruction's time and source, so the newest wins (Abram, m364): swipes and
+        ratings when they were given, today's requests (must-go, not this place, no places of a kind) now."""
         post = posterior(user, p)
         fixed = corrected(user)
         swipes = [sw for sw in user.swipes if f"place:{sw.item}" not in fixed]
@@ -795,16 +800,34 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         rated = {r.moment_id: r.rating for r in sorted(user.ratings, key=lambda r: r.id)}
         n = sum(sw.reaction in ("loved", "fine", "didnt_enjoy") for sw in swipes) + \
             sum(ch.choice in ("A", "B") for ch in user.choices) + len(user.ratings)
+        I = match_engine.Instruction
+
+        def at(v):
+            return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        word = {"loved": "love_place", "fine": "fine_place", "didnt_enjoy": "dislike_place"}
+        ins = [I(word[sw.reaction], cid, at(sw.created_at), "swipe", cards_at[sw.item][0])
+               for sw in swipes if sw.reaction in word and sw.item in cards_at
+               for cid in cards_at[sw.item][1]]
+        ins += [I("rated", r.moment_id, at(r.created_at), "rating", r.moment_id, r.rating,
+                  (("window", "weekend" if at(r.created_at).weekday() >= 5 else "weekday"),))
+                for r in user.ratings]
+        now_ = datetime.now(timezone.utc)
+        ins += [I("must_go", c, now_, "request", c) for c in must_go]
+        ins += [I("avoid", c, now_, "request", c) for c in avoid]
+        ins += [I("dislike_kind", k, now_, "request", k.replace("_", " ")) for k in avoid_kinds]
         return match_engine.Traveller(
             delta=post.mean, delta_sd=post.sd(), loved=loved, disliked=disliked, loved_tags=loved_tags, kept_out=out,
             must_go=must_go, rated=rated, fields=person_fields(user),
             feelings=tuple(f for f in prof.get("why_travel", []) if f in reasons.FEELINGS), activity=prof.get("activity"),
             budget_gbp=budget_gbp if budget_gbp is not None else BUDGET_BAND_GBP.get(prof.get("budget_band")),
-            children=children, n_answers=n, n_choices=sum(ch.choice in ("A", "B") for ch in user.choices))
+            children=children, n_answers=n, n_choices=sum(ch.choice in ("A", "B") for ch in user.choices),
+            instructions=tuple(ins), delta_cov=post.covariance(), company=prof.get("company"))
 
     @app.get("/v1/me/matches")
     def my_matches(day: date | None = Query(default=None, alias="date"), must_go: str = Query(default="", max_length=400),
                    children: str = Query(default="", max_length=60), rain_prob: float | None = Query(default=None, ge=0, le=1),
+                   avoid: str = Query(default="", max_length=400), avoid_kinds: str = Query(default="", max_length=200),
+                   window: str | None = Query(default=None, max_length=40, pattern=r"^[a-z_]+$"),
                    user: db.User = Depends(current_user), s: Session = Depends(session),
                    p: PopulationModel = Depends(pop)):
         """m363 (Abram, 26 Nov: "the first central person-to-place engine, without changing the live planner's
@@ -814,12 +837,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         ids = {m.id for m in ready}
         wanted = tuple(x for x in (v.strip() for v in must_go.split(",")) if x in ids)
         kids = tuple(int(v) for v in children.split(",") if v.strip().isdigit() and int(v) <= 17)[:8]
-        t = traveller_for(s, user, p, must_go=wanted, children=kids)
+        not_here = tuple(x for x in (v.strip() for v in avoid.split(",")) if x in ids)
+        kinds_known = set(app.state.card_kinds.values())
+        no_kinds = tuple(k for k in (v.strip() for v in avoid_kinds.split(",")) if k in kinds_known)
+        t = traveller_for(s, user, p, must_go=wanted, children=kids, avoid=not_here, avoid_kinds=no_kinds)
         d = match_engine.Day(weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
-                             rain_prob=rain_prob)
+                             rain_prob=rain_prob, window=window)
         if getattr(app.state, "checked_cards", None) is None:
             app.state.checked_cards = load_checked("london", settings.data_dir).get("cards", {})
-        out = match_engine.rank([match_engine.match(p, t, m, d, amap=app.state.amap,
+        if getattr(app.state, "place_records", None) is None:   # m366: the place records (brain/data/places)
+            app.state.place_records = load_places(settings.data_dir / "places")
+        know = match_engine.Knowledge.build(app.state.place_records, app.state.card_kinds,
+                                            (day or date.today()).isoformat())
+        out = match_engine.rank([match_engine.match(p, t, m, d, amap=app.state.amap, know=know,
                                                     checked=app.state.checked_cards.get(m.id)) for m in ready])
         counts = {c: sum(r.cls == c for r in out) for c in match_engine.CLASSES}
         return {"date": d.date, "classes": counts, "matches": [r.out() for r in out],

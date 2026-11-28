@@ -1,0 +1,632 @@
+[
+ {
+  "card": "a_covent_garden_soho",
+  "name": "Covent Garden and Soho",
+  "src": "card",
+  "match": {
+   "m": 43,
+   "name": "STEREO Covent Garden",
+   "cat": "music_venue",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "a_greenwich_market",
+  "name": "Greenwich Market",
+  "src": "# Coordinates: Wikidata Q18192655 \"Greenwich Market\" (51.48152778, -0.00905556), read 2026",
+  "match": {
+   "m": 4,
+   "name": "London Brewers' Market at Greenwich Market",
+   "cat": "beer_garden",
+   "conf": 0.77
+  }
+ },
+ {
+  "card": "a_kings_cross_canal",
+  "name": "Granary Square and Coal Drops Yard, King's Cross",
+  "src": "card",
+  "match": {
+   "m": 113,
+   "name": "FACEGYM Coal Drops Yard",
+   "cat": "gym",
+   "conf": 0.99
+  }
+ },
+ {
+  "card": "a_old_spitalfields_market",
+  "name": "Old Spitalfields Market",
+  "src": "card",
+  "match": {
+   "m": 21,
+   "name": "I Thai Old Spitalfields Market",
+   "cat": "thai_restaurant",
+   "conf": 0.5
+  }
+ },
+ {
+  "card": "a_portobello_saturday",
+  "name": "Portobello Road Market",
+  "src": "card",
+  "match": {
+   "m": 56,
+   "name": "OFFICE Portobello Road",
+   "cat": "shoe_store",
+   "conf": 0.85
+  }
+ },
+ {
+  "card": "a_soho_chinatown_evening",
+  "name": "Chinatown and Soho",
+  "src": "card",
+  "match": {
+   "m": 225,
+   "name": "B.Y.O.C. - Soho",
+   "cat": "bar",
+   "conf": 0.09
+  }
+ },
+ {
+  "card": "a_west_end_outdoor_dining",
+  "name": "Outdoor tables around Oxford Circus and Regent Street",
+  "src": "card",
+  "match": null
+ },
+ {
+  "card": "m_alderman_stairs_sunset",
+  "name": "Alderman Stairs, St Katharine's Way, Wapping",
+  "src": "card",
+  "match": null
+ },
+ {
+  "card": "m_bank_of_england_gold",
+  "name": "Bank of England Museum",
+  "src": "card",
+  "match": {
+   "m": 37,
+   "name": "The Bank Of England Museum",
+   "cat": "history_museum",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_beigel_bake_late",
+  "name": "Beigel Bake, 159 Brick Lane",
+  "src": "card",
+  "match": {
+   "m": 8,
+   "name": "Beigel Bake",
+   "cat": "bagel_shop",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_bm_great_court",
+  "name": "British Museum: Great Court and the Enlightenment Gallery (Room 1)",
+  "src": "card",
+  "match": {
+   "m": 21,
+   "name": "The Pizzeria at The British Museum",
+   "cat": "restaurant",
+   "conf": 0.8
+  }
+ },
+ {
+  "card": "m_borough_market_graze",
+  "name": "Borough Market",
+  "src": "card",
+  "match": {
+   "m": 8,
+   "name": "Borough Market Bell",
+   "cat": "historic_site",
+   "conf": 0.81
+  }
+ },
+ {
+  "card": "m_british_library_treasures",
+  "name": "British Library, 96 Euston Road",
+  "src": "# Coordinates: Wikidata Q23308 (51.529444, -0.126944), read 2026-11-24.",
+  "match": {
+   "m": 43,
+   "name": "Origin Coffee at The British Library",
+   "cat": "coffee_shop",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_burlington_arcade",
+  "name": "Burlington Arcade",
+  "src": "card",
+  "match": {
+   "m": 4,
+   "name": "CHANEL at Burlington Arcade",
+   "cat": "fashion_boutique",
+   "conf": 0.99
+  }
+ },
+ {
+  "card": "m_canary_wharf_towers",
+  "name": "Canary Wharf: around Canada Square",
+  "src": "card",
+  "match": {
+   "m": 38,
+   "name": "Krispy Kreme Canary Wharf",
+   "cat": "donut_shop",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_chinatown_dim_sum",
+  "name": "Gerrard Street, Chinatown",
+  "src": "card",
+  "match": {
+   "m": 33,
+   "name": "HSBC Gerrard Street",
+   "cat": "bank_or_credit_union",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_city_towers_walk",
+  "name": "City of London towers between Bank and Liverpool Street",
+  "src": "card",
+  "match": null
+ },
+ {
+  "card": "m_courtauld_gallery",
+  "name": "The Courtauld Gallery, Somerset House",
+  "src": "card",
+  "match": {
+   "m": 99,
+   "name": "The Courtauld",
+   "cat": "art_museum",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_cutty_sark",
+  "name": "Cutty Sark, Greenwich",
+  "src": "# Coordinates: Wikidata Q171255 \"Cutty Sark\" (51.482778, -0.009722), read 2026-11-24",
+  "match": {
+   "m": 125,
+   "name": "Cutty Sark Halls",
+   "cat": "lodging",
+   "conf": 0.96
+  }
+ },
+ {
+  "card": "m_diana_playground",
+  "name": "Diana, Princess of Wales Memorial Playground, Kensington Gardens",
+  "src": "# Coordinates: Wikidata Q5271058 \"Diana, Princess of Wales Memorial Playground\" (51.5092, ",
+  "match": {
+   "m": 293,
+   "name": "Diana Lounge",
+   "cat": "lounge",
+   "conf": 0.98
+  }
+ },
+ {
+  "card": "m_evensong_st_pauls",
+  "name": "St Paul's Cathedral",
+  "src": "card",
+  "match": {
+   "m": 6,
+   "name": "St Paul's Cathedral",
+   "cat": "anglican_or_episcopal_place_of_worship",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_garden_at_120",
+  "name": "The Garden at 120, Fen Court, 120 Fenchurch Street",
+  "src": "card",
+  "match": {
+   "m": 40,
+   "name": "The Garden at 120",
+   "cat": "historic_site",
+   "conf": 0.9
+  }
+ },
+ {
+  "card": "m_go_karting_canary_wharf",
+  "name": "K1 Speed Canary Wharf, 15 Cabot Square E14 4QT",
+  "src": "card",
+  "match": {
+   "m": 13,
+   "name": "Hackett London Canary Wharf",
+   "cat": "mens_clothing_store",
+   "conf": 0.97
+  }
+ },
+ {
+  "card": "m_greenwich_peninsula_walk",
+  "name": "Greenwich Peninsula: the riverside and The Tide",
+  "src": "card",
+  "match": {
+   "m": 109,
+   "name": "02 Greenwich, London",
+   "cat": "music_venue",
+   "conf": 0.7
+  }
+ },
+ {
+  "card": "m_greenwich_wolfe_view",
+  "name": "General Wolfe statue, Greenwich Park (by the Royal Observatory)",
+  "src": "card",
+  "match": {
+   "m": 80,
+   "name": "General James Wolfe Statue",
+   "cat": "monument",
+   "conf": 0.85
+  }
+ },
+ {
+  "card": "m_horizon_22",
+  "name": "Horizon 22, 22 Bishopsgate",
+  "src": "card",
+  "match": {
+   "m": 6,
+   "name": "Horizon 22",
+   "cat": "historic_site",
+   "conf": 0.91
+  }
+ },
+ {
+  "card": "m_leadenhall_market",
+  "name": "Leadenhall Market",
+  "src": "card",
+  "match": {
+   "m": 6,
+   "name": "Leadenhall Market",
+   "cat": "historic_site",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_liberty_timber_galleries",
+  "name": "Liberty, Great Marlborough Street",
+  "src": "card",
+  "match": {
+   "m": 7,
+   "name": "Annoushka In Liberty London",
+   "cat": "jewelry_store",
+   "conf": 0.85
+  }
+ },
+ {
+  "card": "m_london_fields_lido",
+  "name": "London Fields Lido, London Fields Westside, E8 3EU",
+  "src": "card",
+  "match": {
+   "m": 91,
+   "name": "London Fields Lido Cafe",
+   "cat": "swimming_pool",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_millennium_bridge_dome",
+  "name": "Millennium Bridge",
+  "src": "card",
+  "match": {
+   "m": 71,
+   "name": "Millennium Bridge",
+   "cat": "bridge",
+   "conf": 0.99
+  }
+ },
+ {
+  "card": "m_national_gallery",
+  "name": "The National Gallery, Trafalgar Square",
+  "src": "card",
+  "match": {
+   "m": 43,
+   "name": "National Portrait Gallery",
+   "cat": "art_gallery",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_national_maritime_museum",
+  "name": "National Maritime Museum, Greenwich",
+  "src": "# Coordinates: Wikidata Q1199924 \"National Maritime Museum\" (51.4811, -0.005556), read 202",
+  "match": {
+   "m": 337,
+   "name": "National Maritime Museum",
+   "cat": "library",
+   "conf": 0.8
+  }
+ },
+ {
+  "card": "m_national_portrait_gallery",
+  "name": "National Portrait Gallery, St Martin's Place",
+  "src": "card",
+  "match": {
+   "m": 34,
+   "name": "National Portrait Gallery",
+   "cat": "art_gallery",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_nhm_whale_hall",
+  "name": "Natural History Museum: Mammals hall (blue whale model)",
+  "src": "card",
+  "match": {
+   "m": 27,
+   "name": "Natural History Museum, London",
+   "cat": "history_museum",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_open_kitchen_steakhouse",
+  "name": "Meet Bros Steakhouse, 29-31 Craven Road, Paddington W2 3BX",
+  "src": "card",
+  "match": {
+   "m": 22,
+   "name": "Meet Bros Steakhouse",
+   "cat": "steakhouse",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_painted_hall",
+  "name": "The Painted Hall, Old Royal Naval College",
+  "src": "# Coordinates: Wikidata Q20876258 \"Painted Hall\" (51.48288, -0.00607), read 2026-11-24",
+  "match": {
+   "m": 8,
+   "name": "Painted Hall",
+   "cat": "art_museum",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_park_bike_loop_hyde",
+  "name": "Hyde Park: Serpentine Road and the Broad Walk",
+  "src": "card",
+  "match": {
+   "m": 20,
+   "name": "The Lake, Hyde Park",
+   "cat": "park",
+   "conf": 0.73
+  }
+ },
+ {
+  "card": "m_park_break_battersea",
+  "name": "Battersea Park",
+  "src": "card",
+  "match": {
+   "m": 31,
+   "name": "Big Dipper (Battersea Park)",
+   "cat": "amusement_park",
+   "conf": 0.78
+  }
+ },
+ {
+  "card": "m_park_break_embankment",
+  "name": "Victoria Embankment Gardens, by Embankment station",
+  "src": "card",
+  "match": {
+   "m": 106,
+   "name": "Victoria Embankment Gardens",
+   "cat": "arts_and_entertainment",
+   "conf": 0.98
+  }
+ },
+ {
+  "card": "m_park_break_holland_kyoto",
+  "name": "Holland Park: the Kyoto Garden",
+  "src": "card",
+  "match": {
+   "m": 109,
+   "name": "Holland Park Caf\u00e9",
+   "cat": "cafe",
+   "conf": 0.99
+  }
+ },
+ {
+  "card": "m_park_break_hyde",
+  "name": "Hyde Park, by the Serpentine",
+  "src": "card",
+  "match": {
+   "m": 20,
+   "name": "The Lake, Hyde Park",
+   "cat": "park",
+   "conf": 0.73
+  }
+ },
+ {
+  "card": "m_park_break_olympic",
+  "name": "Queen Elizabeth Olympic Park (opposite Westfield Stratford City)",
+  "src": "card",
+  "match": {
+   "m": 199,
+   "name": "Queen Elizabeth Olympic Park",
+   "cat": null,
+   "conf": 0.85
+  }
+ },
+ {
+  "card": "m_park_break_regents",
+  "name": "Regent's Park",
+  "src": "card",
+  "match": {
+   "m": 88,
+   "name": "Regent's Park Dining",
+   "cat": "sports_and_recreation",
+   "conf": 0.46
+  }
+ },
+ {
+  "card": "m_park_break_st_james",
+  "name": "St James's Park, around the lake",
+  "src": "card",
+  "match": {
+   "m": 48,
+   "name": "St James's Park",
+   "cat": "park",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_rfh_foyers_rest",
+  "name": "Royal Festival Hall, Southbank Centre",
+  "src": "card",
+  "match": {
+   "m": 9,
+   "name": "Royal Festival Hall",
+   "cat": "music_venue",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_richmond_park_view",
+  "name": "Richmond Park: King Henry's Mound, Pembroke Lodge Gardens",
+  "src": "card",
+  "match": null
+ },
+ {
+  "card": "m_science_museum",
+  "name": "Science Museum, Exhibition Road",
+  "src": "# Coordinates: Wikidata Q674773 \"Science Museum\" (51.4975, -0.174722), read 2026-11-24",
+  "match": {
+   "m": 14,
+   "name": "Illuminate at the Science Museum",
+   "cat": "science_museum",
+   "conf": 0.65
+  }
+ },
+ {
+  "card": "m_soane_museum",
+  "name": "Sir John Soane's Museum, 13 Lincoln's Inn Fields",
+  "src": "card",
+  "match": {
+   "m": 34,
+   "name": "Sir John Soane's Museum",
+   "cat": "museum",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_st_dunstan_garden",
+  "name": "St Dunstan-in-the-East",
+  "src": "card",
+  "match": {
+   "m": 15,
+   "name": "St Dunstan in the East",
+   "cat": "arts_and_entertainment",
+   "conf": 0.96
+  }
+ },
+ {
+  "card": "m_st_martin_crypt_lunch",
+  "name": "St Martin-in-the-Fields, Trafalgar Square",
+  "src": "card",
+  "match": {
+   "m": 19,
+   "name": "St Martin-in-the-Fields Charity",
+   "cat": "charity_organization",
+   "conf": 0.94
+  }
+ },
+ {
+  "card": "m_tate_modern",
+  "name": "Tate Modern, Bankside",
+  "src": "# Coordinates: Wikidata Q193375 \"Tate Modern\" (51.507778, -0.099444), read 2026-11-24",
+  "match": {
+   "m": 21,
+   "name": "Tate Modern",
+   "cat": "modern_art_museum",
+   "conf": 0.99
+  }
+ },
+ {
+  "card": "m_to_river_somerset",
+  "name": "Somerset House: the courtyard and River Terrace",
+  "src": "card",
+  "match": {
+   "m": 42,
+   "name": "Skate at Somerset House",
+   "cat": "ice_skating_rink",
+   "conf": 0.94
+  }
+ },
+ {
+  "card": "m_to_river_villiers",
+  "name": "Villiers Street and the Golden Jubilee Bridges",
+  "src": "card",
+  "match": {
+   "m": 173,
+   "name": "Golden Jubilee Bridges",
+   "cat": "monument",
+   "conf": 0.77
+  }
+ },
+ {
+  "card": "m_transport_museum",
+  "name": "London Transport Museum, Covent Garden Piazza",
+  "src": "card",
+  "match": {
+   "m": 0,
+   "name": "Caf\u00e9 at London Transport Museum",
+   "cat": "cafe",
+   "conf": 0.95
+  }
+ },
+ {
+  "card": "m_uber_boat_west_day",
+  "name": "Uber Boat by Thames Clippers, Greenwich Pier to Battersea Power Station Pier",
+  "src": "card",
+  "match": null
+ },
+ {
+  "card": "m_uber_boat_west_night",
+  "name": "Uber Boat by Thames Clippers, Greenwich Pier to Westminster Pier",
+  "src": "card",
+  "match": null
+ },
+ {
+  "card": "m_wallace_collection",
+  "name": "Wallace Collection, Hertford House, Manchester Square",
+  "src": "# Coordinates: Wikidata Q1327919 \"Wallace Collection\" (51.517454, -0.153022), read 2026-11",
+  "match": {
+   "m": 19,
+   "name": "The Wallace Collection",
+   "cat": "art_museum",
+   "conf": 1.0
+  }
+ },
+ {
+  "card": "m_waterloo_bridge_sunset",
+  "name": "Waterloo Bridge",
+  "src": "card",
+  "match": {
+   "m": 320,
+   "name": "Runners Need Waterloo Bridge",
+   "cat": "sportswear_store",
+   "conf": 0.85
+  }
+ },
+ {
+  "card": "m_wellcome_reading_room",
+  "name": "Wellcome Collection, 183 Euston Road",
+  "src": "# Coordinates: Wikidata Q7981191 \"Wellcome Collection\" (51.525944, -0.133889), read 2026-1",
+  "match": {
+   "m": 11,
+   "name": "Venue Hire at Wellcome Collection",
+   "cat": "music_venue",
+   "conf": 0.83
+  }
+ },
+ {
+  "card": "m_young_va",
+  "name": "Young V&A, Cambridge Heath Road, Bethnal Green",
+  "src": "# Coordinates: Wikidata Q644281 \"Young V&A\" (51.529056, -0.054889), read 2026-11-24",
+  "match": {
+   "m": 26,
+   "name": "Young V and A",
+   "cat": "childrens_museum",
+   "conf": 1.0
+  }
+ }
+]
