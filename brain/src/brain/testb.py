@@ -47,7 +47,7 @@ from .travel import LondonEstimate
 # The planning engine lives in dayplan.py (D107), shared with the app's API; re-exported here for the CLI and tests.
 from .dayplan import (GENERIC_STOP_MIN, Brief, PlanNotes, _base, _best_line, _cost, _cost_line,  # noqa: F401
                       _header, _leave, _same_place, _sentence, _stop_lines, _sunset, approach_text, clean,
-                      dwell_targets, leg_text, load_brief, load_swipe_cards, load_swipe_items, lunch_candidates,
+                      dwell_targets, leg_text, load_brief, load_swipe_cards, load_swipe_items, lunch_candidates, POP_COST_PER_GBP,
                       pace_of, personal_plan, transport_gbp)
 
 REACTIONS = {1: "loved", 2: "fine", 3: "didnt_enjoy", 4: "havent_been"}
@@ -418,7 +418,7 @@ def overlap_report(out: Path) -> tuple[str, list[str]]:
     """D104: how much different people's personal plans overlap. Flexible lunch slots never count as shared.
     Warns when two dissimilar people share more than half their stops, and lists stops in most plans."""
     people = [json.loads(f.read_text(encoding="utf-8")) for f in sorted(out.glob("*_personal.json"))]
-    stops = {p["pid"]: [s for s in p["stops"] if not s["id"].startswith("lunch@")] for p in people}
+    stops = {p["pid"]: [s for s in p["stops"] if not s["id"].startswith(("lunch@", "dinner@"))] for p in people}
     title = {s["id"]: s["title"] for p in people for s in p["stops"]}
     lines = ["# Overlap between personal plans (D104, for Abram only)", "",
              f"{len(people)} personal plans. Flexible lunch slots don't count. \"Dissimilar\" means their weights point "

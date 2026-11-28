@@ -1,0 +1,58 @@
+# m331 (Abram, 24 Nov: "prefer adding a verified, quiet, short evening experience near his existing route"): free,
+# quiet and indoors, open on Fridays until 18:00, about fifteen minutes' walk from King's Cross along Euston Road.
+# Written by Claude, 24 Nov 2026, in Claude's own words; facts verified on official pages and marked ready under the
+# research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge.
+# Tags are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://wellcomecollection.org/visit-us/opening-times: "Galleries and Reading Room": Monday "Closed", Tuesday to
+#   Sunday "10:00 – 18:00"; Thu 24, Fri 25 and Sat 26 Dec and Fri 1 Jan "Closed".
+# - https://wellcomecollection.org/visit-us: "All our permanent and temporary exhibitions, and most of our events, are
+#   free."; https://wellcomecollection.org/visit-us/accessibility: "Wellcome Collection is free to visit." and "There
+#   is step-free access throughout our building." (a wheelchair 75 cm or wider may find some areas limited).
+# - https://wellcomecollection.org/visit-us/the-reading-room: "The Reading Room on level 2 of Wellcome Collection is a
+#   hybrid of library and museum, suitable for all ages and interests."; "hang out in a safe and comfortable space".
+# Coordinates: Wikidata Q7981191 "Wellcome Collection" (51.525944, -0.133889), read 2026-11-24 by a SPARQL query; the
+# site's own map link (51.525851, -0.133945) and Overture Places (51.525848, -0.133922) agree within 11 m.
+id: m_wellcome_reading_room
+title: "An unhurried hour in the Wellcome Collection's Reading Room"
+feel_word: "Quiet"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Wellcome Collection, 183 Euston Road"
+  lat: 51.525944         # CHECKED: Wikidata Q7981191
+  lon: -0.133889
+approach:
+  from: "Euston or Euston Square station"   # *
+  start_point: {lat: 51.525944, lon: -0.133889}
+  path: "Walk along Euston Road to number 183, go in and take the stairs or the lift to level 2"   # CHECKED (level 2); *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: "step-free access throughout our building"
+experience:
+  what_happens: "You climb to the Reading Room on level 2, part library and part museum, and settle into a comfortable seat among books, artworks and objects, for as long as you like."   # CHECKED (the page's own description)
+  why_it_works: "A warm, quiet, free room to end a gentle day in, a short walk from King's Cross."
+  duration_min: [30, 75] # GUESS: a place to sit and browse, not a gallery to walk through
+  end_point: null
+best_time:
+  time_of_day: ["10:00-18:00"]   # CHECKED: Galleries and Reading Room, Tuesday to Sunday
+  days: [tue, wed, thu, fri, sat, sun]   # CHECKED: closed Monday
+  time_of_day_dates:     # CHECKED: the dated changes on the opening-times page, read 2026-11-24
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+    "2027-01-01": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Galleries and Reading Room Tue-Sun 10:00-18:00, closed Monday; closed 24-26 Dec and 1 Jan; free. wellcomecollection.org/visit-us/opening-times, read 2026-11-24"
+  hours: "Tue–Sun 10:00–18:00, closed Mondays. Free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 0, local_novel: 1,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-11-24"

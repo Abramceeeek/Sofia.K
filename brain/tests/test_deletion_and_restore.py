@@ -209,7 +209,7 @@ def test_the_alert_carries_no_message_contact_or_id(client, monkeypatch, caplog)
     logged = "\n".join(rec.getMessage() for rec in caplog.records)
     for private in ("MY PRIVATE WORRY", "07700", uid, uid[:8]):
         assert private not in posted and private not in logged
-    assert f"#{r.json()['alert_id']}" in posted and "GET /v1/admin/safety" in posted
+    assert posted == f"Safety message #{r.json()['alert_id']} is waiting"     # Abram, 20 Nov §2, word for word
     with client.app.state.Session() as s:                  # the message and contact are still there to read
         a = s.get(db.SafetyAlert, r.json()["alert_id"])
         assert a.message == "MY PRIVATE WORRY" and a.contact.contact == "07700 900123" and a.notified
@@ -217,8 +217,7 @@ def test_the_alert_carries_no_message_contact_or_id(client, monkeypatch, caplog)
 
 def test_the_alert_text_is_fixed_wording():
     at = datetime(2026, 11, 12, 14, 5, tzinfo=timezone.utc)
-    assert notify.alert_text(7, at) == ("ODYS Help & safety: message #7 is waiting (received 12 Nov 14:05, London "
-                                        "time). Read it and reply with GET /v1/admin/safety; it isn't copied here.")
+    assert notify.alert_text(7, at) == "Safety message #7 is waiting"          # Abram, 20 Nov §2, word for word
 
 
 # ---- one install can't use up the day's searches -------------------------------------------------------------------

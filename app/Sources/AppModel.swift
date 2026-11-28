@@ -97,6 +97,7 @@ final class AppModel {
     var showPair = false                   // the pair for someone who already had a plan (e.g. an older build)
     var ratedOnce = UserDefaults.standard.bool(forKey: "ratedOnce")   // D118: 12a waits until the first rating
     var safetyThreads: [SafetyThread] = [] // D118: Help & safety messages and the replies to them
+    var previews: [PreviewInfo] = []       // m320: places shown read-only to this phone, opened with a code
     var remindersOn = UserDefaults.standard.bool(forKey: "remindersOn")
     var reminderAsked = UserDefaults.standard.bool(forKey: "reminderAsked")
     var showNow = false                    // D119: "Now", the quiet screen while you're out
@@ -543,7 +544,9 @@ final class AppModel {
         request.intent = nil                   // a new day: the must-include goes with the old stops
         request.keep = []
         request.exclude = Array(Set(request.exclude + current.stops.filter(\.rateable).map(\.momentId))).sorted()
+        request.compareTo = current.id   // m336: say what the new plan changes
         await fetchPlan(request)
+        if let now = plan, now.id != current.id, let change = now.change?.text { notice = ("What changed", change) }
         await client.event("regenerate_plan")
     }
 
@@ -595,9 +598,11 @@ final class AppModel {
                                   exclude: Array(Set(old.exclude + skip)).sorted(), feelings: old.feelings,
                                   mine: old.mine, relaxed: old.relaxed)
         if reason == "rain" { request.conditions = PlanConditions(rainProb: 0.9) }
+        request.compareTo = current.id   // m341: say what changed in the rest of the day
         let tripId = currentTripDay?.trip.id
         await fetchPlan(request, sameDay: false)   // the trip keeps the day as planned; this is today's version
         guard let new = plan, new.id != current.id else { return }
+        if let change = new.change?.text { notice = ("What changed", change) }
         nowIndex = 0
         UserDefaults.standard.set(0, forKey: "nowIndex.\(new.id)")
         if let tripId, var trip = findTrip(tripId) {   // later days won't repeat this afternoon's places
@@ -613,16 +618,65 @@ final class AppModel {
     }
 
     func swap(_ stop: Stop) async {
-        guard var request = lastRequest, let current = plan else { return }
-        request.keep = current.stops.filter { $0.id != stop.id }.map { $0.key ?? $0.momentId }
-        request.exclude.append(stop.momentId)
-        if request.intent?["must_do"] == stop.momentId { request.intent = nil }   // they're swapping it out
+        guard let request = swapRequest(stop), let current = plan else { return }
         let before = Set(current.stops.map(\.momentId))
         await fetchPlan(request, swap: true)
         if let now = plan, now.id != current.id {
             swappedIn = now.stops.first { !before.contains($0.momentId) }?.momentId
+            if let change = now.change?.text { notice = ("What changed", change) }   // m336
             await client.event("swap_stop", ["out": stop.momentId, "in": swappedIn ?? ""])
         }
+    }
+
+    /// m341: "Raining? Swap for the indoor option": the stop's rain option in its place, the rest of the day kept,
+    /// and what changed said.
+    func swapForRain(_ stop: Stop) async {
+        guard var request = swapRequest(stop), let rain = stop.rainSwapId, let current = plan else { return }
+        request.intent = ["must_do": rain]
+        let before = Set(current.stops.map(\.momentId))
+        await fetchPlan(request, swap: true)
+        if let now = plan, now.id != current.id {
+            swappedIn = now.stops.first { !before.contains($0.momentId) }?.momentId
+            if let change = now.change?.text { notice = ("What changed", change) }
+            await client.event("swap_stop", ["out": stop.momentId, "in": swappedIn ?? "", "from": "rain"])
+        }
+    }
+
+    /// D110, m336: the same day with this stop left out and every other stop kept, compared with the current plan.
+    private func swapRequest(_ stop: Stop) -> PlanRequest? {
+        guard var request = lastRequest, let current = plan else { return nil }
+        request.keep = current.stops.filter { $0.id != stop.id }.map { $0.key ?? $0.momentId }
+        request.exclude.append(stop.momentId)
+        if request.intent?["must_do"] == stop.momentId { request.intent = nil }   // they're swapping it out
+        request.compareTo = current.id
+        return request
+    }
+
+    /// m336 (Abram, 24 Nov: "show alternative recommendations"): up to three other places for this stop's time,
+    /// each a whole day with the other stops kept and a line saying what it changes. Empty if nothing else fits.
+    func alternatives(for stop: Stop) async -> [Plan] {
+        guard let request = swapRequest(stop) else { return [] }
+        busy = true
+        defer { busy = false }
+        do {
+            let found = try await client.alternatives(request).filter { !$0.stops.isEmpty }
+            await client.event("alternatives_shown", ["n": "\(found.count)"])
+            return found
+        } catch {
+            errorMessage = "Couldn't find other places just now. Try again, or keep this stop."
+            return []
+        }
+    }
+
+    /// m336: the alternative they chose becomes the day, as a swap does: the rest kept, ratings carried over.
+    func choose(_ alternative: Plan, for stop: Stop) async {
+        guard let request = swapRequest(stop), let current = plan else { return }
+        let before = Set(current.stops.map(\.momentId))
+        adopt(alternative, request: request, old: current, swap: true, sameDay: true)
+        swappedIn = alternative.stops.first { !before.contains($0.momentId) }?.momentId
+        if let change = alternative.change?.text { notice = ("What changed", change) }
+        if remindersOn { await Reminders.schedule(alternative, rated: rated) }
+        await client.event("swap_stop", ["out": stop.momentId, "in": swappedIn ?? "", "from": "alternatives"])
     }
 
     /// `sameDay`: the same day changed (swap, regenerate, re-plan), so a trip day it came from takes the new stops.
@@ -639,20 +693,25 @@ final class AppModel {
                 self.notice = ("Your must-include didn't fit",
                                "It's closed or can't be fitted at those times, so the day is planned without it.")
             }
-            if sameDay { self.syncTripDay(from: old, to: plan) }   // m176: a swapped trip day changes the trip too
-            self.plan = plan
-            self.lastRequest = request
-            if !swap {
-                (self.rated, self.myRatings) = AppModel.savedRatings(for: plan)
-                self.swappedIn = nil
-                self.revealPlanId = plan.id   // D117: a new plan appears line by line, once
-            } else {
-                AppModel.saveRatings(self.myRatings, for: plan)   // a swap is a new plan id: the ratings carry over
-            }
-            AppModel.cache(plan, "plan.json")
-            AppModel.cache(request, "request.json")
+            self.adopt(plan, request: request, old: old, swap: swap, sameDay: sameDay)
             if self.remindersOn { await Reminders.schedule(plan, rated: self.rated) }   // D118: follow the new plan
         }
+    }
+
+    /// The new plan becomes the day (a fetched plan, or an alternative chosen, m336).
+    private func adopt(_ plan: Plan, request: PlanRequest, old: Plan?, swap: Bool, sameDay: Bool) {
+        if sameDay { syncTripDay(from: old, to: plan) }   // m176: a swapped trip day changes the trip too
+        self.plan = plan
+        lastRequest = request
+        if !swap {
+            (rated, myRatings) = AppModel.savedRatings(for: plan)
+            swappedIn = nil
+            revealPlanId = plan.id   // D117: a new plan appears line by line, once
+        } else {
+            AppModel.saveRatings(myRatings, for: plan)   // a swap is a new plan id: the ratings carry over
+        }
+        AppModel.cache(plan, "plan.json")
+        AppModel.cache(request, "request.json")
     }
 
     /// `planId`: another plan the stop belongs to (journey round 2: the place on the way on an arrival day).
@@ -825,6 +884,25 @@ final class AppModel {
         if let threads = try? await client.mySafety() { safetyThreads = threads }
     }
 
+    /// m320: the previews this phone opened with a code (kept on the Brain, so they come back after a restart).
+    func loadPreviews() async {
+        if let list = try? await client.previews() { previews = list.previews }
+    }
+
+    /// m320: a preview code from You. Nil when it opened; otherwise what to say.
+    func openPreview(code: String) async -> String? {
+        let typed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !typed.isEmpty else { return nil }
+        do {
+            previews = try await client.openPreview(code: String(typed.prefix(40))).previews
+            return nil
+        } catch BrainError.status(404) {
+            return "That code doesn't open a preview."
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
     /// A reply newer than the last time Help & safety was opened.
     var unreadSafety: Bool {
         let seen = UserDefaults.standard.string(forKey: "safetySeen") ?? ""
@@ -945,6 +1023,7 @@ final class AppModel {
         self.remindersOn = false
         self.reminderAsked = false
         self.safetyThreads = []
+        self.previews = []
         self.path = NavigationPath()
         AppModel.cache(nil as [Trip]?, "trips.json")
         self.trips = []

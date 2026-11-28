@@ -1,5 +1,12 @@
 # Production hotfixes for the live Brain (`80a0da3`): A1 to A4 (19–20 Nov 2026)
 
+> **Superseded on 20 Nov (m315):** Abram chose to move everything to `main` (`decisions/release-to-main.md`). A1–A4 now go live with that release:
+> - the alert's exact words, the hidden failed-write values and the storage warning were added to the development code;
+> - A2 and A3's log line were already there.
+>
+> The patches against `80a0da3` below stay as the record, and as the fallback if the release were rolled back.
+
+
 Abram's decisions of 19 Nov (§4, §5) and 20 Nov (§1, §2): prepare the smallest production fixes as isolated hotfixes. Each one must apply on its own to `80a0da3`, pass the frozen suite, have a reviewed diff and a rollback, and leave Test B as it is.
 
 **Status: prepared and tested; nothing is deployed and nothing is on `main`.** Two things wait for Abram's explicit approval:

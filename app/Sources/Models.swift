@@ -246,6 +246,9 @@ struct Plan: Codable, Hashable, Identifiable {
     let weather: Weather?          // Stage 1: the Met Office forecast the plan was made with, if any
     var budget: DayBudget? = nil   // m217: the day's money against the person's budget, line by line
     var createdAt: String? = nil   // m228: when the Brain made it, for "saved on this phone"
+    var change: PlanChange? = nil  // m336: what this plan changed against the one it replaced (a swap)
+    var freeAfter: FreeAfter? = nil  // m346: the time left at the end of a trip day, in the Brain's words
+    var party: PartyCost? = nil      // m356: each traveller's estimated cost and the whole party's
 
     var isBlind: Bool { blind == true }
 
@@ -254,6 +257,49 @@ struct Plan: Codable, Hashable, Identifiable {
         Plan(id: id, title: title, summary: summary, totals: totals, date: day, stops: stops, feelLine: feelLine,
              basis: basis, blind: blind, weather: weather, budget: budget, createdAt: createdAt)
     }
+}
+
+/// m356: what a day costs each traveller and the party, with what's estimated and how costs are split.
+struct PartyCost: Codable, Hashable {
+    struct Traveller: Codable, Hashable {
+        let label: String
+        let kind: String
+        let costGbp: Double
+        var overGbp: Double? = nil
+    }
+    let travellers: [Traveller]
+    let totalGbp: Double
+    var overGroupGbp: Double? = nil
+    var groupBudgetGbp: Double? = nil
+    let verified: String
+    let estimated: String
+    let notes: [String]
+    var notForChildren: [String]? = nil
+}
+
+/// m346: the end of a trip day that's the person's own ("A relaxed day, as you asked: the rest of it is yours…").
+struct FreeAfter: Codable, Hashable {
+    let from: String
+    let until: String
+    let min: Int
+    let text: String
+}
+
+/// m336: what a replacement plan changes (brain.dayplan.plan_change): one plain line, and the finish it gives.
+struct PlanChange: Codable, Hashable {
+    let text: String
+    var finishAfter: String? = nil
+}
+
+/// m336: the answer to "other places for this time": each a whole plan with the rest of the day kept.
+struct Alternatives: Codable {
+    let alternatives: [Plan]
+}
+
+/// m336: what the app sends for alternatives: the swap request, and how many to offer.
+struct AlternativesRequest: Encodable {
+    let request: PlanRequest
+    var count: Int = 3
 }
 
 /// m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out.
@@ -341,6 +387,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let costGbp: Double
     let costText: String
     let rainSwap: String
+    var rainSwapId: String? = nil  // m341: the rain option's card, so "Raining? Swap for the indoor option" is one tap
     let lunch: Bool
     let familiar: Bool
     let rateable: Bool
@@ -361,6 +408,7 @@ struct Stop: Codable, Hashable, Identifiable {
     let checked: String?           // journey round 2: when the card's facts were last checked ("2026-10-08")
     let mine: String?              // m200: "plans" or "free": the person's own time, planned around (never rated)
     var explain: StopExplain? = nil  // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
+    var notes: [String]? = nil     // m349: free time, a later start, an estimate: said under the stop on the day
 
     var id: String { momentId + "@" + arrive }
 
@@ -478,6 +526,7 @@ struct PlanRequest: Codable, Hashable {
     var conditions: PlanConditions? = nil  // journey round 2: "it's raining" when re-planning the rest of today
     var mine: [MyTime]? = nil              // m200: a trip day's own time, so swap and re-plan keep it
     var relaxed: Bool? = nil               // m200: a relaxed trip day
+    var compareTo: Int? = nil              // m336: the plan this one replaces, so the Brain says what changed
 }
 
 /// m200: time that's the person's own on a trip day: "plans" (meeting someone, a booking) or "free".

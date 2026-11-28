@@ -165,6 +165,11 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var showPair by mutableStateOf(false)
     var ratedOnce by mutableStateOf(prefs.bool("ratedOnce"))
     var safetyThreads by mutableStateOf<List<SafetyThread>>(emptyList())
+    var previews by mutableStateOf<List<PreviewInfo>>(emptyList())   // m320: places shown read-only, opened with a code
+    var previewDemo: PreviewContent? = null   // screenshots only: the preview drawn without a server
+    var groupsDemo: GroupList? = null         // m358, screenshots only: shared trips drawn without a server
+    var groupPlanDemo: GroupPlanOut? = null
+    var alternativesDemo: List<Plan>? = null  // m336, screenshots only: "Other places for this time" without a server
     var remindersOn by mutableStateOf(prefs.bool("remindersOn"))
     var reminderAsked by mutableStateOf(prefs.bool("reminderAsked"))
     var showNow by mutableStateOf(false)
@@ -517,7 +522,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val request = lastRequest ?: return
         val current = plan ?: return
         val exclude = (request.exclude + current.stops.filter { it.rateable }.map { it.momentId }).toSet().sorted()
-        fetchPlan(request.copy(intent = null, keep = emptyList(), exclude = exclude))
+        fetchPlan(request.copy(intent = null, keep = emptyList(), exclude = exclude, compareTo = current.id))
+        plan?.takeIf { it.id != current.id }?.change?.text?.let { notice = "What changed" to it }   // m336
         client.event("regenerate_plan")
     }
 
@@ -564,11 +570,13 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             exclude = (old.exclude + skip).toSet().sorted(), feelings = old.feelings,
             conditions = if (reason == "rain") PlanConditions(0.9) else null,
             mine = old.mine, relaxed = old.relaxed,
+            compareTo = current.id,   // m341: say what changed in the rest of the day
         )
         val tripId = currentTripDay()?.first?.id
         fetchPlan(request, sameDay = false)
         val new = plan ?: return
         if (new.id == current.id) return
+        new.change?.text?.let { notice = "What changed" to it }
         nowIndex = 0
         prefs.set("nowIndex.${new.id}", 0)
         if (tripId != null) findTrip(tripId)?.let { trip ->
@@ -578,18 +586,65 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     }
 
     suspend fun swap(stop: Stop) {
-        var request = lastRequest ?: return
+        val request = swapRequest(stop) ?: return
         val current = plan ?: return
-        request = request.copy(keep = current.stops.filter { it.id != stop.id }.map { it.key ?: it.momentId },
-            exclude = request.exclude + stop.momentId)
-        if (request.intent?.get("must_do") == stop.momentId) request = request.copy(intent = null)
         val before = current.stops.map { it.momentId }.toSet()
         fetchPlan(request, swap = true)
         val now = plan
         if (now != null && now.id != current.id) {
             swappedIn = now.stops.firstOrNull { it.momentId !in before }?.momentId
+            now.change?.text?.let { notice = "What changed" to it }   // m336
             client.event("swap_stop", mapOf("out" to stop.momentId, "in" to (swappedIn ?: "")))
         }
+    }
+
+    /** m341: "Raining? Swap for the indoor option": the stop's rain option in its place, the rest of the day kept, and
+     *  what changed said. */
+    suspend fun swapForRain(stop: Stop) {
+        val rain = stop.rainSwapId ?: return
+        val request = swapRequest(stop)?.copy(intent = mapOf("must_do" to rain)) ?: return
+        val current = plan ?: return
+        val before = current.stops.map { it.momentId }.toSet()
+        fetchPlan(request, swap = true)
+        val now = plan
+        if (now != null && now.id != current.id) {
+            swappedIn = now.stops.firstOrNull { it.momentId !in before }?.momentId
+            now.change?.text?.let { notice = "What changed" to it }
+            client.event("swap_stop", mapOf("out" to stop.momentId, "in" to (swappedIn ?: ""), "from" to "rain"))
+        }
+    }
+
+    /** D110, m336: the same day with this stop left out and every other stop kept, compared with the current plan. */
+    private fun swapRequest(stop: Stop): PlanRequest? {
+        var request = lastRequest ?: return null
+        val current = plan ?: return null
+        request = request.copy(keep = current.stops.filter { it.id != stop.id }.map { it.key ?: it.momentId },
+            exclude = request.exclude + stop.momentId, compareTo = current.id)
+        if (request.intent?.get("must_do") == stop.momentId) request = request.copy(intent = null)
+        return request
+    }
+
+    /** m336 (Abram, 24 Nov: "show alternative recommendations"): up to three other places for this stop's time,
+     *  each a whole day with the other stops kept and a line saying what it changes. Empty if nothing else fits. */
+    suspend fun alternatives(stop: Stop): List<Plan> {
+        alternativesDemo?.let { return it }
+        val request = swapRequest(stop) ?: return emptyList()
+        var found = emptyList<Plan>()
+        run { found = client.alternatives(request).filter { it.stops.isNotEmpty() } }
+        client.event("alternatives_shown", mapOf("n" to "${found.size}"))
+        return found
+    }
+
+    /** m336: the alternative they chose becomes the day, as a swap does: the rest kept, ratings carried over. */
+    suspend fun choose(alternative: Plan, stop: Stop) {
+        val request = swapRequest(stop) ?: return
+        val current = plan ?: return
+        val before = current.stops.map { it.momentId }.toSet()
+        adopt(alternative, request, current, swap = true, sameDay = true)
+        swappedIn = alternative.stops.firstOrNull { it.momentId !in before }?.momentId
+        alternative.change?.text?.let { notice = "What changed" to it }
+        if (remindersOn) reminders.schedule(alternative, rated)
+        client.event("swap_stop", mapOf("out" to stop.momentId, "in" to (swappedIn ?: ""), "from" to "alternatives"))
     }
 
     /** `sameDay`: the same day changed (swap, plan again, re-plan), so a trip day it came from takes the new stops. */
@@ -606,22 +661,27 @@ class AppModel(app: Application) : AndroidViewModel(app) {
                 notice = "Your must-include didn't fit" to
                     "It's closed or can't be fitted at those times, so the day is planned without it."
             }
-            if (sameDay) syncTripDay(old, p)
-            plan = p
-            lastRequest = request
-            if (!swap) {
-                val r = prefs.ratings(p.id)
-                rated = r.keys
-                myRatings = r
-                swappedIn = null
-                revealPlanId = p.id
-            } else {
-                prefs.saveRatings(p.id, myRatings)
-            }
-            files.save(Plan.serializer(), p, "plan.json")
-            files.save(PlanRequest.serializer(), request, "request.json")
+            adopt(p, request, old, swap, sameDay)
             if (remindersOn) reminders.schedule(p, rated)
         }
+    }
+
+    /** The new plan becomes the day (a fetched plan, or an alternative chosen, m336). */
+    private fun adopt(p: Plan, request: PlanRequest, old: Plan?, swap: Boolean, sameDay: Boolean) {
+        if (sameDay) syncTripDay(old, p)
+        plan = p
+        lastRequest = request
+        if (!swap) {
+            val r = prefs.ratings(p.id)
+            rated = r.keys
+            myRatings = r
+            swappedIn = null
+            revealPlanId = p.id
+        } else {
+            prefs.saveRatings(p.id, myRatings)
+        }
+        files.save(Plan.serializer(), p, "plan.json")
+        files.save(PlanRequest.serializer(), request, "request.json")
     }
 
     /** `planId`: another plan the stop belongs to (the place on the way on an arrival day). */
@@ -753,6 +813,25 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     // ---- D118: Help & safety replies ------------------------------------------------------------------------
 
+    /** m320: the previews this phone opened with a code (kept on the Brain, so they come back after a restart). */
+    suspend fun loadPreviews() {
+        runCatching { client.previews() }.getOrNull()?.let { previews = it.previews }
+    }
+
+    /** m320: a preview code from You. Null when it opened; otherwise what to say. */
+    suspend fun openPreview(code: String): String? {
+        val typed = code.trim().take(40)
+        if (typed.isEmpty()) return null
+        return try {
+            previews = client.openPreview(typed).previews
+            null
+        } catch (e: BrainError) {
+            if (e.code == 404) "That code doesn't open a preview." else e.message
+        } catch (e: Exception) {
+            "The code couldn't be checked just now. Check your signal, then try again."
+        }
+    }
+
     suspend fun loadSafety() {
         if (!prefs.bool("safetySent")) return
         runCatching { client.mySafety() }.getOrNull()?.let { safetyThreads = it }
@@ -845,6 +924,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         remindersOn = false
         reminderAsked = false
         safetyThreads = emptyList()
+        previews = emptyList()
         tripPath.clear()
         bookPath.clear()
         trips = emptyList()
@@ -989,7 +1069,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         val yourDayIndex = keepFrom?.days?.firstOrNull { currentPlanId != null && it.plan?.id == currentPlanId }?.index
         run {
             if (kept.isEmpty() || todo.isNotEmpty()) {
-                val out = client.tripDays(daysRequest(trip, if (kept.isEmpty()) emptyList() else todo, exclude))
+                // m353: each day planned again says what changed against its plan before, its cost included
+                val before = (keepFrom?.days ?: emptyList()).mapNotNull { d -> d.plan?.let { "${d.index}" to it.id } }.toMap()
+                val out = client.tripDays(daysRequest(trip, if (kept.isEmpty()) emptyList() else todo, exclude)
+                    .copy(compareTo = before.ifEmpty { null }))
                 trip = trip.copy(days = (kept + out.days).sortedBy { it.index }, used = out.used, daysFrom = out.start)
             }
             trip = trip.copy(daysStale = false)
@@ -1037,7 +1120,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         return TripDaysRequest(trip.destination, trip.start, trip.nights, trip.feelings, trip.stay?.point,
             if (trip.stay == null) null else "your stay", days, exclude, hours?.first ?: trip.dayFrom,
             hours?.second ?: trip.dayTo, hours?.third ?: trip.placesPerDay, trip.travelLight, arrive, leave,
-            personal = (trip.personal ?: emptyList()).filter { !it.isEmpty })
+            personal = (trip.personal ?: emptyList()).filter { !it.isEmpty }, dayFeel = trip.dayFeel,
+            party = if (trip.adults > 1 || !trip.children.isNullOrEmpty()) PartyRequest(trip.adults, trip.children ?: emptyList()) else null)
     }
 
     /** "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and plan again. */

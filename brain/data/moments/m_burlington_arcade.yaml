@@ -26,6 +26,7 @@ experience:
   end_point: null
 best_time:
   time_of_day: ["11:00-18:00"]   # CHECKED: open every day in this window
+  time_of_day_days: {mon: ["11:00-19:00"], tue: ["11:00-19:00"], wed: ["11:00-19:00"], thu: ["11:00-19:00"], fri: ["11:00-19:00"], sat: ["11:00-19:00"]}   # m326: open to 19:00 Mon-Sat (opening_hours below)
   light: null
   weather: ["any"]
   company: null

@@ -1,0 +1,44 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.tate.org.uk/visit/tate-modern: "Sunday to Thursday 10.00–18.00"; "Friday to Saturday 10.00–21.00"; "Last entry 30 minutes before closing time"; "Entry to the collection is free for everyone."; "There are four lifts in the Natalie Bell Building". Christmas hours aren't on that page.
+# Coordinates: Wikidata Q193375 "Tate Modern" (51.507778, -0.099444), read 2026-11-24
+id: m_tate_modern
+title: "Into the Turbine Hall and the free galleries of Tate Modern"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Tate Modern, Bankside"
+  lat: 51.507778
+  lon: -0.099444
+approach:
+  from: "Southwark or Blackfriars station"   # *
+  start_point: {lat: 51.507778, lon: -0.099444}
+  path: "Walk to the river at Bankside and go in through the Turbine Hall"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # CHECKED: four lifts in the Natalie Bell Building; a step-free route isn't stated
+experience:
+  what_happens: "You walk down into the vast Turbine Hall, then up through free galleries of modern art, with the river below the windows."   # the Turbine Hall entrance and free collection CHECKED; the rest *
+  why_it_works: "Free, big and open late on Fridays and Saturdays: an evening with something to look at, by the river."
+  duration_min: [60, 120] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:30"]   # CHECKED: Sun-Thu 10:00-18:00, last entry 17:30; Fri and Sat below
+  time_of_day_days: {fri: ["10:00-20:30"], sat: ["10:00-20:30"]}   # CHECKED
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Sun-Thu 10:00-18:00, Fri-Sat 10:00-21:00, last entry 30 min before closing; the collection is free. Christmas hours not on the page read. tate.org.uk, read 2026-11-24"
+  hours: "Sun–Thu 10:00–18:00, Fri–Sat 10:00–21:00. Free collection. Check Christmas hours before 24–26 Dec"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 1, social_pull: 1}
+cost_gbp: 0   # CHECKED: the collection is free
+shot_card: null
+source: research
+last_checked: "2026-11-24"

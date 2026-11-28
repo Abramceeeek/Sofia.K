@@ -164,6 +164,7 @@ fun HomeStack(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
 @Composable
 fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
     var planningDay by remember { mutableStateOf(false) }
+    var showGroups by remember { mutableStateOf(false) }   // m358: a trip planned with friends
     @Suppress("UNUSED_VARIABLE") val tick = model.clock   // journey round 2: Today / Tomorrow follow the date
     val plan = model.plan
     val phase = model.homePhase()
@@ -201,6 +202,7 @@ fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
         }
         if (showDay) comingUp(plan!!, Modifier.settle(3))
         if (!model.isVisitor && !model.pairDone) Box(Modifier.settle(3)) { PairInviteRow { model.showPair = true } }
+        Box(Modifier.settle(3)) { GroupInviteRow { showGroups = true } }   // m358
         if (model.trips.isNotEmpty()) {
             Column(Modifier.settle(3), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Your trips", style = Theme.subheadline.copy(color = Theme.muted))
@@ -208,6 +210,7 @@ fun TripHome(model: AppModel, onHelp: () -> Unit, onData: () -> Unit) {
             }
         }
     }
+    if (showGroups) GroupTripsScreen(model, { showGroups = false })
     if (planningDay) {
         FullSheet(model, { planningDay = false }) {
             Column(Modifier.fillMaxSize()) {
@@ -557,7 +560,7 @@ fun TripCreateFlow(model: AppModel) {
             androidx.compose.runtime.key(step) {
                 Column(Modifier.settle(0), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     when (step) {
-                        0 -> WhereStep()
+                        0 -> WhereStep(model)
                         1 -> WhenStep(trip) { trip = it }
                         2 -> FromStep(trip, { trip = it }) { showAirports = true }
                         3 -> DaysStep(trip) { trip = it }
@@ -578,7 +581,7 @@ fun TripCreateFlow(model: AppModel) {
 }
 
 @Composable
-fun WhereStep() {
+fun WhereStep(model: AppModel) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         PageTitle("Where are you going?")
         Row(Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(16.dp)).background(Theme.surface)
@@ -590,6 +593,7 @@ fun WhereStep() {
         Text("In this test", style = Theme.subheadline.copy(color = Theme.muted), modifier = Modifier.padding(top = 6.dp))
         // D120: London now, then UK cities, then Europe, then further (Abram, 6 Oct)
         CityLine("London", "Ready to test", true)
+        PreviewCityLines(model)                                       // m320: a preview opens its places, not a trip
         CityLine("Edinburgh, Manchester and the UK", "Coming next", false)
         CityLine("Paris, Rome and Europe", "Coming later", false)
     }
@@ -802,6 +806,34 @@ fun FromStep(trip: Trip, onChange: (Trip) -> Unit, chooseAirport: () -> Unit) {
         Stepper("Who's going", "${trip.adults} ${if (trip.adults == 1) "adult" else "adults"}", trip.adults <= 1, trip.adults >= 6,
             "Fewer travellers", "More travellers",
             { onChange(trip.copy(adults = maxOf(1, trip.adults - 1))) }) { onChange(trip.copy(adults = minOf(6, trip.adults + 1))) }
+        // m356: children by age only (never names), so each pays their own price where a place gives one
+        val kids = trip.children ?: emptyList()
+        Stepper("Children", if (kids.isEmpty()) "None" else "${kids.size}", kids.isEmpty(), kids.size >= 6,
+            "One child fewer", "One child more",
+            { onChange(trip.copy(children = kids.dropLast(1).ifEmpty { null })) }) { onChange(trip.copy(children = kids + 8)) }
+        kids.forEachIndexed { i, age ->
+            Stepper("Child ${i + 1}", "$age ${if (age == 1) "year" else "years"} old", age <= 0, age >= 17,
+                "Child ${i + 1} younger", "Child ${i + 1} older",
+                { onChange(trip.copy(children = kids.toMutableList().also { it[i] = age - 1 })) }) {
+                onChange(trip.copy(children = kids.toMutableList().also { it[i] = age + 1 }))
+            }
+        }
+    }
+}
+
+/** m356: the day's estimated cost for each traveller and the whole party, and what's estimated. */
+@Composable
+fun PartyCostView(party: PartyCost) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Theme.surface).padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("About ${Money.text(party.totalGbp)} for all ${party.travellers.size} of you", style = Theme.body)
+        party.travellers.forEach { t ->
+            Text("${t.label}: ${Money.text(t.costGbp)}" + (t.overGbp?.let { ", ${Money.text(it)} over their budget" } ?: ""),
+                style = Theme.footnote)
+        }
+        party.overGroupGbp?.let { Text("${Money.text(it)} over the group's budget", style = Theme.footnote.copy(color = Theme.accent)) }
+        (party.notes + (party.notForChildren ?: emptyList())).forEach { Text(it, style = Theme.footnote) }
+        Text("${party.verified}. Estimated: ${party.estimated.lowercase()}.", style = Theme.footnote)
     }
 }
 
@@ -829,11 +861,28 @@ fun DaysStep(trip: Trip, onChange: (Trip) -> Unit) {
             { onChange(trip.copy(places = maxOf(1, n - 1))) }) { onChange(trip.copy(places = minOf(6, n + 1))) }
         Text("Plus lunch, when a day runs through midday. A short day holds fewer places.", style = Theme.footnote,
             modifier = Modifier.padding(horizontal = 4.dp))
+        // m346 (Abram, 24 Nov): how full the days should be, separate from how active the places are; stored with the
+        // trip, and changing it on "Your days" plans again the days not yet lived, as changing the hours does
+        Text("How would you like your days to feel?", style = Theme.footnote, modifier = Modifier.padding(horizontal = 4.dp))
+        for ((key, label, line) in DayFeels.all) {
+            OptionTile(label, line, trip.feelOfDays == key, offFill = Theme.surface, offStroke = Color.Transparent) {
+                onChange(trip.copy(dayFeel = key))
+            }
+        }
         if (trip.arrivingBy == "flight" || trip.arrivingBy == "train") {
             SwitchRow("Travelling light on day 1", "No big bags: if you arrive before check-in, one place on the way, then your stay.",
                 trip.travelLight) { onChange(trip.copy(light = it)) }
         }
     }
+}
+
+/** m346: the three ways a day can feel, the same words as on the iPhone. */
+object DayFeels {
+    val all = listOf(
+        Triple("relaxed", "Relaxed", "More breathing room: fewer planned experiences, longer at each, and time that's yours."),
+        Triple("balanced", "Balanced", "A mix of planned experiences, food, exploring and rest."),
+        Triple("full", "Full", "Make the most of the day: more experiences, still within easy journeys."),
+    )
 }
 
 @Composable
@@ -1272,6 +1321,8 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
         val plan = day?.plan
         if (day != null && plan != null) {
             if (day.before != null || day.journeys("arrive").isNotEmpty()) SectionLabel("From your stay", Modifier.padding(top = 4.dp))
+            plan.party?.let { PartyCostView(it) }   // m356: each of you, and all
+            plan.change?.let { Text(it.text, style = Theme.footnote) }   // m353: a day planned again says what changed
             for (stop in plan.stops) if (stop.mine != null) MyTimeRow(stop) else TripDayStop(stop)
             for (t in day.mine.orEmpty().filter { !it.planned }) {   // m200
                 Text("${if (t.kind == "plans") "Your plans" else "Free time"} at ${t.start}–${t.end} fall outside the hours planned for this day, so the plan doesn't go around them.",
@@ -1280,8 +1331,8 @@ fun TripDayView(model: AppModel, tripId: String, index: Int, openChange: Boolean
             val end = day.window?.end
             val last = plan.stops.lastOrNull()
             if (end != null && last != null && last.mine == null &&
-                Dates.minutes(end) - Dates.minutes(last.depart) >= 60) {   // journey round 2
-                FreeTimeRow(model, last.depart, end, trip.placesPerDay < 6) {
+                (plan.freeAfter != null || Dates.minutes(end) - Dates.minutes(last.depart) >= 60)) {   // journey round 2
+                FreeTimeRow(model, last.depart, end, trip.placesPerDay < 6, text = plan.freeAfter?.text) {   // m346
                     scope.launch {
                         model.changeTripDay(trip.id, index, day.window.start, end, minOf(6, trip.placesPerDay + 1))
                     }
@@ -1498,6 +1549,7 @@ fun TripDayStop(stop: Stop) {
             Text("${stop.arrive} · ${stop.word}", style = Theme.footnote)
             Text(stop.title, style = Theme.serif(20.sp))
             Text(stop.reasons?.firstOrNull()?.you ?: stop.what, style = Theme.subheadline.copy(color = Theme.inkSoft), maxLines = 3)
+            stop.notes.orEmpty().forEach { Text(it, style = Theme.footnote) }   // m349: free time, a later start, an estimate
         }
     }
 }
@@ -1510,6 +1562,7 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         model.loadSafety()
+        model.loadPreviews()
         if (model.learned == null) model.learned = runCatching { model.client.summary() }.getOrNull()
     }
     ScrollPage(spacing = 18, top = if (onBack == null) 30 else 8, bottom = 40) {
@@ -1550,6 +1603,7 @@ fun YouView(model: AppModel, onHelp: () -> Unit, onData: () -> Unit, onBack: (()
                 Hairline()
             }
         }
+        PreviewSection(model)                                         // m320: previews opened with a code
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {   // D130 (Daylight)
             SectionLabel("The light")
             Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Theme.surface).padding(3.dp)) {

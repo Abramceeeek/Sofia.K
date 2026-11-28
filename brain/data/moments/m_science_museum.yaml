@@ -1,0 +1,49 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.sciencemuseum.org.uk/visit-us: "The museum is open daily from 10.00–18.00 (except for 24–26 December when the museum is closed). Last entry is 17.15."; "Free entry"; "you will need to pre-book a free ticket"; "The museum closes at 17.00 on Thursday 26 November 2026."; children under 12 "must be accompanied by an adult (aged 18+)"
+# Coordinates: Wikidata Q674773 "Science Museum" (51.4975, -0.174722), read 2026-11-24
+id: m_science_museum
+title: "Hands-on and wide-eyed at the Science Museum"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Science Museum, Exhibition Road"
+  lat: 51.4975
+  lon: -0.174722
+approach:
+  from: "South Kensington station"   # *
+  start_point: {lat: 51.4975, lon: -0.174722}
+  path: "Walk up Exhibition Road from South Kensington station"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated on the page read
+experience:
+  what_happens: "You wander galleries of engines, rockets and inventions, and try things for yourself."   # galleries *; free entry CHECKED
+  why_it_works: "Free, indoors and full of things to touch and try: a day-saver with children, whatever the weather."
+  duration_min: [60, 120] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:15"]   # CHECKED: daily 10:00-18:00, last entry 17:15
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-11-26": ["10:00-17:00"]
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Book a free entry ticket on sciencemuseum.org.uk beforehand"   # CHECKED
+  opening_hours: "Daily 10:00-18:00 (last entry 17:15), closed 24-26 Dec, closes 17:00 on 26 Nov 2026; free, with a free ticket booked ahead. sciencemuseum.org.uk, read 2026-11-24"
+  hours: "Daily 10:00–18:00, last entry 17:15; closed 24–26 Dec. Free (book a free ticket)"   # shown on the stop
+features:   # m340: museums are history_culture 2, as the Natural History Museum is (so D127 counts them)
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 1}
+cost_gbp: 0   # CHECKED: free with a pre-booked free ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

@@ -1,0 +1,47 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://flatironsteak.co.uk/restaurant/covent-garden/: "17-18 Henrietta Street London WC2E 8QH"; "SUN – TUE 11:30 – 22:30", "WED – THU 11:30 – 23:00", "FRI – SAT 11:30 – 23:30"; a booking link (SevenRooms). Christmas and New Year hours are listed there too: check them before 24 Dec.
+# - https://flatironsteak.co.uk/menu/ (no date shown): "FLAT IRON STEAK" 15.0; "Homemade Beef Dripping Chips" 4.5
+# Coordinates: Overture Maps Places (open data), "Flat Iron Covent Garden, 17-18 Henrietta St, WC2E 8QH" (51.510838, -0.124104), confidence 0.998, read 2026-11-24
+id: m_flat_iron_covent_garden
+title: "A steak and dripping chips at Flat Iron, Covent Garden"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Flat Iron, 17-18 Henrietta Street"
+  lat: 51.510838
+  lon: -0.124104
+approach:
+  from: "Covent Garden station"   # *
+  start_point: {lat: 51.510838, lon: -0.124104}
+  path: "Walk to Henrietta Street, off the Covent Garden piazza"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated
+experience:
+  what_happens: "You sit down to a flat iron steak, sliced at the table, with a side of beef dripping chips."   # CHECKED (the menu); sliced at the table *
+  why_it_works: "A proper steak dinner at a fair price in the middle of Covent Garden: about £19.50 with chips."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["11:30-22:30"]   # CHECKED: Sun-Tue; Wed-Sat below
+  time_of_day_days: {wed: ["11:30-23:00"], thu: ["11:30-23:00"], fri: ["11:30-23:30"], sat: ["11:30-23:30"]}   # CHECKED
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Tables can be booked on flatironsteak.co.uk"   # CHECKED
+  opening_hours: "Sun-Tue 11:30-22:30, Wed-Thu 11:30-23:00, Fri-Sat 11:30-23:30; bookable. flatironsteak.co.uk, read 2026-11-24"
+  hours: "Sun–Tue 11:30–22:30, Wed–Thu to 23:00, Fri–Sat to 23:30. Bookable"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 2}
+cost_gbp: 19.5   # CHECKED: flat iron steak £15 and dripping chips £4.50 (menu, no date shown)
+cost_kind: food
+shot_card: null
+source: research
+last_checked: "2026-11-24"

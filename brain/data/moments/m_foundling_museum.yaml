@@ -1,0 +1,60 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://foundlingmuseum.org.uk/visit-us/: "40 Brunswick Square London WC1N 1AZ"; "Monday Closed"; Tuesday to Saturday "10am - 5pm"; "Sunday 11am - 5pm"; "25 November First Floor closed"; "24–28 December Closed"; "1 January Closed"; "9 January Museum closed from 4pm"; "Explore more than 275 years of London history"
+# - https://foundlingmuseum.org.uk/visit-us/ticketing-information/: "Adult £14.50 (£13.50 with advance online booking)"; "21 & under Free"
+# - https://foundlingmuseum.org.uk/visit-us/access/: "You're advised to book an admission ticket to guarantee entry"; "We have a lift to all floors"; "There is a ramp leading to the front door"
+# Coordinates: Overture Maps Places (open data), "Foundling Museum, 40 Brunswick Square, WC1N 1AZ" (51.525185, -0.121649), confidence 1.0, read 2026-11-24
+id: m_foundling_museum
+title: "The Foundling Museum on Brunswick Square"
+feel_word: "Quiet"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Foundling Museum, 40 Brunswick Square"
+  lat: 51.525185
+  lon: -0.121649
+approach:
+  from: "Russell Square station"   # *
+  start_point: {lat: 51.525185, lon: -0.121649}
+  path: "Walk across Brunswick Square to the museum"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: a ramp to the door and a lift to all floors
+experience:
+  what_happens: "You follow 275 years of London history through the story of the Foundling Hospital, London's home for abandoned babies, its art and the objects left with the children."   # 275 years of London history CHECKED; the Foundling Hospital's story and the objects *
+  why_it_works: "A quiet, moving museum in Bloomsbury, free for anyone 21 or under."
+  duration_min: [45, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: Tue-Sat; Sun 11:00-17:00
+  time_of_day_days: {sun: ["11:00-17:00"]}   # CHECKED
+  days: [tue, wed, thu, fri, sat, sun]   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+    "2026-12-27": []
+    "2026-12-28": []
+    "2027-01-01": []
+    "2027-01-09": ["10:00-16:00"]
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Booking an admission ticket ahead is advised to guarantee entry"   # CHECKED
+  opening_hours: "Tue-Sat 10:00-17:00, Sun 11:00-17:00, closed Mon; closed 24-28 Dec and 1 Jan, from 16:00 on 9 Jan; adult £14.50 (£13.50 online), 21 and under free; booking advised. foundlingmuseum.org.uk, read 2026-11-24"
+  hours: "Tue–Sat 10:00–17:00, Sun 11:00–17:00; closed Mon and 24–28 Dec. Adult £14.50; 21 and under free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 0, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+cost_gbp: 14.5   # CHECKED: adult £14.50 (£13.50 booked online); 21 and under free
+child_cost_gbp: 0   # m353: CHECKED: foundlingmuseum.org.uk, "21 & under Free" (read 2026-11-24)
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

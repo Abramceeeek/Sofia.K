@@ -1,0 +1,51 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.londonmuseum.org.uk/docklands/visit/access/: "London Museum Docklands No.1 Warehouse West India Quay London E14 4AL"; "we have lifts on every floor"; "These nearby stations all have step-free access"; "There are some cobbled pavements leading up to the main entrance"
+# - https://www.londonmuseum.org.uk/docklands/: "Mon–Sun 10am – 5pm"; "Closed on 24, 25 & 26 Dec"
+# - https://www.londonmuseum.org.uk/docklands/visit/: "entry is free, with no need to book in advance"; "West India Quay (DLR) – 3-min walk"; "nine free galleries"; "We recommend giving yourself at least an hour"
+# - https://www.londonmuseum.org.uk/whats-on/mudlarks-family-gallery/: for children up to eight, "from £3.95", "Online booking is recommended"
+# Coordinates: Overture Maps Places (open data), "Museum of London Docklands, No 1, West India Quay, Hertsmere Rd, E14 4AL" (51.507496, -0.023796), confidence 0.999, read 2026-11-24
+id: m_museum_docklands
+title: "The river's story at London Museum Docklands"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "London Museum Docklands, West India Quay"
+  lat: 51.507496
+  lon: -0.023796
+approach:
+  from: "West India Quay DLR station"   # *
+  start_point: {lat: 51.507496, lon: -0.023796}
+  path: "Walk three minutes along the quay to No.1 Warehouse"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: lifts on every floor; step-free stations nearby; some cobbles at the entrance
+experience:
+  what_happens: "You walk through nine free galleries in an old dockside warehouse, telling the story of the river, the docks and the people who worked them."   # nine free galleries, the docks' history CHECKED; the warehouse *
+  why_it_works: "Free, warm and a short walk from Canary Wharf; children up to eight have their own Mudlarks play gallery (from £3.95, booked ahead)."
+  duration_min: [60, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Daily 10:00-17:00, closed 24-26 Dec; free, no need to book; Mudlarks (up to age 8) from £3.95, booking recommended. londonmuseum.org.uk, read 2026-11-24"
+  hours: "Daily 10:00–17:00; closed 24–26 Dec. Free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 0, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+cost_gbp: 0   # CHECKED: free (Mudlarks from £3.95)
+shot_card: null
+source: research
+last_checked: "2026-11-24"

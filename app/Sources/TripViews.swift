@@ -158,6 +158,7 @@ struct TripHome: View {
     var onHelp: () -> Void = {}
     var onData: () -> Void = {}
     @State private var planningDay = false
+    @State private var showGroups = false   // m358: a trip planned with friends
 
     var body: some View {
         let _ = model.clock   // journey round 2: Today / Tomorrow and the greeting follow the date after a night away
@@ -198,6 +199,7 @@ struct TripHome: View {
                 if !model.isVisitor, !model.pairDone, !model.client.demo {
                     PairInviteRow { model.showPair = true }.settle(3)
                 }
+                GroupInviteRow { showGroups = true }.settle(3)   // m358
                 if !model.trips.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Your trips").font(.subheadline).foregroundStyle(Theme.muted)
@@ -214,6 +216,7 @@ struct TripHome: View {
             .padding(.bottom, 32)
         }
         .skyBackground()
+        .sheet(isPresented: $showGroups) { GroupTripsView().brainFeedback() }
         .sheet(isPresented: $planningDay) {
             NavigationStack {
                 PlanFormView(onDone: { planningDay = false })
@@ -817,6 +820,7 @@ struct WhereStep: View {
             Text("In this test").font(.subheadline).foregroundStyle(Theme.muted).padding(.top, 6)
             // D120: London now, then UK cities, then Europe, then further (Abram, 6 Oct)
             CityLine(name: "London", note: "Ready to test", ready: true)
+            PreviewCityLines()                              // m320: a preview opens its places, not a trip
             CityLine(name: "Edinburgh, Manchester and the UK", note: "Coming next", ready: false)
             CityLine(name: "Paris, Rome and Europe", note: "Coming later", ready: false)
         }
@@ -1059,6 +1063,7 @@ struct FromStep: View {
             .padding(.horizontal, 18)
             .padding(.vertical, 12)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+            ChildrenEditor(children: Binding(get: { trip.children ?? [] }, set: { trip.children = $0.isEmpty ? nil : $0 }))
         }
     }
 
@@ -1170,6 +1175,108 @@ struct FromStep: View {
     }
 }
 
+/// m356: children by age only (never names), so each pays their own price where a place gives one.
+struct ChildrenEditor: View {
+    @Binding var children: [Int]
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Children").font(.footnote).foregroundStyle(Theme.muted)
+                    Text(children.isEmpty ? "None" : "\(children.count)").foregroundStyle(Theme.ink)
+                }
+                Spacer()
+                RoundIcon(name: "minus", disabled: children.isEmpty) { children.removeLast() }
+                    .accessibilityLabel("One child fewer")
+                RoundIcon(name: "plus", disabled: children.count >= 6) { children.append(8) }
+                    .accessibilityLabel("One child more")
+            }
+            ForEach(children.indices, id: \.self) { i in
+                HStack {
+                    Text("Child \(i + 1): \(children[i]) \(children[i] == 1 ? "year" : "years") old").foregroundStyle(Theme.inkSoft)
+                    Spacer()
+                    RoundIcon(name: "minus", disabled: children[i] <= 0) { children[i] -= 1 }
+                        .accessibilityLabel("Child \(i + 1) younger")
+                    RoundIcon(name: "plus", disabled: children[i] >= 17) { children[i] += 1 }
+                        .accessibilityLabel("Child \(i + 1) older")
+                }
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+/// m356: the day's estimated cost for each traveller and the whole party, and what's estimated.
+struct PartyCostView: View {
+    let party: PartyCost
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("About \(Money.text(party.totalGbp)) for all \(party.travellers.count) of you")
+                .foregroundStyle(Theme.ink)
+            ForEach(party.travellers, id: \.label) { t in
+                Text("\(t.label): \(Money.text(t.costGbp))" + (t.overGbp.map { ", \(Money.text($0)) over their budget" } ?? ""))
+                    .font(.footnote).foregroundStyle(Theme.inkSoft)
+            }
+            if let over = party.overGroupGbp {
+                Text("\(Money.text(over)) over the group's budget").font(.footnote).foregroundStyle(Theme.accent)
+            }
+            ForEach(party.notes + (party.notForChildren ?? []), id: \.self) { n in
+                Text(n).font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            }
+            Text("\(party.verified). Estimated: \(party.estimated.lowercased()).")
+                .font(.footnote).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// m346 (Abram, 24 Nov): "How would you like your days to feel?", separate from how active the places are. Stored with
+/// the trip; changing it on "Your days" plans again the days not yet lived, as changing the hours does.
+struct DayFeelPicker: View {
+    @Binding var feel: String
+    static let options: [(key: String, title: String, line: String)] = [
+        ("relaxed", "Relaxed", "More breathing room: fewer planned experiences, longer at each, and time that's yours."),
+        ("balanced", "Balanced", "A mix of planned experiences, food, exploring and rest."),
+        ("full", "Full", "Make the most of the day: more experiences, still within easy journeys."),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("How would you like your days to feel?").font(.footnote).foregroundStyle(Theme.muted)
+                .padding(.horizontal, 4)
+            ForEach(Self.options, id: \.key) { o in
+                Button { feel = o.key } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: feel == o.key ? "largecircle.fill.circle" : "circle")
+                            .foregroundStyle(feel == o.key ? Theme.accent : Theme.muted)
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(o.title).foregroundStyle(Theme.ink)
+                            Text(o.line).font(.footnote).foregroundStyle(Theme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(o.title). \(o.line)")
+                .accessibilityAddTraits(feel == o.key ? .isSelected : [])
+            }
+        }
+    }
+}
+
 /// D122: "Your days": from what time to what time, how many places a day, and travelling light on day 1.
 struct DaysStep: View {
     @Binding var trip: Trip
@@ -1203,6 +1310,7 @@ struct DaysStep: View {
                 .font(.footnote)
                 .foregroundStyle(Theme.muted)
                 .padding(.horizontal, 4)
+            DayFeelPicker(feel: Binding(get: { trip.feelOfDays }, set: { trip.dayFeel = $0 }))
             if trip.arrivingBy == "flight" || trip.arrivingBy == "train" {
                 Toggle(isOn: Binding(get: { trip.travelLight }, set: { trip.light = $0 })) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -1824,6 +1932,13 @@ struct TripDayView: View {
                             if day.before != nil || !day.journeys("arrive").isEmpty {
                                 SectionLabel(text: "From your stay").padding(.top, 4)
                             }
+                            if let party = plan.party { PartyCostView(party: party) }   // m356: each of you, and all
+                            if let change = plan.change {   // m353: a day planned again says what changed
+                                Text(change.text)
+                                    .font(.footnote)
+                                    .foregroundStyle(Theme.inkSoft)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                             ForEach(plan.stops) { stop in
                                 if stop.mine != nil { MyTimeRow(stop: stop) } else { TripDayStop(stop: stop) }
                             }
@@ -1834,8 +1949,9 @@ struct TripDayView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             if let end = day.window?.end, let last = plan.stops.last, last.mine == nil,   // journey round 2: free time
-                               AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
-                                FreeTimeRow(from: last.depart, to: end, canAdd: trip.placesPerDay < 6) {
+                               plan.freeAfter != nil || AppModel.minutes(end) - AppModel.minutes(last.depart) >= 60 {
+                                FreeTimeRow(from: last.depart, to: end, text: plan.freeAfter?.text,   // m346: the Brain's words
+                                            canAdd: trip.placesPerDay < 6) {
                                     Task {
                                         _ = await model.changeTripDay(trip.id, index, from: day.window?.start ?? trip.dayFrom,
                                                                       to: end, places: min(6, trip.placesPerDay + 1))
@@ -2251,6 +2367,10 @@ struct TripDayStop: View {
                     .foregroundStyle(Theme.inkSoft)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
+                ForEach(stop.notes ?? [], id: \.self) { note in   // m349: free time, a later start, an estimate
+                    Text(note).font(.footnote).foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             Spacer(minLength: 0)
         }
@@ -2331,6 +2451,7 @@ struct YouView: View {
                         }
                     }
                 }
+                PreviewSection()                             // m320: previews opened with a code
                 VStack(alignment: .leading, spacing: 10) {   // D130 (Daylight)
                     SectionLabel(text: "The light")
                     HStack(spacing: 0) {
@@ -2366,6 +2487,7 @@ struct YouView: View {
         .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
         .task {
             await model.loadSafety()
+            await model.loadPreviews()
             if model.learned == nil { model.learned = try? await model.client.summary() }
         }
     }

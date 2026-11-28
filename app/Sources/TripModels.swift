@@ -384,6 +384,15 @@ struct TripDaysRequest: Encodable {
     let arrive: TripEnd?
     let leave: TripEnd?
     var personal: [DayTime] = []          // m200
+    var dayFeel: String? = nil            // m346: how full the days should be, stored with the trip
+    var compareTo: [String: Int]? = nil   // m353: each day's plan before ("index": plan id), so a change is explained
+    var party: PartyRequest? = nil        // m356: who's going, for each traveller's cost and the party's
+}
+
+/// m356 (Abram, 25 Nov): budgets per person, with the whole party's total.
+struct PartyRequest: Encodable {
+    let adults: Int
+    let children: [Int]
 }
 
 struct TripDayOut: Codable, Hashable {
@@ -545,19 +554,22 @@ struct Trip: Codable, Hashable, Identifiable {
     var flightAirport: String?
     var changedDays: [Int]?                // journey round 2: days changed by hand, kept when the trip is re-planned
     var personal: [DayTime]?               // m200: the person's own time, by day
+    var dayFeel: String?                   // m346: relaxed | balanced | full (none: balanced), separate from pace
+    var children: [Int]?                   // m356: children's ages (never names), for their own prices
 
     func own(_ index: Int) -> DayTime { personal?.first { $0.day == index } ?? DayTime(day: index) }
 
     var dayFrom: String { hoursFrom ?? "10:00" }
     var dayTo: String { hoursTo ?? "18:00" }
     var placesPerDay: Int { places ?? 3 }
+    var feelOfDays: String { dayFeel ?? "balanced" }
     var travelLight: Bool { light ?? false }
     /// flight | train | car | here
     var arrivingBy: String { needFlight ? "flight" : (travelBy ?? "here") }
 
     /// "10:00–18:00 · 3 places a day · travelling light"
     var daysLine: String {
-        "\(dayFrom)–\(dayTo) · \(placesPerDay) place\(placesPerDay == 1 ? "" : "s") a day"
+        "\(dayFrom)–\(dayTo) · \(placesPerDay) place\(placesPerDay == 1 ? "" : "s") a day · \(feelOfDays) days"
             + (travelLight && arrivingBy != "here" && arrivingBy != "car" ? " · travelling light" : "")
     }
 

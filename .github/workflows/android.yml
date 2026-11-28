@@ -2,8 +2,8 @@
 #
 # - Every push that changes android/ builds a signed debug APK (android/app/debug.keystore: debug only, so each new
 #   APK installs over the last one and keeps the app's data). A Google Play release key goes in GitHub Secrets later.
-# - The APK goes to the run's artifacts, and to the pre-release "android-latest" (replaced each build), so it can be
-#   downloaded straight from a phone: github.com/<owner>/<repo>/releases/tag/android-latest.
+# - Publishing is OFF (Abram, 20 Nov): the debug key is public, so a debug-signed APK isn't distributed, neither as a run
+#   artifact nor as the "android-latest" download. The publish job stays, switched off, for the release build.
 name: android
 
 on:
@@ -65,18 +65,16 @@ jobs:
       - name: Name the APK
         run: cp app/build/outputs/apk/debug/app-debug.apk "ODYS-android-${{ github.run_number }}.apk"
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
-        with:
-          name: ODYS-android-${{ github.run_number }}
-          path: android/ODYS-android-${{ github.run_number }}.apk
-          if-no-files-found: error
+      # Abram, 20 Nov: the APK is signed with the debug key committed to this public repository, so it isn't
+      # handed out anywhere: no run artifact and no "android-latest" download. The build above still proves it
+      # compiles. Android testers get a release build signed with Abram's own key (android-signing-key-runbook.md).
 
   # m196: only main replaces the testers' download; a branch build stays a run artifact (the friends' round needs one
   # fixed version, and a branch push once published build 18). SEC-17: in its own job, the only one that can write,
   # with no checkout: it takes the APK the build job made and nothing else.
   publish:
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: false                  # Abram, 20 Nov: off until a release build signed with his own key exists (see above)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

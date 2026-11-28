@@ -216,6 +216,44 @@ class ScreensTest {
     }, { reach("Your dates stay as they are") })
     @Test fun you() = show("33-you") { tripPath += Dest.You }
 
+    // m320: the Seville preview (opened with a code), and You with its row
+    private fun AppModel.withPreview() {
+        previews = demo("demo_previews", PreviewList.serializer()).previews
+        previewDemo = demo("demo_preview", PreviewContent.serializer())
+    }
+    @Test fun youPreview() = show("33c-you-preview") { withPreview(); tripPath += Dest.You }
+    @Test fun preview() {
+        model.withPreview()
+        compose.setContent { RootView(model); PreviewScreen(model, "seville") {} }
+        shoot("34-preview")
+    }
+    // m358: a trip planned with friends: the list, joining with a code, and the shared days
+    private fun AppModel.withGroups() {
+        groupsDemo = demo("demo_groups", GroupList.serializer())
+        groupPlanDemo = demo("demo_group_plan", GroupPlanOut.serializer())
+    }
+    @Test fun groups() {
+        model.withGroups()
+        compose.setContent { RootView(model); GroupTripsScreen(model, {}) }
+        shoot("35a-groups")
+    }
+    @Test fun groupJoin() {
+        model.withGroups()
+        compose.setContent { RootView(model); GroupTripsScreen(model, {}, demo = "join") }
+        shoot("35b-groupjoin")
+    }
+    @Test fun groupPlan() {
+        model.withGroups()
+        compose.setContent { RootView(model); GroupTripsScreen(model, {}, demo = "plan") }
+        reach("DAY 1")   // SectionLabel draws its text in capitals
+        shoot("35c-groupplan")
+    }
+    @Test fun safetyPreview() {
+        model.withPreview()
+        compose.setContent { RootView(model); SafetyView(model) {} }
+        shoot("13d-safety-preview")
+    }
+
     // WS8 (m213): the newest screens on a small phone with large text (font scale 1.6), so nothing is cut off
     @Config(qualifiers = "w320dp-h568dp-xhdpi", fontScale = 1.6f)
     @Test fun stayForTripLargeText() = showThen("90-stayfortrip-large", {
@@ -394,6 +432,10 @@ class ScreensTest {
     @Test fun planEnd() = showThen("09f-planend", { tripPath += Dest.Day }, { reach("Another day") })
     @Test fun stopMore() = showThen("10a-stop2",
         { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) }, { reach("Best time and light") })
+    // m349: the one-tap rain swap, on the stop whose card has a rain option (QA screenshots, Abram 24 Nov)
+    @Test fun stopRain() = showThen("10p-stoprain",
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rainSwapId != null }) },
+        { reach("Raining? Swap for the indoor option") })
     // m230: "Why this stop?" tapped open, on the stop the iPhone shows (one with a best-light window)
     @Test fun stopWhy() = showThen("10o-stopwhy",
         { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { !it.bestWindow.isNullOrEmpty() && it.rateable }) },
@@ -402,9 +444,12 @@ class ScreensTest {
         { reach("No thanks") })
     @Test fun replan() = showThen("10h-replan", { today(1); showNow = true },
         { reach("Re-plan the rest of today", tap = true) }, layers = true)
+    // m336: "Swap this stop" offers a choice of places for this time, each saying what it changes
     @Test fun swap() = showThen("10i-swap",
-        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable }) },
-        { reach("Swap this stop", tap = true) }, layers = true)
+        { tripPath += Dest.Day; tripPath += Dest.StopCard(plan!!.stops.first { it.rateable })
+          alternativesDemo = listOf(plan!!.copy(id = 9001, change = PlanChange(
+              "Sample: another place for the same time. The day ends at 17:20 (was 17:40).", "17:20"))) },
+        { reach("Swap this stop", tap = true); reach("Other places for this time") }, layers = true)
     @Test fun ratingPicked() {
         val stop = model.plan!!.stops.first { it.rateable }
         compose.setContent { RootView(model); RatingView(model, stop) {} }

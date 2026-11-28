@@ -76,3 +76,17 @@ countries:
         number: "101"
         source: https://securitecivile.be/en/what-do-emergency-centres-112-do
         note: "\"101 for police\""
+  ES:
+    name: Spain
+    checked: "2026-11-20"
+    lines:
+      - title: Emergency
+        line: "112: ambulance, fire and police. Free from landlines and mobiles."
+        number: "112"
+        source: https://administracion.gob.es/en/tu-espacio-europeo/derechos-obligaciones/ciudadanos/asistencia-sanitaria/numeros-urgencia
+        note: "\"Calls are free, from both landlines and mobiles\"; \"Calls can be made from mobile phones even when they are blocked, when the SIM card is inactive, or there is no coverage\" (page last updated 01-10-2026; these sentences came from the page's summary, not a verbatim read). GOV.UK's Spain advice: \"Telephone: 112 (ambulance, fire, police)\" (https://www.gov.uk/foreign-travel-advice/spain/getting-help, still current 20 Nov 2026)"
+      - title: Emergency, anywhere in the EU
+        line: "112 is the European emergency number, free of charge."
+        number: "112"
+        source: https://digital-strategy.ec.europa.eu/en/policies/112
+        note: "\"available everywhere in the EU, free of charge\" (page updated 5 Nov 2026). Other Spanish numbers (061, 091, 062, 080) were not found on an official page read, so they are not listed"

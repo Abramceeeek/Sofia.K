@@ -1,0 +1,47 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.mildreds.com/kings-cross/ (mildreds.co.uk redirects there): "200 Pentonville Road, London N1 9JP"; "Monday - Thursday: 9am - 10pm / Friday - Saturday: 9am - 11pm / Sunday: 9am - 9pm"; mains "gochujang tofu" 17.50, "oyster mushroom & hispi shawarma" 19, "roast squash kiri hodi" 18.50, "beetroot tikki burger" 17.50 (the page prints these with a $ sign; its group menu is priced in £, so they're read as pounds); "Booking is recommended for evenings; walk-ins are welcome when there's room."; "Our Kings Cross location is fully accessible for wheelchair users." Christmas hours aren't on the page read.
+# Coordinates: Overture Maps Places (open data), "Mildreds Kings Cross, 200 Pentonville Rd, N1 9JP" (51.531334, -0.11714), confidence 0.999, read 2026-11-24
+id: m_mildreds_kings_cross
+title: "Plant-based plates at Mildreds, King's Cross"
+status: draft   # m353: no price in pounds is verified (the page prints $), and a ready London card always has one, so day totals are complete (test_currency_audit); ready again once a £ price is checked
+swipe: false
+kind: moment
+place:
+  name: "Mildreds, 200 Pentonville Road"
+  lat: 51.531334
+  lon: -0.11714
+approach:
+  from: "King's Cross St Pancras station"   # *
+  start_point: {lat: 51.531334, lon: -0.11714}
+  path: "Walk up Pentonville Road from King's Cross"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: fully accessible for wheelchair users
+experience:
+  what_happens: "You eat bright plant-based plates like gochujang tofu, a beetroot tikki burger or oyster mushroom shawarma."   # the dishes CHECKED; plant-based: each dish named is made without meat *
+  why_it_works: "A relaxed sit-down meal of plant-based plates, a short walk from King's Cross."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["09:00-22:00"]   # CHECKED
+  time_of_day_days: {fri: ["09:00-23:00"], sat: ["09:00-23:00"], sun: ["09:00-21:00"]}   # CHECKED
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Booking is recommended for evenings; walk-ins are welcome when there's room"   # CHECKED
+  opening_hours: "Mon-Thu 09:00-22:00, Fri-Sat 09:00-23:00, Sun 09:00-21:00; booking recommended for evenings; mains printed with a $ sign, so no price in pounds is shown. Christmas hours not on the page read. mildreds.com, read 2026-11-24"
+  hours: "Daily from 09:00, to 22:00 (23:00 Fri–Sat, 21:00 Sun). Check Christmas hours before 24–26 Dec"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 0, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
+cost_gbp: null   # m353 (Abram, 25 Nov): "Never reinterpret dollar prices as pounds": the page prints its mains with a $ sign (17.50-19); no price in pounds is verified, so none is shown
+cost_kind: food
+shot_card: null
+source: research
+last_checked: "2026-11-24"

@@ -1,0 +1,60 @@
+SYNTHETIC PEOPLE ONLY. 11 travellers, the Brain's default ranking (quality.rank, doubts first):
+London 49 ready, Seville 20 ready (DEVELOPMENT only, never offered). Top 5 on Tue 24 and Sat 28 Nov 2026.
+EUR prices enter the model's cost term at ECB 6 Nov 2026 (EUR 1 = GBP 0.83415), an assumption.
+
+profile                    city      p(Good)   lift practical  money  trust kinds own kind
+museum enthusiast          London       0.91  +0.14      100%   100%   100%     1     100%
+museum enthusiast          Seville      0.89  +0.11      100%   100%   100%     1     100%
+architecture enthusiast    London       0.98  +0.10      100%   100%   100%     2     100%
+architecture enthusiast    Seville      0.78  +0.03      100%   100%   100%     2      80%
+nature enthusiast          London       0.66  +0.08      100%   100%   100%     4      20%
+nature enthusiast          Seville      0.75  +0.11      100%   100%   100%     2      20%
+food-experience enthusiast London       0.84  +0.05      100%   100%   100%     5       0%
+food-experience enthusiast Seville      0.77  +0.01      100%   100%   100%     1       0%
+shopping enthusiast        London       0.72  +0.07      100%   100%   100%     4       0%
+shopping enthusiast        Seville      0.72  +0.05      100%   100%   100%     2       0%
+entertainment enthusiast   London       0.89  +0.10      100%   100%   100%     2      40%
+entertainment enthusiast   Seville      0.74  +0.06      100%   100%   100%     2       0%
+budget-conscious           London       0.65  +0.11      100%   100%   100%     4        —
+budget-conscious           Seville      0.65  +0.07      100%   100%   100%     2        —
+relaxed                    London       0.57  +0.16      100%   100%   100%     4        —
+relaxed                    Seville      0.66  +0.08      100%   100%   100%     1        —
+active                     London       0.77  +0.10      100%   100%   100%     4      60%
+active                     Seville      0.68  +0.04      100%   100%   100%     2      20%
+family                     London       0.73  +0.08      100%   100%   100%     4        —
+family                     Seville      0.68  +0.05      100%   100%   100%     2        —
+accessibility-focused      London       0.65  +0.05       60%   100%   100%     3        —
+accessibility-focused      Seville      0.67  +0.04       20%   100%   100%     3        —
+
+Transfer: the share of the profile's own kind in its Tuesday top 5, London vs Seville:
+- museum enthusiast           London 100%   Seville 100%
+- architecture enthusiast     London 100%   Seville 80%
+- nature enthusiast           London 20%   Seville 20%
+- food-experience enthusiast  London 0%   Seville 0%
+- shopping enthusiast         London 0%   Seville 0%
+- entertainment enthusiast    London 40%   Seville 0%
+- active                      London 60%   Seville 20%
+
+Seville top 5 on the Tuesday:
+- museum enthusiast: Flamenco's story over four floors, with ; The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; A palace floored with Roman mosaics; Contemporary art in a monastery on La Ca
+- architecture enthusiast: The cathedral, then up the Giralda's ram; Tiles, patios and gardens in a Seville p; Shade, fountains and pavilions in María ; A palace floored with Roman mosaics; The archive of Spain's empire in the old
+- nature enthusiast: Shade, fountains and pavilions in María ; Contemporary art in a monastery on La Ca; The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; Tiles, patios and gardens in a Seville p
+- food-experience enthusiast: Flamenco's story over four floors, with ; Contemporary art in a monastery on La Ca; The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; A palace floored with Roman mosaics
+- shopping enthusiast: Contemporary art in a monastery on La Ca; Flamenco's story over four floors, with ; The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; Shade, fountains and pavilions in María 
+- entertainment enthusiast: Flamenco's story over four floors, with ; Contemporary art in a monastery on La Ca; The archive of Spain's empire in the old; Shade, fountains and pavilions in María ; Andalusian crafts and costume in a 1929 
+- budget-conscious: The archive of Spain's empire in the old; Shade, fountains and pavilions in María ; Andalusian crafts and costume in a 1929 ; Contemporary art in a monastery on La Ca; Flamenco's story over four floors, with 
+- relaxed: The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; Contemporary art in a monastery on La Ca; Flamenco's story over four floors, with ; A palace floored with Roman mosaics
+- active: Shade, fountains and pavilions in María ; The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; Contemporary art in a monastery on La Ca; Flamenco's story over four floors, with 
+- family: Flamenco's story over four floors, with ; The archive of Spain's empire in the old; Andalusian crafts and costume in a 1929 ; Contemporary art in a monastery on La Ca; Shade, fountains and pavilions in María 
+- accessibility-focused: Flamenco's story over four floors, with ; The archive of Spain's empire in the old; Shade, fountains and pavilions in María ; Across the bridge to Triana's streets an; Andalusian crafts and costume in a 1929 
+
+Sunday 22 Nov (arrival day; the municipal markets are closed): the food-experience enthusiast's top 5,
+with each place's state that day:
+- Museo del Baile Flamenco: confirmed open; practicality good
+- Centro Andaluz de Arte Contemporáneo (CAAC): might be open; practicality good
+- Archivo General de Indias: might be open; practicality good
+- Museo de Artes y Costumbres Populares: might be open; practicality good
+- Palacio de la Condesa de Lebrija: confirmed open; practicality good
+
+Kinds of place in Seville's ready set: culture, food_drink, nature, neighbourhood, views (5 of 9).
+Mean p(Good) by city: London 0.76, Seville 0.72

@@ -1,0 +1,47 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://poppiesfishandchips.co.uk/poppies-spitalfields/: "6-8 Hanbury St, London E1 6QR"; "Monday – 11.00 – 22.00" (Tuesday, Wednesday, Sunday the same); "Thursday – 11.00 – 23.00" (Friday, Saturday the same); "Click Here to Book"
+# - https://poppiesfishandchips.co.uk/menu/: "Cod" "REG 21.99 LRG 25.50"; "Haddock" "REG 20.99"; "Steak Pie 12.50"; "All meals come with chips and homemade tartare sauce." Christmas hours aren't on the pages read.
+# Coordinates: Overture Maps Places (open data), "Poppies Fish And Chips, 6 Hanbury Street, E1 6QR" (51.520195, -0.074042), confidence 1.0, read 2026-11-24
+id: m_poppies_spitalfields
+title: "Fish and chips at Poppie's, Spitalfields"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Poppie's, 6-8 Hanbury Street"
+  lat: 51.520195
+  lon: -0.074042
+approach:
+  from: "Liverpool Street station"   # *
+  start_point: {lat: 51.520195, lon: -0.074042}
+  path: "Walk past Old Spitalfields Market to Hanbury Street"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated
+experience:
+  what_happens: "You sit down to fish and chips with homemade tartare sauce, a few steps from Spitalfields Market."   # CHECKED (chips and homemade tartare sauce with every meal)
+  why_it_works: "A proper sit-down fish and chips by Spitalfields: about £22 for cod and chips, £12.50 for a steak pie."
+  duration_min: [40, 70] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["11:00-22:00"]   # CHECKED: daily
+  time_of_day_days: {thu: ["11:00-23:00"], fri: ["11:00-23:00"], sat: ["11:00-23:00"]}   # CHECKED
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Friday and Saturday evenings (GUESS)"
+  opening_hours: "Mon-Wed and Sun 11:00-22:00, Thu-Sat 11:00-23:00; bookings online; cod and chips £21.99, steak pie £12.50. Christmas hours not on the pages read. poppiesfishandchips.co.uk, read 2026-11-24"
+  hours: "Daily from 11:00, to 22:00 (23:00 Thu–Sat). Check Christmas hours before 24–26 Dec"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
+cost_gbp: 22   # CHECKED: cod and chips £21.99 (regular); steak pie £12.50
+cost_kind: food
+shot_card: null
+source: research
+last_checked: "2026-11-24"

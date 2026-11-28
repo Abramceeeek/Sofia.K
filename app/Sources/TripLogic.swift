@@ -243,8 +243,12 @@ extension AppModel {
         let yourDayIndex = old?.days.first(where: { currentPlanId != nil && $0.plan?.id == currentPlanId })?.index
         await run {
             if kept.isEmpty || !todo.isEmpty {
-                let out = try await self.client.tripDays(self.daysRequest(trip, days: kept.isEmpty ? [] : todo,
-                                                                          exclude: exclude))
+                var request = self.daysRequest(trip, days: kept.isEmpty ? [] : todo, exclude: exclude)
+                // m353: each day planned again says what changed against its plan before, its cost included
+                let before = Dictionary((old?.days ?? []).compactMap { d in d.plan.map { ("\(d.index)", $0.id) } },
+                                        uniquingKeysWith: { a, _ in a })
+                request.compareTo = before.isEmpty ? nil : before
+                let out = try await self.client.tripDays(request)
                 trip.days = (kept + out.days).sorted { $0.index < $1.index }
                 trip.used = out.used
                 trip.daysFrom = out.start
@@ -308,7 +312,9 @@ extension AppModel {
                                days: days, exclude: exclude, dayStart: hours?.from ?? trip.dayFrom,
                                dayEnd: hours?.to ?? trip.dayTo, stopsPerDay: hours?.places ?? trip.placesPerDay,
                                travelLight: trip.travelLight, arrive: ends.arrive, leave: ends.leave,
-                               personal: (trip.personal ?? []).filter { !$0.isEmpty })
+                               personal: (trip.personal ?? []).filter { !$0.isEmpty }, dayFeel: trip.dayFeel,
+                               party: (trip.adults > 1 || !(trip.children ?? []).isEmpty)
+                                   ? PartyRequest(adults: trip.adults, children: trip.children ?? []) : nil)
     }
 
     /// "Make this my day": a trip's day becomes the current plan, with "Now", rating, swap and regenerate.

@@ -40,6 +40,16 @@ android {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
         }
+        // m357 (Abram, 25 Nov: "Android debug APK for your own testing… Separate QA build identity"): installs beside the
+        // real app and reaches only the QA Brain (-PqaBrainUrl=…, built by .github/workflows/android-qa.yml)
+        create("qa") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            matchingFallbacks += listOf("debug")
+            buildConfigField("String", "BRAIN_BASE_URL",
+                "\"${(project.findProperty("qaBrainUrl") as String?) ?: "https://odys-brain-qa.onrender.com"}\"")
+        }
     }
 
     compileOptions {

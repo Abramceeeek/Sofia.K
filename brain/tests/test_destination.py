@@ -22,7 +22,7 @@ def test_london_is_understood_from_its_checked_catalogue():
     assert LONDON.sources == {"areas": "ODYS catalogue", "travel": "ODYS catalogue", "experiences": "ODYS catalogue",
                               "holidays": "ODYS catalogue", "stays": "ODYS catalogue",
                               "emergency": "ODYS emergency numbers (official pages, read 10 Nov 2026)"}
-    assert len(LONDON.experiences) == 49 and len(LONDON.areas) >= 15          # the areas the cards themselves name
+    assert len(LONDON.experiences) == 74 and len(LONDON.areas) >= 15          # m329, m331, m340; m348: 13 more; m353: the Golden Hinde and Mildreds back to draft
     names = {a.name for a in LONDON.areas}
     assert {"Greenwich", "Canary Wharf", "Hyde Park", "City of London"} <= names
     assert all(51.28 < a.centre.lat < 51.70 for a in LONDON.areas)
@@ -64,12 +64,14 @@ def test_the_first_provider_that_has_a_part_wins_and_is_named():
 
 def test_each_country_has_its_own_emergency_numbers_with_sources():
     e = load_emergency()
-    assert set(e) == {"GB", "FR", "NL", "BE"}
+    assert set(e) == {"GB", "FR", "NL", "BE", "ES"}           # m318: Spain added (development destination Seville)
     nums = {cc: {x.number for x in v.lines} for cc, v in e.items()}
     assert nums["GB"] == {"999", "111", "116 123"} and {"112", "15", "17", "18"} <= nums["FR"]
     assert {"112", "0900-8844"} == nums["NL"] and {"112", "101"} == nums["BE"]
-    for v in e.values():
-        assert v.checked == "2026-11-10" and all(x.source.startswith("https://") for x in v.lines)
+    assert nums["ES"] == {"112"}
+    for cc, v in e.items():
+        assert v.checked == ("2026-11-20" if cc == "ES" else "2026-11-10")
+        assert all(x.source.startswith("https://") for x in v.lines)
 
 
 def test_the_offline_pack_shows_the_trips_own_country_never_another():

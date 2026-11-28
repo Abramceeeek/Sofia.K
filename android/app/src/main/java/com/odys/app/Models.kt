@@ -185,9 +185,44 @@ data class Plan(
     val weather: Weather? = null,     // Stage 1: the Met Office forecast the plan was made with, if any
     val budget: DayBudget? = null,    // m217: the day's money against the person's budget, line by line
     val createdAt: String? = null,    // m228: when the Brain made it, for "saved on this phone"
+    val change: PlanChange? = null,   // m336: what this plan changed against the one it replaced (a swap)
+    val freeAfter: FreeAfter? = null, // m346: the time left at the end of a trip day, in the Brain's words
+    val party: PartyCost? = null,     // m356: each traveller's estimated cost and the whole party's
 ) {
     val isBlind: Boolean get() = blind == true
 }
+
+/** m336: what a replacement plan changes (brain.dayplan.plan_change): one plain line, and the finish it gives. */
+@Serializable
+data class PlanChange(val text: String, val finishAfter: String? = null)
+
+/** m356: what a day costs each traveller and the party, with what's estimated and how costs are split. */
+@Serializable
+data class PartyCost(
+    val travellers: List<Traveller>,
+    val totalGbp: Double,
+    val overGroupGbp: Double? = null,
+    val groupBudgetGbp: Double? = null,
+    val verified: String,
+    val estimated: String,
+    val notes: List<String>,
+    val notForChildren: List<String>? = null,
+) {
+    @Serializable
+    data class Traveller(val label: String, val kind: String, val costGbp: Double, val overGbp: Double? = null)
+}
+
+/** m346: the end of a trip day that's the person's own ("A relaxed day, as you asked: the rest of it is yours…"). */
+@Serializable
+data class FreeAfter(val from: String, val until: String, val min: Int, val text: String)
+
+/** m336: "other places for this time": each a whole plan with the rest of the day kept. */
+@Serializable
+data class Alternatives(val alternatives: List<Plan> = emptyList())
+
+/** m336: what the app sends for alternatives: the swap request, and how many to offer. */
+@Serializable
+data class AlternativesRequest(val request: PlanRequest, val count: Int = 3)
 
 /** m217: the day against the person's budget (brain.daybudget.block). Lunch is in it unless they left food out. */
 @Serializable
@@ -261,6 +296,7 @@ data class Stop(
     val costGbp: Double = 0.0,
     val costText: String = "",
     val rainSwap: String = "",
+    val rainSwapId: String? = null,   // m341: the rain option's card, so "Raining? Swap for the indoor option" is one tap
     val lunch: Boolean = false,
     val familiar: Boolean = false,
     val rateable: Boolean = true,
@@ -281,6 +317,7 @@ data class Stop(
     val checked: String? = null,
     val mine: String? = null,         // m200: "plans" or "free": the person's own time, planned around (never rated)
     val explain: StopExplain? = null, // m230: "Why this stop?", from the planner's own inputs (never on the blind pair)
+    val notes: List<String>? = null,  // m349: free time, a later start, an estimate: said under the stop on the day
 ) {
     val id: String get() = "$momentId@$arrive"
 
@@ -384,6 +421,7 @@ data class PlanRequest(
     val conditions: PlanConditions? = null,
     val mine: List<MyTime>? = null,       // m200: a trip day's own time, so swap and re-plan keep it
     val relaxed: Boolean? = null,         // m200: a relaxed trip day
+    val compareTo: Int? = null,           // m336: the plan this one replaces, so the Brain says what changed
 )
 
 @Serializable

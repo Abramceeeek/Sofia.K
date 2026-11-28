@@ -1,0 +1,64 @@
+# m329 (Abram, 24 Nov: "add a genuinely suitable quiet evening place for Jonas"): free, quiet and indoors, open in a
+# Friday's late afternoon, about ten minutes' walk from King's Cross and the canal, and short enough to fit without
+# rushing. Written by Claude, 24 Nov 2026, in Claude's own words; facts verified on official pages and marked ready
+# under the research rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own
+# knowledge. Tags are Claude's judgement: Abram flags any he disagrees with.
+# Source: https://www.bl.uk/visit/ (read 2026-11-24): "Library building opening hours: Monday – Thursday 09.30 – 20.00;
+# Friday 09.30 – 18.00; Saturday 09.30 – 17.00; Sunday 11.00 – 17.00"; "Our permanent Treasures Gallery, containing
+# some of the most inspiring items from our collection, is free to visit"; the dated changes listed below; "Our
+# Ossulston Street entrance is fully ramped and is approximately 100 metres from the main entrance" (step-free for the
+# gallery itself isn't stated, so step_free stays unknown). The Treasures events page refused our fetch (403).
+# Coordinates: Wikidata Q23308 (51.529444, -0.126944), read 2026-11-24.
+id: m_british_library_treasures
+title: "Quiet treasures in the British Library"
+feel_word: "Quiet"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "British Library, 96 Euston Road"
+  lat: 51.529444         # CHECKED: Wikidata Q23308
+  lon: -0.126944
+approach:
+  from: "King's Cross St Pancras station"   # *
+  start_point: {lat: 51.529444, lon: -0.126944}
+  path: "Walk along Euston Road to the British Library's piazza and go in at the main entrance"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # a ramped entrance on Ossulston Street (CHECKED); the gallery's own access isn't stated
+experience:
+  what_happens: "You walk slowly round the free Treasures Gallery, among some of the most inspiring items in the Library's collection, in a calm room away from the traffic of Euston Road."   # CHECKED (free; the gallery's own words)
+  why_it_works: "Somewhere warm, quiet and free to end a gentle day, a short walk from the canal."
+  duration_min: [30, 45] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["09:30-17:00"]   # CHECKED: Saturday's hours, the shortest; other days below
+  time_of_day_days: {mon: ["09:30-20:00"], tue: ["09:30-20:00"], wed: ["09:30-20:00"], thu: ["09:30-20:00"],
+                     fri: ["09:30-18:00"], sun: ["11:00-17:00"]}   # CHECKED: the building's hours
+  time_of_day_dates:     # CHECKED: the dated changes on bl.uk/visit, read 2026-11-24
+    "2026-11-26": ["09:30-17:00"]   # Treasures Gallery closes at 17.00
+    "2026-12-02": ["09:30-17:00"]   # Treasures Gallery closes at 17.00
+    "2026-12-03": ["09:30-17:00"]   # Treasures Gallery closes at 17.00
+    "2026-12-10": []                # Treasures Gallery closed
+    "2026-12-11": []                # Treasures Gallery closed
+    "2026-12-12": []                # the full St Pancras site closed
+    "2026-12-13": []                # the full St Pancras site closed
+    "2026-12-24": []                # all sites closed
+    "2026-12-25": []
+    "2026-12-26": []
+    "2026-12-27": []
+    "2026-12-28": []
+    "2026-12-31": ["09:30-17:00"]   # London site open 09.30-17.00
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Mon-Thu 09:30-20:00, Fri 09:30-18:00, Sat 09:30-17:00, Sun 11:00-17:00; Treasures Gallery free; dated changes as listed. bl.uk/visit, read 2026-11-24"
+  hours: "Mon–Thu 09:30–20:00, Fri 09:30–18:00, Sat 09:30–17:00, Sun 11:00–17:00. Treasures Gallery free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 1,
+          crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 0}
+cost_gbp: 0
+shot_card: null
+source: research
+last_checked: "2026-11-24"

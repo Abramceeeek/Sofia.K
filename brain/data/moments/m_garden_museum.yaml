@@ -1,0 +1,56 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://gardenmuseum.org.uk/visit/: "Lambeth Palace Road, London, SE1 7LB"; "Closed Mondays / Tuesday-Friday 10am-4pm / Weekends 10am-5pm" (the home page agrees; the access page says Mon-Sun 10-5, so Mondays aren't planned); "Thursday 26 November – Closed until 1.30pm"; "Saturday 28 November – Closed all day"; "Thursday 10 December – Closed all day"; "Friday 11 December – Closed all day"; "Saturday 12 December – Closed all day"; "£16 Adult"; "£9 Child (7-18)"; "Free Child (6 and under)"; family (2 adults, 2 children) "£40". Christmas hours aren't on the pages read.
+# - https://gardenmuseum.org.uk/access/: "accessible to wheelchair users with level access to the museum through the Garden Cafe"; "The permanent collection on the first floor is accessible via our lift"
+# Coordinates: Overture Maps Places (open data), "Garden Museum, 5 Lambeth Palace Rd, SE1 7LB" (51.494858, -0.120125), confidence 1.0, read 2026-11-24
+id: m_garden_museum
+title: "The Garden Museum, in an old church beside Lambeth Palace"
+feel_word: "Quiet"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Garden Museum, Lambeth Palace Road"
+  lat: 51.494858
+  lon: -0.120125
+approach:
+  from: "Lambeth North station"   # *
+  start_point: {lat: 51.494858, lon: -0.120125}
+  path: "Walk down to the old church beside Lambeth Palace, at the end of Lambeth Bridge"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: level access through the café; a lift to the first-floor collection
+experience:
+  what_happens: "You explore Britain's museum of gardens and gardening inside an old church, then sit in its courtyard or café."   # CHECKED (a museum of gardens in an old church, the courtyard, the café)
+  why_it_works: "A quiet hour across the river from Westminster, away from the crowds."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-16:00"]   # CHECKED: Tue-Fri; Sat-Sun 10:00-17:00
+  time_of_day_days: {sat: ["10:00-17:00"], sun: ["10:00-17:00"]}   # CHECKED
+  days: [tue, wed, thu, fri, sat, sun]   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-11-26": ["13:30-16:00"]
+    "2026-11-28": []
+    "2026-12-10": []
+    "2026-12-11": []
+    "2026-12-12": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Tue-Fri 10:00-16:00, Sat-Sun 10:00-17:00, closed Mon; 26 Nov from 13:30, closed 28 Nov and 10-12 Dec; adult £16, child 7-18 £9, 6 and under free, family £40. Christmas hours not on the pages read. gardenmuseum.org.uk, read 2026-11-24"
+  hours: "Tue–Fri 10:00–16:00, Sat–Sun 10:00–17:00; closed Mon. Adult £16, child £9. Check Christmas hours before 24–26 Dec"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 1, history_culture: 1, iconic: 0, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 0}
+cost_gbp: 16   # CHECKED: adult £16, child (7-18) £9, 6 and under free, family £40
+child_cost_gbp: 9   # m353: CHECKED: gardenmuseum.org.uk, "£9 Child (7-18)"; 6 and under free (read 2026-11-24)
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

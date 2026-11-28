@@ -1,0 +1,60 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.drjohnsonshouse.org/visit: "17 Gough Square, London, EC4A 3DE"; "Tuesday to Saturday / 10am - 5pm (last entry 4.30pm) / Sunday / 12pm - 4pm (last entry 3.30pm)" (Monday not listed); "Wednesday 2 December: Open 10am - 1pm"; "Saturday 12 December: Open 10am - 2pm"; "closed from Thursday 24 December 2026 to Friday 1 January 2027"; Adult "£10.00"; "5 – 16 Years: £5"; "Under 5s: Free"; "Book online, or just come along."; "There is regrettably no step-free access to Dr Johnson's House."; "seven steps to access the entrance"; "five-storey townhouse"; the current exhibition on Johnson's garret and his Dictionary
+# Coordinates: Overture Maps Places (open data), "Dr Johnson's House, 17 Gough Square, EC4A 3DE" (51.515068, -0.108136), confidence 0.998, read 2026-11-24
+id: m_dr_johnsons_house
+title: "Through the courts off Fleet Street to Dr Johnson's House"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Dr Johnson's House, 17 Gough Square"
+  lat: 51.515068
+  lon: -0.108136
+approach:
+  from: "Chancery Lane station"   # *
+  start_point: {lat: 51.515068, lon: -0.108136}
+  path: "Turn off Fleet Street into the narrow courts that open into Gough Square"   # *
+  duration_min: 5        # GUESS
+  step_free: false        # CHECKED: no step-free access; seven steps to the door, stairs between five floors
+experience:
+  what_happens: "You leave the traffic of Fleet Street through narrow courts into a quiet square, then climb the townhouse where Samuel Johnson made his Dictionary, up to the garret."   # the house, the garret and the Dictionary CHECKED; the courts and the square *
+  why_it_works: "One of the City's quiet surprises, ten minutes from St Paul's."
+  duration_min: [40, 70] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: Tue-Sat; Sun 12:00-16:00
+  time_of_day_days: {sun: ["12:00-16:00"]}   # CHECKED
+  days: [tue, wed, thu, fri, sat, sun]   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-02": ["10:00-13:00"]
+    "2026-12-12": ["10:00-14:00"]
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+    "2026-12-27": []
+    "2026-12-28": []
+    "2026-12-29": []
+    "2026-12-30": []
+    "2026-12-31": []
+    "2027-01-01": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  opening_hours: "Tue-Sat 10:00-17:00 (last entry 16:30), Sun 12:00-16:00; Monday not listed; 2 Dec 10:00-13:00, 12 Dec 10:00-14:00; closed 24 Dec-1 Jan; adult £10, 5-16 £5, under 5 free. drjohnsonshouse.org, read 2026-11-24"
+  hours: "Tue–Sat 10:00–17:00, Sun 12:00–16:00; closed 24 Dec–1 Jan. Adult £10, child £5"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 0, local_novel: 2, crowds: 0, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 0, social_pull: 0}
+cost_gbp: 10   # CHECKED: adult £10, 5-16 £5, under 5 free
+child_cost_gbp: 5   # m353: CHECKED: drjohnsonshouse.org, "5 – 16 Years: £5"; under 5s free (read 2026-11-24)
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

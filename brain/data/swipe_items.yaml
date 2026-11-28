@@ -29,72 +29,84 @@ app_items: [4, 6, 11, 12, 13, 14]
 app_items_later: [1, 2, 3, 15]
 items:
   1:
+    types: [historic_site]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Big Ben and Parliament Square"
     phrase: "the big famous sights"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 0, awe: 1, social_pull: 1}
   2:
+    types: [river_bus]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Uber Boat on the Thames"
     phrase: "seeing the city from the water"
     cards: [m_uber_boat_west_day, m_uber_boat_west_night]
     place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
   3:
+    types: [market]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Borough Market"
     phrase: "food with a bit of atmosphere"
     cards: [m_borough_market_graze]
     place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   4:
+    types: [museum]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "British Museum"
     phrase: "big museums full of history"
     cards: [m_bm_great_court]
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
     moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
   5:
+    types: [cable_car]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "IFS Cloud Cable Car"
     phrase: "views from up high"
     cards: []   # no moment card yet
     place: {movement_views: 2, food: 0, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 1, social_pull: 1}
   6:
+    types: [park]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Hyde Park"
     phrase: "big green spaces and long walks"
     cards: [m_park_break_hyde]
     place: {movement_views: 0, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 0, awe: 0, social_pull: 1}
   7:
+    types: [market]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Camden Market"
     phrase: "busy markets and street food"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 0, iconic: 1, local_novel: 1, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   8:
+    types: [gallery]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Tate Modern Turbine Hall"
     phrase: "big modern spaces and art"
-    cards: []   # no moment card yet
+    cards: [m_tate_modern]   # m353: its ready card (m340 / m348), so a person who loved it is planned it
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 1}
     moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 1}
   9:
+    types: [tower, roof_garden]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Sky Garden"
     phrase: "views from the top of a tower"
-    cards: []   # no moment card yet
+    cards: [m_sky_garden]   # m353: its ready card (m340 / m348), so a person who loved it is planned it
     place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 1, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   10:
+    types: [market]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Columbia Road Flower Market (Sunday)"
     phrase: "local markets and flowers"
     cards: []   # no moment card yet
     place: {movement_views: 0, food: 1, green_nature: 1, history_culture: 0, iconic: 0, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   11:
+    types: [viewpoint]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "The view from the top of Greenwich Park"
     phrase: "a climb to a big view"
     cards: [m_greenwich_wolfe_view]
     place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 2, active: 1, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   12:
+    types: [museum]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Walking from South Kensington tube to the Natural History Museum"
     phrase: "a grand building coming into view"
     cards: [m_nhm_whale_hall, m_southken_nhm_reveal]
@@ -102,24 +114,28 @@ items:
     place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 2}
     moment: {contrast_reveal: 2, absorption: 0, awe: 2, social_pull: 2}   # Abram's proposed seed tags
   13:
+    types: [viewpoint]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Primrose Hill at sunset"
     phrase: "a hilltop sunset over the city"
     cards: []   # no moment card yet
     place: {movement_views: 2, food: 0, green_nature: 2, history_culture: 0, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 2, photo_potential: 2}
     moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 2}
   14:
+    types: [food_street]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Brick Lane for food"
     phrase: "local food with a bit of history"
     cards: [m_beigel_bake_late]
     place: {movement_views: 0, food: 2, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 2, crowds: 2, walking_effort: 1, active: 0, outdoor_exposure: 1, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 1, awe: 0, social_pull: 1}
   15:
+    types: [swimming]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Hampstead Heath ponds (swimming)"
     phrase: "a cold outdoor swim"
     cards: []   # no moment card yet
     place: {movement_views: 1, food: 0, green_nature: 2, history_culture: 0, iconic: 0, local_novel: 2, crowds: 1, walking_effort: 1, active: 2, outdoor_exposure: 2, photo_potential: 1}
     moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 1}
   16:
+    types: [riverside_walk, waterfront]   # m326: the kind of place (catalogue.TAXONOMY), so a dislike covers places of the same kind
     name: "Regent's Canal walk from Little Venice"
     phrase: "a quiet canal-side walk"
     cards: []   # no moment card yet

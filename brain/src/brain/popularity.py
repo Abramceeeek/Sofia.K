@@ -95,7 +95,7 @@ def _plan_cards(seed: int) -> set[str]:
     _, post, loved, disliked = simulate_person(c["pop"], c["ob"], seed)
     plan, _, _, _ = dayplan.personal_plan(c["pop"], post, c["moments"], c["brief"], c["travel"],
                                           end_window=c["end_window"], loved=loved, disliked=disliked, familiar=True)
-    return {dayplan._base(st.moment_id) for st in plan.stops if not st.moment_id.startswith("lunch@")}
+    return {dayplan._base(st.moment_id) for st in plan.stops if not st.moment_id.startswith(("lunch@", "dinner@"))}
 
 
 def reference_shares(pop: PopulationModel, ob: Onboarding, moments: list[Moment], brief: dayplan.Brief,

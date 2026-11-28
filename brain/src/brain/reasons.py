@@ -14,7 +14,11 @@ blind Test B comparison (the plan request's `blind`).
 
 from __future__ import annotations
 
+import re
+from functools import lru_cache
+
 import numpy as np
+import yaml
 
 from .moments import Moment
 from .personal import Observation
@@ -68,6 +72,9 @@ def about_you_observation(pop: PopulationModel, key: str, value: str | None) -> 
     return Observation(x=pop.vector(x), y=1, scale=pop.scales["conjoint"] * FEELING_SCALE)
 
 
+LINK_MIN = 2   # m353: a "You loved X, and this has Y too" link needs Y to define X (its tag at the top, 2)
+
+
 def _tags(m: Moment) -> dict[str, float]:
     return {k: float(v or 0) for k, v in {**m.features.place, **m.features.moment}.items()}
 
@@ -115,14 +122,19 @@ def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_
 
     # this stop's features that the person leans towards, strongest first. A feeling they picked is itself the
     # evidence, so any positive lean it gives counts; a loved place or a rating needs a clear lean (MIN_WEIGHT)
-    leans = sorted((f for f in PHRASE if tags.get(f, 0) >= 1 and d.get(f, 0) > 0), key=lambda f: -tags[f] * d[f])
+    # m363 (work package D; the engine bench found 116 shown claims on a tag of 1): a reason claims a feature for this
+    # stop only where it defines the stop (its tag at LINK_MIN, 2), never where the stop has a little of it
+    leans = sorted((f for f in PHRASE if tags.get(f, 0) >= LINK_MIN and d.get(f, 0) > 0), key=lambda f: -tags[f] * d[f])
     for f in leans:
         if len(out) >= MAX_REASONS:
             break
         phrase = PHRASE[f]
         clear = d[f] > MIN_WEIGHT
-        place = None if not clear else next((n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= 1),
-                     None)
+        # m353 (reviews, 25 Nov: "You loved Sky Garden, and this has green space" on a bike loop; Abram: "It must not
+        # invent a connection between two unrelated places"): a loved place is named only when the feature is what
+        # defines it (LINK_MIN), never because the loved place has a little of it
+        place = None if not clear else next(
+            (n for n, cards, pm in loved if n not in used and m.id not in cards and _tags(pm).get(f, 0) >= LINK_MIN), None)
         kind = None if not clear else next((k for k, km in loved_kinds if k not in used and _tags(km).get(f, 0) >= 1),
                                            None)
         if kind and not place:   # D116: a visitor's category card
@@ -147,7 +159,7 @@ def _reasons(pop, delta, m, loved, feelings, rated, interests, n_choices, loved_
             used.add(feel)
             continue
         good = None if not clear else next((rm for rm, r in rated if r >= 4 and rm.id != m.id
-                                            and _tags(rm).get(f, 0) >= 1 and rm.title not in used), None)
+                                                          and _tags(rm).get(f, 0) >= LINK_MIN and rm.title not in used), None)
         if good:
             out.append(_r(f"You rated {good.title} highly, and this has {phrase} too.",
                           f"I rated {good.title} highly, and this has {phrase} too."))
@@ -193,7 +205,7 @@ def factor_line(pop: PopulationModel, delta: np.ndarray, m: Moment, *, loved: li
     d = dict(zip(pop.personal_names, (float(v) for v in delta)))
     tags = _tags(m)
     felt = {f for w in feelings for f, v in FEELINGS.get(w, {}).items() if v > 0}
-    leans = sorted((f for f in LEAN if tags.get(f, 0) >= 1 and (d.get(f, 0) > MIN_WEIGHT or (f in felt and d.get(f, 0) > 0))),
+    leans = sorted((f for f in LEAN if tags.get(f, 0) >= LINK_MIN and (d.get(f, 0) > MIN_WEIGHT or (f in felt and d.get(f, 0) > 0))),   # m363
                    key=lambda f: -tags[f] * d[f])
     factors = [("interest", f"your interest in {interests[0].lower()}")] if interests else []
     factors += [("lean", LEAN[f]) for f in leans]
@@ -269,13 +281,74 @@ def day_feelings(stops: list[dict], by_id: dict[str, Moment], feelings: list[str
     """The person's own feelings (screen 5) that this day really carries: at least half its stops with a card fit, and
     at least two of them when there are two or more. Never a feeling they didn't pick."""
     cards = [by_id[s["moment_id"].split("#")[0]] for s in stops
-             if not s["moment_id"].startswith("lunch@") and s["moment_id"].split("#")[0] in by_id]
+             if not s["moment_id"].startswith(("lunch@", "dinner@")) and s["moment_id"].split("#")[0] in by_id]
     out = []
     for f in feelings:
         n = sum(_fits(m, f) for m in cards)
         if cards and n * 2 >= len(cards) and n >= min(2, len(cards)):
             out.append(f)
     return out
+
+
+TITLE_PLACES = 3   # m337: a day's title names at most this many places
+
+
+@lru_cache(maxsize=1)
+def short_names() -> dict[str, str]:
+    """m337: the names a day's title uses for places whose own name reads badly cut short ("Greenwich Park" for the
+    General Wolfe statue): `short` in data/catalogue/<locality>.yaml, Claude's wording."""
+    from .config import DATA_DIR
+    out: dict[str, str] = {}
+    for f in sorted((DATA_DIR / "catalogue").glob("*.yaml")):
+        d = yaml.safe_load(f.read_text(encoding="utf-8")) or {}
+        out.update({k: v["short"] for k, v in (d.get("experiences") or {}).items()
+                    if isinstance(v, dict) and v.get("short")})
+    return out
+
+
+def short_place(m: Moment) -> str:
+    """m337 (Abram, 24 Nov: "titles should sound natural and describe the actual day, not repeat generic templates"):
+    a place's name as a day's title uses it: its catalogue `short` name, else the card's place name before its first
+    comma or colon ("Borough Market", "the National Gallery")."""
+    name = short_names().get(m.id) or re.split(r"[,:(]", m.place.name)[0].strip()
+    return "the" + name[3:] if name.startswith("The ") else name
+
+
+def _at_sunset(m: Moment) -> bool:
+    """A place called "at sunset", which the planner puts at sunset (m345); never a place merely good then."""
+    return "sunset" in m.title.lower()
+
+
+def day_title(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] = ()) -> str:
+    """m337: a day's title from its own places, in the day's order: the high point (the stop the person is predicted to
+    like most), a named food stop, and the ending ("at sunset" when it's a sunset), at most TITLE_PLACES of them:
+    "Borough Market, a Brick Lane bagel and Tower Bridge at sunset". With the person's feelings when the stops carry
+    them (D118): "A curious day: …". Falls back to the feel line when the day has no place of its own."""
+    places = [(i, by_id[s["moment_id"].split("#")[0]], s) for i, s in enumerate(stops)
+              if not s.get("mine") and not str(s["moment_id"]).startswith(("lunch@", "dinner@"))
+              and s["moment_id"].split("#")[0] in by_id]
+    if not places:
+        return feel_line(stops, by_id, feelings)
+    own = next((s["mine"] for s in stops if s.get("mine")), None)   # m200: the person's own time, said too
+    room = TITLE_PLACES - (1 if own else 0)
+    pick = [max(places, key=lambda t: t[2].get("predicted") if t[2].get("predicted") is not None else -99)]
+    food = next((t for t in places if (t[1].features.place.get("food") or 0) >= 2), None)
+    for t in (food, places[-1], places[0], *places[1:-1]):
+        if t is not None and len(pick) < room and t[0] not in {p[0] for p in pick}:
+            pick.append(t)
+    pick.sort(key=lambda t: t[0])
+    names = []
+    for i, m, _ in pick:
+        n = short_place(m)
+        if n.lower() not in {x.lower() for x in names}:
+            names.append(n + (" at sunset" if i == places[-1][0] and _at_sunset(m) else ""))
+    text = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+    if own:
+        text += ", around your own plans" if own == "plans" else ", with free time"
+    words = [FEELING_ADJ[f] for f in day_feelings(stops, by_id, list(feelings)) if f in FEELING_ADJ]
+    if words:
+        return f"A {', '.join(words)} day: {text}"
+    return text[:1].upper() + text[1:]
 
 
 def feel_line(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] = ()) -> str:
@@ -295,6 +368,8 @@ def feel_line(stops: list[dict], by_id: dict[str, Moment], feelings: list[str] =
             p, f = ("your own plans" if s["mine"] == "plans" else "free time"), f"mine{i}"
         elif s.get("lunch") and m is not None and "food" not in taken:   # a food card as the lunch stop
             p, f = "good food", "food"
+        elif mid.startswith("dinner@"):   # m326: the evening's dinner slot
+            p, f = "dinner", "dinner"
         else:
             p, f = _stop_feel(m, mid.startswith("lunch@"), i == peak, i == 0, taken)
         taken.add(f)

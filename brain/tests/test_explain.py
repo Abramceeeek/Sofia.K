@@ -34,9 +34,8 @@ def test_a_stop_says_why_from_the_planners_own_numbers():
     assert f[("preference", 0.12)]["text"] == "One of your interests: counts for it, for you."   # the app's words
     assert ("preference", 0.01) not in f                       # too small to have mattered: not said
     assert f[("travel", 12)]["text"] == "12 min on foot from Charing Cross station." and f[("travel", 12)]["effect"] == "for"
-    assert f[("hours", "10:00-17:30")]["text"] == ("You're there 11:20–12:30, inside the card's visiting window "
-                                                    "(10:00–17:30).")
-    assert f[("hours", "10:00-17:30")]["source"] == "the card's visiting window; opening hours: 10:00-17:30"
+    assert f[("hours", "10:00-17:30")]["text"] == "You're there 11:20–12:30, within its times to go (10:00–17:30)."
+    assert f[("hours", "10:00-17:30")]["source"] == "when to go, from its opening hours: 10:00-17:30"
     assert f[("best_time", "16:00-17:30")]["effect"] == "neutral"   # not at its best time: said, not hidden
     assert f[("budget", 0.0)]["text"] == "Free." and e["unknown"] == []
     # the rules are the planner's: 15 and 30 min are where its transfer penalties start
@@ -116,8 +115,8 @@ def test_why_this_stop_is_at_most_three_reasons_with_no_score_or_percentage():
                      labels={"aspiration_match": "one of your interests"}, taste=TASTE)
     assert [w["text"] for w in e["why"]] == [
         "From your answers, it has what you like: views, one of your interests.",   # the score's top two terms, named
-        "It fits the card's visiting window, 10:00–17:30.",
-        "The trade-off: it has crowds, which your answers count against."]       # never all upside
+        "12 min on foot from Charing Cross station.",   # m326: no internal "visiting window" line any more
+        "Good to know: it can be busy."]       # m326: a practical catch, said plainly; never all upside
     assert [w["effect"] for w in e["why"]] == ["for", "for", "against"]
     for w in e["why"]:
         assert "%" not in w["text"] and "81" not in w["text"] and "0.4" not in w["text"] and "0.2" not in w["text"]

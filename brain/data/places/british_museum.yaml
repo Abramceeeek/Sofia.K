@@ -1,0 +1,143 @@
+# Reference place 4 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026; see tate_modern.yaml for the conventions.
+# britishmuseum.org refused every fetch (HTTP 403, 28 Nov and 26 Sep). Its pages were read only through search
+# results, so every claim from them is RESEARCHED, never verified. Under the evidence rules that means no hard rule
+# (hours, a dated closure) can come from this record until a page is read directly: the engine says so instead.
+id: p_british_museum
+name: British Museum
+kind: museum
+area: Bloomsbury
+official_url: https://www.britishmuseum.org/visit
+location: {lat: 51.51931, lon: -0.12671}
+legacy:
+  card: m_bm_great_court
+  from: [e_egyptian_sculpture, e_great_court, e_enlightenment]   # the card walks through all three
+facts:
+  - id: bmu_hours
+    claim: "Open daily 10:00-17:00, Fridays to 20:30"
+    fact_type: hours
+    status: researched
+    source: https://www.britishmuseum.org/visit
+    source_type: official
+    checked: 2026-09-26
+    confidence: medium
+    note: "From search results; the page refused the fetch. The planner uses the card's hours; the engine can't treat them as verified."
+  - id: bmu_free
+    claim: "Admission is free"
+    fact_type: price
+    status: researched
+    source: https://www.britishmuseum.org/visit
+    source_type: official
+    checked: 2026-09-26
+    confidence: medium
+    note: "From search results."
+  - id: bmu_room4_closed
+    claim: "Room 4 listed as closed 11-22 January 2027"
+    fact_type: closure
+    status: researched
+    source: https://www.britishmuseum.org/collection/galleries
+    source_type: official
+    checked: 2026-11-28
+    confidence: low
+    note: "A search result of the galleries page, whose dates looked inconsistent. Not verified, so it can't close the stop: the engine warns instead."
+experiences:
+  - id: e_egyptian_sculpture
+    title: "Room 4: Egyptian sculpture and the Rosetta Stone"
+    what_you_do: "Walk among monumental statues of pharaohs and gods from temples and tombs, and see the Rosetta Stone"
+    activity: look
+    status: ready
+    claims:
+      - id: bmu_room4
+        claim: "Room 4, on the ground floor, holds monumental Egyptian sculpture from temples and tombs, and the Rosetta Stone"
+        fact_type: contents
+        status: researched
+        source: https://www.britishmuseum.org/collection/galleries/egyptian-sculpture
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+        central: true
+        note: "Search results of the museum's own pages; the pages refused the fetch."
+      - id: bmu_room4_busy
+        claim: "The centre of the gallery gets particularly busy around the Rosetta Stone"
+        fact_type: crowding
+        status: researched
+        source: https://www.britishmuseum.org/collection/egypt/explore-rosetta-stone
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+    scores:
+      history: {value: 2, claims: [bmu_room4]}
+      art: {value: 2, claims: [bmu_room4]}       # consistency review: the gallery is organised around sculpture too
+    primary: [history, art]
+    secondary: []
+    atmosphere:
+      crowded: {value: 2, claims: [bmu_room4_busy], window: "around the Rosetta Stone"}
+      historic: {value: 2, claims: [bmu_room4]}
+      sheltered: {value: 2, claims: [bmu_room4]}
+    duration_min: [15, 30]
+    duration_status: inferred
+    cautions: [bmu_room4_busy]
+  - id: e_great_court
+    title: "The Great Court"
+    what_you_do: "Cross the two-acre covered court under its glass roof, with the Reading Room at its centre"
+    activity: walk
+    status: ready
+    claims:
+      - id: bmu_court
+        claim: "The Great Court is a two-acre covered square under a glass roof, with the Reading Room in the middle; designed by Foster and Partners, opened in 2000"
+        fact_type: contents
+        status: researched
+        source: https://www.britishmuseum.org/about-us/british-museum-story/architecture/great-court
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+        central: true
+        note: "Search results of the museum's architecture page. 'Largest covered public square in Europe' is the museum's own claim."
+    scores:
+      architecture: {value: 2, claims: [bmu_court]}
+      history: {value: 0, claims: [bmu_court]}   # the court is a modern space; the history is in the galleries
+    primary: [architecture]
+    secondary: []
+    atmosphere:
+      grand: {value: 2, claims: [bmu_court]}
+      sheltered: {value: 2, claims: [bmu_court]}
+    effort: {value: 0, claims: [bmu_court]}
+    duration_min: [5, 15]
+    duration_status: inferred
+  - id: e_enlightenment
+    title: "Room 1: the Enlightenment gallery, the former King's Library"
+    what_you_do: "Walk the long former King's Library, with its cases of objects collected in the 18th century"
+    activity: look
+    status: ready
+    claims:
+      - id: bmu_room1
+        claim: "Room 1, the museum's oldest room (built 1823-27 as the King's Library), displays what 18th-century collectors gathered: fossils, shells, Greek vases and more"
+        fact_type: contents
+        status: researched
+        source: https://www.britishmuseum.org/collection/galleries/enlightenment
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+        central: true
+        note: "Search results of the museum's own pages; the room's restored wood and gold interior is from a search on 26 Sep (card)."
+      - id: bmu_room1_founder
+        claim: "Shelves of books, warm wood and gold: the library is the end of the walk"
+        kind: interpretation
+        fact_type: interpretation
+        status: researched
+        source: brain/data/moments/m_bm_great_court.yaml
+        source_type: founder
+        checked: 2026-09-27
+        confidence: medium
+    scores:
+      history: {value: 2, claims: [bmu_room1]}
+      architecture: {value: 1, claims: [bmu_room1, bmu_room1_founder]}
+      science: {value: 1, claims: [bmu_room1]}
+    primary: [history]
+    secondary: [architecture, science]
+    atmosphere:
+      historic: {value: 2, claims: [bmu_room1]}
+      sheltered: {value: 2, claims: [bmu_room1]}
+      quiet: {value: unknown}
+    duration_min: [10, 20]
+    duration_status: inferred
+    needs: ["a direct read of the museum's pages, for verified hours and closures"]

@@ -578,7 +578,8 @@
       "lon": -0.12214124903042822
      }
     }
-   ]
+   ],
+   "day_feel": "balanced"
   },
   {
    "index": 1,
@@ -746,7 +747,7 @@
       "best_text": "",
       "cost_gbp": 15.0,
       "cost_kind": "food",
-      "cost_text": "Food: about £15",
+      "cost_text": "Food: about £15, ODYS's estimate",
       "rain_swap": "",
       "lunch": true,
       "familiar": false,
@@ -771,6 +772,9 @@
        "Getting there: about 13 min on foot from St Paul's Cathedral.",
        "Pick a café, pub or food stall nearby.",
        "Food: about £15"
+      ],
+      "notes": [
+       "The price is ODYS's planning estimate for a meal nearby, not a menu price."
       ]
      },
      {
@@ -1060,6 +1064,48 @@
      "ratings": 0,
      "feelings": 2,
      "kinds": 0
+    },
+    "free_after": {
+     "from": "17:04",
+     "until": "19:00",
+     "min": 116,
+     "text": "The rest of the day is yours from 17:04, about 1 hr 56 min until 19:00. It's kept free rather than filled with a place that suits you less.",
+     "stay_on": false
+    },
+    "party": {
+     "travellers": [
+      {
+       "label": "Adult 1",
+       "kind": "adult",
+       "cost_gbp": 18.0,
+       "budget_gbp": null,
+       "over_gbp": null
+      },
+      {
+       "label": "Adult 2",
+       "kind": "adult",
+       "cost_gbp": 18.0,
+       "budget_gbp": null,
+       "over_gbp": null
+      },
+      {
+       "label": "Child 1 (8)",
+       "kind": "child",
+       "cost_gbp": 18.0,
+       "budget_gbp": null,
+       "over_gbp": null
+      }
+     ],
+     "total_gbp": 54.0,
+     "group_budget_gbp": null,
+     "over_group_gbp": null,
+     "verified": "Tickets: from each place's own page, with the date checked",
+     "estimated": "Meals without a named place, and fares",
+     "notes": [
+      "Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is split.",
+      "Children's fares are shown at the adult fare: TfL's children's fares aren't checked yet, so the real total may be lower."
+     ],
+     "not_for_children": []
     }
    },
    "before": null,
@@ -1069,7 +1115,8 @@
     "stops": 4
    },
    "title": "A curious, peaceful day: the river, lunch, one big reveal, then a big view",
-   "legs": []
+   "legs": [],
+   "day_feel": "balanced"
   },
   {
    "index": 2,
@@ -1568,7 +1615,8 @@
     "stops": 4
    },
    "title": "A peaceful day: a big view, lunch, the river, then one big reveal",
-   "legs": []
+   "legs": [],
+   "day_feel": "balanced"
   },
   {
    "index": 3,
@@ -2069,7 +2117,8 @@
     "stops": 4
    },
    "title": "A curious, peaceful day: the river, lunch, a reveal, then one big wow",
-   "legs": []
+   "legs": [],
+   "day_feel": "balanced"
   },
   {
    "index": 4,
@@ -2548,7 +2597,8 @@
     "stops": 4
    },
    "title": "A curious day: a green break, some history, lunch, then one big reveal",
-   "legs": []
+   "legs": [],
+   "day_feel": "balanced"
   },
   {
    "index": 5,
@@ -2581,7 +2631,8 @@
       "lon": null
      }
     }
-   ]
+   ],
+   "day_feel": "balanced"
   }
  ],
  "start": "Sample hotel U, Covent Garden",
@@ -2601,5 +2652,6 @@
   "m_st_dunstan_garden",
   "m_to_river_somerset",
   "m_waterloo_bridge_sunset"
- ]
+ ],
+ "day_feel": "balanced"
 }

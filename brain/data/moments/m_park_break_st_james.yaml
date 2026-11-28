@@ -24,7 +24,7 @@ approach:
   step_free: null
 experience:
   what_happens: "A slow loop round the lake: water birds, and the pelicans on their rocks or at their afternoon feed."
-  why_it_works: "Green, water and birds: a calm break in the day."   # FOUNDER (card 10)
+  why_it_works: "A lake loop with pelicans, five minutes from Westminster: a calm break with something to watch."   # m349: Claude's wording from this card's own facts; was Abram's line shared by several cards ("Green, water and birds: a calm break in the day."), for Abram to check
   duration_min: [30, 45] # GUESS
   end_point: null
 best_time:

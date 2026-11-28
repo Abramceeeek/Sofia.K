@@ -1,0 +1,122 @@
+# Reference place 6 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026; see tate_modern.yaml for the conventions.
+# "The best views of London" is the site's marketing, not evidence. The fact behind the view is the height:
+# "London's highest public garden".
+id: p_sky_garden
+name: Sky Garden
+kind: viewpoint
+area: City of London
+official_url: https://skygarden.london/
+location: {lat: 51.511154, lon: -0.083858}   # Overture, via the card (2026-11-24)
+legacy:
+  card: m_sky_garden
+  from: [e_garden_view]
+facts:
+  - id: sg_hours
+    claim: "Ticketed hours Monday to Friday 10:00-18:00, Saturday, Sunday and bank holidays 11:00-21:00"
+    fact_type: hours
+    status: verified
+    source: https://skygarden.london/visit/how-to-visit-2-2/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Monday – Friday: 10am – 6pm; Saturday – Sunday & Bank Holidays: 11am – 9pm"
+  - id: sg_closures
+    claim: "Closed for maintenance until 18:00 on the first Monday of each month (subject to change); closed 25 December"
+    fact_type: closure
+    status: verified
+    source: https://skygarden.london/sky-garden-closure-dates/
+    source_type: official
+    checked: 2026-11-24
+    confidence: high
+    dates: ["12-25"]
+    quote: "On the first Monday of every month (subject to change), The Sky Garden is closed for maintenance until 6 pm."
+  - id: sg_ticket
+    claim: "Entry is by a free ticket, booked online, released weekly up to three weeks ahead"
+    fact_type: booking
+    status: verified
+    source: https://skygarden.london/visit/how-to-visit-2-2/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Tickets are available to book on a weekly basis, up to three weeks in advance of your visit."
+  - id: sg_free
+    claim: "The ticket is free"
+    fact_type: price
+    status: verified
+    source: https://skygarden.london/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Get a free ticket"
+  - id: sg_access
+    claim: "Step-free access"
+    fact_type: access
+    status: unknown
+    source: https://skygarden.london/visit/how-to-visit-2-2/
+    source_type: official
+    checked: 2026-11-28
+    confidence: low
+    note: "The page asks visitors to contact customer service about access. Unknown, not 'no'."
+experiences:
+  - id: e_garden_view
+    title: "The garden and the view over London"
+    what_you_do: "Go up to the public garden at the top of the tower and look out over London"
+    activity: look
+    status: ready
+    claims:
+      - id: sg_highest
+        claim: "London's highest public garden"
+        fact_type: contents
+        status: verified
+        source: https://skygarden.london/
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "London's highest public garden"
+      - id: sg_view
+        claim: "The site presents the view over London as the reason to come"
+        kind: interpretation
+        fact_type: interpretation
+        status: researched
+        source: https://skygarden.london/
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+        central: true
+        quote: "The best views of London"
+        note: "Marketing words; they show what the place is organised around, not that the view is the best."
+      - id: sg_glass_guess
+        claim: "The garden is enclosed under glass"
+        fact_type: contents
+        status: inferred
+        source_type: odys
+        checked: 2026-11-28
+        confidence: low
+        note: "Claude's own knowledge (*); the pages read don't say it."
+      - id: sg_busy_guess
+        claim: "Weekend afternoons are busiest"
+        fact_type: crowding
+        status: inferred
+        source_type: odys
+        checked: 2026-11-24
+        confidence: low
+        note: "The card's GUESS."
+    scores:
+      views: {value: 2, claims: [sg_highest, sg_view]}
+      nature: {value: 1, claims: [sg_highest]}     # a planted garden, not open green space
+      architecture: {value: unknown}
+      history: {value: 0, claims: [sg_highest]}
+    primary: [views]
+    secondary: [nature]
+    atmosphere:
+      urban: {value: 2, claims: [sg_highest]}
+      green: {value: 1, claims: [sg_highest]}
+      sheltered: {value: 1, claims: [sg_glass_guess]}
+      crowded:
+        - {value: 1, claims: [sg_busy_guess], window: "weekend_afternoon"}
+        - {value: unknown}
+    effort: {value: 0, claims: [sg_glass_guess]}
+    duration_min: [45, 75]
+    duration_status: inferred
+    needs: ["step-free access", "busy times", "the tower's name and architect from an official source"]

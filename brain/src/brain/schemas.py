@@ -81,6 +81,11 @@ class CategoriesIn(BaseModel):
     items: list[CategoryItem] = Field(max_length=64)
 
 
+class PreviewCodeIn(BaseModel):
+    """m320: a preview's code, typed on the You screen ("ODYS-SEVILLE")."""
+    code: str = Field(min_length=1, max_length=40)
+
+
 class CorrectionsIn(BaseModel):
     """D117: the ids of the "So far, I've learned…" items the person marked "not right"."""
     items: list[Annotated[str, Field(max_length=48)]] = Field(max_length=20)
@@ -115,6 +120,9 @@ class ProfileIn(BaseModel):
     company: Literal["solo", "friends", "partner", "family"] | None = None
     chronotype: Literal["morning", "night", "neither"] | None = None
     activity: Literal["gentle", "medium", "full_on"] | None = None
+    # m344 (Abram, 24 Nov; a PROPOSED feature, not asked in onboarding yet): "How would you like your days to feel?",
+    # separate from activity: someone can enjoy walking and still prefer a short day. None means "balanced"
+    day_feel: Literal["relaxed", "balanced", "full"] | None = None
     grew_up: Literal["big_city", "town", "coast", "countryside"] | None = None
     # D19, D123, m223: no longer asked (D123), and never stored: free text here could hold beliefs or allergies, and
     # food needs wait for their DPIA (m215). Older builds may still send it, so it's accepted and dropped (api.py).
@@ -166,6 +174,9 @@ class PlanRequest(BaseModel):
     # m200: a trip day's own time and pace, so swap, regenerate and "re-plan the rest of today" keep them
     mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
     relaxed: bool = False
+    # m336 (Abram, 24 Nov: "explain changes to the customer; keep costs and route changes transparent"): the plan this
+    # one replaces (a swap, a regenerate, "re-plan the rest of today"), so the answer says what changed
+    compare_to: int | None = Field(default=None, ge=1)
 
     @field_validator("date")
     @classmethod
@@ -379,6 +390,32 @@ class DayTimeIn(BaseModel):
     mine: list[MyTimeIn] = Field(default_factory=list, max_length=2)
 
 
+class GroupTripIn(BaseModel):
+    """m358: a group trip's days, as an organiser sets them; never anything about the people."""
+    start_date: date
+    nights: int = Field(default=0, ge=0, le=6)
+    per_day: int = Field(default=3, ge=1, le=5)
+    consent: Literal[True]                 # the organiser agrees their answers plan this shared trip
+    share_preferences: bool = False        # whether the plan may name them when it says who a stop suits
+
+
+class GroupJoinIn(BaseModel):
+    """m358: joining a friend's trip by its code, with consent asked every time (never assumed)."""
+    code: str = Field(min_length=6, max_length=16, pattern=r"^[A-Z0-9]+$")
+    consent: Literal[True]
+    share_preferences: bool = False
+
+
+class PartyIn(BaseModel):
+    """m356 (Abram, 25 Nov: "The default budget is per person… show individual estimated spending, total estimated group
+    spending, shared-cost allocation assumptions, children's applicable prices"): who's going. Ages only for children
+    (fictional in tests), never names; each adult may give a daily budget, the organiser a group ceiling."""
+    adults: int = Field(default=1, ge=1, le=8)
+    children: list[Annotated[int, Field(ge=0, le=17)]] = Field(default_factory=list, max_length=8)
+    adult_budgets_gbp: list[Annotated[float, Field(ge=0, le=1000)] | None] = Field(default_factory=list, max_length=8)
+    group_budget_gbp: float | None = Field(default=None, ge=0, le=10000)
+
+
 class TripDaysIn(BaseModel):
     """D120: the days of a multi-day trip (ODYS Trips design: "How long for?", "How should the trip feel?")."""
     destination: str = Field(default="london", max_length=40)
@@ -399,3 +436,17 @@ class TripDaysIn(BaseModel):
     arrive: TripEndIn | None = None                                      # replaces arrive_time when sent
     leave: TripEndIn | None = None                                       # replaces leave_time when sent
     personal: list[DayTimeIn] = Field(default_factory=list, max_length=31)   # m200: the person's own time, by day
+    # m346 (Abram, 24 Nov: "stored with the trip, editable and available to the planner"): how full the days
+    # should be, separate from activity pace. Wins over the profile's default; none means balanced.
+    day_feel: Literal["relaxed", "balanced", "full"] | None = None
+    # m353 (Abram, 25 Nov: "Unexplained changes to itinerary costs: release blocker"): the plans this trip's days had
+    # before ("day index: plan id"); each day planned again says what changed, its cost included
+    compare_to: dict[int, int] = Field(default_factory=dict, max_length=31)
+    party: PartyIn | None = None   # m356: who's going; none means one adult
+
+
+class AlternativesIn(BaseModel):
+    """m336 (Abram, 24 Nov: "show alternative recommendations when something is unavailable"): up to `count` other
+    ways to fill one stop's place in a plan, each a whole plan with the rest kept, and what it changes."""
+    request: PlanRequest            # the swap request: the other stops in `keep`, this one in `exclude`
+    count: int = Field(default=3, ge=1, le=3)

@@ -23,7 +23,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import (backup, daybudget, dayplan, db, explain, food, fx, notify, ops, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
+from . import (backup, daybudget, dayplan, db, explain, food, fx, notify, ops, preview, reasons, share, stayprices, summary, testb, travelcalendar, traveltiming, triplength,
                trips, tripdays)
 from .categories import category_observation, cohort, load_categories
 from .aspiration import NONE, load_aspiration
@@ -33,7 +33,11 @@ from .moments import Moment, Point, load_moments
 from .personal import DeltaPosterior, prior_only
 from .popularity import load_popularity
 from .population import PopulationModel, load_population
-from .schemas import (AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
+from . import match as match_engine
+from .catalogue import load_checked
+from .experiences import load_places
+from .schemas import (GroupJoinIn, GroupTripIn, AlternativesIn, AnswersIn, CategoriesIn, ChoicesIn, ConditionsIn, CorrectionsIn, CuratedPlanIn, DayFeedbackIn,
+                      PreviewCodeIn,
                       EventIn, FlightSearchIn, InstallIn, InstallOut, PairFeedbackIn, PairIn, PlanFeedbackIn, PlanRequest,
                       ProfileIn, RatingIn, SafetyIn, SafetyReplyIn, StayCompareIn, StaySearchIn, SurveyIn, SwipesIn,
                       TripDaysIn,
@@ -45,6 +49,9 @@ from .travel import LondonEstimate
 from .tfl import TflTravel, TravelStore, next_weekday_1pm
 from .ghoidc import GithubOIDC
 from .weather import Forecast
+from . import versions
+
+versions.install_plan_stamp(db.Plan)   # m327: every plan row records the Brain commit and the app build
 
 # D107 (GUESS): the most a person spends on a day out, from the "about you" budget band; null means no limit
 BUDGET_BAND_GBP = {"under_20": 20.0, "20_40": 40.0, "40_70": 70.0, "70_plus": None}
@@ -76,6 +83,18 @@ def _tester_code(text: str | None) -> str | None:
     return code[:40] or None
 
 
+# m326 (the London gate, G2): a trip day ending over 45 min early tries up to this many more places, one at a time,
+# and stops at the first that fills the day (the place on the way, and days with the person's own plans, don't)
+EXTRA_PLACES_MAX = 4
+# m346 (Abram, 24 Nov): "Pace determines physical intensity. Day Feel determines itinerary density": the extra places
+# beyond the person's own number follow how full they want their days, never their pace ("Do not assume that a gentle
+# traveller wants fewer experiences"). Pace still sets journeys, their budget and strenuous stops. No answer: balanced.
+EXTRA_BY_FEEL = {"relaxed": 0, "balanced": 2, "full": EXTRA_PLACES_MAX}
+SUN_TZ = {"GB": "Europe/London", "ES": "Europe/Madrid"}
+BACK_EXCESS_MAX = 45   # m353: minutes of early end, waits or travel over budget a day may gain to avoid a crossing back   # m349: the local clock a destination's sunset is told in
+# m346: what an extra place is worth to the solver, in utility units, by day feel: a full day ("make the most of the
+# available day") takes a strong match whose journey and wait cost a little more than a balanced day would accept
+EXTRA_BONUS_BY_FEEL = {"relaxed": 0.0, "balanced": 0.5, "full": 1.0}
 MAX_TRIP_DAYS = 7   # D120: days planned in one request (about a second each on the free server)
 
 
@@ -168,6 +187,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # the 16 locked swipe places (D107): their tags for the δ update, and the cards at each place for planning
         app.state.swipe_items = dayplan.load_swipe_items(settings.data_dir / "swipe_items.yaml")
         app.state.swipe_cards = dayplan.load_swipe_cards(settings.data_dir / "swipe_items.yaml")
+        # m326 (the London gate, G4): each swipe place's kind, and each card's kind (the catalogue's type), so a place
+        # the person didn't enjoy also keeps out places of the same kind (unless they loved or were fine with one)
+        app.state.swipe_types = dayplan.load_swipe_types(settings.data_dir / "swipe_items.yaml")
+        app.state.card_kinds = dayplan.load_card_kinds(settings.data_dir / "catalogue" / "london.yaml")
         app.state.swipe_phrases = dayplan.load_swipe_phrases(settings.data_dir / "swipe_items.yaml")   # D117
         app.state.app_items = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml")   # before the plan (D112)
         app.state.app_items_later = dayplan.load_app_items(settings.data_dir / "swipe_items.yaml", later=True)
@@ -475,7 +498,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if body.foods_avoided is not None:   # m251, m257: an old app sent the retired field. Only an aggregate count
             app.state.retired_food_saves = getattr(app.state, "retired_food_saves", 0) + 1   # is kept: no log line,
             # no user, no value (Abram, m252: "Prefer an aggregate counter or privacy-preserving metric")
-        for key in ("based", "home_city"):   # D116: a later save without them keeps them (the Test B cohort)
+        for key in ("based", "home_city", "previews"):   # D116: a later save without them keeps them (the Test B
+            # cohort); m320: and the previews this install opened with a code
             if key not in new and key in (user.profile or {}):
                 new[key] = user.profile[key]
         user.profile = new
@@ -507,6 +531,37 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """D117: shown before the first plan, with "Looks right" and "Change something". No scores."""
         text = app.state.onboarding.get("summary") or {}
         return {**text, "items": learned(user)}
+
+    # ---- m320: development destinations shown read-only to installs that typed the preview's code ----------------
+
+    def _previews(user: db.User) -> list[preview.Preview]:
+        have = set((user.profile or {}).get("previews", []))
+        return [pv for k, pv in preview.load_previews().items() if k in have]
+
+    @app.get("/v1/me/previews")
+    def get_previews(user: db.User = Depends(current_user)):
+        return {"previews": [preview.info(pv) for pv in _previews(user)]}
+
+    @app.post("/v1/me/previews")
+    def post_preview(body: PreviewCodeIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """The code typed on the You screen. A code that opens nothing says so, and nothing is stored."""
+        pv = preview.by_code(_tester_code(body.code))
+        if pv is None:
+            raise HTTPException(404, "That code doesn't open a preview.")
+        prof = dict(user.profile or {})
+        if pv.key not in prof.get("previews", []):
+            prof["previews"] = [*prof.get("previews", []), pv.key]
+            user.profile = prof
+            s.add(db.Event(user_id=user.id, name="preview_opened", props={"preview": pv.key}))
+            s.commit()
+        return {"previews": [preview.info(x) for x in _previews(user)]}
+
+    @app.get("/v1/me/previews/{key}")
+    def get_preview(key: str, user: db.User = Depends(current_user)):
+        pv = next((x for x in _previews(user) if x.key == key), None)
+        if pv is None:
+            raise HTTPException(404, "That preview isn't open on this phone.")
+        return preview.content(pv)
 
     @app.post("/v1/me/corrections", status_code=204)
     def post_corrections(body: CorrectionsIn, user: db.User = Depends(current_user), s: Session = Depends(session),
@@ -551,7 +606,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                      must_do: str | None = None, familiar: bool = True, keep: list[str] = (), exclude: list[str] = (),
                      blind: bool = False, end_window: tuple[int, int] | None = None,
                      post: DeltaPosterior | None = None, feelings: list[str] | None = None,
-                     fallback: bool = True, travel=None) -> tuple[dayplan.DayPlan, list[dict], dict]:
+                     fallback: bool = True, travel=None,
+                     children: tuple[int, ...] | None = None) -> tuple[dayplan.DayPlan, list[dict], dict]:
         """The person's plan as the app shows it: (the solver's plan, the app's stops, the plan's header fields).
         Used by "plan a day" and by the Test B pair (Build 2). `travel`: the times to plan with (a TfL day view, or
         the estimate for the Test B pair); by default the app's."""
@@ -563,6 +619,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         kinds = [a for a in user.categories if f"kind:{a.key}" not in fixed]
         loved = [cards_at[sw.item] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at]
         disliked = [cards_at[sw.item] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at]
+        disliked += dayplan.kept_out(ready, [(sw.item, sw.reaction) for sw in swipes], app.state.swipe_types,
+                                     app.state.card_kinds, (user.profile or {}).get("company"),
+                                     (user.profile or {}).get("activity"), children)   # m358: the trip's children
         post = post or posterior(user, p)
 
         def run(keep: set[str], exclude: set[str]):
@@ -624,6 +683,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             money = lambda sts: block(sts, lunch)
         out = [dayplan.app_stop(st, dayplan.stop_point(pst.moment_id, by_id, brief))
                for pst, st in zip(plan.stops, stops)]
+        if not blind:
+            dayplan.say_no_dinner(out, brief)   # m334: never a missing dinner left unsaid
+            dayplan.say_estimates(out)          # m343: estimates said as estimates
         for st, inner in zip(out, stops):   # m276: kept with the stored plan for the evaluation, never sent
             st["predicted"] = inner.get("predicted")
         # D115: "why we picked this for you", from the person's own answers; never in the blind comparison
@@ -651,10 +713,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 card_m = by_id.get(st["moment_id"].split("#")[0]) if st["rateable"] else None
                 u = inner.get("predicted")
                 prob = explain.p_good(p.scales["rating"], p.cutpoints["rating"][1], u) if u is not None else None
-                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows() if card_m else [],
+                # m363 (work package D): "it has what you like" names only features that define this stop (tag 2),
+                # and the interest it serves by name, not "one of your interests"
+                defining = {n for n in taste if n not in match_engine.TAG_NAMES or
+                            (card_m is not None and int(card_m.tag(n) or 0) >= reasons.LINK_MIN)}
+                interest = amap.labels(amap.fields_of(card_m) & fields) if (amap and card_m) else []
+                labels = {**dayplan.APP_LABELS,
+                          **({"aspiration_match": f"your interest in {interest[0].lower()}"} if interest else {})}
+                st["explain"] = explain.stop(inner, p=prob, windows=card_m.windows(brief.weekday, brief.date) if card_m else [],
                                              hours_text=inner.get("hours") or "", budget=budget_block,
-                                             travel_source=legs_from, labels=dayplan.APP_LABELS,
-                                             taste=taste)
+                                             travel_source=legs_from, labels=labels,
+                                             taste=defining)
         for st in out:
             base = st["moment_id"].split("#")[0]
             if st["rateable"] and base in by_id:
@@ -669,6 +738,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     p, post.mean, m, loved=loved_places, feelings=feelings, interests=mine, n_choices=n_choices)
             if blind:
                 st["chosen_for"], st["why"], st["worth_gbp"], st["match"] = [], [], None, None
+        # m349: a reason is said once a day where the stop has another to show; every stop keeps one (D115), and the
+        # general one ("We don't know much about you yet…") is said shorter when it comes again
+        said: set[str] = set()
+        again = iter(("Another that suits most people and fits your route.",
+                      "One more that most people enjoy, close to your route.",
+                      "Also a good fit for most people, and on your way."))
+        for st in out:
+            own = st.get("reasons") or []
+            fresh = [r for r in own if r.get("you") not in said]
+            if not fresh and own:
+                r = dict(own[0])
+                if str(r.get("you") or "").startswith("We don't know much about you yet"):
+                    r["you"] = next(again, r["you"])
+                fresh = [r]
+            st["reasons"] = fresh
+            said.update(r.get("you") for r in fresh)
         head = {"title": brief.day_label, "summary": dayplan.summary_lines(brief, stops),
                 "totals": dayplan.plan_totals(stops, travel), "pace": notes.pace,
                 "budget": budget_block,   # m217: the day's money, line by line
@@ -684,6 +769,119 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def make_plan(body: PlanRequest, user: db.User = Depends(current_user), s: Session = Depends(session),
                   p: PopulationModel = Depends(pop)):
         """The person's plan, from the same engine as the Test B plans (brain.dayplan, D107)."""
+        return plan_for(body, user, s, p)
+
+    def traveller_for(s: Session, user: db.User, p: PopulationModel, *, must_go: tuple[str, ...] = (),
+                      children: tuple[int, ...] = (), budget_gbp: float | None = None,
+                      avoid: tuple[str, ...] = (), avoid_kinds: tuple[str, ...] = ()) -> match_engine.Traveller:
+        """m363: the person as the match engine sees them, from the same answers and rules the planner uses.
+
+        m366 (batch 9): with every instruction's time and source, so the newest wins (Abram, m364): swipes and
+        ratings when they were given, today's requests (must-go, not this place, no places of a kind) now."""
+        post = posterior(user, p)
+        fixed = corrected(user)
+        swipes = [sw for sw in user.swipes if f"place:{sw.item}" not in fixed]
+        cards_at, items = app.state.swipe_cards, app.state.swipe_items
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        loved = {cid: cards_at[sw.item][0] for sw in swipes if sw.reaction == "loved" and sw.item in cards_at
+                 for cid in cards_at[sw.item][1]}
+        disliked = {cid: cards_at[sw.item][0] for sw in swipes if sw.reaction == "didnt_enjoy" and sw.item in cards_at
+                    for cid in cards_at[sw.item][1]}
+        prof = user.profile or {}
+        out = {}
+        for why, ids in dayplan.kept_out(ready, [(sw.item, sw.reaction) for sw in swipes], app.state.swipe_types,
+                                         app.state.card_kinds, prof.get("company"), prof.get("activity"),
+                                         children or None):
+            for cid in ids:
+                out.setdefault(cid, why)
+        loved_tags = tuple((items[sw.item].place.name if sw.item not in cards_at else cards_at[sw.item][0],
+                            {**items[sw.item].features.place, **items[sw.item].features.moment})
+                           for sw in swipes if sw.reaction == "loved" and sw.item in items)
+        rated = {r.moment_id: r.rating for r in sorted(user.ratings, key=lambda r: r.id)}
+        n = sum(sw.reaction in ("loved", "fine", "didnt_enjoy") for sw in swipes) + \
+            sum(ch.choice in ("A", "B") for ch in user.choices) + len(user.ratings)
+        I = match_engine.Instruction
+
+        def at(v):
+            return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        word = {"loved": "love_place", "fine": "fine_place", "didnt_enjoy": "dislike_place"}
+        ins = [I(word[sw.reaction], cid, at(sw.created_at), "swipe", cards_at[sw.item][0])
+               for sw in swipes if sw.reaction in word and sw.item in cards_at
+               for cid in cards_at[sw.item][1]]
+        ins += [I("rated", r.moment_id, at(r.created_at), "rating", r.moment_id, r.rating,
+                  (("window", "weekend" if at(r.created_at).weekday() >= 5 else "weekday"),))
+                for r in user.ratings]
+        now_ = datetime.now(timezone.utc)
+        names = {m.id: m.display_title() for m in ready}
+        # asked for and asked not to visit in the same request: kept out, and said (the batch 9 review)
+        ins += [I("must_go", c, now_, "request", names.get(c, c)) for c in must_go if c not in avoid]
+        ins += [I("avoid", c, now_, "request", names.get(c, c)) for c in avoid]
+        ins += [I("dislike_kind", k, now_, "request", k.replace("_", " ")) for k in avoid_kinds]
+        return match_engine.Traveller(
+            delta=post.mean, delta_sd=post.sd(), loved=loved, disliked=disliked, loved_tags=loved_tags, kept_out=out,
+            must_go=must_go, rated=rated, fields=person_fields(user),
+            feelings=tuple(f for f in prof.get("why_travel", []) if f in reasons.FEELINGS), activity=prof.get("activity"),
+            budget_gbp=budget_gbp if budget_gbp is not None else BUDGET_BAND_GBP.get(prof.get("budget_band")),
+            children=children, n_answers=n, n_choices=sum(ch.choice in ("A", "B") for ch in user.choices),
+            instructions=tuple(ins), delta_cov=post.covariance(), company=prof.get("company"))
+
+    @app.get("/v1/me/matches")
+    def my_matches(day: date | None = Query(default=None, alias="date"), must_go: str = Query(default="", max_length=400),
+                   children: str = Query(default="", max_length=60), rain_prob: float | None = Query(default=None, ge=0, le=1),
+                   avoid: str = Query(default="", max_length=400), avoid_kinds: str = Query(default="", max_length=200),
+                   window: str | None = Query(default=None, max_length=40, pattern=r"^[a-z_]+$"),
+                   user: db.User = Depends(current_user), s: Session = Depends(session),
+                   p: PopulationModel = Depends(pop)):
+        """m363 (Abram, 26 Nov: "the first central person-to-place engine, without changing the live planner's
+        decisions yet"): every ready place judged for this person on a day, in shadow mode. Read-only: nothing is
+        stored, and no plan uses it. Scores are provisional ranking measures, never chances."""
+        ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
+        ids = {m.id for m in ready}
+        wanted = tuple(x for x in (v.strip() for v in must_go.split(",")) if x in ids)
+        kids = tuple(int(v) for v in children.split(",") if v.strip().isdigit() and int(v) <= 17)[:8]
+        not_here = tuple(x for x in (v.strip() for v in avoid.split(",")) if x in ids)
+        kinds_known = set(app.state.card_kinds.values())
+        no_kinds = tuple(k for k in (v.strip() for v in avoid_kinds.split(",")) if k in kinds_known)
+        t = traveller_for(s, user, p, must_go=wanted, children=kids, avoid=not_here, avoid_kinds=no_kinds)
+        d = match_engine.Day(weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
+                             rain_prob=rain_prob, window=window)
+        if getattr(app.state, "checked_cards", None) is None:
+            app.state.checked_cards = load_checked("london", settings.data_dir).get("cards", {})
+        if getattr(app.state, "place_records", None) is None:   # m366: the place records (brain/data/places)
+            app.state.place_records = load_places(settings.data_dir / "places")
+        know = match_engine.Knowledge.build(app.state.place_records, app.state.card_kinds,
+                                            (day or date.today()).isoformat())
+        out = match_engine.rank([match_engine.match(p, t, m, d, amap=app.state.amap, know=know,
+                                                    checked=app.state.checked_cards.get(m.id)) for m in ready])
+        counts = {c: sum(r.cls == c for r in out) for c in match_engine.CLASSES}
+        return {"date": d.date, "classes": counts, "matches": [r.out() for r in out],
+                "note": "Shadow mode: these judgements change no plan. A score is a provisional ranking measure, "
+                        "not a chance of enjoying a place."}
+
+    @app.post("/v1/me/plans/alternatives", status_code=201)
+    def plan_alternatives(body: AlternativesIn, user: db.User = Depends(current_user), s: Session = Depends(session),
+                          p: PopulationModel = Depends(pop)):
+        """m336 (Abram, 24 Nov): "show alternative recommendations when something is unavailable", "preserve the rest
+        of the itinerary", "explain changes". Up to `count` ways to fill a stop's place: each a whole plan (a swap:
+        the other stops kept, the swapped-out ones left out), each new card left out of the next, each with what it
+        changes against the plan it replaces (`compare_to`). The app adopts the one chosen; nothing else changes."""
+        req, out, seen = body.request, [], set()
+        if req.blind:
+            raise HTTPException(422, "the blind comparison is rated as it was chosen")
+        for _ in range(body.count):
+            alt = plan_for(req.model_copy(update={"exclude": sorted(set(req.exclude) | seen)}), user, s, p)
+            came = [st["moment_id"].split("#")[0] for st in alt["stops"] if st.get("rateable")
+                    and st["moment_id"].split("#")[0] not in {k.split("#")[0] for k in req.keep}]
+            if not alt["stops"] or not came or any(set(came) == set(a["came"]) for a in out):
+                break
+            out.append({**alt, "came": came})
+            seen |= set(came)
+        for a in out:
+            a.pop("came")
+        return {"alternatives": out}
+
+    def plan_for(body: PlanRequest, user: db.User, s: Session, p: PopulationModel) -> dict:
+        """make_plan's work, for one request (m336: also each alternative)."""
         day = date.fromisoformat(body.date) if body.date else None
         budget = body.budget_gbp if body.budget_gbp is not None else \
             BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
@@ -694,10 +892,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             start_name=body.start_name, start=body.start, start_time=body.start_time, end_time=body.end_time,
             stops=body.stops, budget_gbp=budget,
             day_label=f"{day:%A} {day.day} {day:%B}" if day else "A day out in London",
-            weekday=day.strftime("%a").lower() if day else None,
+            weekday=day.strftime("%a").lower() if day else None, date=day.isoformat() if day else None,
+            pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by the person's pace
             temp_c=c.temp_c if c else (outlook.temp_c if outlook else None),
             rain_prob=c.rain_prob if c else (outlook.rain_prob if outlook else None),
-            time_limit_s=settings.planner_time_limit_s, sunset=sunset(day) if day else None,
+            # m349 (Abram: "Calculate sunset for the actual date and location"): where the day starts, that date
+            time_limit_s=settings.planner_time_limit_s,
+            sunset=sunset(day, body.start.lat, body.start.lon) if day else None,
             mine=(own := tuple(dayplan.Block(b.kind, tripdays.mins(b.start), tripdays.mins(b.end), b.location,
                                               b.kind == "plans" and b.meal) for b in body.mine
                                if tripdays.mins(b.start) < tripdays.mins(b.end))),   # m200, m201
@@ -730,7 +931,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                       stops=kept_stops(out, drop_start_pin=True) if here else out, value=plan.value)
         s.add(row)
         s.commit()
-        return {**plan_out(row), "stops": public(out), **head}
+        res = {**plan_out(row), "stops": public(out), **head}
+        if body.compare_to:   # m336: what this plan changes against the one it replaces
+            old = s.get(db.Plan, body.compare_to)
+            if old is not None and old.user_id == user.id and not hidden(old):
+                # m341: a plan that starts later than the one it replaces ("re-plan the rest of today") is compared
+                # with what was still ahead of it
+                first = min((st.get("arrive") or "23:59" for st in old.stops), default="00:00")
+                since = body.start_time if body.start_time > first else None
+                res["change"] = dayplan.plan_change(public(old.stops), res["stops"], since)
+        return res
 
     @app.get("/v1/example-day")
     def example_day(s: Session = Depends(session), p: PopulationModel = Depends(pop)):
@@ -1191,6 +1401,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         cards_at = app.state.swipe_cards
         disliked = {cid for sw in user.swipes if f"place:{sw.item}" not in fixed and sw.reaction == "didnt_enjoy"
                     and sw.item in cards_at for cid in cards_at[sw.item][1]}
+        disliked |= {cid for _, ids in dayplan.kept_out(   # m326: kinds they didn't enjoy, and age rules
+            ready, [(sw.item, sw.reaction) for sw in user.swipes if f"place:{sw.item}" not in fixed],
+            app.state.swipe_types, app.state.card_kinds, (user.profile or {}).get("company"),
+            (user.profile or {}).get("activity")) for cid in ids}
         fields = person_fields(user)
         asp = {m.id: (app.state.amap.match(m, fields) if app.state.amap else 0.0) for m in ready}
         per_day = max(1, min(body.stops_per_day, span // tripdays.MIN_PER_STOP))
@@ -1217,6 +1431,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not dest.day_plans:
             raise HTTPException(422, "day plans aren't ready for that destination yet")
         today = datetime.now(ZoneInfo("Europe/London")).date()
+        kids = tuple(body.party.children) if body.party and body.party.children else None   # m358: age rules
         if body.start_date + timedelta(days=body.nights) < today:   # a trip under way can still plan its later days
             raise HTTPException(422, "this trip has ended")
         if body.start_date > today + timedelta(days=330):
@@ -1246,9 +1461,37 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         ready = [m for m in moments_by_id(s).values() if m.status == "ready"]
         used = set(body.exclude)
         budget = BUDGET_BAND_GBP.get((user.profile or {}).get("budget_band"))
+        # m356: with several adults' own budgets, the day fits the smallest (everyone can afford it)
+        if body.party and (own_b := [b for b in body.party.adult_budgets_gbp if b is not None]):
+            budget = min(own_b + ([budget] if budget is not None else []))
         out = []
 
         own_days = {d.day: d for d in body.personal}   # m200: the person's own time, by day
+        # m346: the trip's own day feel, else the profile's default, else balanced; never inferred from anything else
+        day_feel = body.day_feel or (user.profile or {}).get("day_feel") or "balanced"
+        by_ready = {m.id: m for m in ready}
+        # m331: the cards at places they said they loved: never refused for a long journey
+        loved_sets = [tuple(app.state.swipe_cards[sw.item][1]) for sw in user.swipes
+                      if sw.reaction == "loved" and sw.item in app.state.swipe_cards]
+        loved_cards = {cid for ids in loved_sets for cid in ids}
+
+        def loved_for(part: tripdays.Part, day: date) -> str | None:
+            """m331 (Abram: "preserve strong preferences"): a place they loved that the trip hasn't been to yet, open
+            and fitting this stretch of the day and its budget, is that day's must-do, one a day, so a trip holds
+            each loved place once where it can (the family's and Margaret's Uber Boat, Sam's Borough Market). The
+            planner leaves a must-do out if it can't fit the day."""
+            wd, ds = day.strftime("%a").lower(), day.isoformat()
+            lo, hi = tripdays.mins(part.start_time), tripdays.mins(part.end_time)
+            for ids in loved_sets:
+                if set(ids) & used:
+                    continue
+                for cid in ids:
+                    m = by_ready.get(cid)
+                    if m and cid not in body.exclude and m.open_on(wd, ds) and (budget is None or (m.cost_gbp or 0) <= budget) \
+                            and dayplan.fits_day(dayplan.candidate_for(m, 0.0, wd, ds), lo, hi) and (
+                            part.toward is None or ((pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward))):
+                        return cid
+            return None
 
         def blocks_for(i: int) -> tuple[dayplan.Block, ...]:
             d = own_days.get(i)
@@ -1259,15 +1502,40 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         def fill(part: tripdays.Part, day: date, i: int, label: str, tag: str,
                  mine: tuple[dayplan.Block, ...] = (), relaxed: bool = False) -> tuple[dict, list[dict]] | None:
             """Plan one stretch of the day, trying one stop fewer if the planner can't fit them all. m200: `mine` is
-            the person's own time, planned around."""
-            for n in dict.fromkeys((part.stops, part.stops - 1)):
-                if n < 1:
+            the person's own time, planned around. m326 (the London gate, G2): a stretch that would end more than
+            EARLY_MAX_MIN before its end time tries up to EXTRA_PLACES_MAX more places, so the person's places a day are a pace,
+            not where the day stops; the first that fills the stretch is kept, else the one that ends latest."""
+            best = None
+            # m346: the extra places follow the day feel: none for relaxed, up to 2 for balanced, up to 4 for full,
+            # strong matches only (m335) and within the pace's journeys (m333)
+            extra_max = EXTRA_BY_FEEL[day_feel]
+            more = () if tag == "before" or mine else tuple(part.stops + k for k in range(1, extra_max + 1))
+            want = None if tag == "before" or mine else loved_for(part, day)
+            for n in dict.fromkeys((part.stops, *more, part.stops - 1)):
+                if n < 1 or (best is not None and n < part.stops):
                     continue
+                if best is not None and n > part.stops and best[3] <= 0:   # m331: no excess left: keep it
+                    break
+                # m326: an extra place never takes what the trip's later days need (their places a day, each)
+                if n > part.stops and len(ready) - len(used) - n < (total - i - 1) * body.stops_per_day:
+                    break
                 outlook = app.state.forecast.for_window(day, part.start_time, part.end_time)   # Stage 1
+                # m326: the extra tries search for half as long, so a trip still plans in seconds
+                limit = settings.planner_time_limit_s if n <= part.stops else settings.planner_time_limit_s / 2
                 brief = dayplan.Brief(start_name=part.start_name, start=part.start, start_time=part.start_time,
                                       end_time=part.end_time, stops=n, budget_gbp=budget, day_label=label,
-                                      weekday=day.strftime("%a").lower(), time_limit_s=settings.planner_time_limit_s,
-                                      sunset=sunset(day), mine=mine, relaxed=relaxed,
+                                      weekday=day.strftime("%a").lower(), date=day.isoformat(), time_limit_s=limit,
+                                      extra=n > part.stops,   # m329: an extra place is a genuine match only
+                                      extra_bonus=EXTRA_BONUS_BY_FEEL[day_feel],
+                                      # m333: and beyond the places they asked for (a stretch's stops count
+                                      # lunch too), a strong one
+                                      base_stops=part.stops - (1 if part.lunch and dayplan.spans_lunch(
+                                          tripdays.mins(part.start_time), tripdays.mins(part.end_time)) else 0),
+                                      pace=(user.profile or {}).get("activity") or "unstated",   # m331: journey costs by pace
+                                      # m349: the sunset for that date where the trip is
+                                      sunset=sunset(day, dest.lat, dest.lon, SUN_TZ.get(dest.country_code,
+                                                                                        "Europe/London")),
+                                      mine=mine, relaxed=relaxed,
                                       # m201: plans they'll eat during take lunch's place, when they fall in this stretch
                                       lunch=part.lunch and not any(b.meal and dayplan.overlaps_lunch(b) for b in mine),
                                       temp_c=outlook.temp_c if outlook else None,
@@ -1277,36 +1545,87 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 pool = ready if part.toward is None else [   # D122: the place on the way really is on the way
                     m for m in ready if (pt := m.start()) and tripdays.on_the_way(pt, part.start, part.toward)]
                 plan, stops, head = personal_day(s, user, p, brief, pool, familiar=False, exclude=sorted(used),
-                                                 post=post, feelings=feelings or None, fallback=False, travel=view)
+                                                 must_do=want if want in {m.id for m in pool} else None,
+                                                 post=post, feelings=feelings or None, fallback=False, travel=view,
+                                                 children=kids)
+                if want and want not in {st["moment_id"].split("#")[0] for st in stops}:
+                    want = None   # it didn't fit: the day's other tries go without it
                 if outlook:
                     head["weather"] = outlook.out()
                 if not any(st["rateable"] for st in stops):   # journey round 2: lunch alone isn't a planned day
                     continue
-                used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
-                # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
-                # location, never its name")
-                row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
-                              stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
-                              intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
-                                      **({"weather": outlook.out()} if outlook else {})})
-                s.add(row)
-                s.flush()
-                return {**plan_out(row), "stops": public(stops), **head}, stops
-            return None
+                early = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops)
+                # m331: what's still wrong with this plan: an early end past EARLY_MAX_MIN, and avoidable waiting
+                # mid-day (each wait past FREE_TIME_MIN), minute for minute; m333: and travel past the pace's
+                # budget. The extra places are tried while it isn't zero, and the plan with the least is kept.
+                excess = max(0, early - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
+                    stops, brief.start_time, by_ready, brief.end_time, brief.weekday, brief.date) + \
+                    dayplan.travel_over(stops, brief.pace)   # m333: and travel past the pace's budget
+                # m329 (Abram: "near his existing route, without a disproportionate transfer"): a plan with extra
+                # places is kept only if no journey in it is longer than the visit it leads to (30 min always allowed)
+                if n > part.stops and dayplan.disproportionate(stops, loved_cards):
+                    continue
+                if best is None or excess < best[3]:
+                    best = (plan, stops, head, excess, brief, outlook)
+            if best is None:
+                return None
+            # m353 (G12): a day that crosses London and comes back to where it was loses the place it comes back to,
+            # when a day without it is nearly as full (no more than BACK_EXCESS_MAX minutes more of what's still wrong)
+            # m353, m360: and a named substantial meal within three hours of another one goes too (dayplan.meals_close)
+            if (back := dayplan.backtracks(best[1], loved_cards)
+                    + dayplan.meals_close(best[1], app.state.card_kinds)) and not mine:
+                plan2, stops2, head2 = personal_day(
+                    s, user, p, best[4], pool, familiar=False, exclude=sorted(used | set(back)),
+                    must_do=want if want in {m.id for m in pool} and want not in back else None,
+                    post=post, feelings=feelings or None, fallback=False, travel=view, children=kids)
+                if any(st["rateable"] for st in stops2) and not dayplan.backtracks(stops2, loved_cards) and \
+                        not dayplan.meals_close(stops2, app.state.card_kinds):
+                    early2 = tripdays.mins(part.end_time) - max(tripdays.mins(st["depart"]) for st in stops2)
+                    excess2 = max(0, early2 - dayplan.EARLY_MAX_MIN) + dayplan.avoidable_wait(
+                        stops2, best[4].start_time, by_ready, best[4].end_time, best[4].weekday, best[4].date) + \
+                        dayplan.travel_over(stops2, best[4].pace)
+                    if excess2 <= best[3] + BACK_EXCESS_MAX:
+                        if best[5]:
+                            head2["weather"] = best[5].out()
+                        best = (plan2, stops2, head2, excess2, best[4], best[5])
+            plan, stops, head, _, brief, outlook = best
+            # m326: the chosen plan, as before
+            dayplan.state_free_time(stops, brief.start_time, by_ready,   # G1: no silent wait
+                                    brief.end_time, brief.weekday, brief.date)
+            head["totals"] = dayplan.plan_totals(stops, app.state.travel)   # m345: the finish after longer stays
+            if body.party and (body.party.adults > 1 or body.party.children):   # m356: each traveller and the party
+                head["party"] = dayplan.party_breakdown(stops, by_ready, body.party.adults, body.party.children,
+                                                        body.party.adult_budgets_gbp, body.party.group_budget_gbp)
+            # m346 (G2c): the time left at the end of the day is said as the person's own, with what they can do with it
+            if free := dayplan.free_after(stops, brief.end_time, by_ready, brief.weekday, brief.date, day_feel):
+                head["free_after"] = free
+            used.update(st["moment_id"].split("#")[0] for st in stops if st["rateable"])
+            # audit SEC-06: the stay's name is used in the day's wording, and never kept (privacy notice: "its
+            # location, never its name")
+            row = db.Plan(user_id=user.id, kind="personal", date=day.isoformat(), value=plan.value,
+                          stops=kept_stops(stops, hide=stay_named) if stay_named else stops,
+                          intent={"trip": True, "day": i, "part": tag, "feelings": feelings,
+                                  **({"weather": outlook.out()} if outlook else {})})
+            s.add(row)
+            s.flush()
+            return {**plan_out(row), "stops": public(stops), **head}, stops
 
         for i in wanted:
             day = body.start_date + timedelta(days=i)
             label = f"{day:%A} {day.day} {day:%B}"
             own = own_days.get(i)
             blocks = blocks_for(i)
-            # m200: a relaxed day has one place fewer (never none), so each stays longer
+            # m200: a day the person marked relaxed has one place fewer (never none), so each stays longer. m346 (Abram:
+            # "two places and choose Relaxed. Two excellent experiences finishing at 15:00 can be a successful day"): a
+            # relaxed day feel keeps the places they asked for, with longer stays and nothing added
+            calm = bool(own and own.relaxed) or day_feel == "relaxed"
             places = max(1, body.stops_per_day - (1 if own and own.relaxed else 0))
             fr = tripdays.frame_day(i, total, cfg, est, stay=start, stay_name=start_name, stay_chosen=body.stay is not None,
                                     day_start=body.day_start, day_end=body.day_end, stops=places,
                                     arrive=arrive, leave=leave, travel_light=body.travel_light)
             legs = list(fr.legs)
             entry = {"index": i, "date": day.isoformat(), "kind": fr.kind, "plan": None, "before": None,
-                     "window": None, "title": fr.title, "free_day": bool(own and own.free_day),
+                     "window": None, "title": fr.title, "free_day": bool(own and own.free_day), "day_feel": day_feel,
                      "relaxed": bool(own and own.relaxed),
                      "mine": [{"kind": b.kind, "start": tripdays.hhmm(b.start_min), "end": tripdays.hhmm(b.end_min),
                                "planned": False} for b in blocks]}
@@ -1330,9 +1649,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 entry["title"] = fr.title
             if fr.main:
                 entry["window"] = {"start": fr.main.start_time, "end": fr.main.end_time, "stops": fr.main.stops}
-                if got := fill(fr.main, day, i, label, "main", blocks, relaxed=bool(own and own.relaxed)):
+                if got := fill(fr.main, day, i, label, "main", blocks, relaxed=calm):
                     entry["plan"] = got[0]
-                    entry["title"] = got[0]["feel_line"] or label
+                    # m353: what changed against this day's plan before, when the app sends it (one of their own)
+                    if (old_id := body.compare_to.get(i)) is not None and (
+                            old := s.get(db.Plan, old_id)) is not None and old.user_id == user.id:
+                        entry["plan"]["change"] = dayplan.plan_change(old.stops, got[1])
+                    # m337: the day's title names its own places; the feel line stays "how the day moves"
+                    entry["title"] = reasons.day_title(got[1], {m.id: m for m in ready}, feelings or []) or label
                     planned = {int(st["moment_id"][4:st["moment_id"].index("@")])
                                for st in got[1] if st["moment_id"].startswith("mine")}
                     for k, b in enumerate(entry["mine"]):
@@ -1354,10 +1678,135 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                               # m200: how many days keep time for the person (never what for, or when)
                               "own_time": sum(bool(d.mine) for d in body.personal),
                               "free_days": sum(d.free_day for d in body.personal),
-                              "relaxed": sum(d.relaxed for d in body.personal)}))
+                              "relaxed": sum(d.relaxed for d in body.personal), "day_feel": day_feel}))
         s.commit()
-        return {"total_days": total, "days": out, "start": start_name,
+        return {"total_days": total, "days": out, "start": start_name, "day_feel": day_feel,
                 "used": sorted(used)}   # sent back as `exclude` when planning the later days
+
+    # ---- group trips (m358) ---------------------------------------------------------------
+    GROUP_MAX = 6
+    LABELS = [f"Member {c}" for c in "ABCDEF"]
+
+    def _group_for(s: Session, gid: int, user: db.User) -> tuple[db.GroupTrip, db.GroupMember]:
+        """The trip and the caller's own membership; a trip they're not in is "not found", never "forbidden"."""
+        g = s.get(db.GroupTrip, gid)
+        me = next((m for m in (g.members if g else []) if m.user_id == user.id), None)
+        if g is None or me is None:
+            raise HTTPException(404, "no such group trip")
+        return g, me
+
+    def _group_view(g: db.GroupTrip, me: db.GroupMember) -> dict:
+        """What a member sees: the days, and the members by label (whether each agreed to be named), never anyone's
+        answers. The invite code only for the organiser, who shares it."""
+        return {"id": g.id, "settings": g.settings, "you": me.label,
+                "code": g.code if g.owner_id == me.user_id else None,
+                "members": [{"label": m.label, "you": m.user_id == me.user_id, "named": m.shares_preferences}
+                            for m in sorted(g.members, key=lambda m: m.label)]}
+
+    @app.post("/v1/me/groups", status_code=201)
+    def create_group(body: GroupTripIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358 (Abram, 25 Nov: "Include actual collaborative trip creation with separate adult accounts"): an organiser
+        starts a shared trip and gets a code to send to friends. Friends only: no strangers, no matching."""
+        code = secrets.token_hex(4).upper()
+        g = db.GroupTrip(owner_id=user.id, code=code, settings={"start_date": body.start_date.isoformat(),
+                                                                "nights": body.nights, "per_day": body.per_day})
+        s.add(g)
+        s.flush()
+        me = db.GroupMember(trip_id=g.id, user_id=user.id, label=LABELS[0], shares_preferences=body.share_preferences)
+        s.add(me)
+        s.commit()
+        s.refresh(g)
+        return _group_view(g, me)
+
+    @app.get("/v1/me/groups")
+    def my_groups(user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358: the shared trips this person is in, newest first, so the app can show them again after a restart."""
+        mine = sorted((m.trip_id for m in user.group_memberships), reverse=True)
+        out = []
+        for gid in mine:
+            g, me = _group_for(s, gid, user)
+            out.append(_group_view(g, me))
+        return {"groups": out}
+
+    @app.post("/v1/me/groups/join", status_code=201)
+    def join_group(body: GroupJoinIn, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358: a friend joins with the code, from their own account, agreeing that their own answers help plan this
+        trip; they choose whether the plan may name them. Joining twice changes nothing."""
+        g = s.scalar(select(db.GroupTrip).where(db.GroupTrip.code == body.code))
+        if g is None:
+            raise HTTPException(404, "no group trip has that code")
+        me = next((m for m in g.members if m.user_id == user.id), None)
+        if me is None:
+            if len(g.members) >= GROUP_MAX:
+                raise HTTPException(409, f"a group trip holds {GROUP_MAX} people")
+            used = {m.label for m in g.members}
+            me = db.GroupMember(trip_id=g.id, user_id=user.id, label=next(x for x in LABELS if x not in used),
+                                shares_preferences=body.share_preferences)
+            s.add(me)
+            s.commit()
+            s.refresh(g)
+        return _group_view(g, me)
+
+    @app.get("/v1/me/groups/{gid}")
+    def get_group(gid: int, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        g, me = _group_for(s, gid, user)
+        return _group_view(g, me)
+
+    @app.post("/v1/me/groups/{gid}/plan")
+    def plan_group(gid: int, user: db.User = Depends(current_user), s: Session = Depends(session),
+                   p: PopulationModel = Depends(pop)):
+        """m358: the shared days from every member's own answers (group.py: fair by the product of everyone's chances,
+        nobody's no overruled, the smallest budget, the slowest stated pace). Each stop says who it suits by label
+        only for members who agreed, else counted (m354); each member sees only their own share of favourites."""
+        from . import group as grp
+        from .catalogue import load_catalogue
+        from .discovery import Scorer
+        g, me = _group_for(s, gid, user)
+        if len(g.members) < 2:
+            raise HTTPException(422, "a group trip plans once a friend has joined")
+        if getattr(app.state, "group_catalogue", None) is None:   # read once; a moments reload clears it
+            app.state.group_catalogue = [x for x in load_catalogue()
+                                         if x.status == "ready" and x.id.startswith("xp:gb:london:")]
+        cands = app.state.group_catalogue
+        xp_of = {c: x.id for x in cands for c in x.legacy_ids}       # a moment card's id → its catalogue record
+        cards_at = app.state.swipe_cards
+
+        def said(u: db.User, reaction: str) -> list[str]:
+            """The ready places at the swipe places a member gave this answer to, in their order (D117: an answer
+            they marked "not right" doesn't count)."""
+            fixed = corrected(u)
+            return list(dict.fromkeys(xp_of[c] for sw in u.swipes if sw.reaction == reaction
+                                      and f"place:{sw.item}" not in fixed and sw.item in cards_at
+                                      for c in cards_at[sw.item][1] if c in xp_of))
+
+        people = []
+        for m in sorted(g.members, key=lambda m: m.label):
+            u = s.get(db.User, m.user_id)
+            # each member's own stored fit, read only: one member planning never rewrites another's record. m358: their
+            # own "Didn't enjoy it" places are a veto ("a place one of you said no to is left out", as the apps say),
+            # and the first place they loved that has a ready card is their must-see, so each brings something of theirs
+            people.append(grp.Member(m.label, Scorer(p, posterior(u, p).mean),
+                                     budget_per_day=BUDGET_BAND_GBP.get((u.profile or {}).get("budget_band")),
+                                     musts=tuple(said(u, "loved")[:1]), rejects=tuple(said(u, "didnt_enjoy")),
+                                     pace=(u.profile or {}).get("activity"), shares_preferences=m.shares_preferences))
+        st = g.settings
+        out = grp.plan(people, cands, days=int(st.get("nights", 0)) + 1, per_day=int(st.get("per_day", 3)),
+                       must_phrase="A place {who} loved")   # m358: their must-see is the first place they loved
+        s.add(db.Event(user_id=user.id, name="group_plan", props={"members": len(g.members), "days": len(out.days)}))
+        s.commit()
+        return {"group": _group_view(g, me), "method": out.method,
+                "days": [[{"id": x.id, "title": x.title, "why": out.why.get(x.id)} for x in day] for day in out.days],
+                "notes": out.notes,
+                # said to the person reading it ("…among your favourites"), not about them
+                "your_share": (out.shares.get(me.label) or "").replace("they're", "you're").replace(
+                    "their favourites", "your favourites") or None}
+
+    @app.post("/v1/me/groups/{gid}/leave", status_code=204)
+    def leave_group(gid: int, user: db.User = Depends(current_user), s: Session = Depends(session)):
+        """m358: anyone can leave; the organiser leaving ends the trip for everyone (it was theirs)."""
+        g, me = _group_for(s, gid, user)
+        s.delete(g if g.owner_id == user.id else me)
+        s.commit()
 
     # ---- sharing a rated moment (D114) -----------------------------------------------------
     @app.get("/v1/me/referral")
@@ -1396,6 +1845,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # ---- admin (Abram) ------------------------------------------------------------
     @app.post("/v1/admin/moments/reload", dependencies=[Depends(admin)])
     def reload_moments(s: Session = Depends(session)):
+        app.state.group_catalogue = None                         # m358: group plans read the cards again too
         return _reload_moments(s, settings)
 
     @app.get("/v1/admin/safety", dependencies=[Depends(admin)])
@@ -1519,9 +1969,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except backup.BackupError as e:
             raise HTTPException(503, str(e))
         ops.log.info("backup sealed: %d rows, %d bytes", sum(counts.values()), len(blob))
+        size = backup.database_bytes(app.state.engine)   # A4: read by the nightly job's storage warning
         return Response(blob, media_type="application/octet-stream",
                         headers={"Content-Disposition": "attachment; filename=odys-brain.odysbk",
-                                 "Cache-Control": "no-store"})
+                                 "Cache-Control": "no-store",
+                                 **({"X-Database-Bytes": str(size)} if size is not None else {})})
 
     return app
 

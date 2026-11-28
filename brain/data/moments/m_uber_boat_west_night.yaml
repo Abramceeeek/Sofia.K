@@ -17,6 +17,17 @@ kind: moment
 variant_of: uber_boat_greenwich_west
 variant: night
 direction: "Greenwich -> Westminster (westbound)"
+# m353: the boat's course, for "never back over it": its piers in order, from Overture Maps Places (open data, read
+# 2026-11-24): Greenwich Pier, Masthouse Terrace Pier, Canary Wharf Pier, Tower Millennium Pier, London Bridge City
+# Pier, Embankment Pier, then the card's own end, Westminster Pier (the route the card's own text describes)
+route:
+  - {lat: 51.48398, lon: -0.00939}
+  - {lat: 51.48753, lon: -0.02236}
+  - {lat: 51.50538, lon: -0.02866}
+  - {lat: 51.50774, lon: -0.07966}
+  - {lat: 51.5067, lon: -0.08469}
+  - {lat: 51.50729, lon: -0.12138}
+  - {lat: 51.50225, lon: -0.12317}
 place:
   name: "Uber Boat by Thames Clippers, Greenwich Pier to Westminster Pier"
   lat: 51.48406

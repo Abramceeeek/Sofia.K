@@ -25,7 +25,7 @@ approach:
   step_free: null
 experience:
   what_happens: "Walk from Stratford into the park: open space, water and the Olympic buildings. Slow down and hang out."   # + FRIEND
-  why_it_works: "Green, water and birds: a calm break in the day."   # FOUNDER (card 10)
+  why_it_works: "Space, water and the Olympic buildings: room to spread out after Stratford's crowds."   # m349: Claude's wording from this card's own facts; was Abram's line shared by several cards ("Green, water and birds: a calm break in the day."), for Abram to check
   duration_min: [30, 45] # GUESS
   end_point: null
 best_time:

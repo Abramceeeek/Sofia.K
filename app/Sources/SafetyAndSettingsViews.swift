@@ -88,6 +88,7 @@ struct SafetyView: View {
             }
             .task {
                 await model.loadSafety()
+                await model.loadPreviews()
                 model.markSafetySeen()
             }
             .sheet(isPresented: $showSettings) { SettingsView().brainFeedback() }
@@ -117,6 +118,7 @@ struct SafetyView: View {
                 Label("Call 999", systemImage: "phone.fill")
             }
             .buttonStyle(PillStyle(kind: .danger, height: 54))
+            PreviewEmergencyLines()                 // m320: Spain's 112, on a phone with the Seville preview
         }
         .padding(18)
         .background(Theme.emergencyBg, in: RoundedRectangle(cornerRadius: 20))
@@ -200,6 +202,7 @@ struct SettingsView: View {
                     Text("Your reactions to places, your choices between example days, the short survey and your choice between two plans.")
                     Text("Your plans, your ratings and how each day felt, and anything you add under \"Improve future plans\".")
                     Text("Anything you send in Help & safety.")
+                    Text("If you plan a trip with friends: your member letter (Member A, B…), when you agreed, and whether the plan may name you. The others never see your answers.")   // m358
                     Text("All of it on our server in Frankfurt, in the EU (run by Render), then deleted.")
                 }
                 .listRowBackground(Theme.surface)
@@ -377,6 +380,10 @@ struct DemoScreen: View {
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body") }
             }
+        case "stoprain":                                                        // 10p (m349): the one-tap rain swap
+            if let stop = model.plan?.stops.first(where: { $0.rainSwapId != nil }) ?? demoStop {
+                NavigationStack { StopView(stop: stop, demoScroll: "body") }
+            }
         case "stopwhy":                                                         // 10o (m230): "Why this stop?" open
             if let stop = demoStop {
                 NavigationStack { StopView(stop: stop, demoScroll: "body", demoWhy: true) }
@@ -414,6 +421,8 @@ struct DemoScreen: View {
         case "improve": ImproveView()                                           // 12a
         case "improveq": ImproveView(startAt: 0)                                // 12b (D115)
         case "safety": SafetyView()                                             // 13a
+        case "preview": PreviewView(key: "seville")                            // 34 (m320): the Seville preview
+        case "group", "groupjoin", "groupplan": GroupTripsView(demoScreen: name)  // 35a-c (m358): with friends
         case "safetysend": SafetyView(sent: Self.sentReply)                     // 13b: just sent
         case "safetyreply": SafetyView()                                        // 13c: a reply has come (D118)
         case "settings": SettingsView()                                         // 14a

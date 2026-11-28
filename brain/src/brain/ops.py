@@ -41,6 +41,8 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from . import versions
+
 log = logging.getLogger("brain.requests")
 errors = logging.getLogger("brain.errors")
 
@@ -305,6 +307,7 @@ def install(app: FastAPI) -> None:
     @app.middleware("http")
     async def ops(request: Request, call_next):
         limiter, alerts = app.state.limiter, app.state.alerts
+        versions.APP_BUILD.set(versions.app_build(request.headers.get(versions.HEADER)))   # m327: per-version feedback
         t0 = time.perf_counter()
         method, path = request.method, request.url.path
         route = _match(app, request)

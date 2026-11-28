@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import math
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
+from functools import lru_cache
 from pathlib import Path
 
 import yaml
@@ -23,7 +24,7 @@ from .aspiration import AspirationMap
 from .features import Conditions, moment_features
 from .moments import Moment, Point
 from .personal import DeltaPosterior
-from .planner import (Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
+from .planner import (PACE_TRAVEL, PACE_TRAVEL_BUDGET, Candidate, DayPlan, LegWeights, candidate_for, extend_dwell, fits_day, hhmm, parse_hhmm,
                       plan_day, spread_to_end)
 from .population import PopulationModel
 from .scoring import contributions, named_weights, value_gbp
@@ -41,6 +42,366 @@ def load_swipe_items(path: Path) -> dict[int, Moment]:
             "id": it.get("moment_id") or f"swipe_{int(num):02d}", "title": it["name"],
             "place": {"name": it["name"]}, "features": {"place": it["place"], "moment": it["moment"]},
             "cost_gbp": it.get("cost_gbp"), "source": "swipe-item"})
+    return out
+
+
+# m326 (the London gate; Abram's acceptance tests, 24 Nov): a day may end at most this early, and no wait longer than
+# FREE_TIME_MIN is left unexplained
+EARLY_MAX_MIN = 45
+FREE_TIME_MIN = 20
+
+
+def _hm(n: int) -> str:
+    h, m = divmod(int(n), 60)
+    return f"{h} hr {m} min" if h and m else f"{h} hr" if h else f"{m} min"
+
+
+def say(st: dict, text: str, first: bool = False) -> None:
+    """m349: a sentence for the person about this stop (free time, a later start, an estimate, no dinner). It goes on
+    the stop's text lines (the blind pair's format, which shows only those) and on `notes`, which the apps show under
+    the stop on the day; before the journey audit's fix the day view never showed it. In place."""
+    for field in ("lines", "notes"):
+        cur = list(st.get(field) or [])
+        st[field] = [text] + cur if first else cur + [text]
+
+
+def state_free_time(stops: list[dict], day_start: str, by_id: Mapping[str, Moment] | None = None,
+                    day_end: str | None = None, weekday: str | None = None, date: str | None = None) -> None:
+    """m326 (G1, G2): a wait before a stop (the planner waits for its best time or its opening) first becomes a longer
+    stay at the place before it, up to the top of that card's own time range (`dwell_targets`) and within its times to
+    go; so does the end of the day, after the last stop. What's still over FREE_TIME_MIN is said as the next stop's
+    first line, as time to yourself near where you are, never an unexplained gap. In place."""
+    by_id = by_id or {}
+
+    def stretch(st: dict, room: int) -> int:
+        m = by_id.get(_base(st["moment_id"]))
+        if m is None or room <= 0 or st.get("lunch") or str(st["moment_id"]).startswith(("lunch@", "dinner@", "mine")):
+            return 0
+        a, d = parse_hhmm(st["arrive"]), parse_hhmm(st["depart"])
+        top = dwell_targets(by_id, [m.id])[m.id]
+        close = max((hi for lo, hi in m.windows(weekday, date) if lo <= a <= hi), default=d)
+        extra = max(0, min(room, top - (d - a), close - d))
+        if extra:
+            st["depart"] = hhmm(d + extra)
+        return extra
+
+    prev, prev_end, prev_name = None, parse_hhmm(day_start), None
+    for st in stops:
+        arrive, travel = parse_hhmm(st["arrive"]), int(st.get("travel_min") or 0)
+        idle = arrive - travel - prev_end
+        if prev is not None and idle > 0:
+            idle -= stretch(prev, idle)
+        if idle > FREE_TIME_MIN and prev is None:
+            # m331: before the first stop it's a later start, not a wait: the planner begins when the first place
+            # is ready (an opening, or the day's shape)
+            say(st, f"A gentle start: your first stop is at {st['arrive']}, so the time before it is yours.", first=True)
+            st["free_before_min"], st["free_before_kind"] = idle, "start"
+        elif idle > FREE_TIME_MIN:
+            where = f" near {prev_name}" if prev_name else ""
+            line = (f"Free time first: about {_hm(idle)} to yourself{where}. Linger, or find a coffee, then head here "
+                    f"for {st['arrive']}.")
+            say(st, line, first=True)
+            st["free_before_min"], st["free_before_kind"] = idle, "wait"
+        prev, prev_end = st, parse_hhmm(st["depart"])
+        # m345: where they are, by the place's own name ("the Royal Festival Hall"), never a stop's whole title
+        # pasted into the sentence ("near A rest in the Royal Festival Hall's free foyers")
+        card = by_id.get(_base(str(st.get("moment_id") or "")))
+        prev_name = st.get("end_name") or (re.split(r"[,:(]", card.place.name)[0].strip() if card else
+                                           _short_title(st.get("title") or ""))
+    if prev is not None and day_end:   # the end of the day: a longer last stay, within its times
+        stretch(prev, parse_hhmm(day_end) - prev_end)
+
+
+def free_after(stops: list[dict], day_end: str | None, by_id: Mapping[str, Moment] | None = None,
+               weekday: str | None = None, date: str | None = None, day_feel: str | None = None) -> dict | None:
+    """m346 (Abram, 24 Nov, G2c: "Is remaining time clearly disclosed and genuinely useful?"; "Free time is clearly
+    presented without making the traveller feel that something is missing"): the time left after the last stop, when
+    it's more than EARLY_MAX_MIN, said as the person's own, with the one thing the plan knows they can do with it: stay
+    on where they are, while it's open. A relaxed day says it's the day they asked for; a fuller one says why nothing
+    was added. Never a reason the planner didn't have."""
+    if not stops or not day_end:
+        return None
+    last = stops[-1]
+    if str(last.get("moment_id") or "").startswith("mine"):
+        return None                     # the person's own plans end the day
+    start, end = parse_hhmm(last["depart"]), parse_hhmm(day_end)
+    if end - start <= EARLY_MAX_MIN:
+        return None
+    free = end - start
+    card = (by_id or {}).get(_base(str(last.get("moment_id") or "")))
+    name = (re.split(r"[,:(]", card.place.name)[0].strip() if card else None)
+    stay_on = None
+    # m352 (review): never "open until" for a public street, a bridge or a place open all day and night
+    always = card is not None and re.search(r"always open|24 hours", card.best_time.hours or "", re.I)
+    if card is not None and not always:
+        arrive = parse_hhmm(last["arrive"])
+        close = max((hi for lo, hi in card.windows(weekday, date) if lo <= arrive <= hi), default=start)
+        if close - start >= 20:
+            # m355 (a review of d6c6ab6: "Tate Modern is open until 17:00" was the traveller's end, not the gallery's
+            # 18:00): the place's own closing time
+            stay_on = f"{name} is open until {hhmm(close)} if you'd like to stay on."
+    head = (f"A relaxed day, as you asked: the rest of it is yours from {last['depart']}"
+            if day_feel == "relaxed" else
+            f"The rest of the day is yours from {last['depart']}")
+    text = f"{head}, about {_hm(free)} until {day_end}."
+    if day_feel != "relaxed":
+        text += " It's kept free rather than filled with a place that suits you less."
+    if stay_on:
+        text += " " + stay_on
+    return {"from": last["depart"], "until": day_end, "min": free, "text": text, "stay_on": bool(stay_on)}
+
+
+BACK_NEAR_KM, BACK_AWAY_KM = 0.6, 3.0   # m353: back within 600 m of a place left earlier, after going over 3 km away
+
+
+def backtracks(stops: list[dict], loved: set[str] | frozenset[str] = frozenset()) -> list[str]:
+    """m353 (Abram, 25 Nov: "repeated crossings"): the stops that come back within BACK_NEAR_KM of a place the day left
+    earlier, after going more than BACK_AWAY_KM away (a crossing of London twice). Never a place they loved, a meal
+    or their own time, which are worth the return."""
+    def km(a, b):
+        dy, dx = (a["lat"] - b["lat"]) * 111.2, (a["lon"] - b["lon"]) * 111.2 * math.cos(math.radians(a["lat"]))
+        return math.hypot(dx, dy)
+    out = []
+    pins = [st.get("pin") for st in stops]
+    for j, st in enumerate(stops):
+        mid = str(st.get("moment_id") or "")
+        if not pins[j] or _base(mid) in loved or mid.startswith(("lunch@", "dinner@", "mine")) or \
+                str(st.get("key") or "").endswith(("#lunch", "#dinner")):
+            continue
+        for i in range(j - 1):
+            if pins[i] and km(pins[i], pins[j]) < BACK_NEAR_KM and max(
+                    (km(pins[i], pins[k]) for k in range(i + 1, j) if pins[k]), default=0) > BACK_AWAY_KM:
+                out.append(_base(mid))
+                break
+    return out
+
+
+def party_cost(stops: list[dict], by_id: Mapping[str, Moment], adults: int, children: int) -> dict:
+    """m353: what a day costs a party: each place at its adult price for the adults and its children's price for the
+    children (free places are free for all), meals and fares per person. Where a card doesn't give a children's price
+    the adult one is used and the place is named, so the total is never lower than the real one."""
+    total, unknown = 0.0, []
+    for st in stops:
+        c = float(st.get("cost_gbp") or 0)
+        m = by_id.get(_base(str(st.get("moment_id") or "")))
+        child = c if c == 0 else (m.child_cost_gbp if m is not None and m.child_cost_gbp is not None and
+                                  st.get("cost_kind") != "food" else None)
+        if children and child is None and c > 0 and st.get("cost_kind") != "food":
+            unknown.append(st.get("title") or st.get("moment_id"))
+        total += c * adults + (c if child is None else child) * children
+    fares = transport_gbp(stops)
+    return {"total_gbp": round(total + fares * (adults + children), 2), "adults": adults, "children": children,
+            "child_price_unknown": unknown, "fares_each_gbp": fares}
+
+
+def party_breakdown(stops: list[dict], by_id: Mapping[str, Moment], adults: int, children: list[int],
+                    adult_budgets: list[float | None] = (), group_budget: float | None = None) -> dict:
+    """m356 (Abram, 25 Nov: budgets per person, with a group total): each traveller's estimated cost and the party's,
+    with what's verified and what's estimated, how costs are split, and any budget a day goes over. Children pay a
+    card's own children's price where its source gives one; otherwise the adult price, named. TfL's children's fares
+    aren't verified, so children's fares are shown at the adult fare and said to be so (the total may be lower)."""
+    fares = transport_gbp(stops)
+    adult_cost, child_cost = {}, {}
+    unknown, not_for = [], []
+    for st in stops:
+        c = float(st.get("cost_gbp") or 0)
+        m = by_id.get(_base(str(st.get("moment_id") or "")))
+        adult_cost[id(st)] = c
+        food = st.get("cost_kind") == "food" or str(st.get("moment_id") or "").startswith(("lunch@", "dinner@"))
+        known = c == 0 or (m is not None and m.child_cost_gbp is not None and not food)
+        child_cost[id(st)] = c if c == 0 or food else (m.child_cost_gbp if known else c)
+        if children and not known and not food:
+            unknown.append(st.get("title") or st.get("moment_id"))
+        min_age = (m.rules or {}).get("min_age") if m is not None else None
+        if children and min_age and min(children) < min_age:
+            not_for.append(f"{st.get('title')}: from age {min_age}")
+    adult_day = round(sum(adult_cost.values()) + fares, 2)
+    child_day = round(sum(child_cost.values()) + fares, 2)
+    people = [{"label": f"Adult {i + 1}", "kind": "adult", "cost_gbp": adult_day,
+               "budget_gbp": (adult_budgets[i] if i < len(adult_budgets) else None)} for i in range(adults)]
+    people += [{"label": f"Child {i + 1} ({age})", "kind": "child", "cost_gbp": child_day, "budget_gbp": None}
+               for i, age in enumerate(children)]
+    for x in people:
+        x["over_gbp"] = round(x["cost_gbp"] - x["budget_gbp"], 2) if x["budget_gbp"] is not None and \
+            x["cost_gbp"] > x["budget_gbp"] + 0.5 else None
+    total = round(sum(x["cost_gbp"] for x in people), 2)
+    notes = ["Each person pays for their own tickets, food and fares: nothing in this day is shared, so nothing is "
+             "split."]
+    if unknown:
+        notes.append("Children's prices aren't known for " + ", ".join(unknown) + ", so the adult price is used.")
+    if children and fares:
+        notes.append("Children's fares are shown at the adult fare: TfL's children's fares aren't checked yet, so the "
+                     "real total may be lower.")
+    over_group = round(total - group_budget, 2) if group_budget is not None and total > group_budget + 0.5 else None
+    return {"travellers": people, "total_gbp": total, "group_budget_gbp": group_budget, "over_group_gbp": over_group,
+            "verified": "Tickets: from each place's own page, with the date checked", "estimated":
+            "Meals without a named place, and fares", "notes": notes, "not_for_children": not_for}
+
+
+MEALS_APART_MIN = 180   # m360 (Abram, 26 Nov): three hours between the starts of two substantial meals (was 120, m353)
+# m360: what a substantial meal is. A restaurant meal, a card that is a meal (`meal: lunch`), and the day's lunch and
+# dinner slots. Coffee, pastries, a market tasting, a bakery or a street-food snack aren't, and are never held apart:
+# "Do not suppress genuine food discoveries simply because they are close together" (Abram)
+MEAL_KINDS = frozenset({"restaurant"})
+
+
+@lru_cache(maxsize=1)
+def _default_kinds() -> dict[str, str]:
+    from .config import DATA_DIR
+    return load_card_kinds(DATA_DIR / "catalogue" / "london.yaml")
+
+
+def substantial_meal(st: dict, card_kinds: Mapping[str, str] | None = None) -> bool:
+    """m360: a stop that is a full lunch or dinner, as opposed to a tasting, a snack or coffee."""
+    key, mid = str(st.get("key") or ""), str(st.get("moment_id") or "")
+    if mid.startswith(("lunch@", "dinner@")) or key.endswith(("#lunch", "#dinner")) or st.get("lunch"):
+        return True
+    base = _base(mid)
+    kinds = card_kinds if card_kinds is not None else _default_kinds()
+    m_kind = kinds.get(base)
+    return m_kind in MEAL_KINDS or (st.get("meal") == "lunch")
+
+
+def meals_close(stops: list[dict], card_kinds: Mapping[str, str] | None = None) -> list[str]:
+    """m353, m360 (Abram, 26 Nov: "A substantial restaurant lunch followed by another substantial lunch 141 minutes
+    later should be rejected"): the named substantial meals that start less than MEALS_APART_MIN after another one.
+    A tasting, a snack or coffee is never counted. A generic meal slot, or the person's own plan, isn't named here:
+    it's the named place that goes."""
+    out, last = [], None
+    for st in stops:
+        if not substantial_meal(st, card_kinds):
+            continue
+        at = parse_hhmm(st["arrive"])
+        mid = str(st.get("moment_id") or "")
+        if last is not None and at - last < MEALS_APART_MIN and not mid.startswith(("lunch@", "dinner@", "mine")):
+            out.append(_base(mid))
+            continue
+        last = at
+    return out
+
+
+TRANSFER_ALWAYS_OK = 30   # m329: a journey of up to this long is never called disproportionate
+
+
+def disproportionate(stops: list[dict], loved: set[str] | frozenset[str] = frozenset()) -> list[dict]:
+    """m329: stops reached by a journey longer than the visit itself (and longer than TRANSFER_ALWAYS_OK): 57 min on
+    the Tube for a 50-min visit isn't a good end to a gentle day. m331 (Abram): a place they said they loved is never
+    called disproportionate: "a 35-minute journey to a place someone loves for two hours can be worthwhile"."""
+    out = []
+    for st in stops:
+        if _base(st["moment_id"]) in loved:
+            continue
+        t = int(st.get("travel_min") or 0)
+        stay = parse_hhmm(st["depart"]) - parse_hhmm(st["arrive"])
+        if t > TRANSFER_ALWAYS_OK and t > stay:
+            out.append(st)
+    return out
+
+
+def avoidable_wait(stops: list[dict], day_start: str, by_id: Mapping[str, Moment], day_end: str | None,
+                   weekday: str | None, date: str | None) -> int:
+    """m331: the minutes of waiting a plan would still state mid-day (over FREE_TIME_MIN each), after longer stays;
+    a later start doesn't count. Measured on a copy, so the plan isn't changed."""
+    import copy
+    trial = copy.deepcopy(stops)
+    state_free_time(trial, day_start, by_id, day_end, weekday, date)
+    return sum(st.get("free_before_min", 0) for st in trial if st.get("free_before_kind") == "wait")
+
+
+def travel_over(stops: list[dict], pace: str | None) -> int:
+    """m333: minutes of the day's travel past its pace's budget (PACE_TRAVEL_BUDGET); 0 with no pace."""
+    budget = PACE_TRAVEL_BUDGET.get(pace) if pace else None
+    return max(0, sum(int(st.get("travel_min") or 0) for st in stops) - budget) if budget else 0
+
+
+def _short_title(title: str) -> str:
+    return title.split(":")[0].strip() if title else ""
+
+
+def load_swipe_types(path: Path) -> dict[int, list[str]]:
+    """m326: each swipe place's kind (catalogue.TAXONOMY types), e.g. Sky Garden → [tower, roof_garden]."""
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f)
+    return {int(num): list(it.get("types") or []) for num, it in d["items"].items()}
+
+
+def load_card_kinds(path: Path) -> dict[str, str]:
+    """m326: each London card's kind, from the catalogue (data/catalogue/london.yaml); a missing file means none."""
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f) or {}
+    return {k: v.get("type") for k, v in (d.get("experiences") or {}).items() if v.get("type")}
+
+
+HIGH_VIEWS = ("tower", "roof_garden")   # m331: catalogue kinds that show London from above (one a day)
+RIDE_CATEGORY = "transport_experience"  # m333: the river bus, boat trips, the cable car: rides, not stops
+
+
+@lru_cache(maxsize=1)
+def high_views() -> frozenset[str]:
+    """m331: the cards that show London from above (a tower or a roof garden): a day holds at most one."""
+    from .config import DATA_DIR
+    kinds = load_card_kinds(DATA_DIR / "catalogue" / "london.yaml")
+    return frozenset(k for k, v in kinds.items() if v in HIGH_VIEWS)
+
+
+@lru_cache(maxsize=1)
+def rides() -> frozenset[str]:
+    """m333: the cards that are rides (catalogue category transport_experience): a ride starts from a stop near its
+    start, so the journey to Greenwich comes with Greenwich (Abram, 24 Nov)."""
+    from .config import DATA_DIR
+    path = DATA_DIR / "catalogue" / "london.yaml"
+    if not path.exists():
+        return frozenset()
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f) or {}
+    return frozenset(k for k, v in (d.get("experiences") or {}).items() if v.get("category") == RIDE_CATEGORY)
+
+
+def kept_out(ready: list[Moment], swipes: list[tuple[int, str]], swipe_types: Mapping[int, list[str]],
+             card_kinds: Mapping[str, str], company: str | None,
+             activity: str | None = None, children: Sequence[int] | None = None) -> list[tuple[str, list[str]]]:
+    """m326 (the London gate, G4 and G5; Abram's acceptance tests, 24 Nov): cards never planned for this person, as
+    extra "didn't enjoy" entries (D100 keeps those out of every plan):
+    - **a kind they didn't enjoy:** every card of a kind (a rooftop garden, a tower, a market) where they said they
+      didn't enjoy a place of that kind, unless they loved or were fine with another place of the same kind;
+    - **an age rule:** a card whose own rules set a minimum age (`rules.min_age`), when they travel as a family. The
+      children's ages aren't asked, so a family never gets it (the Santander Cycles bike ride needs riders of 14+);
+    - **only with children** (m340): a card for children with their adults (`rules.with_children`: the Diana Memorial
+      Playground admits only adults supervising children up to 12) is never planned unless they travel as a family;
+    - **a gentle pace** (m329, Abram: "never compromise the traveller's stated pace"): someone who asked for a gentle
+      day never gets a strenuous card (`active` 2: a bike ride, a swim, karting).
+
+    m358: a trip's own children (`children`, their ages, from "Who's going") count too, whatever the profile says: an
+    age rule keeps a card out when any child is under it, and a place only for children with their adults is allowed."""
+    bad = {t for i, r in swipes if r == "didnt_enjoy" for t in swipe_types.get(i, [])}
+    bad -= {t for i, r in swipes if r in ("loved", "fine") for t in swipe_types.get(i, [])}
+    out = []
+    kinds = [m.id for m in ready if card_kinds.get(m.id) in bad]
+    if kinds:
+        out.append(("kinds they didn't enjoy: " + ", ".join(sorted(bad)), kinds))
+    if children:
+        aged = [m.id for m in ready if (m.rules or {}).get("min_age") and min(children) < m.rules["min_age"]]
+        if aged:
+            out.append(("a minimum age, with children", aged))
+        # a place for children up to an age (the playground: up to 12) needs a child that young in the party
+        old = [m.id for m in ready if (m.rules or {}).get("with_children") and (m.rules or {}).get("max_child_age")
+               is not None and min(children) > m.rules["max_child_age"]]
+        if old:
+            out.append(("only with younger children", old))
+    elif company == "family":
+        aged = [m.id for m in ready if (m.rules or {}).get("min_age")]
+        if aged:
+            out.append(("a minimum age, with children", aged))
+    else:   # m340: a place only for children with their adults (the Diana Memorial Playground) is for families only
+        kids = [m.id for m in ready if (m.rules or {}).get("with_children")]
+        if kids:
+            out.append(("only with children", kids))
+    if activity == "gentle":
+        hard = [m.id for m in ready if (m.features.place.get("active") or 0) >= 2]
+        if hard:
+            out.append(("a gentle pace", hard))
     return out
 
 
@@ -81,6 +442,11 @@ class Brief:
     budget_gbp: float | None = None
     day_label: str = "A day out in London"
     weekday: str | None = None     # "mon".."sun": cards closed that day are left out
+    date: str | None = None        # m329: "YYYY-MM-DD": a card's dated closures and early closings apply
+    extra: bool = False            # m329: more places than asked, to fill the day: only genuine matches (no floor relaxing)
+    base_stops: int | None = None  # m333: with `extra`, the places the person asked for; the rest must be strong matches
+    extra_bonus: float | None = None   # m346: with `extra`, what each extra place is worth to the solver (by day feel)
+    pace: str | None = None        # m331: the person's stated pace ("gentle", "medium", "full_on"): journey costs
     temp_c: float | None = None
     rain_prob: float | None = None
     time_limit_s: float = 2.0
@@ -189,11 +555,26 @@ LUNCH_START = (11 * 60 + 30, 13 * 60 + 30)
 
 LUNCH_MIN = 45
 
+# m326 (the London gate, G2; reviews of 24 Nov: "evening food for night people"): a day that runs into the evening
+# gets one dinner stop, like lunch: a flexible "dinner near X" slot of an hour, starting 18:00-20:30, scored as neutral.
+# It counts as one of the day's places, so a day that would otherwise end early is filled with a meal, not padding.
+DINNER_START = (18 * 60, 20 * 60 + 30)
+DINNER_MIN = 60
+DINNER_FROM_END = 19 * 60 + 30     # only for a day that ends at 19:30 or later
+DINNER_OF_LUNCH = 1.5              # GUESS: dinner costs about 1.5 times the day's lunch
+EXTRA_MIN_P = 0.65                 # m333: an extra place's chance of Good, at least (the places asked for: 0.5)
+DINNER_BONUS = 1.0                 # m334: what a dinner adds to a day that runs into the evening (utility units)
+
 
 LUNCH_BONUS = 5.0
 
 
-LUNCH_CARD_MIN = 0.5   # a food card is offered as the lunch stop only if the person is predicted to like it this much
+# m321 (Abram, 21-23 Nov: "it is not showing in any London trip"): a food card is offered as the lunch stop when the
+# person is predicted to like it at least as much as an ordinary lunch. Its price counts only above the ordinary
+# lunch's (`Brief.lunch_gbp`), which the person pays either way; the "lunch near X" slot is scored 0 for the same
+# reason. Before, a food card needed +0.5 with its whole price counted, so no food place reached a London trip.
+LUNCH_CARD_MIN = 0.0
+POP_COST_PER_GBP = 0.025   # the population's cost weight, 0.25 per £10 (priors.yaml), when no person's is given
 
 
 # Journey round 2 (8 Oct): a day that starts at least this long before the lunch window (10:15 or earlier) never
@@ -249,32 +630,80 @@ def dwell_targets(by_id: dict[str, Moment], ids: list[str]) -> dict[str, int]:
 
 
 def lunch_candidates(real: list, by_id: dict[str, Moment], brief: Brief,
-                     liked: Mapping[str, float] | None = None) -> list:
-    """The planner's candidates plus the lunch options (D102): each food card the person is predicted to like
-    (utility ≥ LUNCH_CARD_MIN) again as "<id>#lunch", allowed to start only in the lunch window (sharing a variant
-    group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside every place,
-    scored as neutral (0). Nothing is added if the day doesn't span lunch. `liked` holds the person's own
-    utilities when the planner's are nudged (D113), so a popular food card still counts as liked."""
+                     liked: Mapping[str, float] | None = None, cost_per_gbp: float = POP_COST_PER_GBP,
+                     food_pull: float = 0.0) -> list:
+    """The planner's candidates plus the lunch options (D102): each food card the person is predicted to like at
+    least as much as an ordinary lunch (m321) again as "<id>#lunch", allowed to start only in the lunch window
+    (sharing a variant group with the card, so a plan holds one of the two), and a flexible "lunch near X" slot beside
+    every place, scored as neutral (0). Nothing is added if the day doesn't span lunch. `liked` holds the person's own
+    utilities when the planner's are nudged (D113), so a popular food card still counts as liked. `cost_per_gbp` is
+    the person's own cost weight per £ (a positive size): the ordinary lunch's money is given back to the food card,
+    since the person spends it either way."""
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     if not brief.lunch or not spans_lunch(day_start, day_end):
-        return [c for c in real if not by_id[c.moment_id].meal]   # meal cards only ever serve as lunch (D104)
+        # meal cards only ever serve as lunch (D104); an evening still gets its dinner slot (m326)
+        return with_dinners([c for c in real if not by_id[c.moment_id].meal], real, by_id, brief, liked,
+                            cost_per_gbp, food_pull)
     lo, hi = LUNCH_START
     out = []
     for c in real:
         m = by_id[c.moment_id]
         own = (liked or {}).get(c.moment_id, c.utility)
-        if (m.features.place.get("food") or 0) >= 2 and (m.cost_gbp or 0) > 0 and own >= LUNCH_CARD_MIN:
+        credit = cost_per_gbp * min(m.cost_gbp or 0.0, float(brief.lunch_gbp))   # m321: the ordinary lunch's money
+        if (m.features.place.get("food") or 0) >= 2 and (m.cost_gbp or 0) > 0 and own + credit >= LUNCH_CARD_MIN:
             wins = tuple((max(a, lo), min(b, hi + c.duration_min)) for a, b in c.windows
                          if max(a, lo) + c.duration_min <= min(b, hi + c.duration_min))
             if wins:
                 c = replace(c, group=c.group or f"meal:{c.moment_id}")
-                out.append(replace(c, moment_id=f"{c.moment_id}#lunch", windows=wins, lunch=True))
+                out.append(replace(c, moment_id=f"{c.moment_id}#lunch", windows=wins, lunch=True,
+                                   utility=c.utility + credit))
         if not m.meal:
             out.append(c)
     slot = lambda mid, p: Candidate(mid, p, p, LUNCH_MIN, ((lo, hi + LUNCH_MIN),), 0.0, float(brief.lunch_gbp),
                                     None, "moment", lunch=True)
     out += [slot(f"lunch@{c.moment_id}", c.end) for c in real]
     out.append(slot("lunch@start", brief.start))   # D104: lunch near the start point, too
+    return with_dinners(out, real, by_id, brief, liked, cost_per_gbp, food_pull)
+
+
+def with_dinners(out: list, real: list, by_id: Mapping[str, Moment], brief: Brief,
+                 liked: Mapping[str, float] | None, cost_per_gbp: float, food_pull: float) -> list:
+    """`out` plus the evening's dinner options (m334), with each food card that serves as a dinner sharing a group with
+    its visit, so a plan holds one of the two."""
+    dinners = dinner_candidates(real, brief, by_id, liked, cost_per_gbp, food_pull)
+    named = {c.moment_id.split("#")[0]: c.group for c in dinners if "#dinner" in c.moment_id}
+    out = [replace(c, group=named[c.moment_id]) if c.moment_id in named and not c.lunch else c for c in out]
+    return out + dinners
+
+
+def dinner_candidates(real: list, brief: Brief, by_id: Mapping[str, Moment] | None = None,
+                      liked: Mapping[str, float] | None = None, cost_per_gbp: float = POP_COST_PER_GBP,
+                      food_pull: float = 0.0) -> list:
+    """m326: a "dinner near X" slot beside every place, for a day ending at DINNER_FROM_END or later; one dinner a
+    plan. m334 (Abram, 24 Nov: "Dinner should be scored against the person's food interest, budget and preferences,
+    not inserted as an unpersonalised placeholder"; "use named, verified venues when possible"):
+    - every dinner carries DINNER_BONUS (a day that runs into the evening includes dinner unless it doesn't fit the
+      day or its budget) plus the person's own liking for food (`food_pull`, their weight on food, never below 0);
+    - each food card open in the dinner window (Beigel Bake, the Soho and Chinatown evening, a steakhouse) is also a
+      named dinner, "<id>#dinner", scored by the person's own liking for it plus the ordinary dinner's money, as
+      lunch's food cards are (m321). Cards that only serve lunch (`meal: lunch`) never are."""
+    if not brief.lunch or parse_hhmm(brief.end_time) < DINNER_FROM_END:
+        return []
+    lo, hi = DINNER_START
+    gbp = round(float(brief.lunch_gbp) * DINNER_OF_LUNCH)
+    out = [Candidate(f"dinner@{c.moment_id}", c.end, c.end, DINNER_MIN, ((lo, hi + DINNER_MIN),),
+                     DINNER_BONUS + food_pull, float(gbp), None, "moment", dinner=True) for c in real]
+    for c in real:
+        m = (by_id or {}).get(c.moment_id)
+        if m is None or m.meal or (m.features.place.get("food") or 0) < 2 or not (m.cost_gbp or 0) > 0:
+            continue
+        wins = tuple((max(a, lo), min(b, hi + c.duration_min)) for a, b in c.windows
+                     if max(a, lo) + c.duration_min <= min(b, hi + c.duration_min))
+        own = (liked or {}).get(c.moment_id, c.utility)
+        credit = cost_per_gbp * min(m.cost_gbp or 0.0, float(gbp))   # the ordinary dinner's money, given back
+        if wins and own + credit >= LUNCH_CARD_MIN:   # liked at least as much as an ordinary dinner
+            out.append(replace(c, moment_id=f"{c.moment_id}#dinner", windows=wins, dinner=True,
+                               group=c.group or f"meal:{c.moment_id}", utility=c.utility + credit + DINNER_BONUS))
     return out
 
 
@@ -349,7 +778,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
     cond = Conditions(brief.temp_c, brief.rain_prob)
     rain = brief.rain_prob is not None and brief.rain_prob >= 0.5
     gone = {m.variant_of for m in moments if m.id in exclude and m.variant_of}
-    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday)
+    usable = [m for m in moments if m.plannable() and m.open_on(brief.weekday, brief.date)
               and m.id not in exclude and not (m.variant_of and m.variant_of in gone)]
     if rain:
         usable = [m for m in usable if m.best_time.weather != ["dry"]]
@@ -362,13 +791,41 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
              for m in usable if m.id not in disliked_ids}
     off = offset or {}
     # a card the nudge pushes below the floor drops out; if the day can't then be filled, the usual plan is kept
-    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0)) for m in usable if m.id not in disliked_ids]
-    cands = lunch_candidates(real, by_id, brief, liked=u_hat) + mine_candidates(real, brief)
-    by_cand = {c.moment_id: c for c in cands}
+    real = [candidate_for(m, u_hat[m.id] - off.get(m.id, 0.0), brief.weekday, brief.date) for m in usable if m.id not in disliked_ids]
     idx = {n: i for i, n in enumerate(pop.names)}
-    legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]])
+    real = [replace(c, loved=True) if c.moment_id in loved_ids else c for c in real]   # m331: never far for them
+    cands = lunch_candidates(real, by_id, brief, liked=u_hat,
+                             cost_per_gbp=max(0.0, -float(b[idx["cost_per_10gbp"]]) / 10.0),
+                             food_pull=max(0.0, float(b[idx["food"]]))) + \
+        mine_candidates(real, brief)
+    # m331: London from above once a day: two towers minutes apart felt repetitive (ChatGPT's review, 24 Nov)
+    # m345: a place called "at sunset" is planned at sunset when the date's sunset is known: arriving within its
+    # sunset window (`best_around_sunset`), staying as long as it lasts. Its fixed times were an autumn guess, so
+    # "Waterloo Bridge at sunset" was planned at 17:06 in December, after dark
+    if brief.sunset:
+        sun_at = parse_hhmm(brief.sunset)
+        sun = {m.id: m for m in usable if m.best_time.best_around_sunset and "sunset" in m.title.lower()}
+        # m352 (a London local's review, 25 Nov: "Waterloo Bridge 'at sunset' leaves at 15:44-15:48, before sunset"):
+        # the visit spans the sunset itself: it starts no earlier than its own length, less 10 min, before sunset
+        cands = [replace(c, windows=((sun_at + max(sun[c.moment_id].best_time.best_around_sunset[0],
+                                                   10 - c.duration_min),
+                                      sun_at + sun[c.moment_id].best_time.best_around_sunset[1] + c.duration_min),))
+                 if c.moment_id in sun else c for c in cands]
+    highs, ride_ids = high_views(), rides()
+    cands = [replace(c, group="views:from-above") if c.moment_id in highs and not c.group and not c.lunch else c
+             for c in cands]
+    cands = [replace(c, ride=True) if c.moment_id in ride_ids and not c.lunch else c for c in cands]
+    by_cand = {c.moment_id: c for c in cands}
+    legs = LegWeights(b[idx["transfer_15_30"]], b[idx["transfer_30_plus"]], b[idx["packed_pace"]],
+                      *PACE_TRAVEL.get(brief.pace or "", (1.0, 0.0)))   # m331: journeys cost more at a gentle pace
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     common = dict(floor=floor, max_stops=brief.stops, min_stops=brief.stops,
+                  # m333: the day's travel against its pace's budget (none for the Test B pair, which has no pace)
+                  travel_budget_min=PACE_TRAVEL_BUDGET.get(brief.pace) if brief.pace else None,
+                  # m333: an extra place is a strong match: a chance of Good of at least EXTRA_MIN_P
+                  weak_below=(floor + math.log(EXTRA_MIN_P / (1 - EXTRA_MIN_P)) / pop.scales["rating"]
+                              if brief.extra and brief.base_stops else None),
+                  weak_max=brief.base_stops if brief.extra else None,
                   budget_gbp=brief.budget_gbp, time_limit_s=brief.time_limit_s,
                   buffer_walk_min=BUFFER_WALK_MIN, buffer_transit_min=BUFFER_TRANSIT_MIN, lunch_bonus=LUNCH_BONUS,
                   lunch_not_first=day_start <= LUNCH_START[0] - LUNCH_NOT_FIRST_GAP_MIN,
@@ -377,7 +834,9 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                   if brief.mine else None,
                   # m216: on days with the person's own time, the solver starts from a valid plan built step by
                   # step (stage 1) and improves it (stage 2). Other days, and Test B, plan exactly as before.
-                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine))
+                  seeded=SEEDED_WITH_BLOCKS and bool(brief.mine), relax_floor=not brief.extra,
+                  retry_min=not brief.extra,   # m331: an extra place fits at once, or the try is dropped
+                  extra_bonus=brief.extra_bonus if brief.extra else None)
     base_must = ({must_do} if must_do else set()) | {k for k in keep if k in by_cand}
     kept_loved = {k for k in base_must if _base(k) in loved_ids}
     notes = PlanNotes(pace=pace_of(pop, post))
@@ -450,10 +909,18 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
         elif st.moment_id == "lunch@start":
             place = brief.start_name
             stop = {"title": f"Lunch near {place}", "approach": "",
-                    "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
+                    "what": meal_what(brief), "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, place, not stops, route)}
             nxt = (c.end, place, brief.start_name)
+        elif st.moment_id.startswith("dinner@"):
+            host = by_id[st.moment_id[len("dinner@"):]]
+            place = host.leave_name()
+            stop = {"title": f"Dinner near {place}", "approach": "",
+                    "what": meal_what(brief, dinner=True), "best": "", "best_windows": [],
+                    "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [], "feel_word": "Dinner",
+                    "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, host.approach.from_, not stops, route)}
+            nxt = (c.end, place, host.exit_station())
         elif st.moment_id.startswith("lunch@"):
             host = by_id[st.moment_id[len("lunch@"):]]
             # the slot sits where the host card ends: after the host, that's where you are; otherwise (no end point
@@ -462,7 +929,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
             place = host.leave_name() if after_host or host.experience.end_point else \
                 (clean(host.approach.from_) or host.leave_name())
             stop = {"title": f"Lunch near {place}", "approach": "",
-                    "what": "Pick a café, pub or food stall nearby.", "best": "", "best_windows": [],
+                    "what": meal_what(brief), "best": "", "best_windows": [],
                     "queue": 0, "moment_id": st.moment_id, "predicted": None, "why": [],
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, host.approach.from_, not stops, route)}
             nxt = (c.end, place, host.exit_station())
@@ -490,13 +957,16 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                     "why": contributions(pop, b, moment_features(m, cond, st.travel_min, asp[m.id])),
                     "travel_text": leg_text(st.travel_min, mode, prev_name, prev_exit, m.approach.from_, not stops, route)}
             nxt = (m.end(), m.leave_name(), m.exit_station())
+            if st.moment_id.endswith("#dinner"):   # m334: a food card as the evening's dinner
+                stop["feel_word"] = "Dinner"
         away = stop.pop("mine_away", None)
         stop.update({"key": st.moment_id,   # the planner's id ("<card>#lunch" when a food card is the lunch), for `keep`
                      # m201: plans away from the places show at their own times; the time either side is for travel
                      "arrive": hhmm(st.arrive_min + (away[0] if away else 0)),
                      "depart": hhmm(st.depart_min - (away[1] if away else 0)), "travel_min": st.travel_min,
                      "travel_mode": mode, "from": prev_name, "cost_gbp": c.cost_gbp,
-                     "cost_kind": "food" if c.lunch else "free" if c.mine else by_id[_base(st.moment_id)].price_kind(),
+                     "cost_kind": "food" if c.lunch or st.moment_id.startswith("dinner@") else "free" if c.mine
+                     else by_id[_base(st.moment_id)].price_kind(),
                      "rain_swap": "", "lunch": c.lunch, "familiar": _base(st.moment_id) == notes.favourite})
         if after_away is not None and not stop.get("mine"):   # m201: from plans we can't place, the allowance
             stop["travel_text"] = (f"Getting there: from your plans. We've allowed about {after_away} min."
@@ -514,7 +984,7 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                 s["what"] += " There's no room for a lunch stop around them, so eat before or during them."
                 break
     notes.lunch = (f"{lunch_stop['title']} at {lunch_stop['arrive']}" if lunch_stop else
-                   "none fitted: add one by hand" if len(cands) > len(real) else "the day doesn't span lunch")
+                   "none fitted: add one by hand" if any(c.lunch for c in cands) else "the day doesn't span lunch")
     # Rain swaps are backups, not part of the planned day: a loved place can be one; a disliked place never is,
     # nor a place the person is predicted not to enjoy, nor one with a feature they clearly dislike (D102).
     dislikes = {w.name for w in named_weights(pop, post) if w.confident and w.direction == "dislikes"}
@@ -535,7 +1005,8 @@ def _personal_plan(pop: PopulationModel, post: DeltaPosterior, moments: list[Mom
                       for name, ids in disliked]
     # the plan's worth by the person's own weights: stop utilities (a "lunch near X" slot scores 0) minus transfer
     # penalties. The stop count is fixed by the brief, so the floor and pace terms are the same for every plan
-    notes.value = round(sum(u_hat.get(_base(st.moment_id), 0.0) - legs.penalty(st.travel_min) for st in plan.stops), 4)
+    notes.value = round(sum(u_hat.get(_base(st.moment_id), 0.0) - legs.penalty(st.travel_min, _base(st.moment_id) in loved_ids)
+                            for st in plan.stops), 4)
     return plan, stops, left_out, notes
 
 
@@ -554,7 +1025,7 @@ def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPl
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
 
     def could_fit(m: Moment) -> bool:
-        return (m.plannable() and m.open_on(brief.weekday) and not (rain and m.best_time.weather == ["dry"])
+        return (m.plannable() and m.open_on(brief.weekday, brief.date) and not (rain and m.best_time.weather == ["dry"])
                 and fits_day(candidate_for(m, 0.0), day_start, day_end)
                 and (brief.budget_gbp is None or (m.cost_gbp is not None and m.cost_gbp <= brief.budget_gbp)))
     # m255: an unknown price can't be checked against a budget, so it never passes as free
@@ -563,7 +1034,7 @@ def love_note(ids: list[str], ready: dict[str, Moment], cands: dict, plan: DayPl
     m = max((ready[i] for i in have), key=lambda m: (could_fit(m), cands[m.id].utility if m.id in cands else -99))
     if not m.plannable():
         why = "its card isn't complete yet"
-    elif not m.open_on(brief.weekday):
+    elif not m.open_on(brief.weekday, brief.date):
         why = f"closed on {DAY_NAMES.get((brief.weekday or '')[:3], brief.weekday)}"
     elif rain and m.best_time.weather == ["dry"]:
         why = "it's outdoors and rain is forecast"
@@ -605,17 +1076,21 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
     day_start, day_end = parse_hhmm(brief.start_time), parse_hhmm(brief.end_time)
     planned = {_base(st.moment_id) for st in plan.stops}
     groups = {by_id[i].variant_of for i in planned if i in by_id and by_id[i].variant_of}
-    spend = sum(s["cost_gbp"] for s in stops)
+    # m355 (a review of d6c6ab6: Poppie's "£22… still fits your day's budget" against £70 was false: the day's fares were
+    # left out): the day's spending as its summary counts it, fares included
+    spend = sum(s["cost_gbp"] for s in stops) + transport_gbp(stops)
+    # m355 (review: fish and chips offered as the rain option for a free view): a meal is never a rain option
     pool = [m for m in by_id.values() if m.id not in planned and m.id in allowed and m.id in cands
-            and m.kind == "moment" and not m.meal and not _outdoors(m)
+            and m.kind == "moment" and not m.meal and not _outdoors(m) and m.cost_kind != "food"
+            and (m.features.place.get("food") or 0) < 2
             and (m.variant_of is None or m.variant_of not in groups)]
     used: set[str] = set()
 
-    def pick(st, stop: dict, limit: float, any_time: bool):
+    def pick(st, stop: dict, limit: float, any_time: bool, free_only: bool = False):
         here = by_id[_base(st.moment_id)].start()
         best = None
         for m in pool:
-            if m.id in used:
+            if m.id in used or (free_only and (m.cost_gbp or 0) > 0):
                 continue
             c = cands[m.id]
             lo, hi = (day_start, day_end) if any_time else (max(day_start, st.arrive_min - 30),
@@ -633,22 +1108,44 @@ def add_rain_swaps(stops: list[dict], plan: DayPlan, by_id: dict[str, Moment], c
                 best = (score, m, t, travel.mode(here, m.start()))
         return best
 
-    def line(m: Moment, t: float, mode: str) -> str:
+    def line(m: Moment, t: float, mode: str, st=None, stop: dict | None = None, limit: float = 20.0,
+             any_time: bool = False) -> str:
+        """m353 (Abram, 25 Nov: "A rainy-day alternative can require a ticket… provided ODYS tells the traveller the
+        admission price, whether booking is required, whether the alternative is already included in the day's
+        budget, how far away it is, and whether there is a free alternative"): every paid option says all five."""
         how = "on foot" if mode == "walk" else "by Tube or bus"
-        return f"{m.display_title()}, about {max(5, math.ceil(t / 5) * 5)} min away {how}."
+        out = f"{m.display_title()}, about {max(5, math.ceil(t / 5) * 5)} min away {how}."
+        cost = float(m.cost_gbp or 0)
+        if cost <= 0:
+            return out + " Free."
+        here_cost = float((stop or {}).get("cost_gbp") or 0)
+        more = cost - here_cost
+        # m355 (review: "It costs £12, £12 more than this stop" read clumsily): the difference only when this stop costs too
+        out += f" It costs {_money(cost)} a person" + (f", {_money(more)} more than this stop" if here_cost > 0 and more > 0
+                                                       else "") + ", and "
+        out += ("it still fits your day's budget." if brief.budget_gbp is not None else
+                "that isn't in the day's cost above.")
+        if m.best_time.book_ahead:
+            out += f" Book ahead: {m.best_time.book_ahead.rstrip('.')}."
+        if st is not None and (free := pick(st, stop, limit, any_time, free_only=True)):
+            out += f" Free instead: {free[1].display_title()}, about {max(5, math.ceil(free[2] / 5) * 5)} min away."
+        return out
 
     real = [(st, s) for st, s in zip(plan.stops, stops) if _base(st.moment_id) in by_id]
     outdoor = [(st, s) for st, s in real if _outdoors(by_id[_base(st.moment_id)])]
     for st, s in outdoor:
         if (hit := pick(st, s, max_min, any_time=False)):
             used.add(hit[1].id)
-            s["rain_swap"] = line(hit[1], hit[2], hit[3])
+            s["rain_swap"] = line(hit[1], hit[2], hit[3], st, s, max_min)
+            s["rain_swap_id"] = hit[1].id   # m341: so the app can swap to it in one tap
     indoor = [st for st, _ in real if (by_id[_base(st.moment_id)].features.place.get("outdoor_exposure") or 0) == 0]
     if outdoor and not used and not indoor:
         hits = [(h, s) for st, s in outdoor if (h := pick(st, s, 30.0, any_time=True))]
         if hits:
             hit, s = max(hits, key=lambda x: x[0][0])
-            s["rain_swap"] = line(hit[1], hit[2], hit[3])
+            st0 = next(st for st, s0 in outdoor if s0 is s)
+            s["rain_swap"] = line(hit[1], hit[2], hit[3], st0, s, 30.0, any_time=True)
+            s["rain_swap_id"] = hit[1].id
 
 
 GENERIC_STOP_MIN = 45   # GUESS: used when a generic stop has no `depart` time
@@ -729,6 +1226,10 @@ def _cost_line(s: dict) -> str:
         return "Price not known"
     if not c:
         return "Cost: free"
+    if str(s.get("key") or s.get("moment_id") or "").startswith(("lunch@", "dinner@")):
+        # m349 (Abram: "Never display an apparently precise £6 meal estimate against a generic 'café, pub or food
+        # stall' recommendation without an underlying source"): a meal with no named place says it's an estimate
+        return f"Food: about {_money(c)}, ODYS's estimate"
     return {"food": f"Food: about {_money(c)}", "ticket": f"Ticket: {_money(c)}",
             "hire": f"Hire: {_money(c)}"}.get(s.get("cost_kind") or "entry", f"Entry: {_money(c)}")
 
@@ -750,6 +1251,96 @@ def _best_line(s: dict) -> str:
     return f"Best: {s['best']}" if any(lo < b and a < hi for lo, hi in s.get("best_windows") or []) else ""
 
 
+ESTIMATE_MEAL = "The price is ODYS's planning estimate for a meal nearby, not a menu price."
+ESTIMATE_FARES = (f"Fares are estimated: £{TUBE_FARE_GBP:.2f} a Tube or bus journey, at most £{DAILY_CAP_GBP:.2f} a day "
+                  "(TfL's fares, read Sep 2026). TfL charges the real fare.")
+
+
+def meal_what(brief: Brief, dinner: bool = False) -> str:
+    """m345: a meal slot's words follow the meal the budget planned (daybudget.LUNCHES): a cheaper lunch reads as
+    one, so "about £6" never sits beside "a café, pub or food stall"."""
+    gbp = float(brief.lunch_gbp)
+    if gbp >= 15:
+        return "Pick a restaurant, pub or food hall nearby." if dinner else "Pick a café, pub or food stall nearby."
+    if gbp > 0:
+        return ("A cheaper dinner: a takeaway, café or market stall nearby." if dinner else
+                "A cheaper lunch: a bakery, market stall or supermarket nearby.")
+    return "Bring something to eat, or buy it nearby." if not dinner else "Eat wherever suits you nearby."
+
+
+def say_estimates(stops: list[dict]) -> None:
+    """m343 (Abram, 24 Nov: "clearly distinguish estimated costs, verified venue information, booking requirements
+    and journey trade-offs"): a meal with no named place says its price is our estimate, and the day's first Tube or
+    bus journey says how fares are estimated. A named place's own facts carry their "checked on" date already
+    (`checked`). In place, on the app's stops; never for the blind Test B pair."""
+    said = False
+    for st in stops:   # m349: once a day, on the first meal it's true of (never the same sentence twice in a day)
+        key = str(st.get("key") or st["moment_id"])
+        if key.startswith(("lunch@", "dinner@")) and st.get("cost_gbp") and not said:
+            say(st, ESTIMATE_MEAL)
+            said = True
+    first = next((st for st in stops if st.get("travel_mode") not in (None, "walk") and st.get("travel_min")), None)
+    if first is not None:
+        say(first, ESTIMATE_FARES)
+
+
+def say_no_dinner(stops: list[dict], brief: Brief) -> None:
+    """m334: a day that runs into the evening (to DINNER_FROM_END or later) with no dinner in it says so on its last
+    stop, and why when it's the budget, never leaving it out silently. In place, on the app's stops."""
+    if not stops or not brief.lunch or parse_hhmm(brief.end_time) < DINNER_FROM_END:
+        return
+    if any(str(s.get("key") or s["moment_id"]).startswith("dinner@") or "#dinner" in str(s.get("key") or "")
+           or (s.get("cost_kind") == "food" and parse_hhmm(s.get("arrive") or "00:00") >= DINNER_START[0] - 30)
+           for s in stops):   # a food stop in the evening (Beigel Bake at 17:56) is the dinner
+        return
+    dinner = round(float(brief.lunch_gbp) * DINNER_OF_LUNCH)
+    spent = sum(float(s.get("cost_gbp") or 0) for s in stops) + transport_gbp(stops)
+    if brief.budget_gbp is not None and spent + dinner > brief.budget_gbp:
+        line = (f"Dinner isn't in the plan: with about {_money(dinner)} for it, today would go over your "
+                f"{_money(brief.budget_gbp)} budget.")
+    else:
+        line = "Dinner isn't in the plan: no dinner stop fitted around the evening's places."
+    say(stops[-1], line)
+
+
+def plan_change(old: list[dict], new: list[dict], since: str | None = None) -> dict:
+    """m336: what a replacement plan changes, from the stops as the app has them: the stops that left and came in, the
+    finish, what it costs (entry, food and fares) and the time spent travelling, with one plain line saying it.
+    m341: `since` (a time): "re-plan the rest of today" is compared with the part of the old day still ahead, so the
+    stops already done aren't counted as left out."""
+    if since:
+        old = [st for st in old if parse_hhmm(st.get("depart") or "23:59") > parse_hhmm(since)]
+    key = lambda st: str(st.get("key") or st["moment_id"])
+    places = lambda sts: [st for st in sts if st.get("rateable")]
+    gone = [st for st in places(old) if key(st) not in {key(x) for x in new}]
+    came = [st for st in places(new) if key(st) not in {key(x) for x in old}]
+    cost = lambda sts: round(sum(float(st.get("cost_gbp") or 0) for st in sts) + transport_gbp(sts), 2)
+    travel = lambda sts: sum(int(st.get("travel_min") or 0) for st in sts)
+    finish = lambda sts: sts[-1]["depart"] if sts else None
+    out = {"out": [st["title"] for st in gone], "in": [st["title"] for st in came],
+           "finish_before": finish(old), "finish_after": finish(new),
+           "cost_before_gbp": cost(old), "cost_after_gbp": cost(new),
+           "travel_before_min": travel(old), "travel_after_min": travel(new)}
+    parts = []
+    if gone and came:
+        parts.append(f"Instead of {_short_title(gone[0]['title'])}: {_short_title(came[0]['title'])}"
+                     + (f" and {len(came) - 1} more" if len(came) > 1 else "") + ".")
+    elif came:
+        parts.append(f"New: {', '.join(_short_title(st['title']) for st in came)}.")
+    elif gone:
+        parts.append(f"Left out: {', '.join(_short_title(st['title']) for st in gone)}.")
+    if out["finish_after"] and out["finish_after"] != out["finish_before"]:
+        parts.append(f"The day ends at {out['finish_after']} (was {out['finish_before']}).")
+    d = round(out["cost_after_gbp"] - out["cost_before_gbp"], 2)
+    if abs(d) >= 0.5:
+        parts.append(f"It costs about {_money(abs(d))} {'more' if d > 0 else 'less'}.")
+    t = out["travel_after_min"] - out["travel_before_min"]
+    if abs(t) >= 5:
+        parts.append(f"{abs(t)} min {'more' if t > 0 else 'less'} getting around.")
+    out["text"] = " ".join(parts) or "Nothing else changes."
+    return out
+
+
 def summary_lines(brief: Brief, stops: list[dict]) -> list[str]:
     """The plan's two header lines: where and when it starts, with the lunch, and what it costs (D100)."""
     spend, fare = sum(s["cost_gbp"] for s in stops), transport_gbp(stops)
@@ -766,8 +1357,16 @@ def plan_totals(stops: list[dict], travel: LondonEstimate) -> dict:
     stop and to and from stations is not included, so the app says "between stops"."""
     spend, fare = sum(s["cost_gbp"] for s in stops), transport_gbp(stops)
     walk_min = sum(s["travel_min"] or 0 for s in stops if s.get("travel_mode") == "walk")
+    # m355 (Abram, 25 Nov: "Walking and public transport must have separate measurements… Keep the overall journey
+    # measurement, but don't combine everything into one number"): the Tube or bus legs (door to door: the walk to the
+    # station and the wait are inside the estimate) and the waits the day states, apart from walking
+    transit_min = sum(s["travel_min"] or 0 for s in stops if s.get("travel_mode") not in (None, "walk"))
+    wait_min = sum(int(s.get("free_before_min") or 0) for s in stops if s.get("free_before_kind") == "wait")
     return {"cost_gbp": round(spend + fare, 2), "spend_gbp": round(spend, 2), "transport_gbp": fare,
             "walk_min": round(walk_min), "walk_km": round(walk_min * travel.walking.speed_m_per_min / 1000, 1),
+            "transit_min": round(transit_min), "transit_legs": sum(1 for s in stops if s.get("travel_mode") not in
+                                                                  (None, "walk") and s.get("travel_min")),
+            "wait_min": wait_min, "journey_min": round(walk_min + transit_min),
             "finish": stops[-1]["depart"] if stops else None}
 
 
@@ -839,7 +1438,7 @@ def stop_point(stop_id: str, by_id: dict[str, Moment], brief: Brief) -> Point | 
         return None   # m201: we don't know where they are, so no pin
     if stop_id == "lunch@start" or (stop_id.startswith("mine") and stop_id.endswith("@start")):
         return brief.start
-    if stop_id.startswith("lunch@") or stop_id.startswith("mine"):
+    if stop_id.startswith(("lunch@", "dinner@")) or stop_id.startswith("mine"):
         host = by_id.get(stop_id[stop_id.index("@") + 1:])
         return host.end() if host else None
     m = by_id.get(_base(stop_id))
@@ -853,9 +1452,10 @@ def app_stop(s: dict, point: Point | None) -> dict:
             "travel_min": s["travel_min"], "travel_mode": s["travel_mode"], "travel_text": s.get("travel_text", ""),
             "approach": s["approach"], "what": s["what"], "queue_min": s.get("queue") or 0,
             "best_text": _best_line(s), "cost_gbp": s["cost_gbp"], "cost_kind": s["cost_kind"],
-            "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "lunch": s["lunch"],
+            "cost_text": _cost_line(s), "rain_swap": s["rain_swap"], "rain_swap_id": s.get("rain_swap_id"),
+            "lunch": s["lunch"],
             "familiar": s.get("familiar", False),
-            "rateable": not s["moment_id"].startswith(("lunch@", "mine")),
+            "rateable": not s["moment_id"].startswith(("lunch@", "dinner@", "mine")),
             "mine": s.get("mine"),   # m200: "plans" or "free" for the person's own time, else None
             "worth_gbp": s.get("worth_gbp"),
             "match": s.get("match"),

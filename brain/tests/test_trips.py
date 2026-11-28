@@ -391,7 +391,9 @@ def test_trip_days_carry_legs_and_the_place_on_the_way(client):
         hub = CFG.airports["LHR"].hub.point
         assert tripdays.on_the_way(Point(**pin), hub, STAY)
     assert middle["legs"] == [] and middle["window"]["start"] == "09:30"
-    assert middle["plan"] and len(middle["plan"]["stops"]) <= 3 + 1          # 3 places, plus lunch if it's one
+    # 3 places, plus lunch if it's one; m346: dinner comes on top of the places asked for, never instead of one
+    assert middle["plan"] and len([st for st in middle["plan"]["stops"] if not st["moment_id"].startswith("dinner@")
+                                   and not str(st.get("key") or "").endswith("#dinner")]) <= 3 + 1
     assert last["legs"][-1]["slot"] == "leave" and last["legs"][-1]["destination"]["name"] == "King's Cross St Pancras"
     plans = [d[k] for d in days for k in ("before", "plan") if d[k]]
     seen = [st["moment_id"].split("#")[0] for pl in plans for st in pl["stops"] if st["rateable"]]

@@ -1,0 +1,51 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.rmg.co.uk/cutty-sark: "Open daily except 24, 25 and 26 December 10am-5pm (last entry 4.15pm)"; "Adult | £22 / Child | £11"; "We recommend booking tickets to Cutty Sark online in advance to guarantee entry."
+# - https://www.rmg.co.uk/plan-your-visit/accessibility-cutty-sark: lifts link "the Main Deck, street level, and level –1"; "Only one wheelchair user can be on each deck of the ship at any one time."
+# Coordinates: Wikidata Q171255 "Cutty Sark" (51.482778, -0.009722), read 2026-11-24
+id: m_cutty_sark
+title: "On deck and under the hull of the Cutty Sark"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Cutty Sark, Greenwich"
+  lat: 51.482778
+  lon: -0.009722
+approach:
+  from: "Cutty Sark DLR station"   # *
+  start_point: {lat: 51.482778, lon: -0.009722}
+  path: "Walk a minute to the ship's glass canopy beside Greenwich Pier"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # CHECKED: lifts to the Main Deck and below; one wheelchair user per deck at a time
+experience:
+  what_happens: "You walk the decks of a tea clipper from 1869, then go down beneath her copper hull, raised up inside a glass canopy."   # ship and canopy *; the decks and the level below the Main Deck CHECKED
+  why_it_works: "A real ship to walk through, a minute from the pier: the natural start or finish of a trip on the river."
+  duration_min: [60, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily, last entry 16:15
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekends and school holidays (GUESS)"
+  book_ahead: "Booking online ahead is recommended: tickets on the day are subject to availability"   # CHECKED
+  opening_hours: "Daily 10:00-17:00 (last entry 16:15), closed 24-26 Dec; adult £22, child £11. rmg.co.uk, read 2026-11-24"
+  hours: "Daily 10:00–17:00, last entry 16:15; closed 24–26 Dec. Adult £22, child £11"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1, crowds: 1, walking_effort: 1, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 1, awe: 2, social_pull: 1}
+cost_gbp: 22   # CHECKED: adult ticket (child £11)
+child_cost_gbp: 11   # m353: CHECKED: rmg.co.uk, "Child | £11" (read 2026-11-24)
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

@@ -1,0 +1,48 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.goldenhinde.co.uk/visit: "St Mary Overie Dock / Cathedral Street / London, SE1 9DE"; "November - March / Monday to Sunday 10:00 - 17:00"; "April - October / Monday to Sunday 10:00 - 18:00"; "Last admission is 30 minutes before closing."; "Adults £6"; "Children (3 – 16) £6"; "Family of 4 £20"; "Under 3 Free"; "Tickets can be booked online (booking fee applies) or purchased on the door."; "Access to the ship is via five steps from street level, and there is no step-free access. On board, there are four levels connected by steep stairs or vertical ladders."; "There are no public toilets"; "We occasionally close for private events", with a list of dates and times (24 Nov, 5, 10, 11, 13, 25, 26, 29 Dec, 7, 9, 16 Jan) that doesn't say whether the times are open or closed, so those dates are planned as closed
+# - https://www.goldenhinde.co.uk/: "No need to book in advance, just turn up."; "the full-size reconstruction of the famous Elizabethan galleon, the first English ship to circumnavigate the globe"
+# Coordinates: Overture Maps Places (open data), "Golden Hinde, St Mary Overies Dock, Cathedral Street, SE1 9DE" (51.506367, -0.090271), confidence 0.985, read 2026-11-24
+id: m_golden_hinde
+title: "Aboard the Golden Hinde, Drake's galleon by Borough Market"
+status: draft   # m353 (Abram, 25 Nov): "An ambiguous time must not be interpreted as a closure. Keep the card in draft until the official information is clarified."
+swipe: false
+kind: moment
+place:
+  name: "Golden Hinde, St Mary Overie Dock"
+  lat: 51.506367
+  lon: -0.090271
+approach:
+  from: "London Bridge station"   # *
+  start_point: {lat: 51.506367, lon: -0.090271}
+  path: "Walk past the edge of Borough Market to St Mary Overie Dock on Cathedral Street"   # *
+  duration_min: 5        # GUESS
+  step_free: false        # CHECKED: five steps up from the street, then steep stairs and ladders between four decks
+experience:
+  what_happens: "You clamber aboard a full-size reconstruction of the Elizabethan galleon that first took an English crew round the world, down steep ladders through its four decks."   # CHECKED (the reconstruction, the first English ship round the globe, four levels, ladders)
+  why_it_works: "A real ship to explore five minutes from Borough Market, at £6 each or £20 for a family of four."
+  duration_min: [30, 60] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily in winter (to 18:00 Apr-Oct; planned to 17:00 all year); last admission 30 min before closing
+  # m353: the page's list of dates and times (24 Nov; 5, 10, 11, 13, 25, 26, 29 Dec; 7, 9, 16 Jan) doesn't say whether
+  # they're closures or opening times, so nothing is read from it until the Golden Hinde confirms it
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "School holidays (GUESS)"
+  opening_hours: "Nov-Mar daily 10:00-17:00, Apr-Oct 10:00-18:00, last admission 30 min before closing; dated times listed on the page, unclear whether open or closed (not used); adults £6, children 3-16 £6, family of four £20, under 3 free; no need to book. goldenhinde.co.uk, read 2026-11-24"
+  hours: "Daily 10:00–17:00 in winter, last admission 16:30. £6 each; family of four £20"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 1, iconic: 1, local_novel: 1, crowds: 1, walking_effort: 1, active: 1, outdoor_exposure: 0, photo_potential: 1}
+  moment: {contrast_reveal: 0, absorption: 1, awe: 1, social_pull: 1}
+cost_gbp: 6   # CHECKED: adult £6, child (3-16) £6, family of four £20, under 3 free
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

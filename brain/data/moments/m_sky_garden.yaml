@@ -1,0 +1,57 @@
+# m348 (Abram, 24 Nov: "Research approximately 15 additional experiences, prioritising: evening activities;
+# affordable named food options; family-friendly experiences; quiet indoor experiences; Greenwich experiences that
+# connect naturally with the Uber Boat; places close to the existing recommended routes"). Written by Claude, 24 Nov
+# 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research rule
+# (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://skygarden.london/visit/getting-here-hours/: "Sky Garden, 1 Sky Garden Walk, London, EC3M 8AF"
+# - https://skygarden.london/visit/how-to-visit-2-2/: "Monday – Friday: 10am – 6pm" and "Saturday – Sunday & Bank Holidays: 11am – 9pm" (the public garden's ticketed hours); "Tickets are available to book on a weekly basis, up to three weeks in advance of your visit. Please book through our online system."
+# - https://skygarden.london/: "Get a free ticket"; "The best views of London"
+# - https://skygarden.london/sky-garden-closure-dates/: "On the first Monday of every month (subject to change), The Sky Garden is closed for maintenance until 6 pm."; Nov: "24th – Sky Garden Closed from 4 pm", "25th – Sky Garden Closed – Full Day Hire."; Dec: "24th – Christmas Eve, Sky Garden closed from 6 pm.", "25th – Christmas Day, Sky Garden Closed."
+# Coordinates: Overture Maps Places (open data), "Fenchurch Restaurant, Level 37, Sky Garden Walk, 1, EC3M 8AF" (51.511154, -0.083858), confidence 0.998: the restaurant inside the Sky Garden, read 2026-11-24
+id: m_sky_garden
+title: "London from the Sky Garden, at the top of a City tower"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Sky Garden, 1 Sky Garden Walk"
+  lat: 51.511154
+  lon: -0.083858
+approach:
+  from: "Monument station"   # *
+  start_point: {lat: 51.511154, lon: -0.083858}
+  path: "Walk up Philpot Lane to the entrance on Sky Garden Walk"   # *
+  duration_min: 5        # GUESS
+  step_free: null        # not stated on the pages read
+experience:
+  what_happens: "You go up to a free garden under glass at the top of a City tower and look out over London, the river and Tower Bridge."   # free garden and the view CHECKED; under glass and what you see *
+  why_it_works: "One of the best free views of London; on Saturdays and Sundays it stays open until 21:00, so it can end a day after dark."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-18:00"]   # CHECKED: Mon-Fri; Sat-Sun 11:00-21:00
+  time_of_day_days: {sat: ["11:00-21:00"], sun: ["11:00-21:00"]}   # CHECKED
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-11-24": ["10:00-16:00"]
+    "2026-11-25": []
+    "2026-12-07": []
+    "2026-12-25": []
+    "2027-01-04": []
+    "2027-02-01": []
+    "2027-03-01": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Weekend afternoons (GUESS)"
+  book_ahead: "A free ticket is needed: book online, released weekly up to three weeks ahead"   # CHECKED
+  opening_hours: "Mon-Fri 10:00-18:00, Sat-Sun and bank holidays 11:00-21:00; closed until 18:00 on the first Monday of each month (subject to change), closed 25 Dec; free ticket, booked online up to three weeks ahead. skygarden.london, read 2026-11-24"
+  hours: "Mon–Fri 10:00–18:00, Sat–Sun 11:00–21:00; closed the first Monday of the month and 25 Dec. Free ticket, booked ahead"   # shown on the stop
+features:
+  place: {movement_views: 2, food: 0, green_nature: 1, history_culture: 0, iconic: 2, local_novel: 0, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 1, absorption: 0, awe: 2, social_pull: 1}
+cost_gbp: 0   # CHECKED: free ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"

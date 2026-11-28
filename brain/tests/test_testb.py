@@ -423,6 +423,34 @@ def test_meal_cards_are_only_ever_the_lunch_stop():
     assert not any(c.moment_id.startswith("m_st_martin_crypt_lunch") for c in evening)
 
 
+def test_a_food_place_is_lunch_when_it_beats_an_ordinary_lunch_of_the_same_money():
+    """m321 (Abram, 21 Nov: food never showed in his London trips): a food card's price counts only above the
+    ordinary lunch it replaces, and it is offered when it's at least as good as that lunch. Before, it needed +0.5
+    with its whole price counted, so no food card ever became lunch."""
+    from brain.moments import load_moments
+    from brain.planner import candidate_for
+    ms = {m.id: m for m in load_moments(DATA / "moments") if m.status == "ready"}
+    brief = _dry_brief(start_time="11:00", end_time="16:00")
+    beigel = ms["m_beigel_bake_late"]                                    # £7.50, under the £15 ordinary lunch
+    credit = testb.POP_COST_PER_GBP * min(beigel.cost_gbp, brief.lunch_gbp)
+    # liked a little less than an ordinary lunch once its money is given back: not offered
+    real = [candidate_for(beigel, -credit - 0.01)]
+    assert not any(c.moment_id == "m_beigel_bake_late#lunch" for c in testb.lunch_candidates(real, ms, brief))
+    # liked at least as much: offered as lunch, scored with the ordinary lunch's money given back
+    real = [candidate_for(beigel, -credit + 0.01)]
+    lunch = next(c for c in testb.lunch_candidates(real, ms, brief) if c.moment_id == "m_beigel_bake_late#lunch")
+    assert abs(lunch.utility - 0.01) < 1e-9 and lunch.lunch
+    # the steakhouse's £60: only £15 of it is given back, so £45 still counts against it
+    steak = ms["m_open_kitchen_steakhouse"]
+    real = [candidate_for(steak, -0.30)]
+    assert not any(c.moment_id.endswith("#lunch") and c.moment_id.startswith("m_open_kitchen")
+                   for c in testb.lunch_candidates(real, ms, brief))
+    # the card itself and its lunch version share a group, so a plan holds one of the two
+    real = [candidate_for(beigel, 1.0)]
+    both = [c for c in testb.lunch_candidates(real, ms, brief) if c.moment_id.startswith("m_beigel_bake_late")]
+    assert len(both) == 2 and len({c.group for c in both}) == 1
+
+
 def test_sunset_lines_follow_the_brief_and_some_cards_stay_out_of_test_b():
     """D105: "Best: Sunset" follows the brief's sunset time (plans used before the clocks change end before sunset);
     the Transport Museum stays out of Test B but stays in the app."""

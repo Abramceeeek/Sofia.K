@@ -1,0 +1,12 @@
+{
+ "previews": [
+  {
+   "key": "seville",
+   "name": "Seville",
+   "country": "ES",
+   "country_name": "Spain",
+   "label": "Preview: not fully supported",
+   "emergency_number": "112"
+  }
+ ]
+}

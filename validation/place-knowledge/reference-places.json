@@ -1,0 +1,1429 @@
+{
+ "commit": "fc36ae2",
+ "date": "2026-11-28",
+ "places": [
+  {
+   "id": "p_borough_market",
+   "name": "Borough Market",
+   "kind": "market",
+   "card": "m_borough_market_graze",
+   "from": [
+    "e_graze"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_graze",
+     "title": "Grazing the stalls",
+     "status": "ready",
+     "activity": "eat",
+     "primary": [
+      "food_discovery"
+     ],
+     "secondary": [
+      "history",
+      "social"
+     ],
+     "scores": {
+      "food_discovery": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "history": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      },
+      "art": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "shopping": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "nature": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "social": {
+       "value": 1,
+       "status": "inferred",
+       "role": "secondary"
+      }
+     },
+     "unknown_share": 0.6,
+     "needs": [
+      "weekday crowd levels",
+      "what a grazing lunch costs (the card's \u00a315 is a GUESS)",
+      "sit-down dining in the market"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "food",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "green_nature",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "history_culture",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 1,
+     "derived": 1,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 0,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 0,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 2,
+     "derived": 1,
+     "basis": "scored"
+    }
+   ],
+   "hard_verified": [
+    "access",
+    "closure",
+    "hours"
+   ],
+   "hard_not_verified": [],
+   "claims": {
+    "verified": 7,
+    "researched": 1,
+    "inferred": 2
+   }
+  },
+  {
+   "id": "p_british_museum",
+   "name": "British Museum",
+   "kind": "museum",
+   "card": "m_bm_great_court",
+   "from": [
+    "e_egyptian_sculpture",
+    "e_great_court",
+    "e_enlightenment"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_egyptian_sculpture",
+     "title": "Room 4: Egyptian sculpture and the Rosetta Stone",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "history",
+      "art"
+     ],
+     "secondary": [],
+     "scores": {
+      "history": {
+       "value": 2,
+       "status": "researched",
+       "role": "primary"
+      },
+      "art": {
+       "value": 2,
+       "status": "researched",
+       "role": "primary"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": []
+    },
+    {
+     "id": "e_great_court",
+     "title": "The Great Court",
+     "status": "ready",
+     "activity": "walk",
+     "primary": [
+      "architecture"
+     ],
+     "secondary": [],
+     "scores": {
+      "architecture": {
+       "value": 2,
+       "status": "researched",
+       "role": "primary"
+      },
+      "history": {
+       "value": 0,
+       "status": "researched",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": []
+    },
+    {
+     "id": "e_enlightenment",
+     "title": "Room 1: the Enlightenment gallery, the former King's Library",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "history"
+     ],
+     "secondary": [
+      "architecture",
+      "science"
+     ],
+     "scores": {
+      "history": {
+       "value": 2,
+       "status": "researched",
+       "role": "primary"
+      },
+      "architecture": {
+       "value": 1,
+       "status": "researched",
+       "role": "secondary"
+      },
+      "science": {
+       "value": 1,
+       "status": "researched",
+       "role": "secondary"
+      }
+     },
+     "unknown_share": 0.8,
+     "needs": [
+      "a direct read of the museum's pages, for verified hours and closures"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "food",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "green_nature",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "history_culture",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 0,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 1,
+     "derived": 0,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 1,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    }
+   ],
+   "hard_verified": [],
+   "hard_not_verified": [
+    {
+     "id": "bmu_hours",
+     "type": "hours",
+     "status": "researched"
+    },
+    {
+     "id": "bmu_room4_closed",
+     "type": "closure",
+     "status": "researched"
+    }
+   ],
+   "claims": {
+    "researched": 8
+   }
+  },
+  {
+   "id": "p_hyde_park",
+   "name": "Hyde Park",
+   "kind": "park",
+   "card": "m_park_break_hyde",
+   "from": [
+    "e_serpentine"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_serpentine",
+     "title": "By the Serpentine",
+     "status": "ready",
+     "activity": "walk",
+     "primary": [
+      "nature"
+     ],
+     "secondary": [
+      "views",
+      "history"
+     ],
+     "scores": {
+      "nature": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "views": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      },
+      "history": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      },
+      "art": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "food_discovery": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.67,
+     "needs": [
+      "busy times",
+      "what the walk is like in rain or after dark"
+     ]
+    },
+    {
+     "id": "e_meadows",
+     "title": "The meadows and the rose garden",
+     "status": "ready",
+     "activity": "walk",
+     "primary": [
+      "nature"
+     ],
+     "secondary": [],
+     "scores": {
+      "nature": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "history": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": [
+      "the rose garden's season",
+      "no card yet: not plannable"
+     ]
+    },
+    {
+     "id": "e_boating",
+     "title": "Boating on the Serpentine",
+     "status": "draft",
+     "activity": "ride",
+     "primary": [],
+     "secondary": [
+      "adventure",
+      "nature"
+     ],
+     "scores": {
+      "adventure": {
+       "value": 1,
+       "status": "researched",
+       "role": "secondary"
+      },
+      "nature": {
+       "value": 1,
+       "status": "researched",
+       "role": "secondary"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": [
+      "the operator's page: season, hours, price, age rules"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 0,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "food",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "green_nature",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "history_culture",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 1,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 1,
+     "derived": 1,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 0,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 1,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    }
+   ],
+   "hard_verified": [
+    "hours"
+   ],
+   "hard_not_verified": [],
+   "claims": {
+    "verified": 7,
+    "inferred": 2,
+    "researched": 1
+   }
+  },
+  {
+   "id": "p_liberty",
+   "name": "Liberty",
+   "kind": "shop",
+   "card": "m_liberty_timber_galleries",
+   "from": [
+    "e_timber_galleries"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_timber_galleries",
+     "title": "The timber galleries of the Tudor building",
+     "status": "ready",
+     "activity": "shop",
+     "primary": [
+      "architecture"
+     ],
+     "secondary": [
+      "history",
+      "shopping"
+     ],
+     "scores": {
+      "architecture": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "history": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      },
+      "shopping": {
+       "value": 1,
+       "status": "researched",
+       "role": "secondary"
+      },
+      "food_discovery": {
+       "value": 0,
+       "status": "researched",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.73,
+     "needs": [
+      "a direct read of Liberty's hours",
+      "what it sells",
+      "step-free access"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "food",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "green_nature",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "history_culture",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 0,
+     "derived": 1,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 1,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    }
+   ],
+   "hard_verified": [],
+   "hard_not_verified": [
+    {
+     "id": "lib_hours",
+     "type": "hours",
+     "status": "researched"
+    }
+   ],
+   "claims": {
+    "researched": 3,
+    "inferred": 2,
+    "verified": 1
+   }
+  },
+  {
+   "id": "p_natural_history_museum",
+   "name": "Natural History Museum",
+   "kind": "museum",
+   "card": "m_nhm_whale_hall",
+   "from": [
+    "e_mammals"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_mammals",
+     "title": "The Mammals hall and the blue whale model",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "science"
+     ],
+     "secondary": [],
+     "scores": {
+      "science": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "nature": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "history": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "art": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.73,
+     "needs": [
+      "step-free route",
+      "weekday crowd levels"
+     ]
+    },
+    {
+     "id": "e_dinosaurs",
+     "title": "The Dinosaurs gallery",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "science"
+     ],
+     "secondary": [
+      "play"
+     ],
+     "scores": {
+      "science": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "history": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "play": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      }
+     },
+     "unknown_share": 0.8,
+     "needs": [
+      "whether the gallery has a timed queue",
+      "no card yet: not plannable"
+     ]
+    },
+    {
+     "id": "e_hintze_hall",
+     "title": "Hintze Hall and Hope, the blue whale skeleton",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "science"
+     ],
+     "secondary": [],
+     "scores": {
+      "science": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      }
+     },
+     "unknown_share": 0.93,
+     "needs": [
+      "a source on the hall's architecture",
+      "no card yet: not plannable"
+     ]
+    },
+    {
+     "id": "e_family_trail",
+     "title": "The free family trail: six things to do",
+     "status": "ready",
+     "activity": "play",
+     "primary": [
+      "play"
+     ],
+     "secondary": [
+      "science"
+     ],
+     "scores": {
+      "play": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "science": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": [
+      "the ages it suits aren't stated",
+      "no card yet: not plannable"
+     ]
+    },
+    {
+     "id": "e_approach",
+     "title": "Arriving from South Kensington: the building opens up",
+     "status": "draft",
+     "activity": "walk",
+     "primary": [],
+     "secondary": [],
+     "scores": {},
+     "unknown_share": 1.0,
+     "needs": [
+      "Abram's route (the card's gaps)",
+      "a source on the building and its architect"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "food",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "green_nature",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "history_culture",
+     "card": 2,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 1,
+     "derived": 1,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 2,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    }
+   ],
+   "hard_verified": [
+    "closure",
+    "hours"
+   ],
+   "hard_not_verified": [
+    {
+     "id": "nhm_step_free",
+     "type": "access",
+     "status": "unknown"
+    }
+   ],
+   "claims": {
+    "verified": 11,
+    "unknown": 1,
+    "researched": 2
+   }
+  },
+  {
+   "id": "p_sky_garden",
+   "name": "Sky Garden",
+   "kind": "viewpoint",
+   "card": "m_sky_garden",
+   "from": [
+    "e_garden_view"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_garden_view",
+     "title": "The garden and the view over London",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "views"
+     ],
+     "secondary": [
+      "nature"
+     ],
+     "scores": {
+      "views": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "nature": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      },
+      "history": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.8,
+     "needs": [
+      "step-free access",
+      "busy times",
+      "the tower's name and architect from an official source"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 2,
+     "derived": 2,
+     "basis": "scored"
+    },
+    {
+     "tag": "food",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "green_nature",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "history_culture",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 0,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 0,
+     "derived": 0,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 0,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 1,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    }
+   ],
+   "hard_verified": [
+    "closure",
+    "hours"
+   ],
+   "hard_not_verified": [
+    {
+     "id": "sg_access",
+     "type": "access",
+     "status": "unknown"
+    }
+   ],
+   "claims": {
+    "verified": 5,
+    "unknown": 1,
+    "researched": 1,
+    "inferred": 2
+   }
+  },
+  {
+   "id": "p_tate_modern",
+   "name": "Tate Modern",
+   "kind": "gallery",
+   "card": "m_tate_modern",
+   "from": [
+    "e_turbine_hall",
+    "e_collection"
+   ],
+   "problems": [],
+   "experiences": [
+    {
+     "id": "e_collection",
+     "title": "The free collection galleries",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "art"
+     ],
+     "secondary": [],
+     "scores": {
+      "art": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "history": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "culture": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "food_discovery": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      },
+      "nature": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.67,
+     "needs": [
+      "what's on show changes: the free displays aren't named",
+      "busy times",
+      "a step-free route"
+     ]
+    },
+    {
+     "id": "e_turbine_hall",
+     "title": "The Turbine Hall",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "art",
+      "architecture"
+     ],
+     "secondary": [
+      "social"
+     ],
+     "scores": {
+      "art": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "architecture": {
+       "value": 2,
+       "status": "researched",
+       "role": "primary"
+      },
+      "social": {
+       "value": 1,
+       "status": "researched",
+       "role": "secondary"
+      },
+      "history": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.73,
+     "needs": [
+      "the current commission isn't named on the page read"
+     ]
+    },
+    {
+     "id": "e_tanks",
+     "title": "The Tanks: live performance and video",
+     "status": "draft",
+     "activity": "look",
+     "primary": [
+      "art"
+     ],
+     "secondary": [
+      "culture"
+     ],
+     "scores": {
+      "art": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "culture": {
+       "value": 1,
+       "status": "verified",
+       "role": "secondary"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": [
+      "what's on and when: draft until a programme source is read"
+     ]
+    },
+    {
+     "id": "e_view_level10",
+     "title": "The free view from Level 10",
+     "status": "ready",
+     "activity": "look",
+     "primary": [
+      "views"
+     ],
+     "secondary": [],
+     "scores": {
+      "views": {
+       "value": 2,
+       "status": "verified",
+       "role": "primary"
+      },
+      "art": {
+       "value": 0,
+       "status": "verified",
+       "role": "other"
+      }
+     },
+     "unknown_share": 0.87,
+     "needs": [
+      "whether the caf\u00e9 level is open whenever the gallery is"
+     ]
+    }
+   ],
+   "tags": [
+    {
+     "tag": "movement_views",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "food",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "green_nature",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "history_culture",
+     "card": 2,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "iconic",
+     "card": 2,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "local_novel",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "crowds",
+     "card": 2,
+     "derived": 1,
+     "basis": "scored"
+    },
+    {
+     "tag": "walking_effort",
+     "card": 1,
+     "derived": 1,
+     "basis": "effort"
+    },
+    {
+     "tag": "active",
+     "card": 0,
+     "derived": 0,
+     "basis": "unknown \u2192 0"
+    },
+    {
+     "tag": "outdoor_exposure",
+     "card": 0,
+     "derived": 0,
+     "basis": "scored"
+    },
+    {
+     "tag": "photo_potential",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "contrast_reveal",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "absorption",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "awe",
+     "card": 1,
+     "derived": null,
+     "basis": "not derivable"
+    },
+    {
+     "tag": "social_pull",
+     "card": 1,
+     "derived": 1,
+     "basis": "scored"
+    }
+   ],
+   "hard_verified": [
+    "access",
+    "hours"
+   ],
+   "hard_not_verified": [
+    {
+     "id": "tm_step_free",
+     "type": "access",
+     "status": "unknown"
+    }
+   ],
+   "claims": {
+    "verified": 7,
+    "unknown": 1,
+    "inferred": 1,
+    "researched": 1
+   }
+  }
+ ],
+ "claims_by_status": {
+  "verified": 38,
+  "researched": 17,
+  "inferred": 9,
+  "unknown": 3
+ },
+ "claims_by_source": {
+  "official": 54,
+  "odys": 9,
+  "founder": 3,
+  "reference": 1
+ }
+}

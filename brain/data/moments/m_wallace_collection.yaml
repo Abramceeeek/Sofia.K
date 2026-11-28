@@ -1,0 +1,49 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://www.wallacecollection.org/visit/: "We are open daily from 10.00–17.00."; "Entry to the permanent collection is free."; "We close on 24, 25 and 26 December each year."; "Hertford House, Manchester Square, London W1U 3BN"
+# - https://www.wallacecollection.org/visit/access/: "The entrance to the museum is step-free."; "There is a lift to all floors"; "Weekday mornings (10.00-11.00) and afternoons (16.00-17.00) are usually the quietest."; "The Armouries are usually the quietest part of the museum."
+# Coordinates: Wikidata Q1327919 "Wallace Collection" (51.517454, -0.153022), read 2026-11-24
+id: m_wallace_collection
+title: "A quiet hour among the Wallace Collection's armour and paintings"
+feel_word: "Quiet"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "Wallace Collection, Hertford House, Manchester Square"
+  lat: 51.517454
+  lon: -0.153022
+approach:
+  from: "Bond Street station"   # *
+  start_point: {lat: 51.517454, lon: -0.153022}
+  path: "Walk up to Manchester Square and in at Hertford House"   # *
+  duration_min: 5        # GUESS
+  step_free: true        # CHECKED: step-free entrance and a lift to all floors
+experience:
+  what_happens: "You wander the rooms of a grand house, among paintings, furniture and armour, ending in the Armouries, usually the museum's quietest part."   # CHECKED (the Armouries the quietest); paintings, furniture *
+  why_it_works: "Free, calm and close to Oxford Street, yet a world away from it: a gentle stop at any point in the day."
+  duration_min: [45, 90] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: "Quietest on weekday mornings 10:00-11:00 and afternoons 16:00-17:00 (CHECKED)"
+  opening_hours: "Daily 10:00-17:00, closed 24-26 Dec; free (permanent collection). wallacecollection.org, read 2026-11-24"
+  hours: "Daily 10:00–17:00; closed 24–26 Dec. Free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 1, local_novel: 2, crowds: 0, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 0}
+  moment: {contrast_reveal: 0, absorption: 2, awe: 1, social_pull: 0}
+cost_gbp: 0   # CHECKED: free (temporary exhibitions ticketed)
+shot_card: null
+source: research
+last_checked: "2026-11-24"

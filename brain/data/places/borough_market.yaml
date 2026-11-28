@@ -1,0 +1,136 @@
+# Reference place 2 of 7 (batch 9, m364). Built by Claude, 28 Nov 2026; see tate_modern.yaml for the conventions.
+# Abram (m364): "Borough Market must not be classified as a strong historical experience without supporting
+# historical evidence." The market's own story page gives that evidence for the market's long history, so history
+# is recorded, as a 1: present but secondary. The visit is organised around food, not the past.
+id: p_borough_market
+name: Borough Market
+kind: market
+area: Southwark, by London Bridge
+official_url: https://boroughmarket.org.uk/
+location: {lat: 51.50556, lon: -0.09083}   # the card's coordinates
+legacy:
+  card: m_borough_market_graze
+  from: [e_graze]
+  other_cards: [m_padella_borough]   # a named restaurant beside the market: its own record later
+facts:
+  - id: bm_hours
+    claim: "Closed Monday; Tuesday to Friday 10:00-17:00, Saturday 09:00-17:00, Sunday 10:00-16:00"
+    fact_type: hours
+    status: verified
+    source: https://boroughmarket.org.uk/visit-us/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Monday Closed"
+    note: "Opening times vary during the festive period and at bank holidays (the same page)."
+  - id: bm_festive
+    claim: "Opening times vary during the festive period and at bank holidays"
+    fact_type: closure
+    status: verified
+    source: https://boroughmarket.org.uk/visit-us/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Opening times vary during the festive period and at Bank Holidays."
+  - id: bm_free
+    claim: "Access to the market is free and open to everyone"
+    fact_type: price
+    status: verified
+    source: https://boroughmarket.org.uk/visit-us/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "Access to Borough Market is free and open to everyone."
+  - id: bm_level
+    claim: "The public spaces are on one ground-floor level, with no need for lifts or stairs; some surfaces are cobbled"
+    fact_type: access
+    status: verified
+    source: https://boroughmarket.org.uk/visit-us/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "The Market's public spaces are laid out on a single ground-floor level, so have no need for lifts or stairs."
+  - id: bm_busy
+    claim: "Visitor numbers can be high at peak times, particularly Saturday afternoons"
+    fact_type: crowding
+    status: verified
+    source: https://boroughmarket.org.uk/visit-us/
+    source_type: official
+    checked: 2026-11-28
+    confidence: high
+    quote: "At peak times, particularly Saturday afternoons, visitor numbers can be high."
+experiences:
+  - id: e_graze
+    title: "Grazing the stalls"
+    what_you_do: "Taste your way round the food stalls and eat standing up among the traders"
+    activity: eat
+    status: ready
+    claims:
+      - id: bm_food
+        claim: "A food market whose traders sell a wide range of food and drink from Britain and the rest of the world"
+        fact_type: contents
+        status: verified
+        source: https://boroughmarket.org.uk/
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: true
+        quote: "you’ll find an incredible range of food from all over Britain and the rest of the world"
+        note: "'premier' and 'incredible' are marketing; the fact is a food market with a wide range."
+      - id: bm_history
+        claim: "A market has stood at the foot of London Bridge for about 1,000 years, on the current site since 1756"
+        fact_type: history
+        status: verified
+        source: https://boroughmarket.org.uk/our-story/
+        source_type: official
+        checked: 2026-11-28
+        confidence: high
+        central: false
+        quote: "Our story began 1,000 years ago, when a market took shape at the foot of London Bridge."
+        note: "The market's own account. It supports history as present, not as what the visit is organised around."
+      - id: bm_lively
+        claim: "A busy market of many traders: lively by design"
+        kind: interpretation
+        fact_type: interpretation
+        status: researched
+        source: https://boroughmarket.org.uk/visit-us/
+        source_type: official
+        checked: 2026-11-28
+        confidence: medium
+      - id: bm_outdoor_guess
+        claim: "Partly open-air: some stalls are under cover, the walk between them is outside"
+        fact_type: contents
+        status: inferred
+        source_type: odys
+        checked: 2026-11-28
+        confidence: low
+        note: "Claude's own knowledge (*); no page read says it."
+      - id: bm_social_guess
+        claim: "A place people bring friends to share food"
+        kind: interpretation
+        fact_type: interpretation
+        status: inferred
+        source_type: odys
+        checked: 2026-11-28
+        confidence: low
+    scores:
+      food_discovery: {value: 2, claims: [bm_food]}
+      history: {value: 1, claims: [bm_history]}
+      art: {value: 0, claims: [bm_food]}
+      shopping: {value: 0, claims: [bm_food]}     # the goods are food: that's food_discovery (vocabulary §1)
+      nature: {value: 0, claims: [bm_food]}
+      social: {value: 1, claims: [bm_social_guess]}
+    primary: [food_discovery]
+    secondary: [history, social]
+    atmosphere:
+      lively: {value: 2, claims: [bm_lively]}
+      crowded:
+        - {value: 2, claims: [bm_busy], window: "saturday_afternoon"}
+        - {value: unknown}
+      outdoors: {value: 1, claims: [bm_outdoor_guess]}
+      urban: {value: 2, claims: [bm_food]}
+    effort: {value: 1, claims: [bm_level]}
+    duration_min: [45, 75]
+    duration_status: inferred
+    cautions: [bm_busy]
+    needs: ["weekday crowd levels", "what a grazing lunch costs (the card's £15 is a GUESS)", "sit-down dining in the market"]

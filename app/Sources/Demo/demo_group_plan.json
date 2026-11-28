@@ -1,0 +1,68 @@
+{
+ "group": {
+  "id": 1,
+  "settings": {
+   "start_date": "2026-12-11",
+   "nights": 1,
+   "per_day": 3
+  },
+  "you": "Member A",
+  "code": "432399E5",
+  "members": [
+   {
+    "label": "Member A",
+    "you": true,
+    "named": true
+   },
+   {
+    "label": "Member B",
+    "you": false,
+    "named": false
+   },
+   {
+    "label": "Member C",
+    "you": false,
+    "named": true
+   }
+  ]
+ },
+ "method": "nash",
+ "days": [
+  [
+   {
+    "id": "xp:gb:london:wallace-collection",
+    "title": "A quiet hour among the Wallace Collection's armour and paintings",
+    "why": "Among Member A's favourites; a good match for Member C and one of you."
+   },
+   {
+    "id": "xp:gb:london:park-break-hyde",
+    "title": "A park break: the Serpentine in Hyde Park",
+    "why": "A place Member C loved; a favourite for one of you; less so for Member A."
+   },
+   {
+    "id": "xp:gb:london:british-library-treasures",
+    "title": "Quiet treasures in the British Library",
+    "why": "A favourite for Member A and one of you; a good match for Member C."
+   }
+  ],
+  [
+   {
+    "id": "xp:gb:london:museum-docklands",
+    "title": "The river's story at London Museum Docklands",
+    "why": "A favourite for Member A and one of you; a good match for Member C."
+   },
+   {
+    "id": "xp:gb:london:borough-market-graze",
+    "title": "Graze your way round Borough Market",
+    "why": "A place Member A loved; a good match for Member C."
+   },
+   {
+    "id": "xp:gb:london:greenwich-wolfe-view",
+    "title": "The whole of London from General Wolfe's hill, Greenwich Park",
+    "why": "A place one of you loved; among Member C's favourites; less so for Member A."
+   }
+  ]
+ ],
+ "notes": [],
+ "your_share": "3 of the 6 stops you're there for are among your favourites"
+}

@@ -89,6 +89,9 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun sendChoices(items: List<ChoiceItem>) = send("POST", "v1/me/conjoint", ChoiceItems(items))
     suspend fun sendProfile(profile: Profile) = send("PUT", "v1/me/profile", profile)
     suspend fun makePlan(request: PlanRequest): Plan = call("POST", "v1/me/plans", request)
+    /** m336: up to three other places for one stop, each a whole plan with the rest of the day kept. */
+    suspend fun alternatives(request: PlanRequest): List<Plan> =
+        call<AlternativesRequest, Alternatives>("POST", "v1/me/plans/alternatives", AlternativesRequest(request)).alternatives
     suspend fun moments(): List<MomentSummary> = call("GET", "v1/moments?plannable_only=true")
     suspend fun referral(): ReferralResponse = call("GET", "v1/me/referral")
     suspend fun rate(request: RatingRequest) = send("POST", "v1/me/ratings", request)
@@ -101,6 +104,16 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     }
 
     suspend fun mySafety(): List<SafetyThread> = call("GET", "v1/me/safety")
+    // m320: previews opened with a code (Preview.kt)
+    suspend fun previews(): PreviewList = call("GET", "v1/me/previews")
+    suspend fun openPreview(code: String): PreviewList = call("POST", "v1/me/previews", PreviewCode(code))
+    suspend fun preview(key: String): PreviewContent = call("GET", "v1/me/previews/$key")
+    // m358: trips planned with friends (Groups.kt)
+    suspend fun groups(): GroupList = call("GET", "v1/me/groups")
+    suspend fun createGroup(r: GroupCreateRequest): GroupTripInfo = call("POST", "v1/me/groups", r)
+    suspend fun joinGroup(r: GroupJoinRequest): GroupTripInfo = call("POST", "v1/me/groups/join", r)
+    suspend fun planGroup(id: Int): GroupPlanOut = call("POST", "v1/me/groups/$id/plan")
+    suspend fun leaveGroup(id: Int) { raw("POST", "v1/me/groups/$id/leave", null) }
 
     // ---- Build 2: the survey and the blind Test B pair ----
     suspend fun survey(body: SurveyBody) = send("POST", "v1/me/survey", body)
@@ -163,6 +176,7 @@ class BrainClient(val base: String, private val tokens: TokenStore) {
     suspend fun raw(method: String, path: String, body: String?, auth: Boolean = true): String {
         val url = (base.trimEnd('/') + "/" + path).toHttpUrl()
         val builder = Request.Builder().url(url)
+            .header("X-ODYS-Build", "android-${BuildConfig.VERSION_CODE}")   // m327: feedback is read per version
         if (auth) {
             val t = token ?: throw BrainError(-1)
             builder.header("Authorization", "Bearer $t")

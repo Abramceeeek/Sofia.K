@@ -1,0 +1,1588 @@
+{
+ "rows": [
+  {
+   "id": "052deb66-5f5f-4560-abe9-2537c944e1f9",
+   "name": "Windsor Castle",
+   "cat": "museum",
+   "hier": [
+    "arts_and_entertainment",
+    "museum"
+   ],
+   "basic": "museum",
+   "confidence": 0.732057511806488,
+   "web": true,
+   "phone": false,
+   "addr": "London",
+   "postcode": "W9 1BT",
+   "lon": -0.17896,
+   "lat": 51.52548,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "museum",
+   "near_75m": 78,
+   "dupes": []
+  },
+  {
+   "id": "7e51de81-cd5b-4852-b530-c99d55c16984",
+   "name": "Natural History Museum, London",
+   "cat": "history_museum",
+   "hier": [
+    "arts_and_entertainment",
+    "museum",
+    "history_museum"
+   ],
+   "basic": "museum",
+   "confidence": 0.9997120083928108,
+   "web": true,
+   "phone": true,
+   "addr": "Cromwell Rd",
+   "postcode": "SW7 5BD",
+   "lon": -0.1763771,
+   "lat": 51.49655694,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "museum",
+   "near_75m": 30,
+   "dupes": [
+    {
+     "name": "Natural History Museum Restaurant",
+     "cat": "cafeteria"
+    },
+    {
+     "name": "Natural History Museum Gift Shop",
+     "cat": "gift_shop"
+    }
+   ]
+  },
+  {
+   "id": "092d644a-1e55-4e3b-a916-4f964d633482",
+   "name": "Museum Chambers",
+   "cat": "museum",
+   "hier": [
+    "arts_and_entertainment",
+    "museum"
+   ],
+   "basic": "museum",
+   "confidence": 0.784382700920105,
+   "web": false,
+   "phone": false,
+   "addr": "Bury Pl",
+   "postcode": "WC1A 2LD",
+   "lon": -0.12414309,
+   "lat": 51.51809306,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "museum",
+   "near_75m": 472,
+   "dupes": []
+  },
+  {
+   "id": "8c66e4f0-9dea-421f-a184-d34a29840d9d",
+   "name": "Archive Gallery",
+   "cat": "art_museum",
+   "hier": [
+    "arts_and_entertainment",
+    "museum",
+    "art_museum"
+   ],
+   "basic": "museum",
+   "confidence": 0.8661659955978394,
+   "web": true,
+   "phone": false,
+   "addr": "Gb",
+   "postcode": "SW1P 4RG",
+   "lon": -0.127833,
+   "lat": 51.4911,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "museum",
+   "near_75m": 10,
+   "dupes": []
+  },
+  {
+   "id": "24c4e7e4-fb2e-4d8e-b4ca-546706a297d9",
+   "name": "Museum Cafe",
+   "cat": "museum",
+   "hier": [
+    "arts_and_entertainment",
+    "museum"
+   ],
+   "basic": "museum",
+   "confidence": 0.5176482200622559,
+   "web": true,
+   "phone": true,
+   "addr": "",
+   "postcode": "",
+   "lon": -0.00588227,
+   "lat": 51.48025455,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "museum",
+   "near_75m": 5,
+   "dupes": []
+  },
+  {
+   "id": "5fa31dd9-2923-49b2-8395-aaa9e500b2e7",
+   "name": "Peripheral Vision",
+   "cat": "art_gallery",
+   "hier": [
+    "arts_and_entertainment",
+    "arts_and_crafts_space",
+    "art_gallery"
+   ],
+   "basic": "art_gallery",
+   "confidence": 0.5799268484115601,
+   "web": true,
+   "phone": false,
+   "addr": "Four Corners, 121 Roman Road",
+   "postcode": "E2 0QN",
+   "lon": -0.04885,
+   "lat": 51.52879,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "gallery",
+   "near_75m": 108,
+   "dupes": []
+  },
+  {
+   "id": "fe1b4e3d-9fd9-4df1-8d0d-d2070a19ceb4",
+   "name": "Art Play Nights",
+   "cat": "art_gallery",
+   "hier": [
+    "arts_and_entertainment",
+    "arts_and_crafts_space",
+    "art_gallery"
+   ],
+   "basic": "art_gallery",
+   "confidence": 0.8690299391746521,
+   "web": true,
+   "phone": false,
+   "addr": "56 Middlesex Street",
+   "postcode": "E1 7EZ",
+   "lon": -0.0760058,
+   "lat": 51.5161329,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "gallery",
+   "near_75m": 239,
+   "dupes": []
+  },
+  {
+   "id": "995e497e-50e6-4cde-84c9-a33f63c3f323",
+   "name": "Creative Art & Design Centre",
+   "cat": "art_gallery",
+   "hier": [
+    "arts_and_entertainment",
+    "arts_and_crafts_space",
+    "art_gallery"
+   ],
+   "basic": "art_gallery",
+   "confidence": 0.5,
+   "web": false,
+   "phone": true,
+   "addr": "7 HOWICK PLACE",
+   "postcode": "SW1P 1BB",
+   "lon": -0.1378795,
+   "lat": 51.496596,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "permanently_closed",
+   "stratum": "gallery",
+   "near_75m": 135,
+   "dupes": []
+  },
+  {
+   "id": "2b9d893e-40e0-4fd8-83b5-a98a9b5e4b03",
+   "name": "Maxilla Studios",
+   "cat": "art_gallery",
+   "hier": [
+    "arts_and_entertainment",
+    "arts_and_crafts_space",
+    "art_gallery"
+   ],
+   "basic": "art_gallery",
+   "confidence": 0.7040698528289795,
+   "web": false,
+   "phone": false,
+   "addr": "4 Maxilla walk",
+   "postcode": "W10 4nq",
+   "lon": -0.1742311,
+   "lat": 51.526039899999994,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "gallery",
+   "near_75m": 8,
+   "dupes": []
+  },
+  {
+   "id": "47f341aa-0657-4a13-8ab0-f751fa42f15a",
+   "name": "Prints & Posters",
+   "cat": "art_gallery",
+   "hier": [
+    "arts_and_entertainment",
+    "arts_and_crafts_space",
+    "art_gallery"
+   ],
+   "basic": "art_gallery",
+   "confidence": 0.77,
+   "web": true,
+   "phone": true,
+   "addr": "152 Hackney Rd",
+   "postcode": "E2 7QS",
+   "lon": -0.07390134557642702,
+   "lat": 51.5300707895154,
+   "datasets": [
+    "Foursquare",
+    "Overture"
+   ],
+   "licenses": [
+    "Apache-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "gallery",
+   "near_75m": 84,
+   "dupes": []
+  },
+  {
+   "id": "a14afb61-387b-4e90-9e3f-fd96480c5b44",
+   "name": "Grafton Square",
+   "cat": "park",
+   "hier": [
+    "sports_and_recreation",
+    "park"
+   ],
+   "basic": "park",
+   "confidence": 0.9961944282054901,
+   "web": true,
+   "phone": true,
+   "addr": "Grafton Square",
+   "postcode": "SW4 0DA",
+   "lon": -0.13891808,
+   "lat": 51.4645976,
+   "datasets": [
+    "meta",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "park_garden",
+   "near_75m": 6,
+   "dupes": []
+  },
+  {
+   "id": "82b4afa1-8472-4472-8162-f0b07f301e3a",
+   "name": "St John's Churchyard",
+   "cat": "park",
+   "hier": [
+    "sports_and_recreation",
+    "park"
+   ],
+   "basic": "park",
+   "confidence": 0.9140005111694336,
+   "web": false,
+   "phone": true,
+   "addr": "Fair St",
+   "postcode": "SE1 2AJ",
+   "lon": -0.07853735,
+   "lat": 51.50236231,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "park_garden",
+   "near_75m": 33,
+   "dupes": []
+  },
+  {
+   "id": "d93bc946-e61f-4cde-94e4-43a7e5fa6f88",
+   "name": "Bermondsey Spa Gardens",
+   "cat": "park",
+   "hier": [
+    "sports_and_recreation",
+    "park"
+   ],
+   "basic": "park",
+   "confidence": 0.9359149932861328,
+   "web": false,
+   "phone": true,
+   "addr": "15 Spa Rd",
+   "postcode": "SE1 3GG",
+   "lon": -0.07451761,
+   "lat": 51.49479574,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "park_garden",
+   "near_75m": 8,
+   "dupes": []
+  },
+  {
+   "id": "6eed304d-3597-4f2c-aaf0-006d03197561",
+   "name": "Marble Arc",
+   "cat": "park",
+   "hier": [
+    "sports_and_recreation",
+    "park"
+   ],
+   "basic": "park",
+   "confidence": 0.7287676334381104,
+   "web": true,
+   "phone": false,
+   "addr": null,
+   "postcode": null,
+   "lon": -0.15143689494761134,
+   "lat": 51.50157319086388,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "park_garden",
+   "near_75m": 46,
+   "dupes": []
+  },
+  {
+   "id": "2716f749-4d28-4bab-9a0e-a2b25bbc74b3",
+   "name": "Regents Park Gloucester Green",
+   "cat": "park",
+   "hier": [
+    "sports_and_recreation",
+    "park"
+   ],
+   "basic": "park",
+   "confidence": 0.7305249571800232,
+   "web": false,
+   "phone": false,
+   "addr": null,
+   "postcode": null,
+   "lon": -0.15592928426327315,
+   "lat": 51.5384666512496,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "park_garden",
+   "near_75m": 4,
+   "dupes": []
+  },
+  {
+   "id": "c9b954f1-8bcf-4cb1-94ef-eef3feffc0b1",
+   "name": "Nasi Economy Rice",
+   "cat": "restaurant",
+   "hier": [
+    "food_and_drink",
+    "restaurant"
+   ],
+   "basic": "restaurant",
+   "confidence": 0.5,
+   "web": false,
+   "phone": false,
+   "addr": "169 HOLLOWAY ROAD",
+   "postcode": "N7 8LX",
+   "lon": -0.1089532,
+   "lat": 51.5498381,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "permanently_closed",
+   "stratum": "restaurant",
+   "near_75m": 164,
+   "dupes": []
+  },
+  {
+   "id": "4aaacd53-b6f4-41d9-81a0-0b9b2db83581",
+   "name": "Bite Bistro",
+   "cat": "restaurant",
+   "hier": [
+    "food_and_drink",
+    "restaurant"
+   ],
+   "basic": "restaurant",
+   "confidence": 0.8155335783958435,
+   "web": false,
+   "phone": true,
+   "addr": "127 Clapham High Street",
+   "postcode": "SW4 7SS",
+   "lon": -0.1356681,
+   "lat": 51.4627339,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "restaurant",
+   "near_75m": 157,
+   "dupes": []
+  },
+  {
+   "id": "f418cbe2-731b-405c-a10e-75e8e161de4b",
+   "name": "Mamaput Kitchen Ltd.",
+   "cat": "restaurant",
+   "hier": [
+    "food_and_drink",
+    "restaurant"
+   ],
+   "basic": "restaurant",
+   "confidence": 0.965499997138977,
+   "web": true,
+   "phone": true,
+   "addr": "66 Middlesex Street",
+   "postcode": "E1 7EZ",
+   "lon": -0.0762411,
+   "lat": 51.5160914,
+   "datasets": [
+    "Microsoft",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "restaurant",
+   "near_75m": 220,
+   "dupes": []
+  },
+  {
+   "id": "a40d6d33-5cfc-4202-b516-7c5282d44c4b",
+   "name": "Beit El Iraqi",
+   "cat": "restaurant",
+   "hier": [
+    "food_and_drink",
+    "restaurant"
+   ],
+   "basic": "restaurant",
+   "confidence": 0.7301653027534485,
+   "web": true,
+   "phone": true,
+   "addr": "269 Old Marylebone Road",
+   "postcode": "NW1 5",
+   "lon": -0.16592,
+   "lat": 51.52018,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "restaurant",
+   "near_75m": 70,
+   "dupes": []
+  },
+  {
+   "id": "ab93190c-c435-44e8-a73f-61a9ad775082",
+   "name": "Giraffe",
+   "cat": "restaurant",
+   "hier": [
+    "food_and_drink",
+    "restaurant"
+   ],
+   "basic": "restaurant",
+   "confidence": 0.77,
+   "web": true,
+   "phone": true,
+   "addr": "Crispin Pl",
+   "postcode": "E1 6DW",
+   "lon": -0.0760620813678491,
+   "lat": 51.51939229169098,
+   "datasets": [
+    "Foursquare",
+    "Overture"
+   ],
+   "licenses": [
+    "Apache-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "restaurant",
+   "near_75m": 228,
+   "dupes": []
+  },
+  {
+   "id": "ccffe611-fd88-41bf-9bd4-6713cd1bb90d",
+   "name": "Bread & Butter cafe",
+   "cat": "cafe",
+   "hier": [
+    "food_and_drink",
+    "casual_eatery",
+    "cafe"
+   ],
+   "basic": "cafe",
+   "confidence": 0.9995729145407677,
+   "web": true,
+   "phone": true,
+   "addr": "7 Enfield Rd",
+   "postcode": "N1 5EN",
+   "lon": -0.07708429,
+   "lat": 51.53954558,
+   "datasets": [
+    "meta",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "cafe",
+   "near_75m": 53,
+   "dupes": []
+  },
+  {
+   "id": "5fa5f634-7d7b-4872-b624-fd5d4e6ec110",
+   "name": "Coffee Bird",
+   "cat": "coffee_shop",
+   "hier": [
+    "food_and_drink",
+    "non_alcoholic_beverage_venue",
+    "coffee_shop"
+   ],
+   "basic": "coffee_shop",
+   "confidence": 0.9209698088467121,
+   "web": true,
+   "phone": true,
+   "addr": "128 HOXTON STREET",
+   "postcode": "N1 6SH",
+   "lon": -0.0805182,
+   "lat": 51.5302801,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "cafe",
+   "near_75m": 90,
+   "dupes": []
+  },
+  {
+   "id": "abe9e280-ea24-4d1f-9291-25937317291c",
+   "name": "Masala Zone",
+   "cat": "cafe",
+   "hier": [
+    "food_and_drink",
+    "casual_eatery",
+    "cafe"
+   ],
+   "basic": "cafe",
+   "confidence": 0.9655,
+   "web": true,
+   "phone": true,
+   "addr": "75 Bishops Bridge Road, Paddington",
+   "postcode": "W2 6BG",
+   "lon": -0.1879196,
+   "lat": 51.5159484,
+   "datasets": [
+    "Microsoft",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "cafe",
+   "near_75m": 117,
+   "dupes": []
+  },
+  {
+   "id": "1278b882-6a85-40aa-a84e-67b82b0dcdca",
+   "name": "Highland Coffee @ Ct3 Linh Dam",
+   "cat": "coffee_shop",
+   "hier": [
+    "food_and_drink",
+    "non_alcoholic_beverage_venue",
+    "coffee_shop"
+   ],
+   "basic": "coffee_shop",
+   "confidence": 0.6214335560798645,
+   "web": false,
+   "phone": true,
+   "addr": "3, Kingly Street",
+   "postcode": "W1B 5PW",
+   "lon": -0.1386776,
+   "lat": 51.5123132,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "cafe",
+   "near_75m": 530,
+   "dupes": []
+  },
+  {
+   "id": "8849a034-8dec-46a0-b2c5-fcdef6205933",
+   "name": "Coffee shop",
+   "cat": "coffee_shop",
+   "hier": [
+    "food_and_drink",
+    "non_alcoholic_beverage_venue",
+    "coffee_shop"
+   ],
+   "basic": "coffee_shop",
+   "confidence": 0.6807332634925842,
+   "web": true,
+   "phone": false,
+   "addr": "150 Great Portland St",
+   "postcode": "W1W 6XD",
+   "lon": -0.14269644,
+   "lat": 51.52055676,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "cafe",
+   "near_75m": 311,
+   "dupes": []
+  },
+  {
+   "id": "d7db43ec-98f5-4ddb-b4f9-9c1cc3d0829c",
+   "name": "The Eagle",
+   "cat": "pub",
+   "hier": [
+    "food_and_drink",
+    "alcoholic_beverage_venue",
+    "bar",
+    "pub"
+   ],
+   "basic": "bar",
+   "confidence": 0.9998640231788158,
+   "web": true,
+   "phone": true,
+   "addr": "215 Askew Rd",
+   "postcode": "W12 9AZ",
+   "lon": -0.23945508,
+   "lat": 51.5005742,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "pub_bar",
+   "near_75m": 40,
+   "dupes": []
+  },
+  {
+   "id": "ac99f4e2-3b15-46eb-8541-e4e1dbbd23bb",
+   "name": "Tommy Flynns",
+   "cat": "pub",
+   "hier": [
+    "food_and_drink",
+    "alcoholic_beverage_venue",
+    "bar",
+    "pub"
+   ],
+   "basic": "bar",
+   "confidence": 0.85,
+   "web": true,
+   "phone": true,
+   "addr": "177 Green Lanes",
+   "postcode": "N16 9DB",
+   "lon": -0.0904614,
+   "lat": 51.5578775,
+   "datasets": [
+    "Microsoft",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "pub_bar",
+   "near_75m": 19,
+   "dupes": []
+  },
+  {
+   "id": "6d9997d7-2289-44b7-bf0c-bbdcba85b9cf",
+   "name": "HIT KING",
+   "cat": "pub",
+   "hier": [
+    "food_and_drink",
+    "alcoholic_beverage_venue",
+    "bar",
+    "pub"
+   ],
+   "basic": "bar",
+   "confidence": 0.6753546621336612,
+   "web": false,
+   "phone": false,
+   "addr": "9 Stoney Ln",
+   "postcode": "E1 7BH",
+   "lon": -0.07742612,
+   "lat": 51.51531668,
+   "datasets": [
+    "meta",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "pub_bar",
+   "near_75m": 156,
+   "dupes": []
+  },
+  {
+   "id": "2f4f4fa9-0506-4d82-ac82-51d0fed19704",
+   "name": "Gordon Ramsay Bread Street Kitchen & BAR",
+   "cat": "bar",
+   "hier": [
+    "food_and_drink",
+    "alcoholic_beverage_venue",
+    "bar"
+   ],
+   "basic": "bar",
+   "confidence": 0.9655,
+   "web": true,
+   "phone": true,
+   "addr": "3-9 Heddon Street",
+   "postcode": "W1B 4BE",
+   "lon": -0.1392944,
+   "lat": 51.51069615,
+   "datasets": [
+    "Microsoft",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "pub_bar",
+   "near_75m": 381,
+   "dupes": []
+  },
+  {
+   "id": "20f0f733-423f-40ba-8c7f-844e8b3f98b3",
+   "name": "The Terrace Bar",
+   "cat": "bar",
+   "hier": [
+    "food_and_drink",
+    "alcoholic_beverage_venue",
+    "bar"
+   ],
+   "basic": "bar",
+   "confidence": 0.9559686779975891,
+   "web": true,
+   "phone": true,
+   "addr": "30 Jamestown Road",
+   "postcode": "NW1 7BY",
+   "lon": -0.14592362771005374,
+   "lat": 51.54111911907719,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "pub_bar",
+   "near_75m": 262,
+   "dupes": []
+  },
+  {
+   "id": "36062b1a-3656-43d7-af2a-7779727b1cc0",
+   "name": "Forbes House, Belgravia",
+   "cat": "historic_site",
+   "hier": [
+    "cultural_and_historic",
+    "historic_site"
+   ],
+   "basic": "historic_site",
+   "confidence": 0.7686952352523804,
+   "web": false,
+   "phone": false,
+   "addr": null,
+   "postcode": null,
+   "lon": -0.152604086,
+   "lat": 51.50115027,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "historic",
+   "near_75m": 41,
+   "dupes": []
+  },
+  {
+   "id": "1c943501-c7b6-4f91-bece-65598e35b8f3",
+   "name": "Metropolitan Borough of Camberwell",
+   "cat": "historic_site",
+   "hier": [
+    "cultural_and_historic",
+    "historic_site"
+   ],
+   "basic": "historic_site",
+   "confidence": 0.8291553854942322,
+   "web": false,
+   "phone": false,
+   "addr": null,
+   "postcode": null,
+   "lon": -0.08287518800764328,
+   "lat": 51.474028225149546,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "historic",
+   "near_75m": 17,
+   "dupes": []
+  },
+  {
+   "id": "7dbe06b4-ca9e-411c-b4c5-affd99903082",
+   "name": "Notting Hill London UK",
+   "cat": "historic_site",
+   "hier": [
+    "cultural_and_historic",
+    "historic_site"
+   ],
+   "basic": "historic_site",
+   "confidence": 0.7991676330566406,
+   "web": true,
+   "phone": false,
+   "addr": null,
+   "postcode": null,
+   "lon": -0.19606233819286617,
+   "lat": 51.509424367139246,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "historic",
+   "near_75m": 137,
+   "dupes": []
+  },
+  {
+   "id": "115c94ed-3f8c-4aff-b544-f589bffbf49d",
+   "name": "Victory Plaza",
+   "cat": "historic_site",
+   "hier": [
+    "cultural_and_historic",
+    "historic_site"
+   ],
+   "basic": "historic_site",
+   "confidence": 0.6147974729537964,
+   "web": false,
+   "phone": true,
+   "addr": "2 Fortunes Walk",
+   "postcode": "E20 1JF",
+   "lon": -0.00846208,
+   "lat": 51.54781715,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "historic",
+   "near_75m": 21,
+   "dupes": []
+  },
+  {
+   "id": "d4805578-fce9-49d8-b13a-ebbd01f35875",
+   "name": "Park Place London",
+   "cat": "historic_site",
+   "hier": [
+    "cultural_and_historic",
+    "historic_site"
+   ],
+   "basic": "historic_site",
+   "confidence": 0.5804092288017273,
+   "web": true,
+   "phone": true,
+   "addr": null,
+   "postcode": null,
+   "lon": -0.1400723,
+   "lat": 51.5063008,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "historic",
+   "near_75m": 166,
+   "dupes": []
+  },
+  {
+   "id": "af4eb8f3-0fea-4e93-84b1-8c72b9fd1715",
+   "name": "Stoke Newington Green Fruit & Veg",
+   "cat": "market",
+   "hier": [
+    "shopping",
+    "market"
+   ],
+   "basic": "market",
+   "confidence": 0.77,
+   "web": true,
+   "phone": true,
+   "addr": "39 Stoke Newington Church Street",
+   "postcode": null,
+   "lon": -0.07557421384826475,
+   "lat": 51.562054562667235,
+   "datasets": [
+    "Foursquare",
+    "Overture"
+   ],
+   "licenses": [
+    "Apache-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "market",
+   "near_75m": 78,
+   "dupes": []
+  },
+  {
+   "id": "828cc50a-44c2-4e00-b41d-6c280409f299",
+   "name": "Swiss Cottage Farmers' Market",
+   "cat": "farmers_market",
+   "hier": [
+    "shopping",
+    "market",
+    "farmers_market"
+   ],
+   "basic": "farmers_market",
+   "confidence": 0.9996846016347408,
+   "web": true,
+   "phone": true,
+   "addr": "Eton Ave",
+   "postcode": "NW3 3EP",
+   "lon": -0.17383696,
+   "lat": 51.54408774,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "market",
+   "near_75m": 27,
+   "dupes": []
+  },
+  {
+   "id": "20886a60-38a8-469c-be38-8aa9766d4522",
+   "name": "North Cross Vintage Store",
+   "cat": "farmers_market",
+   "hier": [
+    "shopping",
+    "market",
+    "farmers_market"
+   ],
+   "basic": "farmers_market",
+   "confidence": 0.9475439786911011,
+   "web": true,
+   "phone": false,
+   "addr": "",
+   "postcode": "",
+   "lon": -0.07415251254589493,
+   "lat": 51.45778194119001,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "market",
+   "near_75m": 81,
+   "dupes": []
+  },
+  {
+   "id": "0ea873dd-3df6-4502-a7ad-9843714264c2",
+   "name": "Strutton Ground Market",
+   "cat": "farmers_market",
+   "hier": [
+    "shopping",
+    "market",
+    "farmers_market"
+   ],
+   "basic": "farmers_market",
+   "confidence": 0.8305327892303467,
+   "web": true,
+   "phone": true,
+   "addr": "Strutton Ground",
+   "postcode": "SW1P 2JT",
+   "lon": -0.13380981,
+   "lat": 51.4970236,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "market",
+   "near_75m": 272,
+   "dupes": []
+  },
+  {
+   "id": "551af9ef-bb59-42b8-99ce-0e410f58a36f",
+   "name": "Stroud Green Market",
+   "cat": "farmers_market",
+   "hier": [
+    "shopping",
+    "market",
+    "farmers_market"
+   ],
+   "basic": "farmers_market",
+   "confidence": 0.9961705362796783,
+   "web": true,
+   "phone": true,
+   "addr": "Perth Rd, Ennis Rd",
+   "postcode": "N4 3HB",
+   "lon": -0.10749625,
+   "lat": 51.5686772,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "market",
+   "near_75m": 15,
+   "dupes": []
+  },
+  {
+   "id": "fe7489a8-de85-4f4f-9d9f-a0bc3533c03b",
+   "name": "Mcbeuvb",
+   "cat": "department_store",
+   "hier": [
+    "shopping",
+    "department_store"
+   ],
+   "basic": "department_store",
+   "confidence": 0.211867094039917,
+   "web": false,
+   "phone": true,
+   "addr": "150 OXFORD STREET",
+   "postcode": "W1D 1NB",
+   "lon": -0.1378216,
+   "lat": 51.5159307,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "shop",
+   "near_75m": 258,
+   "dupes": []
+  },
+  {
+   "id": "e313dfb1-9f95-434e-a1e9-d0fcc9991b26",
+   "name": "Argos West Hampstead (Sainsbury's C&C)",
+   "cat": "department_store",
+   "hier": [
+    "shopping",
+    "department_store"
+   ],
+   "basic": "department_store",
+   "confidence": 0.9931337699592113,
+   "web": true,
+   "phone": true,
+   "addr": "204-206 West End Lane",
+   "postcode": "NW6 1SG",
+   "lon": -0.1914114,
+   "lat": 51.5500262,
+   "datasets": [
+    "Microsoft",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "shop",
+   "near_75m": 88,
+   "dupes": []
+  },
+  {
+   "id": "5b9b3209-80fc-4061-82c8-fd5c97c57d2f",
+   "name": "Liberty Stores",
+   "cat": "department_store",
+   "hier": [
+    "shopping",
+    "department_store"
+   ],
+   "basic": "department_store",
+   "confidence": 0.6656637191772461,
+   "web": true,
+   "phone": true,
+   "addr": "  Regent Street, London W1B 5AH, United Kingdom, and has branches in Africa and Asia.",
+   "postcode": "+44",
+   "lon": -0.1360121,
+   "lat": 51.5100247,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "shop",
+   "near_75m": 215,
+   "dupes": []
+  },
+  {
+   "id": "4091ecc4-83ba-43b7-86d3-53dbe0ff9db0",
+   "name": "TK Maxx",
+   "cat": "department_store",
+   "hier": [
+    "shopping",
+    "department_store"
+   ],
+   "basic": "department_store",
+   "confidence": 0.77,
+   "web": true,
+   "phone": true,
+   "addr": "Westfield London",
+   "postcode": null,
+   "lon": -0.224743,
+   "lat": 51.505047,
+   "datasets": [
+    "Foursquare",
+    "Overture"
+   ],
+   "licenses": [
+    "Apache-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "shop",
+   "near_75m": 95,
+   "dupes": []
+  },
+  {
+   "id": "42e5e0d1-c2cd-4006-b8e4-4d1ab4a2b8bd",
+   "name": "Marks & Spencer",
+   "cat": "department_store",
+   "hier": [
+    "shopping",
+    "department_store"
+   ],
+   "basic": "department_store",
+   "confidence": 0.8977234363555908,
+   "web": true,
+   "phone": true,
+   "addr": "Main Station Entrance  Charing X ST",
+   "postcode": "WC2N 5HS",
+   "lon": -0.12478,
+   "lat": 51.50836,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "shop",
+   "near_75m": 299,
+   "dupes": []
+  },
+  {
+   "id": "b3649701-2750-4d72-97d4-1559b75cd0a3",
+   "name": "Soulfresh Group Pty Ltd (uk)",
+   "cat": "distribution_service",
+   "hier": [
+    "services_and_business",
+    "b2b_service",
+    "b2b_transportation_and_storage_service",
+    "freight_and_cargo_service",
+    "distribution_service"
+   ],
+   "basic": "b2b_transportation_and_storage_service",
+   "confidence": 0.5,
+   "web": true,
+   "phone": false,
+   "addr": "29 BUCKINGHAM GATE",
+   "postcode": "SW1E 6NF",
+   "lon": -0.13921,
+   "lat": 51.49928,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "any",
+   "near_75m": 76,
+   "dupes": []
+  },
+  {
+   "id": "cf85fdd7-8b53-4108-8978-5ddfefbe5bb2",
+   "name": "Idn Chelsea Locksmith",
+   "cat": "key_and_locksmith",
+   "hier": [
+    "services_and_business",
+    "home_service",
+    "key_and_locksmith"
+   ],
+   "basic": "home_service",
+   "confidence": 0.9471,
+   "web": true,
+   "phone": true,
+   "addr": "FLAT 309, 2 DOVEHOUSE STREET",
+   "postcode": "SW3 6BF",
+   "lon": -0.17031,
+   "lat": 51.48792,
+   "datasets": [
+    "BrightQuery",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "any",
+   "near_75m": 75,
+   "dupes": []
+  },
+  {
+   "id": "469a3345-5b0b-455b-a1a2-80583e88c265",
+   "name": "French Embassy",
+   "cat": "embassy",
+   "hier": [
+    "community_and_government",
+    "government_office",
+    "embassy"
+   ],
+   "basic": "embassy",
+   "confidence": 0.8273082375526428,
+   "web": true,
+   "phone": true,
+   "addr": "11 Kensington Palace Gardens",
+   "postcode": "W8 4QP",
+   "lon": -0.19088159552180878,
+   "lat": 51.50808427431264,
+   "datasets": [
+    "meta",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "any",
+   "near_75m": 6,
+   "dupes": []
+  },
+  {
+   "id": "bcea345a-2a68-4031-88d9-e53f37cf386e",
+   "name": "Photo Centre",
+   "cat": "professional_service",
+   "hier": [
+    "services_and_business",
+    "professional_service"
+   ],
+   "basic": "professional_service",
+   "confidence": 0.7836808237405055,
+   "web": true,
+   "phone": true,
+   "addr": "414 Mare Street",
+   "postcode": "E8 1HP",
+   "lon": -0.0549022,
+   "lat": 51.5497235,
+   "datasets": [
+    "meta",
+    "BrightQuery",
+    "Overture"
+   ],
+   "licenses": [
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": "open",
+   "stratum": "any",
+   "near_75m": 85,
+   "dupes": []
+  },
+  {
+   "id": "4bc27643-2104-4705-941d-85520026a9a2",
+   "name": "The Blackstone Group International",
+   "cat": "financial_service",
+   "hier": [
+    "services_and_business",
+    "financial_service"
+   ],
+   "basic": "financial_service",
+   "confidence": 0.77,
+   "web": true,
+   "phone": true,
+   "addr": "40 Berkeley Square",
+   "postcode": "W1J 5AL",
+   "lon": -0.14671809783002426,
+   "lat": 51.50990450441694,
+   "datasets": [
+    "Foursquare",
+    "Overture"
+   ],
+   "licenses": [
+    "Apache-2.0",
+    "CDLA-Permissive-2.0"
+   ],
+   "status": null,
+   "stratum": "any",
+   "near_75m": 329,
+   "dupes": []
+  }
+ ],
+ "totals": {
+  "n": 363504,
+  "conf": 0.6794955183529932,
+  "web": 0.7327732294555218,
+  "phone": 0.8094133764690348,
+  "closed": 0.0838638477955528,
+  "nocat": 0.04258275012104406
+ },
+ "licenses": [
+  [
+   "CDLA-Permissive-2.0",
+   916372
+  ],
+  [
+   "Apache-2.0",
+   24423
+  ],
+  [
+   "CC0-1.0",
+   5497
+  ]
+ ],
+ "datasets": [
+  [
+   "BrightQuery",
+   397273
+  ],
+  [
+   "Overture",
+   363504
+  ],
+  [
+   "meta",
+   105477
+  ],
+  [
+   "Microsoft",
+   45121
+  ],
+  [
+   "Foursquare",
+   24423
+  ],
+  [
+   "AllThePlaces",
+   5497
+  ],
+  [
+   "Uberall",
+   4305
+  ],
+  [
+   "PinMeTo",
+   321
+  ],
+  [
+   "DAC",
+   301
+  ],
+  [
+   "OpenTravel",
+   46
+  ],
+  [
+   "Birdeye",
+   22
+  ],
+  [
+   "Overture-signals",
+   2
+  ]
+ ]
+}

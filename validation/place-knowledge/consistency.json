@@ -1,0 +1,296 @@
+{
+ "n_pairs": 225,
+ "exact": 0.342,
+ "kappa": 0.189,
+ "present_agree": 0.956,
+ "both_scored_n": 49,
+ "both_scored_exact": 0.918,
+ "zero_vs_unknown": 135,
+ "per_dim": {
+  "history": {
+   "exact": 0.8,
+   "kappa": 0.68
+  },
+  "culture": {
+   "exact": 0.07,
+   "kappa": 0.0
+  },
+  "art": {
+   "exact": 0.4,
+   "kappa": 0.22
+  },
+  "architecture": {
+   "exact": 0.8,
+   "kappa": 0.61
+  },
+  "science": {
+   "exact": 0.33,
+   "kappa": 0.29
+  },
+  "nature": {
+   "exact": 0.33,
+   "kappa": 0.23
+  },
+  "views": {
+   "exact": 0.2,
+   "kappa": 0.18
+  },
+  "food_discovery": {
+   "exact": 0.27,
+   "kappa": 0.09
+  },
+  "dining": {
+   "exact": 0.0,
+   "kappa": 0.0
+  },
+  "shopping": {
+   "exact": 0.07,
+   "kappa": 0.0
+  },
+  "nightlife": {
+   "exact": 0.0,
+   "kappa": 0.0
+  },
+  "learning": {
+   "exact": 0.73,
+   "kappa": 0.25
+  },
+  "play": {
+   "exact": 0.13,
+   "kappa": 0.12
+  },
+  "adventure": {
+   "exact": 0.0,
+   "kappa": 0.0
+  },
+  "social": {
+   "exact": 1.0,
+   "kappa": 1.0
+  }
+ },
+ "primary_same": 12,
+ "primary_overlap": 15,
+ "n_exp": 15,
+ "primary": [
+  [
+   "p_borough_market/e_graze",
+   [
+    "food_discovery"
+   ],
+   [
+    "food_discovery"
+   ]
+  ],
+  [
+   "p_british_museum/e_egyptian_sculpture",
+   [
+    "history"
+   ],
+   [
+    "art",
+    "history"
+   ]
+  ],
+  [
+   "p_british_museum/e_great_court",
+   [
+    "architecture"
+   ],
+   [
+    "architecture"
+   ]
+  ],
+  [
+   "p_british_museum/e_enlightenment",
+   [
+    "history"
+   ],
+   [
+    "architecture",
+    "history"
+   ]
+  ],
+  [
+   "p_hyde_park/e_serpentine",
+   [
+    "nature"
+   ],
+   [
+    "nature"
+   ]
+  ],
+  [
+   "p_hyde_park/e_meadows",
+   [
+    "nature"
+   ],
+   [
+    "nature"
+   ]
+  ],
+  [
+   "p_liberty/e_timber_galleries",
+   [
+    "architecture"
+   ],
+   [
+    "architecture",
+    "shopping"
+   ]
+  ],
+  [
+   "p_natural_history_museum/e_mammals",
+   [
+    "science"
+   ],
+   [
+    "science"
+   ]
+  ],
+  [
+   "p_natural_history_museum/e_dinosaurs",
+   [
+    "science"
+   ],
+   [
+    "science"
+   ]
+  ],
+  [
+   "p_natural_history_museum/e_hintze_hall",
+   [
+    "science"
+   ],
+   [
+    "science"
+   ]
+  ],
+  [
+   "p_natural_history_museum/e_family_trail",
+   [
+    "play"
+   ],
+   [
+    "play"
+   ]
+  ],
+  [
+   "p_sky_garden/e_garden_view",
+   [
+    "views"
+   ],
+   [
+    "views"
+   ]
+  ],
+  [
+   "p_tate_modern/e_collection",
+   [
+    "art"
+   ],
+   [
+    "art"
+   ]
+  ],
+  [
+   "p_tate_modern/e_turbine_hall",
+   [
+    "architecture",
+    "art"
+   ],
+   [
+    "architecture",
+    "art"
+   ]
+  ],
+  [
+   "p_tate_modern/e_view_level10",
+   [
+    "views"
+   ],
+   [
+    "views"
+   ]
+  ]
+ ],
+ "diffs_not_zero_unknown": [
+  [
+   "p_borough_market/e_graze",
+   "culture",
+   "unknown",
+   1
+  ],
+  [
+   "p_british_museum/e_egyptian_sculpture",
+   "art",
+   1,
+   2
+  ],
+  [
+   "p_british_museum/e_egyptian_sculpture",
+   "learning",
+   1,
+   "unknown"
+  ],
+  [
+   "p_british_museum/e_enlightenment",
+   "art",
+   "unknown",
+   1
+  ],
+  [
+   "p_british_museum/e_enlightenment",
+   "architecture",
+   1,
+   2
+  ],
+  [
+   "p_british_museum/e_enlightenment",
+   "learning",
+   1,
+   "unknown"
+  ],
+  [
+   "p_hyde_park/e_serpentine",
+   "dining",
+   "unknown",
+   1
+  ],
+  [
+   "p_liberty/e_timber_galleries",
+   "shopping",
+   1,
+   2
+  ],
+  [
+   "p_natural_history_museum/e_mammals",
+   "nature",
+   1,
+   0
+  ],
+  [
+   "p_natural_history_museum/e_mammals",
+   "learning",
+   1,
+   "unknown"
+  ],
+  [
+   "p_natural_history_museum/e_mammals",
+   "play",
+   "unknown",
+   1
+  ],
+  [
+   "p_natural_history_museum/e_dinosaurs",
+   "learning",
+   1,
+   "unknown"
+  ],
+  [
+   "p_tate_modern/e_view_level10",
+   "dining",
+   "unknown",
+   1
+  ]
+ ]
+}

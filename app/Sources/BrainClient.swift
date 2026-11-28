@@ -118,6 +118,17 @@ final class BrainClient {
         return try await call("POST", "v1/me/plans", request)
     }
 
+    /// m336: up to three other places for one stop, each a whole plan with the rest of the day kept.
+    func alternatives(_ request: PlanRequest) async throws -> [Plan] {
+        if demo {   // CI screenshots only: the sample day, with a sample line
+            var sample: Plan = try Self.bundled("demo_plan")
+            sample.change = PlanChange(text: "Sample: another place for the same time. The rest of the day stays.")
+            return [sample]
+        }
+        let out: Alternatives = try await call("POST", "v1/me/plans/alternatives", AlternativesRequest(request: request))
+        return out.alternatives
+    }
+
     /// m176: the moments a plan can include, for "Must include".
     func moments() async throws -> [MomentSummary] {
         if demo {   // the sample plan's places, for the screenshots (as on Android)
@@ -280,6 +291,10 @@ final class BrainClient {
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
+        // m327: the build, so feedback is read per version ("ios-114"); not personal data
+        if let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String {
+            request.setValue("ios-\(build)", forHTTPHeaderField: "X-ODYS-Build")
+        }
         if path != "v1/installs" {
             guard let token else { throw BrainError.noToken }
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -292,6 +307,16 @@ final class BrainClient {
         let code = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(code) else { throw BrainError.status(code) }
         return data
+    }
+
+    /// m320: the preview calls (PreviewViews.swift), which send their own body.
+    func callPreview<Out: Decodable>(_ method: String, _ path: String, _ body: Data?) async throws -> Out {
+        try Self.decoder.decode(Out.self, from: try await raw(method, path, body))
+    }
+
+    /// m358: a call that answers with no body (leaving a shared trip).
+    func callNoContent(_ method: String, _ path: String) async throws {
+        _ = try await raw(method, path, nil)
     }
 
     static func bundled<T: Decodable>(_ name: String) throws -> T {

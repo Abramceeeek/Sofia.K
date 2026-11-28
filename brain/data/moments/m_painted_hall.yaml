@@ -1,0 +1,52 @@
+# m340 (Abram, 24 Nov: "Greenwich experiences that naturally connect with Uber Boat; evening activities; named
+# restaurants at multiple price levels; experiences suitable for families; quiet experiences"). Written by Claude,
+# 24 Nov 2026, in Claude's own words; facts verified on the official pages below and marked ready under the research
+# rule (D91). Key: CHECKED = from a source read today; GUESS = Claude's estimate; * = Claude's own knowledge. Tags,
+# durations and the planner's window are Claude's judgement: Abram flags any he disagrees with.
+# Sources, read 2026-11-24:
+# - https://ornc.org/plan-a-visit/opening-times/: Painted Hall "Daily | 10am-5pm (last entry 4.30pm)"; closures "Thursday 17 December – from 3pm" and "Thursday 24 – Saturday 26 December – All day"
+# - https://ornc.org/: "Purchase a General Admission ticket to the Painted Hall for £19."; https://ornc.org/explore-whats-here/painted-hall/: "Kids aged 16 or under go free (up to four children per paying adult)."
+# - https://ornc.org/plan-a-visit/accessibility/: the Painted Hall lift "is currently out of order due to a technical fault"; steps into the Lower and Upper Hall
+# Coordinates: Wikidata Q20876258 "Painted Hall" (51.48288, -0.00607), read 2026-11-24
+id: m_painted_hall
+title: "Under the ceiling of the Painted Hall, Greenwich"
+status: ready
+swipe: false
+kind: moment
+place:
+  name: "The Painted Hall, Old Royal Naval College"
+  lat: 51.48288
+  lon: -0.00607
+approach:
+  from: "Cutty Sark DLR station"   # *
+  start_point: {lat: 51.48288, lon: -0.00607}
+  path: "Walk into the Old Royal Naval College grounds by the river and go in at the Painted Hall"   # *
+  duration_min: 5        # GUESS
+  step_free: false        # CHECKED: the Painted Hall's lift is out of order; there are steps inside
+experience:
+  what_happens: "You step into a vast baroque hall and look up at its painted ceiling, among the grandest in Europe."   # hall and ceiling *
+  why_it_works: "One big moment of awe beside the river, a few minutes from the Cutty Sark and the pier."
+  duration_min: [45, 75] # GUESS
+  end_point: null
+best_time:
+  time_of_day: ["10:00-17:00"]   # CHECKED: daily, last entry 16:30
+  time_of_day_dates:     # CHECKED: dated changes on the official page
+    "2026-12-17": ["10:00-15:00"]
+    "2026-12-24": []
+    "2026-12-25": []
+    "2026-12-26": []
+  light: null
+  weather: ["any"]
+  company: null
+  crowd_window: null
+  book_ahead: "Tickets on ornc.org; children 16 and under go free, up to four per paying adult"   # CHECKED
+  opening_hours: "Painted Hall daily 10:00-17:00 (last entry 16:30); closed from 15:00 on 17 Dec and all day 24-26 Dec; £19 adult, children 16 and under free. ornc.org, read 2026-11-24"
+  hours: "Daily 10:00–17:00, last entry 16:30; closed 24–26 Dec. £19, children 16 and under free"   # shown on the stop
+features:
+  place: {movement_views: 0, food: 0, green_nature: 0, history_culture: 2, iconic: 2, local_novel: 1, crowds: 1, walking_effort: 0, active: 0, outdoor_exposure: 0, photo_potential: 2}
+  moment: {contrast_reveal: 2, absorption: 1, awe: 2, social_pull: 1}
+cost_gbp: 19   # CHECKED: adult general admission (children 16 and under free)
+cost_kind: ticket
+shot_card: null
+source: research
+last_checked: "2026-11-24"
